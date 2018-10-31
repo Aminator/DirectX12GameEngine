@@ -2,6 +2,7 @@
 using SharpDX;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
+using Windows.Graphics.Display;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
 
@@ -74,7 +75,7 @@ namespace DirectX12GameEngine
             {
                 case GameContextCoreWindow context:
                     CoreWindow coreWindow = context.Control;
-                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs((int)e.Size.Width, (int)e.Size.Height));
+                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.Size.Width, e.Size.Height));
 
                     using (Factory4 factory = new Factory4())
                     using (ComObject window = new ComObject(coreWindow))
@@ -86,7 +87,7 @@ namespace DirectX12GameEngine
                 case GameContextXaml context:
                     SwapChainPanel swapChainPanel = context.Control;
                     swapChainDescription.AlphaMode = AlphaMode.Premultiplied;
-                    swapChainPanel.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs((int)e.NewSize.Width, (int)e.NewSize.Height));
+                    swapChainPanel.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.NewSize.Width, e.NewSize.Height));
 
                     using (Factory4 factory = new Factory4())
                     using (ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(swapChainPanel))
@@ -136,8 +137,10 @@ namespace DirectX12GameEngine
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            PresentationParameters.BackBufferWidth = e.Width;
-            PresentationParameters.BackBufferHeight = e.Height;
+            double resolutionScale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+
+            PresentationParameters.BackBufferWidth = (int)(e.Width * resolutionScale);
+            PresentationParameters.BackBufferHeight = (int)(e.Height * resolutionScale);
         }
     }
 }

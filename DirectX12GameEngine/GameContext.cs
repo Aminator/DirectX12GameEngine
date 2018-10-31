@@ -1,4 +1,5 @@
-﻿using Windows.UI.Core;
+﻿using Windows.Graphics.Display;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
 
 namespace DirectX12GameEngine
@@ -39,8 +40,10 @@ namespace DirectX12GameEngine
 
             if (requestedHeight == 0 || requestedWidth == 0)
             {
-                RequestedWidth = (int)Control.Bounds.Width;
-                RequestedHeight = (int)Control.Bounds.Height;
+                double resolutionScale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+
+                RequestedWidth = (int)(Control.Bounds.Width * resolutionScale);
+                RequestedHeight = (int)(Control.Bounds.Height * resolutionScale);
             }
 
             IsHolographic = isHolographic;
@@ -58,8 +61,10 @@ namespace DirectX12GameEngine
 
             if (requestedHeight == 0 || requestedWidth == 0)
             {
-                RequestedWidth = (int)Control.ActualWidth;
-                RequestedHeight = (int)Control.ActualHeight;
+                double resolutionScale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+
+                RequestedWidth = (int)(Control.ActualWidth * resolutionScale);
+                RequestedHeight = (int)(Control.ActualHeight * resolutionScale);
             }
         }
     }

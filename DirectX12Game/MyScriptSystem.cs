@@ -9,7 +9,8 @@ namespace DirectX12Game
     public class MyScriptSystem : EntitySystem<MyScriptComponent>
     {
         private float time;
-        private float scrollAmount = 50;
+        private float scrollAmount = 50.0f;
+        private float scroolSpeed = 0.01f;
 
         public MyScriptSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
@@ -140,7 +141,7 @@ namespace DirectX12Game
 
         private void Control_PointerWheelChanged(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
-            scrollAmount += -Math.Sign(args.CurrentPoint.Properties.MouseWheelDelta);
+            scrollAmount -= args.CurrentPoint.Properties.MouseWheelDelta * scroolSpeed;
         }
     }
 }

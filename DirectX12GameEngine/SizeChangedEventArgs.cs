@@ -4,14 +4,14 @@ namespace DirectX12GameEngine
 {
     public sealed class SizeChangedEventArgs : EventArgs
     {
-        public SizeChangedEventArgs(int width, int height)
+        public SizeChangedEventArgs(double width, double height)
         {
             Width = width;
             Height = height;
         }
 
-        public int Height { get; }
+        public double Height { get; }
 
-        public int Width { get; }
+        public double Width { get; }
     }
 }
