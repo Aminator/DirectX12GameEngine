@@ -85,7 +85,7 @@ namespace DirectX12GameEngine
             {
                 if (entityComponent!.Entity != null)
                 {
-                    throw new InvalidOperationException("A entity component can't be set on more than one entity.");
+                    throw new InvalidOperationException("An entity component can't be set on more than one entity.");
                 }
 
                 entityComponent!.Entity = this;

@@ -7,9 +7,5 @@ namespace DirectX12GameEngine
         public List<Material> Materials { get; } = new List<Material>();
 
         public List<Mesh> Meshes { get; } = new List<Mesh>();
-
-        internal CompiledCommandList? CommandList { get; set; }
-
-        internal Texture[]? ConstantBuffers { get; set; }
     }
 }

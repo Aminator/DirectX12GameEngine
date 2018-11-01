@@ -19,7 +19,7 @@ namespace DirectX12GameEngine
         {
             if (entity.Scene != null)
             {
-                throw new InvalidOperationException("A entity can't be set on more than one scene.");
+                throw new InvalidOperationException("An entity can't be set on more than one scene.");
             }
 
             entity.Scene = this;

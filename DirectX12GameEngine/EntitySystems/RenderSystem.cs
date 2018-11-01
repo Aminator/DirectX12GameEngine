@@ -11,6 +11,8 @@ namespace DirectX12GameEngine
     {
         private readonly List<CommandList> commandLists = new List<CommandList>();
 
+        private readonly Dictionary<Model, (CompiledCommandList?, Texture[]?)> models = new Dictionary<Model, (CompiledCommandList?, Texture[]?)>();
+
         public RenderSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
             SceneSystem = Services.GetRequiredService<SceneSystem>();
@@ -62,23 +64,30 @@ namespace DirectX12GameEngine
 
                     if (model is null) continue;
 
+                    if (!models.ContainsKey(model))
+                    {
+                        models.Add(model, (null, null));
+                    }
+
+                    (CompiledCommandList? bundle, Texture[]? constantBuffers) = models[model];
+
                     int meshCount = model.Meshes.Count;
 
-                    if (model.ConstantBuffers is null || model.ConstantBuffers.Length != meshCount)
+                    if (constantBuffers is null || constantBuffers.Length != meshCount)
                     {
-                        model.CommandList?.Builder.Dispose();
-                        model.CommandList = null;
+                        bundle?.Builder.Dispose();
+                        bundle = null;
 
-                        if (model.ConstantBuffers != null)
+                        if (constantBuffers != null)
                         {
-                            foreach (Texture constantBuffer in model.ConstantBuffers) constantBuffer?.Dispose();
+                            foreach (Texture constantBuffer in constantBuffers) constantBuffer?.Dispose();
                         }
 
-                        model.ConstantBuffers = new Texture[meshCount];
+                        constantBuffers = new Texture[meshCount];
 
                         for (int j = 0; j < meshCount; j++)
                         {
-                            model.ConstantBuffers[j] = Texture.CreateConstantBufferView(GraphicsDevice, modelComponents.Count() * 16 * sizeof(float)).DisposeBy(GraphicsDevice);
+                            constantBuffers[j] = Texture.CreateConstantBufferView(GraphicsDevice, modelComponents.Count() * 16 * sizeof(float)).DisposeBy(GraphicsDevice);
                         }
                     }
 
@@ -95,24 +104,27 @@ namespace DirectX12GameEngine
                         for (int j = 0; j < meshCount; j++)
                         {
                             Matrix4x4 worldMatrix = model.Meshes[j].WorldMatrix * modelComponent.Entity.Transform.WorldMatrix;
-                            SharpDX.Utilities.Write(model.ConstantBuffers[j].MappedResource + modelComponentIndex * 16 * sizeof(float), ref worldMatrix);
+                            SharpDX.Utilities.Write(constantBuffers[j].MappedResource + modelComponentIndex * 16 * sizeof(float), ref worldMatrix);
                         }
 
                         modelComponentIndex++;
                     }
 
-                    model.CommandList = model.CommandList ?? RecordCommandList(
+                    bundle = bundle ?? RecordCommandList(
                         model,
                         new CommandList(GraphicsDevice, SharpDX.Direct3D12.CommandListType.Bundle).DisposeBy(GraphicsDevice),
+                        constantBuffers,
                         modelComponents.Count());
 
                     // Without bundles:
                     //RecordCommandList(model, commandList, modelComponents.Count());
 
-                    if (model.CommandList != null && model.CommandList.Builder.CommandListType == SharpDX.Direct3D12.CommandListType.Bundle)
+                    if (bundle != null && bundle.Builder.CommandListType == SharpDX.Direct3D12.CommandListType.Bundle)
                     {
-                        commandList.ExecuteBundle(model.CommandList);
+                        commandList.ExecuteBundle(bundle);
                     }
+
+                    models[model] = (bundle, constantBuffers);
                 }
 
                 compiledCommandLists[batchIndex] = commandList.Close();
@@ -136,13 +148,25 @@ namespace DirectX12GameEngine
             {
                 commandList.Dispose();
             }
+
+            foreach (var item in models)
+            {
+                (CompiledCommandList? bundle, Texture[]? constantBuffers) = item.Value;
+
+                bundle?.Builder.Dispose();
+
+                if (constantBuffers != null)
+                {
+                    foreach (Texture constantBuffer in constantBuffers)
+                    {
+                        constantBuffer.Dispose();
+                    }
+                }
+            }
         }
 
-        private CompiledCommandList? RecordCommandList(Model model, CommandList commandList, int instanceCount)
+        private CompiledCommandList? RecordCommandList(Model model, CommandList commandList, Texture[] constantBuffers, int instanceCount)
         {
-            if (model is null) throw new ArgumentException("The model of the model component can't be null.");
-            if (model.ConstantBuffers is null) throw new ArgumentException("The constant buffers of the model component can't be null.");
-
             for (int i = 0; i < model.Meshes.Count; i++)
             {
                 Mesh mesh = model.Meshes[i];
@@ -153,7 +177,7 @@ namespace DirectX12GameEngine
 
                 commandList.SetPipelineState(material.PipelineState);
                 commandList.SetGraphicsRootDescriptorTable(0, ViewProjectionBuffer.NativeGpuDescriptorHandle);
-                commandList.SetGraphicsRootDescriptorTable(1, model.ConstantBuffers[i].NativeGpuDescriptorHandle);
+                commandList.SetGraphicsRootDescriptorTable(1, constantBuffers[i].NativeGpuDescriptorHandle);
 
                 for (int j = 0; j < material.Textures.Count; j++)
                 {
