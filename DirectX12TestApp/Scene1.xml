@@ -11,22 +11,22 @@
         </Entity>
 
         <Entity Name="T-Rex">
-            <TransformComponent Scale="2,2,2" Position="-200,0,0" />
+            <TransformComponent Scale="2,2,2" Position="-600,0,0" />
             <ModelComponent Model="cliffhouse.glb" />
         </Entity>
 
         <Entity Name="T-Rex">
-            <TransformComponent Scale="2,2,2" Position="-100,0,0" />
+            <TransformComponent Scale="2,2,2" Position="-500,0,0" />
             <ModelComponent Model="cliffhouse.glb" />
         </Entity>
 
         <Entity Name="T-Rex">
-            <TransformComponent Scale="2,2,2" Position="100,0,0" />
+            <TransformComponent Scale="2,2,2" Position="500,0,0" />
             <ModelComponent Model="cliffhouse.glb" />
         </Entity>
 
         <Entity Name="T-Rex">
-            <TransformComponent Scale="2,2,2" Position="200,0,0" />
+            <TransformComponent Scale="2,2,2" Position="600,0,0" />
             <ModelComponent Model="cliffhouse.glb" />
         </Entity>
 

@@ -146,34 +146,6 @@ namespace DirectX12GameEngine
             return buffer;
         }
 
-        public Texture CreateConstantBufferView<T>(in T data) where T : unmanaged
-        {
-            Span<T> span = stackalloc T[] { data };
-            return CreateConstantBufferView(span);
-        }
-
-        public unsafe Texture CreateConstantBufferView<T>(Span<T> data) where T : unmanaged
-        {
-            int bufferSize = data.Length * sizeof(T);
-
-            int constantBufferSize = (bufferSize + 255) & ~255;
-
-            Texture constantBuffer = Texture.NewBuffer(this, constantBufferSize, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
-
-            ConstantBufferViewDescription cbvDescription = new ConstantBufferViewDescription
-            {
-                BufferLocation = constantBuffer.NativeResource.GPUVirtualAddress,
-                SizeInBytes = constantBufferSize
-            };
-
-            NativeDevice.CreateConstantBufferView(cbvDescription, constantBuffer.NativeCpuDescriptorHandle);
-
-            IntPtr constantBufferPointer = constantBuffer.Map(0);
-            Utilities.Write(constantBufferPointer, data.ToArray(), 0, data.Length);
-
-            return constantBuffer;
-        }
-
         public IndexBufferView CreateIndexBufferView(Texture indexBuffer, Format format, int size)
         {
             switch (format)

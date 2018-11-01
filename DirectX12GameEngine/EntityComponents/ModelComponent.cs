@@ -13,9 +13,5 @@
         }
 
         public Model? Model { get; set; }
-
-        internal CompiledCommandList? CommandList { get; set; }
-
-        internal Texture[]? ConstantBuffers { get; set; }
     }
 }

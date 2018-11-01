@@ -117,13 +117,20 @@ namespace DirectX12Game
 
         private void Control_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
         {
-            if (args.VirtualKey == Windows.System.VirtualKey.Up)
+            switch (args.VirtualKey)
             {
-                scrollAmount--;
-            }
-            else if (args.VirtualKey == Windows.System.VirtualKey.Down)
-            {
-                scrollAmount++;
+                case Windows.System.VirtualKey.Up:
+                    scrollAmount--;
+                    break;
+                case Windows.System.VirtualKey.Down:
+                    scrollAmount++;
+                    break;
+                case Windows.System.VirtualKey.Number0 when GraphicsDevice.Presenter != null:
+                    GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 0;
+                    break;
+                case Windows.System.VirtualKey.Number1 when GraphicsDevice.Presenter != null:
+                    GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
+                    break;
             }
         }
 

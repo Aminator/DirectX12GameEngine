@@ -59,6 +59,8 @@ namespace DirectX12GameEngine
 
         public GraphicsDevice GraphicsDevice { get; }
 
+        public Dictionary<string, object> LoadedAssets { get; } = new Dictionary<string, object>();
+
         public Type[] LoadedTypes { get; }
 
         public async Task<T> LoadAsync<T>(string filePath)
@@ -68,22 +70,21 @@ namespace DirectX12GameEngine
 
         private async Task<object> LoadAsync(Type type, string filePath)
         {
-            try
+            if (!LoadedAssets.TryGetValue(filePath, out object asset))
             {
                 if (type == typeof(Model))
                 {
-                    return await LoadGltfModelAsync(filePath);
+                    asset = await LoadGltfModelAsync(filePath);
                 }
                 else
                 {
-                    return await LoadElementAsync(filePath);
+                    asset = await LoadElementAsync(filePath);
                 }
+
+                LoadedAssets.Add(filePath, asset);
             }
-            catch (Exception)
-            {
-                System.Diagnostics.Debugger.Break();
-                throw;
-            }
+
+            return asset;
         }
 
         private async Task<Model> LoadGltfModelAsync(string filePath)
@@ -355,7 +356,7 @@ namespace DirectX12GameEngine
                 else
                 {
                     float[] baseColor = material.PbrMetallicRoughness.BaseColorFactor;
-                    Texture constantBuffer = GraphicsDevice.CreateConstantBufferView(baseColor.AsSpan()).DisposeBy(GraphicsDevice);
+                    Texture constantBuffer = Texture.CreateConstantBufferView(GraphicsDevice, baseColor.AsSpan()).DisposeBy(GraphicsDevice);
 
                     Material mat = new Material(colorPipelineState);
                     mat.Textures.Add(constantBuffer);

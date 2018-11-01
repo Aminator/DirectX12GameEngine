@@ -27,14 +27,16 @@ struct PSInput
 PSInput VSMain(VSInput input)
 {
     float4 position = float4(input.Position, 1.0f);
-    position = mul(position, WorldMatrix);
-    position = mul(position, ViewProjectionMatrix[input.InstanceId]);
+    position = mul(position, WorldMatrices[input.InstanceId]);
+
+    uint targetId = input.InstanceId % 2;
+    position = mul(position, ViewProjectionMatrices[targetId]);
 
     PSInput output;
 
     output.Position = position;
 
-    output.TargetId = input.InstanceId;
+    output.TargetId = targetId;
 
     return output;
 }

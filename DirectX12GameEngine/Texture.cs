@@ -1,4 +1,5 @@
 ﻿using System;
+using SharpDX;
 using SharpDX.Direct3D12;
 
 namespace DirectX12GameEngine
@@ -60,6 +61,41 @@ namespace DirectX12GameEngine
             return new Texture(device, device.NativeDevice.CreateCommittedResource(
                 new HeapProperties(heapType), HeapFlags.None,
                 ResourceDescription.Buffer(size, resourceFlags), resourceStates), descriptorHeapType);
+        }
+
+        public static Texture CreateConstantBufferView<T>(GraphicsDevice device, in T data) where T : unmanaged
+        {
+            Span<T> span = stackalloc T[] { data };
+            return CreateConstantBufferView(device, span);
+        }
+
+        public static unsafe Texture CreateConstantBufferView<T>(GraphicsDevice device, Span<T> data) where T : unmanaged
+        {
+            int bufferSize = data.Length * sizeof(T);
+
+            Texture constantBuffer = CreateConstantBufferView(device, bufferSize);
+
+            Utilities.Write(constantBuffer.MappedResource, data.ToArray(), 0, data.Length);
+
+            return constantBuffer;
+        }
+
+        public static unsafe Texture CreateConstantBufferView(GraphicsDevice device, int bufferSize)
+        {
+            int constantBufferSize = (bufferSize + 255) & ~255;
+
+            Texture constantBuffer = NewBuffer(device, constantBufferSize, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
+
+            ConstantBufferViewDescription cbvDescription = new ConstantBufferViewDescription
+            {
+                BufferLocation = constantBuffer.NativeResource.GPUVirtualAddress,
+                SizeInBytes = constantBufferSize
+            };
+
+            device.NativeDevice.CreateConstantBufferView(cbvDescription, constantBuffer.NativeCpuDescriptorHandle);
+            constantBuffer.Map(0);
+
+            return constantBuffer;
         }
 
         public (CpuDescriptorHandle, GpuDescriptorHandle) CreateDepthStencilView()

@@ -43,15 +43,8 @@ namespace DX12TestApp
 
         public void Run()
         {
-            try
-            {
-                game = new MyGame(new GameContextCoreWindow(isHolographic: false));
-                game.Run();
-            }
-            catch (Exception)
-            {
-                System.Diagnostics.Debugger.Break();
-            }
+            game = new MyGame(new GameContextCoreWindow(isHolographic: false));
+            game.Run();
         }
 
         public void Uninitialize()
