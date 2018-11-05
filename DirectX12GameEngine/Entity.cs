@@ -23,7 +23,7 @@ namespace DirectX12GameEngine
 
             Name = name ?? nameof(Entity) + Id;
             this.transform = transform ?? new TransformComponent();
-            Transform = this.transform;
+            Add(this.transform);
         }
 
         public ObservableCollection<EntityComponent> Components => this;
@@ -39,9 +39,15 @@ namespace DirectX12GameEngine
             get => transform;
             set
             {
+                if (transform == value) return;
+
                 Remove(transform);
                 transform = value;
-                Add(transform);
+
+                if (!Contains(transform))
+                {
+                    Add(transform);
+                }
             }
         }
 
@@ -77,19 +83,17 @@ namespace DirectX12GameEngine
 
         private void AddInternal(EntityComponent entityComponent)
         {
-            if (entityComponent is TransformComponent transformComponent && transformComponent != transform)
+            if (entityComponent is TransformComponent transformComponent)
             {
                 Transform = transformComponent;
             }
-            else
-            {
-                if (entityComponent!.Entity != null)
-                {
-                    throw new InvalidOperationException("An entity component can't be set on more than one entity.");
-                }
 
-                entityComponent!.Entity = this;
+            if (entityComponent!.Entity != null)
+            {
+                throw new InvalidOperationException("An entity component cannot be set on more than one entity.");
             }
+
+            entityComponent!.Entity = this;
         }
 
         private void RemoveInternal(EntityComponent entityComponent)

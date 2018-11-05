@@ -26,6 +26,8 @@ namespace DirectX12GameEngine
 
         public IServiceProvider Services { get; }
 
+        public int Order { get; protected set; }
+
         protected ContentManager Content { get; }
 
         protected GraphicsDevice GraphicsDevice { get; }

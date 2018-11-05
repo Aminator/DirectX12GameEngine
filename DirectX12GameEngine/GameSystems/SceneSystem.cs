@@ -18,7 +18,7 @@ namespace DirectX12GameEngine
         {
         }
 
-        public HashSet<EntitySystem> EntitySystems { get; } = new HashSet<EntitySystem>();
+        public List<EntitySystem> EntitySystems { get; } = new List<EntitySystem>();
 
         public CameraComponent? CurrentCamera { get; set; }
 
@@ -125,8 +125,7 @@ namespace DirectX12GameEngine
         {
             if (!componentTypes.Add(componentType)) return;
 
-            IEnumerable<DefaultEntitySystemAttribute> entitySystemAttributes =
-                componentType.GetCustomAttributes<DefaultEntitySystemAttribute>();
+            var entitySystemAttributes = componentType.GetCustomAttributes<DefaultEntitySystemAttribute>();
 
             foreach (DefaultEntitySystemAttribute entitySystemAttribute in entitySystemAttributes)
             {
@@ -145,6 +144,8 @@ namespace DirectX12GameEngine
                 {
                     EntitySystem entitySystem = (EntitySystem)Activator.CreateInstance(entitySystemAttribute.Type, Services);
                     EntitySystems.Add(entitySystem);
+
+                    EntitySystems.Sort(EntitySystemComparer.Default);
 
                     foreach (Type additionalType in entitySystem.RequiredTypes)
                     {
@@ -226,6 +227,16 @@ namespace DirectX12GameEngine
                         Remove(entityComponent);
                     }
                     break;
+            }
+        }
+
+        private class EntitySystemComparer : Comparer<EntitySystem>
+        {
+            public static new EntitySystemComparer Default { get; } = new EntitySystemComparer();
+
+            public override int Compare(EntitySystem x, EntitySystem y)
+            {
+                return x.Order.CompareTo(y.Order);
             }
         }
     }
