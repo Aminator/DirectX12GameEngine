@@ -26,7 +26,7 @@ namespace DirectX12GameEngine
                 cameraComponent.ViewMatrix = Matrix4x4.CreateLookAt(translation, translation + forwardVector, upVector);
 
                 cameraComponent.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(
-                    cameraComponent.FieldOfView * (MathF.PI / 180.0f),
+                    cameraComponent.FieldOfView * ((float)Math.PI / 180.0f),
                     GraphicsDevice.Presenter.Viewport.Width / GraphicsDevice.Presenter.Viewport.Height,
                     cameraComponent.NearPlaneDistance,
                     cameraComponent.FarPlaneDistance);

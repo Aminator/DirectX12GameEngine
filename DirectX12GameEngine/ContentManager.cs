@@ -113,7 +113,7 @@ namespace DirectX12GameEngine
         {
             using (StreamReader streamReader = new StreamReader(filePath))
             {
-                XElement root = await XElement.LoadAsync(streamReader.BaseStream, LoadOptions.None, new CancellationToken());
+                XElement root = XElement.Load(streamReader.BaseStream, LoadOptions.None);
                 return await GetParsedElementAsync(root);
             }
         }

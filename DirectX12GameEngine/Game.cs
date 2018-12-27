@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-[module: System.Runtime.CompilerServices.NonNullTypes]
 namespace DirectX12GameEngine
 {
     public class Game : IDisposable

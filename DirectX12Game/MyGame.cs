@@ -1,6 +1,5 @@
 ﻿using DirectX12GameEngine;
 
-[module: System.Runtime.CompilerServices.NonNullTypes]
 namespace DirectX12Game
 {
     public sealed class MyGame : Game

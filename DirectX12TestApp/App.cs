@@ -1,5 +1,4 @@
-﻿using System;
-using DirectX12Game;
+﻿using DirectX12Game;
 using DirectX12GameEngine;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -8,7 +7,6 @@ using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 
-[module: System.Runtime.CompilerServices.NonNullTypes]
 namespace DX12TestApp
 {
     public sealed class App : IFrameworkViewSource, IFrameworkView
@@ -38,7 +36,6 @@ namespace DX12TestApp
 
         public void Load(string entryPoint)
         {
-            Uri uri = new Uri("https://www.google.com/");
         }
 
         public void Run()
