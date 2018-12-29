@@ -346,7 +346,7 @@ namespace DirectX12GameEngine
                             throw new ArgumentException("This format is not supported.");
                     }
 
-                    Texture texture = GraphicsDevice.CreateTexture2D(imageBuffer.AsSpan(), pixelFormat, (int)decoder.PixelWidth, (int)decoder.PixelHeight);
+                    Texture texture = Texture.CreateTexture2D(GraphicsDevice, imageBuffer.AsSpan(), pixelFormat, (int)decoder.PixelWidth, (int)decoder.PixelHeight);
 
                     Material mat = new Material(texturePipelineState);
                     mat.Textures.Add(texture);
@@ -421,7 +421,7 @@ namespace DirectX12GameEngine
 
                     Span<byte> currentBuffer = buffers[bufferView.Buffer].AsSpan(offset, stride * accessor.Count);
 
-                    indexBufferView = GraphicsDevice.CreateIndexBufferView(currentBuffer, format, out Texture indexBuffer);
+                    indexBufferView = Texture.CreateIndexBufferView(GraphicsDevice, currentBuffer, format, out Texture indexBuffer);
                     indexBuffer.DisposeBy(GraphicsDevice);
                 }
 
@@ -485,7 +485,7 @@ namespace DirectX12GameEngine
 
             Span<byte> currentBuffer = buffers[bufferView.Buffer].AsSpan(offset, stride * accessor.Count);
 
-            VertexBufferView vertexBufferView = GraphicsDevice.CreateVertexBufferView(currentBuffer, out Texture vertexBuffer, stride);
+            VertexBufferView vertexBufferView = Texture.CreateVertexBufferView(GraphicsDevice, currentBuffer, out Texture vertexBuffer, stride);
             vertexBuffer.DisposeBy(GraphicsDevice);
 
             return vertexBufferView;

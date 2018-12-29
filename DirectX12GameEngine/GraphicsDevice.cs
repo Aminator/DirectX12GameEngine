@@ -18,8 +18,6 @@ namespace DirectX12GameEngine
         internal const int ConstantBufferDataPlacementAlignment = 256;
 
         private static readonly Guid ID3D11Resource = new Guid("DC8E63F3-D12B-4952-B47B-5E45026A862D");
-
-        private readonly Queue<CommandList> copyCommandLists = new Queue<CommandList>();
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
 
         public GraphicsDevice(FeatureLevel minFeatureLevel)
@@ -83,6 +81,8 @@ namespace DirectX12GameEngine
 
         internal CommandQueue NativeCopyCommandQueue { get; }
 
+        internal Queue<CommandList> CopyCommandLists { get; } = new Queue<CommandList>();
+
         internal Device NativeDevice { get; }
 
         internal SharpDX.Direct3D11.Device NativeDirect3D11Device { get; }
@@ -125,55 +125,6 @@ namespace DirectX12GameEngine
             }
         }
 
-        public unsafe Texture CreateBuffer<T>(Span<T> data, DescriptorHeapType? descriptorHeapType = null) where T : unmanaged
-        {
-            int bufferSize = data.Length * sizeof(T);
-
-            Texture buffer = Texture.NewBuffer(this, bufferSize, descriptorHeapType, ResourceStates.CopyDestination, heapType: HeapType.Default);
-            Texture uploadBuffer = Texture.New(this, new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), buffer.NativeResource.Description);
-
-            IntPtr uploadPointer = uploadBuffer.Map(0);
-            Utilities.Write(uploadPointer, data.ToArray(), 0, data.Length);
-            uploadBuffer.Unmap(0);
-
-            CommandList copyCommandList = GetOrCreateCopyCommandList();
-
-            copyCommandList.CopyResource(buffer, uploadBuffer);
-            copyCommandList.Flush();
-
-            copyCommandLists.Enqueue(copyCommandList);
-
-            return buffer;
-        }
-
-        public IndexBufferView CreateIndexBufferView(Texture indexBuffer, Format format, int size)
-        {
-            switch (format)
-            {
-                case Format.R16_UInt:
-                case Format.R32_UInt:
-                    break;
-                default:
-                    throw new ArgumentException("Index buffer type must be ushort or uint");
-            }
-
-            return new IndexBufferView
-            {
-                BufferLocation = indexBuffer.NativeResource.GPUVirtualAddress,
-                Format = format,
-                SizeInBytes = size
-            };
-        }
-
-        public IndexBufferView CreateIndexBufferView<T>(Span<T> indices, Format format, out Texture indexBuffer) where T : unmanaged
-        {
-            indexBuffer = CreateBuffer(indices);
-
-            int indexBufferSize = indexBuffer.Width * indexBuffer.Height;
-
-            return CreateIndexBufferView(indexBuffer, format, indexBufferSize);
-        }
-
         public RootSignature CreateRootSignature(RootSignatureDescription rootSignatureDescription)
         {
             return NativeDevice.CreateRootSignature(rootSignatureDescription.Serialize());
@@ -182,74 +133,6 @@ namespace DirectX12GameEngine
         public RootSignature CreateRootSignature(byte[] bytecode)
         {
             return NativeDevice.CreateRootSignature(bytecode);
-        }
-
-        public unsafe Texture CreateTexture2D<T>(Span<T> data, Format format, int width, int height) where T : unmanaged
-        {
-            int texturePixelSize;
-
-            switch (format)
-            {
-                case Format.R8G8B8A8_UNorm:
-                case Format.B8G8R8A8_UNorm:
-                    texturePixelSize = 4;
-                    break;
-                default:
-                    throw new ArgumentException("This format is not supported.");
-            }
-
-            Texture texture = Texture.New2D(this, format, width, height, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, ResourceStates.CopyDestination);
-            Texture textureUploadBuffer = Texture.New(this, new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), texture.NativeResource.Description);
-
-            fixed (T* ptr = data)
-            {
-                textureUploadBuffer.NativeResource.WriteToSubresource(0, null, (IntPtr)ptr, texturePixelSize * width, data.Length * sizeof(T));
-            }
-
-            ShaderResourceViewDescription srvDescription = new ShaderResourceViewDescription
-            {
-                Shader4ComponentMapping = D3DXUtilities.DefaultComponentMapping(),
-                Format = format,
-                Dimension = SharpDX.Direct3D12.ShaderResourceViewDimension.Texture2D,
-                Texture2D = { MipLevels = 1 },
-            };
-
-            NativeDevice.CreateShaderResourceView(texture.NativeResource, srvDescription, texture.NativeCpuDescriptorHandle);
-
-            CommandList copyCommandList = GetOrCreateCopyCommandList();
-
-            copyCommandList.CopyResource(texture, textureUploadBuffer);
-            copyCommandList.Flush();
-
-            copyCommandLists.Enqueue(copyCommandList);
-
-            return texture;
-        }
-
-        public VertexBufferView CreateVertexBufferView(Texture vertexBuffer, int size, int stride)
-        {
-            return new VertexBufferView
-            {
-                BufferLocation = vertexBuffer.NativeResource.GPUVirtualAddress,
-                StrideInBytes = stride,
-                SizeInBytes = size
-            };
-        }
-
-        public unsafe VertexBufferView CreateVertexBufferView<T>(Texture vertexBuffer, int size) where T : unmanaged
-        {
-            return CreateVertexBufferView(vertexBuffer, size, sizeof(T));
-        }
-
-        public VertexBufferView CreateVertexBufferView<T>(Span<T> vertices, out Texture vertexBuffer, int? stride = null) where T : unmanaged
-        {
-            vertexBuffer = CreateBuffer(vertices);
-
-            int vertexBufferSize = vertexBuffer.Width * vertexBuffer.Height;
-
-            return stride.HasValue
-                ? CreateVertexBufferView(vertexBuffer, vertexBufferSize, stride.Value)
-                : CreateVertexBufferView<T>(vertexBuffer, vertexBufferSize);
         }
 
         public void Dispose()
@@ -268,7 +151,7 @@ namespace DirectX12GameEngine
             ShaderResourceViewAllocator.Dispose();
             RenderTargetViewAllocator.Dispose();
 
-            foreach (CommandList commandList in copyCommandLists)
+            foreach (CommandList commandList in CopyCommandLists)
             {
                 commandList.Dispose();
             }
@@ -384,6 +267,26 @@ namespace DirectX12GameEngine
             return new Surface(surface);
         }
 
+        internal CommandList GetOrCreateCopyCommandList()
+        {
+            CommandList commandList;
+
+            lock (CopyCommandLists)
+            {
+                if (CopyCommandLists.Count > 0)
+                {
+                    commandList = CopyCommandLists.Dequeue();
+                    commandList.Reset();
+                }
+                else
+                {
+                    commandList = new CommandList(this, CommandListType.Copy);
+                }
+            }
+
+            return commandList;
+        }
+
         internal bool IsFenceComplete(Fence fence, long fenceValue)
         {
             return fenceValue <= fence.CompletedValue;
@@ -407,59 +310,6 @@ namespace DirectX12GameEngine
         [DllImport("d3d11.dll", EntryPoint = "CreateDirect3D11SurfaceFromDXGISurface",
             SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
         private static extern Result CreateDirect3D11SurfaceFromDXGISurface(IntPtr dxgiSurface, out IntPtr graphicsSurface);
-
-        private CommandList GetOrCreateCopyCommandList()
-        {
-            CommandList commandList;
-
-            lock (copyCommandLists)
-            {
-                if (copyCommandLists.Count > 0)
-                {
-                    commandList = copyCommandLists.Dequeue();
-                    commandList.Reset();
-                }
-                else
-                {
-                    commandList = new CommandList(this, CommandListType.Copy);
-                }
-            }
-
-            return commandList;
-        }
-
-        //public Texture CreateBuffer<T>(T[] data, int offset = 0, int? length = null, DescriptorHeapType? descriptorHeapType = null) where T : struct
-        //{
-        //    return CreateBuffer(data.AsSpan(offset, length ?? data.Length), descriptorHeapType);
-        //}
-
-        //public IntPtr CreateConstantBufferView<T>(T[] data, out Texture constantBuffer, int offset = 0, int? length = null) where T : struct
-        //{
-        //    return CreateConstantBufferView(data.AsSpan(offset, length ?? data.Length), out constantBuffer);
-        //}
-
-        //public IndexBufferView CreateIndexBufferView<T>(T[] indices, Format format, out Texture indexBuffer, int offset = 0, int? length = null) where T : struct
-        //{
-        //    return CreateIndexBufferView(indices.AsSpan(offset, length ?? indices.Length), format, out indexBuffer);
-        //}
-
-        //public VertexBufferView CreateVertexBufferView<T>(T[] vertices, out Texture vertexBuffer, int offset = 0, int? length = null, int? stride = null) where T : struct
-        //{
-        //    return CreateVertexBufferView(vertices.AsSpan(offset, length ?? vertices.Length), out vertexBuffer, stride);
-        //}
-
-        //public unsafe Texture CreateBuffer<T>(Span<T> data, DescriptorHeapType? descriptorHeapType = null) where T : unmanaged
-        //{
-        //    int bufferSize = data.Length * sizeof(T);
-
-        //    Texture buffer = Texture.NewBuffer(this, bufferSize, descriptorHeapType);
-
-        //    IntPtr vertexBufferPointer = buffer.Map(0);
-        //    Utilities.Write(vertexBufferPointer, data.ToArray(), 0, data.Length);
-        //    buffer.Unmap(0);
-
-        //    return buffer;
-        //}
     }
 
     internal class D3DXUtilities
