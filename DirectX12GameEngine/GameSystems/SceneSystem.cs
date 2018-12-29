@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -11,6 +10,7 @@ namespace DirectX12GameEngine
     {
         private readonly HashSet<Type> componentTypes = new HashSet<Type>();
         private readonly HashSet<Entity> entities = new HashSet<Entity>();
+        private readonly Dictionary<Type, List<EntitySystem>> systemsPerComponentType = new Dictionary<Type, List<EntitySystem>>();
 
         private Scene? rootScene;
 
@@ -107,17 +107,73 @@ namespace DirectX12GameEngine
 
         private void Add(EntityComponent entityComponent)
         {
+            CheckEntityComponentWithSystems(entityComponent, false);
+        }
+
+        private void Remove(Scene scene)
+        {
+            scene.CollectionChanged -= Entities_CollectionChanged;
+
+            foreach (Entity entity in scene)
+            {
+                Remove(entity);
+            }
+        }
+
+        private void Remove(Entity entity)
+        {
+            if (!entities.Remove(entity)) return;
+
+            entity.CollectionChanged -= Components_CollectionChanged;
+
+            foreach (EntityComponent entityComponent in entity)
+            {
+                Remove(entityComponent);
+            }
+        }
+
+        private void Remove(EntityComponent entityComponent)
+        {
+            CheckEntityComponentWithSystems(entityComponent, true);
+        }
+
+        private void CheckEntityComponentWithSystems(EntityComponent entityComponent, bool forceRemove)
+        {
+            if (entityComponent.Entity is null) throw new ArgumentException("The entity component must be attached to an entity.", nameof(entityComponent));
+
             lock (EntitySystems)
             {
                 Type componentType = entityComponent.GetType();
-                CollectNewEntitySystems(componentType);
 
-                var entitySystems = EntitySystems.Where(e => e.MainType == componentType);
-
-                foreach (EntitySystem entitySystem in entitySystems)
+                if (!forceRemove)
                 {
-                    entitySystem.ProcessEntityComponent(entityComponent, false);
+                    CollectNewEntitySystems(componentType);
                 }
+
+                if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))
+                {
+                    foreach (EntitySystem entitySystem in systemsForComponent)
+                    {
+                        entitySystem.ProcessEntityComponent(entityComponent, forceRemove);
+                    }
+                }
+                else
+                {
+                    systemsForComponent = new List<EntitySystem>();
+
+                    foreach (EntitySystem entitySystem in EntitySystems)
+                    {
+                        if (entitySystem.Accept(componentType))
+                        {
+                            systemsForComponent.Add(entitySystem);
+                            entitySystem.ProcessEntityComponent(entityComponent, forceRemove);
+                        }
+                    }
+
+                    systemsPerComponentType.Add(componentType, systemsForComponent);
+                }
+
+                UpdateDependentSystems(entityComponent.Entity);
             }
         }
 
@@ -155,39 +211,18 @@ namespace DirectX12GameEngine
             }
         }
 
-        private void Remove(Scene scene)
+        private void UpdateDependentSystems(Entity entity)
         {
-            scene.CollectionChanged -= Entities_CollectionChanged;
-
-            foreach (Entity entity in scene)
-            {
-                Remove(entity);
-            }
-        }
-
-        private void Remove(Entity entity)
-        {
-            if (!entities.Remove(entity)) return;
-
-            entity.CollectionChanged -= Components_CollectionChanged;
-
-            foreach (EntityComponent entityComponent in entity)
-            {
-                Remove(entityComponent);
-            }
-        }
-
-        private void Remove(EntityComponent entityComponent)
-        {
-            lock (EntitySystems)
+            foreach (EntityComponent entityComponent in entity.Components)
             {
                 Type componentType = entityComponent.GetType();
 
-                var entitySystems = EntitySystems.Where(e => e.MainType == componentType);
-
-                foreach (EntitySystem entitySystem in entitySystems)
+                if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))
                 {
-                    entitySystem.ProcessEntityComponent(entityComponent, true);
+                    foreach (EntitySystem entitySystem in systemsForComponent)
+                    {
+                        entitySystem.ProcessEntityComponent(entityComponent, false);
+                    }
                 }
             }
         }

@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine
@@ -44,7 +44,12 @@ namespace DirectX12GameEngine
         {
         }
 
-        protected internal abstract void ProcessEntityComponent(EntityComponent entityComponent, bool remove);
+        internal bool Accept(Type type)
+        {
+            return MainType.IsAssignableFrom(type);
+        }
+
+        protected internal abstract void ProcessEntityComponent(EntityComponent entityComponent, bool forceRemove);
     }
 
     public abstract class EntitySystem<TComponent> : EntitySystem where TComponent : EntityComponent
@@ -56,29 +61,38 @@ namespace DirectX12GameEngine
 
         public ObservableCollection<TComponent> Components { get; } = new ObservableCollection<TComponent>();
 
-        protected internal override void ProcessEntityComponent(EntityComponent entityComponent, bool remove)
+        protected internal override void ProcessEntityComponent(EntityComponent entityComponent, bool forceRemove)
         {
-            if (entityComponent.GetType() == typeof(TComponent))
+            if (entityComponent.Entity is null) throw new ArgumentException("The entity component must be attached to an entity.", nameof(entityComponent));
+            if (!(entityComponent is TComponent component)) throw new ArgumentException("The entity component must be assignable to TComponent", nameof(entityComponent));
+
+            bool entityMatch = !forceRemove && EntityMatch(entityComponent.Entity);
+            bool entityAdded = Components.Contains(component);
+
+            if (entityMatch && !entityAdded)
             {
-                Entity entity = entityComponent.Entity ?? throw new ArgumentException("The entity component  must be attached to an entity.");
-
-                foreach (Type type in RequiredTypes)
-                {
-                    if (entity.Where(c => c.GetType() == type).Count() == 0)
-                    {
-                        return;
-                    }
-                }
-
-                if (remove)
-                {
-                    Components.Remove((TComponent)entityComponent);
-                }
-                else
-                {
-                    Components.Add((TComponent)entityComponent);
-                }
+                Components.Add(component);
             }
+            else if (!entityMatch && entityAdded)
+            {
+                Components.Remove(component);
+            }
+        }
+
+        private bool EntityMatch(Entity entity)
+        {
+            if (RequiredTypes.Length == 0) return true;
+
+            List<Type> remainingRequiredTypes = new List<Type>(RequiredTypes);
+
+            foreach (EntityComponent component in entity.Components)
+            {
+                remainingRequiredTypes.RemoveAll(t => t.IsAssignableFrom(component.GetType()));
+
+                if (remainingRequiredTypes.Count == 0) return true;
+            }
+
+            return false;
         }
     }
 }
