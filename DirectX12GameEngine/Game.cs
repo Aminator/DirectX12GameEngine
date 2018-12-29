@@ -16,14 +16,15 @@ namespace DirectX12GameEngine
             PresentationParameters presentationParameters = new PresentationParameters(
                 gameContext.RequestedWidth, gameContext.RequestedHeight, gameContext);
 
-            if (GameContext is GameContextCoreWindow context && context.IsHolographic)
+            switch (GameContext)
             {
-                presentationParameters.Stereo = true;
-                GraphicsDevice.Presenter = new HolographicGraphicsPresenter(GraphicsDevice, presentationParameters);
-            }
-            else
-            {
-                GraphicsDevice.Presenter = new SwapChainGraphicsPresenter(GraphicsDevice, presentationParameters);
+                case GameContextHolographic context:
+                    presentationParameters.Stereo = true;
+                    GraphicsDevice.Presenter = new HolographicGraphicsPresenter(GraphicsDevice, presentationParameters);
+                    break;
+                default:
+                    GraphicsDevice.Presenter = new SwapChainGraphicsPresenter(GraphicsDevice, presentationParameters);
+                    break;
             }
 
             GraphicsDevice.Presenter.ResizeViewport(

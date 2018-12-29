@@ -7,6 +7,8 @@ using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 
+#nullable enable
+
 namespace DX12TestApp
 {
     public sealed class App : IFrameworkViewSource, IFrameworkView
@@ -40,7 +42,7 @@ namespace DX12TestApp
 
         public void Run()
         {
-            game = new MyGame(new GameContextCoreWindow(isHolographic: false));
+            game = new MyGame(new GameContextCoreWindow());
             game.Run();
         }
 

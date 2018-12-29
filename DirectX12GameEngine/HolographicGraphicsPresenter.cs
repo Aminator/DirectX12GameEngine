@@ -28,7 +28,7 @@ namespace DirectX12GameEngine
 
             switch (PresentationParameters.GameContext)
             {
-                case GameContextCoreWindow context:
+                case GameContextHolographic context:
                     CoreWindow coreWindow = context.Control;
                     coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs((int)e.Size.Width, (int)e.Size.Height));
 
@@ -36,7 +36,7 @@ namespace DirectX12GameEngine
                     {
                         IDirect3DDevice d3DInteropDevice = GraphicsDevice.CreateDirect3DDevice(dxgiDevice);
 
-                        HolographicSpace = HolographicSpace.CreateForCoreWindow(coreWindow);
+                        HolographicSpace = context.HolographicSpace;
                         HolographicSpace.SetDirect3D11Device(d3DInteropDevice);
                     }
 

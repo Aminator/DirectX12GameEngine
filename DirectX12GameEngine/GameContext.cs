@@ -1,4 +1,5 @@
 ﻿using Windows.Graphics.Display;
+using Windows.Graphics.Holographic;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
 
@@ -33,7 +34,7 @@ namespace DirectX12GameEngine
 
     public class GameContextCoreWindow : GameContext<CoreWindow>
     {
-        public GameContextCoreWindow(CoreWindow? control = null, int requestedWidth = 0, int requestedHeight = 0, bool isHolographic = false)
+        public GameContextCoreWindow(CoreWindow? control = null, int requestedWidth = 0, int requestedHeight = 0)
             : base(control ?? CoreWindow.GetForCurrentThread(), requestedWidth, requestedHeight)
         {
             ContextType = AppContextType.CoreWindow;
@@ -45,11 +46,18 @@ namespace DirectX12GameEngine
                 RequestedWidth = (int)(Control.Bounds.Width * resolutionScale);
                 RequestedHeight = (int)(Control.Bounds.Height * resolutionScale);
             }
+        }
+    }
 
-            IsHolographic = isHolographic;
+    public class GameContextHolographic : GameContextCoreWindow
+    {
+        public GameContextHolographic(HolographicSpace? holographicSpace = null, CoreWindow? control = null, int requestedWidth = 0, int requestedHeight = 0)
+            : base(control, requestedWidth, requestedHeight)
+        {
+            HolographicSpace = holographicSpace ?? HolographicSpace.CreateForCoreWindow(Control);
         }
 
-        internal bool IsHolographic { get; }
+        public HolographicSpace HolographicSpace { get; }
     }
 
     public class GameContextXaml : GameContext<SwapChainPanel>
