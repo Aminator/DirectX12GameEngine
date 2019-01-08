@@ -156,6 +156,11 @@ namespace DirectX12GameEngine
             currentCommandList.NativeCommandList.SetDescriptorHeaps(descriptorHeaps);
         }
 
+        public void SetGraphicsRoot32BitConstant(int rootParameterIndex, int srcData, int destOffsetIn32BitValues)
+        {
+            currentCommandList.NativeCommandList.SetGraphicsRoot32BitConstant(rootParameterIndex, srcData, destOffsetIn32BitValues);
+        }
+
         public void SetGraphicsRootDescriptorTable(int rootParameterIndex, GpuDescriptorHandle baseDescriptor)
         {
             currentCommandList.NativeCommandList.SetGraphicsRootDescriptorTable(rootParameterIndex, baseDescriptor);

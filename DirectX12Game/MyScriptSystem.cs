@@ -72,7 +72,7 @@ namespace DirectX12Game
                         }
                     }
 
-                    Entity cliffhouse = scene.FirstOrDefault(m => m.Name == "cliffhouse");
+                    Entity cliffhouse = scene.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
                         cliffhouse.Transform.Position = new Vector3(1000.0f, 0.0f, 0.0f);

@@ -101,38 +101,20 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <Content Include="cliffhouse.glb" />
     <None Include="DirectX12TestApp_TemporaryKey.pfx" />
-    <Content Include="HoloTile.glb" />
-    <Content Include="Icon_Failure.glb" />
-    <Content Include="LiveCube.glb" />
-    <Content Include="RightHandModel.glb" />
-    <Content Include="T-Rex.glb" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ColorShader.hlsl" />
-    <Content Include="ModelShader.hlsl" />
-    <Content Include="MyScriptEntity1.xml" />
-    <Content Include="MyVideo1.xml" />
     <Content Include="Properties\Default.rd.xml" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <Content Include="Scene1.xml" />
-    <Content Include="VertexShaderCommon.hlsl" />
+    <Content Include="Assets\**" />
+    <Content Include="..\DirectX12Game\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\DirectX12GameEngine\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.2</Version>
-    </PackageReference>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine\DirectX12GameEngine.csproj">
-      <Project>{74d32730-d25c-4d53-ba1b-b767038d46f8}</Project>
+      <Project>{74D32730-D25C-4D53-BA1B-B767038D46F8}</Project>
       <Name>DirectX12GameEngine</Name>
     </ProjectReference>
     <ProjectReference Include="..\DirectX12Game\DirectX12Game.csproj">

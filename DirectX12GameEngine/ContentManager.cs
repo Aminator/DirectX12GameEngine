@@ -7,7 +7,6 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using GltfLoader;
@@ -29,7 +28,7 @@ namespace DirectX12GameEngine
         {
             GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
 
-            GraphicsDevice.CompileShaders("ColorShader.hlsl", out SharpDX.D3DCompiler.ShaderBytecode colorVertexShader, out SharpDX.D3DCompiler.ShaderBytecode colorPixelShader);
+            GraphicsDevice.CompileShaders(Path.Combine("Assets", "Shaders", "ColorShader.hlsl"), out SharpDX.D3DCompiler.ShaderBytecode colorVertexShader, out SharpDX.D3DCompiler.ShaderBytecode colorPixelShader);
 
             InputElement[] colorInputElements = new[]
             {
@@ -39,7 +38,7 @@ namespace DirectX12GameEngine
 
             colorPipelineState = new GraphicsPipelineState(GraphicsDevice, colorVertexShader, colorPixelShader, colorInputElements);
 
-            GraphicsDevice.CompileShaders("ModelShader.hlsl", out SharpDX.D3DCompiler.ShaderBytecode textureVertexShader, out SharpDX.D3DCompiler.ShaderBytecode texturePixelShader);
+            GraphicsDevice.CompileShaders(Path.Combine("Assets", "Shaders", "ModelShader.hlsl"), out SharpDX.D3DCompiler.ShaderBytecode textureVertexShader, out SharpDX.D3DCompiler.ShaderBytecode texturePixelShader);
 
             InputElement[] textureInputElements = new[]
             {
@@ -432,7 +431,7 @@ namespace DirectX12GameEngine
                     materialIndex = mesh.Primitives[0].Material.Value;
                 }
 
-                Node node = gltf.Nodes.Where(n => n.Mesh == i).First();
+                Node node = gltf.Nodes.First(n => n.Mesh == i);
                 float[] matrix = node.Matrix;
 
                 Matrix4x4 worldMatrix = Matrix4x4.Transpose(new Matrix4x4(
@@ -490,68 +489,5 @@ namespace DirectX12GameEngine
 
             return vertexBufferView;
         }
-
-        //private byte[] GenerateTextureData()
-        //{
-        //    int rowPitch = 256 * 4;
-        //    int cellPitch = rowPitch >> 3;       // The width of a cell in the checkboard texture.
-        //    int cellHeight = 256 >> 3;  // The height of a cell in the checkerboard texture.
-        //    int textureSize = rowPitch * 256;
-
-        //    byte[] data = new byte[textureSize];
-
-        //    for (int n = 0; n < textureSize; n += 4)
-        //    {
-        //        int x = n % rowPitch;
-        //        int y = n / rowPitch;
-        //        int i = x / cellPitch;
-        //        int j = y / cellHeight;
-
-        //        if (i % 2 == j % 2)
-        //        {
-        //            data[n] = 0x00;     // R
-        //            data[n + 1] = 0x00; // G
-        //            data[n + 2] = 0x00; // B
-        //            data[n + 3] = 0xff; // A
-        //        }
-        //        else
-        //        {
-        //            data[n] = 0xff;     // R
-        //            data[n + 1] = 0xff; // G
-        //            data[n + 2] = 0xff; // B
-        //            data[n + 3] = 0xff; // A
-        //        }
-        //    }
-
-        //    return data;
-        //}
-
-        //if (element.HasElements && entity is IList componentList)
-        //{
-        //    foreach (XElement child in element.Elements())
-        //    {
-        //        string typeName = child.Name.NamespaceName + "." + child.Name.LocalName;
-        //        Type type = LoadedTypes.Single(t => t.FullName == typeName);
-
-        //        componentList.Add(await ParseElementAsync(child));
-
-        //        //if (type.IsSubclassOf(typeof(EntityComponent)))
-        //        //{
-        //        //    EntityComponent entityComponent = (EntityComponent)await ParseElementAsync(child);
-
-        //        //    if (entityComponent is TransformComponent transformComponent)
-        //        //    {
-        //        //        entity.Transform.WorldMatrix = transformComponent.WorldMatrix;
-        //        //    }
-        //        //    else if (entityComponent != null)
-        //        //    {
-        //        //        entity.Add(entityComponent);
-        //        //    }
-        //        //}
-        //        //else if (type == typeof(Entity))
-        //        //{
-        //        //}
-        //    }
-        //}
     }
 }

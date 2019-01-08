@@ -19,7 +19,7 @@ namespace DirectX12GameEngine
             switch (GameContext)
             {
                 case GameContextHolographic context:
-                    presentationParameters.Stereo = true;
+                    presentationParameters.Stereo = Windows.Graphics.Holographic.HolographicDisplay.GetDefault().IsStereo;
                     GraphicsDevice.Presenter = new HolographicGraphicsPresenter(GraphicsDevice, presentationParameters);
                     break;
                 default:

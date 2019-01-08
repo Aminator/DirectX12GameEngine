@@ -1,24 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <NullableReferenceTypes>true</NullableReferenceTypes>
   </PropertyGroup>
-  
+
+  <ItemGroup>
+    <Content Include="Assets\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\DirectX12GameEngine\DirectX12GameEngine.csproj" />
+    <ProjectReference Include="..\DirectX12GameEngine\DirectX12GameEngine.csproj">
+      <PrivateAssets>none</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
-  
+
   <ItemGroup>
     <Reference Include="Windows">
       <HintPath>..\Libs\Windows.winmd</HintPath>
       <IsWinMDFile>true</IsWinMDFile>
     </Reference>
   </ItemGroup>
-  
+
 </Project>

@@ -8,7 +8,6 @@ namespace DirectX12GameEngine
 {
     public sealed class SceneSystem : GameSystem
     {
-        private readonly HashSet<Type> componentTypes = new HashSet<Type>();
         private readonly HashSet<Entity> entities = new HashSet<Entity>();
         private readonly Dictionary<Type, List<EntitySystem>> systemsPerComponentType = new Dictionary<Type, List<EntitySystem>>();
 
@@ -145,11 +144,6 @@ namespace DirectX12GameEngine
             {
                 Type componentType = entityComponent.GetType();
 
-                if (!forceRemove)
-                {
-                    CollectNewEntitySystems(componentType);
-                }
-
                 if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))
                 {
                     foreach (EntitySystem entitySystem in systemsForComponent)
@@ -159,6 +153,11 @@ namespace DirectX12GameEngine
                 }
                 else
                 {
+                    if (!forceRemove)
+                    {
+                        CollectNewEntitySystems(componentType);
+                    }
+
                     systemsForComponent = new List<EntitySystem>();
 
                     foreach (EntitySystem entitySystem in EntitySystems)
@@ -179,8 +178,6 @@ namespace DirectX12GameEngine
 
         private void CollectNewEntitySystems(Type componentType)
         {
-            if (!componentTypes.Add(componentType)) return;
-
             var entitySystemAttributes = componentType.GetCustomAttributes<DefaultEntitySystemAttribute>();
 
             foreach (DefaultEntitySystemAttribute entitySystemAttribute in entitySystemAttributes)
@@ -202,11 +199,6 @@ namespace DirectX12GameEngine
                     EntitySystems.Add(entitySystem);
 
                     EntitySystems.Sort(EntitySystemComparer.Default);
-
-                    foreach (Type additionalType in entitySystem.RequiredTypes)
-                    {
-                        CollectNewEntitySystems(additionalType);
-                    }
                 }
             }
         }

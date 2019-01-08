@@ -1,4 +1,5 @@
 ﻿using DirectX12GameEngine;
+using System.IO;
 
 namespace DirectX12Game
 {
@@ -11,7 +12,7 @@ namespace DirectX12Game
                 GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
             }
 
-            SceneSystem.InitialScenePath = "Scene1.xml";
+            SceneSystem.InitialScenePath = Path.Combine("Assets", "Scenes", "Scene1.xml");
         }
 
         protected override void BeginDraw()

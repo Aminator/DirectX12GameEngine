@@ -10,7 +10,7 @@ namespace DirectX12GameEngine
 {
     public sealed class HolographicGraphicsPresenter : GraphicsPresenter
     {
-        private const int BufferCount = 2;
+        private const int BufferCount = 1;
 
         private Texture renderTarget;
         private SharpDX.Direct3D11.Resource d3D11RenderTarget;
@@ -47,16 +47,16 @@ namespace DirectX12GameEngine
 
                     HolographicFrame = HolographicSpace.CreateNextFrame();
                     HolographicSurface = HolographicFrame.GetRenderingParameters(HolographicFrame.CurrentPrediction.CameraPoses[0]).Direct3D11BackBuffer;
-                    HolographicBackBuffer = UpdateBackBuffer();
+                    HolographicBackBuffer = GetHolographicBackBuffer();
 
                     renderTarget = Texture.New2D(
                         GraphicsDevice,
                         PresentationParameters.BackBufferFormat,
                         PresentationParameters.BackBufferWidth,
-                        presentationParameters.BackBufferHeight,
+                        PresentationParameters.BackBufferHeight,
                         DescriptorHeapType.RenderTargetView,
                         resourceFlags: ResourceFlags.AllowRenderTarget,
-                        arraySize: BufferCount,
+                        arraySize: (short)HolographicBufferCount,
                         mipLevels: 1);
 
                     using (SharpDX.Direct3D11.Device11On12 device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.Direct3D11.Device11On12>())
@@ -70,7 +70,7 @@ namespace DirectX12GameEngine
                             out d3D11RenderTarget);
                     }
 
-                    Resize(PresentationParameters.BackBufferWidth, presentationParameters.BackBufferHeight);
+                    Resize(PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
                     break;
                 default:
                     throw new NotSupportedException("This app context type is not supported while creating a swap chain.");
@@ -82,6 +82,8 @@ namespace DirectX12GameEngine
         public override Texture BackBuffer => renderTarget;
 
         public override object NativePresenter => HolographicSpace;
+
+        internal int HolographicBufferCount => HolographicDisplay.IsStereo ? 2 : 1;
 
         internal HolographicDisplay HolographicDisplay { get; }
 
@@ -98,7 +100,7 @@ namespace DirectX12GameEngine
         public override void BeginDraw(CommandList commandList)
         {
             HolographicFrame = HolographicSpace.CreateNextFrame();
-            HolographicBackBuffer = UpdateBackBuffer();
+            HolographicBackBuffer = GetHolographicBackBuffer();
         }
 
         public override void Dispose()
@@ -120,6 +122,7 @@ namespace DirectX12GameEngine
                 device11On12.ReleaseWrappedResources(new[] { d3D11RenderTarget }, 1);
 
                 renderTarget.Dispose();
+
                 renderTarget = Texture.New2D(
                     GraphicsDevice,
                     PresentationParameters.BackBufferFormat,
@@ -127,12 +130,12 @@ namespace DirectX12GameEngine
                     height,
                     DescriptorHeapType.RenderTargetView,
                     resourceFlags: ResourceFlags.AllowRenderTarget,
-                    arraySize: BufferCount,
+                    arraySize: (short)HolographicBufferCount,
                     mipLevels: 1);
 
                 device11On12.CreateWrappedResource(
                     BackBuffer.NativeResource,
-                    new SharpDX.Direct3D11.D3D11ResourceFlags() { BindFlags = (int)Direct3DBindings.RenderTarget },
+                    new SharpDX.Direct3D11.D3D11ResourceFlags { BindFlags = (int)Direct3DBindings.RenderTarget },
                     (int)ResourceStates.RenderTarget,
                     (int)ResourceStates.Present,
                     Utilities.GetGuidFromType(typeof(SharpDX.Direct3D11.Resource)),
@@ -152,7 +155,7 @@ namespace DirectX12GameEngine
             //PresentationParameters.BackBufferHeight = e.Height;
         }
 
-        private SharpDX.Direct3D11.Texture2D UpdateBackBuffer()
+        private SharpDX.Direct3D11.Texture2D GetHolographicBackBuffer()
         {
             HolographicSurface = HolographicFrame.GetRenderingParameters(HolographicFrame.CurrentPrediction.CameraPoses[0]).Direct3D11BackBuffer;
             SharpDX.Direct3D11.Texture2D d3DBackBuffer = new SharpDX.Direct3D11.Texture2D(GraphicsDevice.CreateDXGISurface(HolographicSurface).NativePointer);
@@ -163,48 +166,5 @@ namespace DirectX12GameEngine
 
             return d3DBackBuffer;
         }
-
-        //private void WriteToHolographicBackBuffer()
-        //{
-        //for (int i = 0; i < BufferCount; i++)
-        //{
-        //copyCommandList.Reset();
-        //copyCommandList.CopyTextureRegion(destLocations[i], srcLocations[i]);
-        //copyCommandList.Flush(true);
-
-        //Direct3D11Device.ImmediateContext.UpdateSubresource(
-        //    new DataBox(
-        //        copyTextures[i].MappedResource,
-        //        copyableFootprints[i].Footprint.RowPitch,
-        //        copyTextures[i].Width),
-        //        HolographicBackBuffer,
-        //        i);
-        //}
-        //}
-
-        //for (int i = 0; i < BufferCount; i++)
-        //{
-        //    copyTextures[i]?.Dispose();
-
-        //    PlacedSubResourceFootprint[] footprints = { new PlacedSubResourceFootprint() };
-        //    var description = renderTarget.NativeResource.Description;
-        //    GraphicsDevice.NativeDevice.GetCopyableFootprints(ref description, i, 1, 0, footprints, null, null, out long totalBytes);
-
-        //    copyTextures[i] = Texture.NewBuffer(GraphicsDevice, (int)totalBytes, resourceStates: ResourceStates.CopyDestination, heapType: HeapType.Readback);
-
-        //    srcLocations[i] = new TextureCopyLocation(renderTarget.NativeResource, i);
-        //    destLocations[i] = new TextureCopyLocation(copyTextures[i].NativeResource, new PlacedSubResourceFootprint
-        //    {
-        //        Footprint = footprints[0].Footprint
-        //    });
-
-        //    copyTextures[i].Map(0);
-        //    copyableFootprints[i] = footprints[0];
-        //}
-
-        //Direct3D11Device = new SharpDX.Direct3D11.Device(
-        //    SharpDX.Direct3D.DriverType.Hardware,
-        //    SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport,
-        //    GraphicsDevice.FeatureLevel);
     }
 }

@@ -15,8 +15,6 @@ namespace DirectX12GameEngine
 {
     public sealed class GraphicsDevice : IDisposable, ICollector
     {
-        internal const int ConstantBufferDataPlacementAlignment = 256;
-
         private static readonly Guid ID3D11Resource = new Guid("DC8E63F3-D12B-4952-B47B-5E45026A862D");
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
 
@@ -107,7 +105,7 @@ namespace DirectX12GameEngine
 #if DEBUG
             shaderFlags |= SharpDX.D3DCompiler.ShaderFlags.Debug | SharpDX.D3DCompiler.ShaderFlags.SkipOptimization;
 #endif
-            string shaderSource = SharpDX.D3DCompiler.ShaderBytecode.PreprocessFromFile(filePath, null, new Includer());
+            string shaderSource = SharpDX.D3DCompiler.ShaderBytecode.PreprocessFromFile(filePath, null, new Includer(filePath));
 
             vertexShader = SharpDX.D3DCompiler.ShaderBytecode.Compile(
                     shaderSource, "VSMain", "vs_5_1", shaderFlags);
@@ -318,15 +316,15 @@ namespace DirectX12GameEngine
 
         public const int ComponentMappingShift = 3;
 
-        public const int ComponentMappingAlwaysSetBitAvoidingZeromemMistakes = (1 << (ComponentMappingShift * 4));
+        public const int ComponentMappingAlwaysSetBitAvoidingZeromemMistakes = 1 << (ComponentMappingShift * 4);
 
         public static int ComponentMapping(int src0, int src1, int src2, int src3)
         {
-            return ((((src0) & ComponentMappingMask)
+            return ((src0) & ComponentMappingMask)
                 | (((src1) & ComponentMappingMask) << ComponentMappingShift)
                 | (((src2) & ComponentMappingMask) << (ComponentMappingShift * 2))
                 | (((src3) & ComponentMappingMask) << (ComponentMappingShift * 3))
-                | ComponentMappingAlwaysSetBitAvoidingZeromemMistakes));
+                | ComponentMappingAlwaysSetBitAvoidingZeromemMistakes;
         }
 
         public static int DefaultComponentMapping()
@@ -336,12 +334,19 @@ namespace DirectX12GameEngine
 
         public static int ComponentMapping(int ComponentToExtract, int Mapping)
         {
-            return ((Mapping >> (ComponentMappingShift * ComponentToExtract) & ComponentMappingMask));
+            return (Mapping >> (ComponentMappingShift * ComponentToExtract)) & ComponentMappingMask;
         }
     }
 
     internal class Includer : SharpDX.D3DCompiler.Include
     {
+        private readonly string sourceFilePath;
+
+        public Includer(string sourceFilePath)
+        {
+            this.sourceFilePath = sourceFilePath;
+        }
+
         public IDisposable? Shadow { get; set; }
 
         public void Close(Stream stream)
@@ -355,7 +360,9 @@ namespace DirectX12GameEngine
 
         public Stream Open(SharpDX.D3DCompiler.IncludeType type, string fileName, Stream parentStream)
         {
-            using (StreamReader streamReader = new StreamReader(fileName))
+            string filePath = Path.Combine(Path.GetDirectoryName(sourceFilePath), fileName);
+
+            using (StreamReader streamReader = new StreamReader(filePath))
             {
                 MemoryStream stream = new MemoryStream();
                 StreamWriter writer = new StreamWriter(stream);

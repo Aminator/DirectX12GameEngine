@@ -16,7 +16,7 @@ namespace DirectX12GameEngine
 
         private readonly Texture[] renderTargets = new Texture[BufferCount];
 
-        private SwapChain3 swapChain;
+        private readonly SwapChain3 swapChain;
 
         public SwapChainGraphicsPresenter(GraphicsDevice device, PresentationParameters presentationParameters)
             : base(device, presentationParameters)

@@ -69,25 +69,25 @@ namespace DirectX12GameEngine
                         models.Add(model, (null, null));
                     }
 
-                    (CompiledCommandList? bundle, Texture[]? constantBuffers) = models[model];
+                    (CompiledCommandList? bundle, Texture[]? worldMatrixBuffers) = models[model];
 
                     int meshCount = model.Meshes.Count;
 
-                    if (constantBuffers is null || constantBuffers.Length != meshCount)
+                    if (worldMatrixBuffers is null || worldMatrixBuffers.Length != meshCount)
                     {
                         bundle?.Builder.Dispose();
                         bundle = null;
 
-                        if (constantBuffers != null)
+                        if (worldMatrixBuffers != null)
                         {
-                            foreach (Texture constantBuffer in constantBuffers) constantBuffer?.Dispose();
+                            foreach (Texture constantBuffer in worldMatrixBuffers) constantBuffer?.Dispose();
                         }
 
-                        constantBuffers = new Texture[meshCount];
+                        worldMatrixBuffers = new Texture[meshCount];
 
                         for (int j = 0; j < meshCount; j++)
                         {
-                            constantBuffers[j] = Texture.CreateConstantBufferView(GraphicsDevice, modelComponents.Count() * 16 * sizeof(float)).DisposeBy(GraphicsDevice);
+                            worldMatrixBuffers[j] = Texture.CreateConstantBufferView(GraphicsDevice, modelComponents.Count() * 16 * sizeof(float));
                         }
                     }
 
@@ -104,7 +104,7 @@ namespace DirectX12GameEngine
                         for (int j = 0; j < meshCount; j++)
                         {
                             Matrix4x4 worldMatrix = model.Meshes[j].WorldMatrix * modelComponent.Entity.Transform.WorldMatrix;
-                            SharpDX.Utilities.Write(constantBuffers[j].MappedResource + modelComponentIndex * 16 * sizeof(float), ref worldMatrix);
+                            SharpDX.Utilities.Write(worldMatrixBuffers[j].MappedResource + modelComponentIndex * 16 * sizeof(float), ref worldMatrix);
                         }
 
                         modelComponentIndex++;
@@ -112,8 +112,8 @@ namespace DirectX12GameEngine
 
                     bundle = bundle ?? RecordCommandList(
                         model,
-                        new CommandList(GraphicsDevice, SharpDX.Direct3D12.CommandListType.Bundle).DisposeBy(GraphicsDevice),
-                        constantBuffers,
+                        new CommandList(GraphicsDevice, SharpDX.Direct3D12.CommandListType.Bundle),
+                        worldMatrixBuffers,
                         modelComponents.Count());
 
                     // Without bundles:
@@ -124,7 +124,7 @@ namespace DirectX12GameEngine
                         commandList.ExecuteBundle(bundle);
                     }
 
-                    models[model] = (bundle, constantBuffers);
+                    models[model] = (bundle, worldMatrixBuffers);
                 }
 
                 compiledCommandLists[batchIndex] = commandList.Close();
@@ -151,13 +151,13 @@ namespace DirectX12GameEngine
 
             foreach (var item in models)
             {
-                (CompiledCommandList? bundle, Texture[]? constantBuffers) = item.Value;
+                (CompiledCommandList? bundle, Texture[]? worldMatrixBuffers) = item.Value;
 
                 bundle?.Builder.Dispose();
 
-                if (constantBuffers != null)
+                if (worldMatrixBuffers != null)
                 {
-                    foreach (Texture constantBuffer in constantBuffers)
+                    foreach (Texture constantBuffer in worldMatrixBuffers)
                     {
                         constantBuffer.Dispose();
                     }
@@ -165,8 +165,11 @@ namespace DirectX12GameEngine
             }
         }
 
-        private CompiledCommandList? RecordCommandList(Model model, CommandList commandList, Texture[] constantBuffers, int instanceCount)
+        private CompiledCommandList? RecordCommandList(Model model, CommandList commandList, Texture[] worldMatrixBuffers, int instanceCount)
         {
+            int renderTargetCount = GraphicsDevice.Presenter is null ? 1 : GraphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
+            instanceCount *= renderTargetCount;
+
             for (int i = 0; i < model.Meshes.Count; i++)
             {
                 Mesh mesh = model.Meshes[i];
@@ -176,18 +179,17 @@ namespace DirectX12GameEngine
                 Material material = model.Materials[mesh.MaterialIndex];
 
                 commandList.SetPipelineState(material.PipelineState);
-                commandList.SetGraphicsRootDescriptorTable(0, ViewProjectionBuffer.NativeGpuDescriptorHandle);
-                commandList.SetGraphicsRootDescriptorTable(1, constantBuffers[i].NativeGpuDescriptorHandle);
+                commandList.SetGraphicsRoot32BitConstant(0, renderTargetCount, 0);
+                commandList.SetGraphicsRootDescriptorTable(1, ViewProjectionBuffer.NativeGpuDescriptorHandle);
+                commandList.SetGraphicsRootDescriptorTable(2, worldMatrixBuffers[i].NativeGpuDescriptorHandle);
 
                 for (int j = 0; j < material.Textures.Count; j++)
                 {
-                    commandList.SetGraphicsRootDescriptorTable(j + 2, material.Textures[j].NativeGpuDescriptorHandle);
+                    commandList.SetGraphicsRootDescriptorTable(j + 3, material.Textures[j].NativeGpuDescriptorHandle);
                 }
 
                 commandList.SetIndexBuffer(mesh.IndexBufferView);
                 commandList.SetVertexBuffers(mesh.VertexBufferViews);
-
-                instanceCount *= GraphicsDevice.Presenter is null ? 1 : GraphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
 
                 if (mesh.IndexBufferView.HasValue)
                 {
