@@ -50,8 +50,6 @@ namespace DirectX12GameEngine
             texturePipelineState = new GraphicsPipelineState(GraphicsDevice, textureVertexShader, texturePixelShader, textureInputElements);
 
             Assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-            LoadedTypes = Assemblies.SelectMany(a => a.GetExportedTypes()).ToArray();
         }
 
         public Assembly[] Assemblies { get; }
@@ -59,8 +57,6 @@ namespace DirectX12GameEngine
         public GraphicsDevice GraphicsDevice { get; }
 
         public Dictionary<string, object> LoadedAssets { get; } = new Dictionary<string, object>();
-
-        public Type[] LoadedTypes { get; }
 
         public async Task<T> LoadAsync<T>(string filePath)
         {
@@ -166,7 +162,7 @@ namespace DirectX12GameEngine
             if (type == null)
             {
                 string typeName = element.Name.NamespaceName + Type.Delimiter + element.Name.LocalName;
-                type = LoadedTypes.SingleOrDefault(t => t.FullName == typeName);
+                type = Assemblies.SelectMany(a => a.GetExportedTypes()).SingleOrDefault(t => t.FullName == typeName);
             }
 
             string text = element.Nodes().OfType<XText>().FirstOrDefault()?.Value;

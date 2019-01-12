@@ -75,7 +75,7 @@ namespace DirectX12GameEngine
             {
                 case GameContextCoreWindow context:
                     CoreWindow coreWindow = context.Control;
-                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.Size.Width, e.Size.Height));
+                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.Size.Width, e.Size.Height, DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel));
 
                     using (Factory4 factory = new Factory4())
                     using (ComObject window = new ComObject(coreWindow))
@@ -87,7 +87,8 @@ namespace DirectX12GameEngine
                 case GameContextXaml context:
                     SwapChainPanel swapChainPanel = context.Control;
                     swapChainDescription.AlphaMode = AlphaMode.Premultiplied;
-                    swapChainPanel.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.NewSize.Width, e.NewSize.Height));
+                    swapChainPanel.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.NewSize.Width, e.NewSize.Height, DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel));
+                    swapChainPanel.CompositionScaleChanged += (s, e) => this.swapChain.MatrixTransform = GetInverseCompositionScale(s);
 
                     using (Factory4 factory = new Factory4())
                     using (ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(swapChainPanel))
@@ -95,8 +96,22 @@ namespace DirectX12GameEngine
                     {
                         swapChain = tempSwapChain.QueryInterface<SwapChain3>();
                         nativePanel.SwapChain = swapChain;
+
+                        swapChain.MatrixTransform = GetInverseCompositionScale(swapChainPanel);
                     }
                     break;
+#if NETCOREAPP
+                case GameContextWinForms context:
+                    System.Windows.Forms.Control control = context.Control;
+                    control.ClientSizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(control.ClientSize.Width, control.ClientSize.Height));
+
+                    using (Factory4 factory = new Factory4())
+                    using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, control.Handle, ref swapChainDescription))
+                    {
+                        swapChain = tempSwapChain.QueryInterface<SwapChain3>();
+                    }
+                    break;
+#endif
                 default:
                     throw new NotSupportedException("This app context type is not supported while creating a swap chain.");
             }
@@ -127,6 +142,15 @@ namespace DirectX12GameEngine
             DepthStencilBuffer = CreateDepthStencilBuffer(width, height);
         }
 
+        private static SharpDX.Mathematics.Interop.RawMatrix3x2 GetInverseCompositionScale(SwapChainPanel swapChainPanel)
+        {
+            return new SharpDX.Mathematics.Interop.RawMatrix3x2
+            {
+                M11 = 1.0f / swapChainPanel.CompositionScaleX,
+                M22 = 1.0f / swapChainPanel.CompositionScaleY
+            };
+        }
+
         private void CreateRenderTargets()
         {
             for (int i = 0; i < BufferCount; i++)
@@ -137,10 +161,8 @@ namespace DirectX12GameEngine
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            double resolutionScale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
-
-            PresentationParameters.BackBufferWidth = (int)(e.Width * resolutionScale);
-            PresentationParameters.BackBufferHeight = (int)(e.Height * resolutionScale);
+            PresentationParameters.BackBufferWidth = (int)(e.Width * e.ResolutionScale);
+            PresentationParameters.BackBufferHeight = (int)(e.Height * e.ResolutionScale);
         }
     }
 }

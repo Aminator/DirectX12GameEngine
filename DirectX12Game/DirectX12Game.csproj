@@ -14,10 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine\DirectX12GameEngine.csproj">
       <PrivateAssets>none</PrivateAssets>
     </ProjectReference>

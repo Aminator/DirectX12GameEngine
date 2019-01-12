@@ -7,6 +7,8 @@ namespace DirectX12GameEngine
 {
     public class Game : IDisposable
     {
+        private DateTime previousTime;
+
         public Game(GameContext gameContext)
         {
             GameContext = gameContext;
@@ -66,31 +68,43 @@ namespace DirectX12GameEngine
 
         public void Run()
         {
-            GameContextCoreWindow? context = GameContext as GameContextCoreWindow;
-
-            context?.Control.Dispatcher.ProcessEvents(Windows.UI.Core.CoreProcessEventsOption.ProcessAllIfPresent);
-
             Initialize();
             LoadContentAsync();
 
-            DateTime previousTime = DateTime.Now;
+            previousTime = DateTime.Now;
 
-            context?.Control.Dispatcher.ProcessEvents(Windows.UI.Core.CoreProcessEventsOption.ProcessAllIfPresent);
+            switch (GameContext)
+            {
+                case GameContextXaml context:
+                    Windows.UI.Xaml.Media.CompositionTarget.Rendering += (s, e) => Tick();
+                    return;
+#if NETCOREAPP
+                case GameContextWinForms context:
+                    System.Windows.Media.CompositionTarget.Rendering += (s, e) => Tick();
+                    return;
+#endif
+            }
+
+            Windows.UI.Core.CoreWindow? coreWindow = (GameContext as GameContextCoreWindow)?.Control;
 
             while (true)
             {
-                DateTime currentTime = DateTime.Now;
-                TimeSpan deltaTime = currentTime - previousTime;
-                previousTime = currentTime;
-
-                context?.Control.Dispatcher.ProcessEvents(Windows.UI.Core.CoreProcessEventsOption.ProcessAllIfPresent);
-
-                Update(deltaTime);
-
-                BeginDraw();
-                Draw(deltaTime);
-                EndDraw();
+                coreWindow?.Dispatcher.ProcessEvents(Windows.UI.Core.CoreProcessEventsOption.ProcessAllIfPresent);
+                Tick();
             }
+        }
+
+        public void Tick()
+        {
+            DateTime currentTime = DateTime.Now;
+            TimeSpan deltaTime = currentTime - previousTime;
+            previousTime = currentTime;
+
+            Update(deltaTime);
+
+            BeginDraw();
+            Draw(deltaTime);
+            EndDraw();
         }
 
         protected void Initialize()
