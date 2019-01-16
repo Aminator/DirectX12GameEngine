@@ -16,6 +16,7 @@ namespace DirectX12GameEngine
             Game = services.GetRequiredService<Game>();
             Content = services.GetRequiredService<ContentManager>();
             GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
+            SceneSystem = services.GetRequiredService<SceneSystem>();
         }
 
         public Game Game { get; }
@@ -31,6 +32,8 @@ namespace DirectX12GameEngine
         protected ContentManager Content { get; }
 
         protected GraphicsDevice GraphicsDevice { get; }
+
+        protected SceneSystem SceneSystem { get; }
 
         public virtual void Update(TimeSpan deltaTime)
         {

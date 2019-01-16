@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Numerics;
 using DirectX12GameEngine;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12Game
 {
@@ -14,8 +13,6 @@ namespace DirectX12Game
 
         public MyScriptSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
-            SceneSystem = Services.GetRequiredService<SceneSystem>();
-
             if (Game.GameContext is GameContextCoreWindow context)
             {
                 context.Control.KeyDown += Control_KeyDown;
@@ -23,8 +20,6 @@ namespace DirectX12Game
                 context.Control.PointerWheelChanged += Control_PointerWheelChanged;
             }
         }
-
-        public SceneSystem SceneSystem { get; }
 
         public override void Update(TimeSpan deltaTime)
         {

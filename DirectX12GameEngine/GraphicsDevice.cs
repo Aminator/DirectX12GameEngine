@@ -16,9 +16,10 @@ namespace DirectX12GameEngine
     public sealed class GraphicsDevice : IDisposable, ICollector
     {
         private static readonly Guid ID3D11Resource = new Guid("DC8E63F3-D12B-4952-B47B-5E45026A862D");
+
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
 
-        public GraphicsDevice(FeatureLevel minFeatureLevel)
+        public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level_11_0)
         {
 #if DEBUG
             //DebugInterface.Get().EnableDebugLayer();

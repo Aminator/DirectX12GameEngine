@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine
 {
@@ -15,13 +14,9 @@ namespace DirectX12GameEngine
 
         public RenderSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
-            SceneSystem = Services.GetRequiredService<SceneSystem>();
-
             Span<Matrix4x4> matrices = stackalloc Matrix4x4[] { Matrix4x4.Identity, Matrix4x4.Identity };
             ViewProjectionBuffer = Texture.CreateConstantBufferView(GraphicsDevice, matrices);
         }
-
-        public SceneSystem SceneSystem { get; }
 
         public Texture ViewProjectionBuffer { get; }
 

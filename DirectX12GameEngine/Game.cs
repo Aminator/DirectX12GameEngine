@@ -7,13 +7,13 @@ namespace DirectX12GameEngine
 {
     public class Game : IDisposable
     {
+        private readonly object tickLock = new object();
+
         private DateTime previousTime;
 
         public Game(GameContext gameContext)
         {
             GameContext = gameContext;
-
-            GraphicsDevice = new GraphicsDevice(SharpDX.Direct3D.FeatureLevel.Level_11_0);
 
             PresentationParameters presentationParameters = new PresentationParameters(
                 gameContext.RequestedWidth, gameContext.RequestedHeight, gameContext);
@@ -50,7 +50,7 @@ namespace DirectX12GameEngine
 
         public List<GameSystem> GameSystems { get; } = new List<GameSystem>();
 
-        public GraphicsDevice GraphicsDevice { get; }
+        public GraphicsDevice GraphicsDevice { get; } = new GraphicsDevice();
 
         public SceneSystem SceneSystem { get; }
 
@@ -96,15 +96,18 @@ namespace DirectX12GameEngine
 
         public void Tick()
         {
-            DateTime currentTime = DateTime.Now;
-            TimeSpan deltaTime = currentTime - previousTime;
-            previousTime = currentTime;
+            lock (tickLock)
+            {
+                DateTime currentTime = DateTime.Now;
+                TimeSpan deltaTime = currentTime - previousTime;
+                previousTime = currentTime;
 
-            Update(deltaTime);
+                Update(deltaTime);
 
-            BeginDraw();
-            Draw(deltaTime);
-            EndDraw();
+                BeginDraw();
+                Draw(deltaTime);
+                EndDraw();
+            }
         }
 
         protected void Initialize()
@@ -137,24 +140,25 @@ namespace DirectX12GameEngine
 
         protected virtual void BeginDraw()
         {
-            if (GraphicsDevice.Presenter is null) return;
-
-            int width = GraphicsDevice.Presenter.PresentationParameters.BackBufferWidth;
-            int height = GraphicsDevice.Presenter.PresentationParameters.BackBufferHeight;
-
-            if (width != GraphicsDevice.Presenter.Viewport.Width || height != GraphicsDevice.Presenter.Viewport.Height)
-            {
-                GraphicsDevice.Presenter.Resize(width, height);
-                GraphicsDevice.Presenter.ResizeViewport(width, height);
-            }
-
-            GraphicsDevice.Presenter.BeginDraw(GraphicsDevice.CommandList);
-
             GraphicsDevice.CommandList.Reset();
 
-            GraphicsDevice.CommandList.SetViewport(GraphicsDevice.Presenter.Viewport);
-            GraphicsDevice.CommandList.SetScissorRectangles(GraphicsDevice.Presenter.ScissorRect);
-            GraphicsDevice.CommandList.SetRenderTargets(GraphicsDevice.Presenter.DepthStencilBuffer, GraphicsDevice.Presenter.BackBuffer);
+            if (GraphicsDevice.Presenter != null)
+            {
+                int width = GraphicsDevice.Presenter.PresentationParameters.BackBufferWidth;
+                int height = GraphicsDevice.Presenter.PresentationParameters.BackBufferHeight;
+
+                if (width != GraphicsDevice.Presenter.Viewport.Width || height != GraphicsDevice.Presenter.Viewport.Height)
+                {
+                    GraphicsDevice.Presenter.Resize(width, height);
+                    GraphicsDevice.Presenter.ResizeViewport(width, height);
+                }
+
+                GraphicsDevice.Presenter.BeginDraw(GraphicsDevice.CommandList);
+
+                GraphicsDevice.CommandList.SetViewport(GraphicsDevice.Presenter.Viewport);
+                GraphicsDevice.CommandList.SetScissorRectangles(GraphicsDevice.Presenter.ScissorRect);
+                GraphicsDevice.CommandList.SetRenderTargets(GraphicsDevice.Presenter.DepthStencilBuffer, GraphicsDevice.Presenter.BackBuffer);
+            }
 
             foreach (GameSystem gameSystem in GameSystems)
             {
