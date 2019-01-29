@@ -1,6 +1,7 @@
 ﻿using System;
 using SharpDX;
 using SharpDX.Direct3D12;
+using Windows.Foundation;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Holographic;
 using Windows.Perception.Spatial;
@@ -30,7 +31,7 @@ namespace DirectX12GameEngine
             {
                 case GameContextHolographic context:
                     CoreWindow coreWindow = context.Control;
-                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.Size.Width, e.Size.Height));
+                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.Size, new Size(1.0, 1.0)));
 
                     using (SharpDX.DXGI.Device dxgiDevice = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.DXGI.Device>())
                     {

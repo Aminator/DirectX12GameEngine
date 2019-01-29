@@ -13,7 +13,7 @@ namespace DirectX12GameEngine
         {
         }
 
-        public Entity(string? name) : this(null, null)
+        public Entity(string? name) : this(name, null)
         {
         }
 
@@ -88,12 +88,12 @@ namespace DirectX12GameEngine
                 Transform = transformComponent;
             }
 
-            if (entityComponent!.Entity != null)
+            if (entityComponent.Entity != null)
             {
                 throw new InvalidOperationException("An entity component cannot be set on more than one entity.");
             }
 
-            entityComponent!.Entity = this;
+            entityComponent.Entity = this;
         }
 
         private void RemoveInternal(EntityComponent entityComponent)

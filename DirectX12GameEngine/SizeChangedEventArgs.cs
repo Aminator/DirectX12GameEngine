@@ -1,20 +1,18 @@
 ﻿using System;
+using Windows.Foundation;
 
 namespace DirectX12GameEngine
 {
     public sealed class SizeChangedEventArgs : EventArgs
     {
-        public SizeChangedEventArgs(double width, double height, double resolutionScale = 1.0)
+        public SizeChangedEventArgs(Size size, Size resolutionScale)
         {
-            Width = width;
-            Height = height;
+            Size = size;
             ResolutionScale = resolutionScale;
         }
 
-        public double Height { get; }
+        public Size Size { get; }
 
-        public double ResolutionScale { get; }
-
-        public double Width { get; }
+        public Size ResolutionScale { get; }
     }
 }

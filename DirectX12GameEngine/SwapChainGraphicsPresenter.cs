@@ -2,6 +2,7 @@
 using SharpDX;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
+using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
@@ -75,7 +76,7 @@ namespace DirectX12GameEngine
             {
                 case GameContextCoreWindow context:
                     CoreWindow coreWindow = context.Control;
-                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.Size.Width, e.Size.Height, DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel));
+                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.Size, new Size(DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel, DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel)));
 
                     using (Factory4 factory = new Factory4())
                     using (ComObject window = new ComObject(coreWindow))
@@ -87,7 +88,7 @@ namespace DirectX12GameEngine
                 case GameContextXaml context:
                     SwapChainPanel swapChainPanel = context.Control;
                     swapChainDescription.AlphaMode = AlphaMode.Premultiplied;
-                    swapChainPanel.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.NewSize.Width, e.NewSize.Height, DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel));
+                    swapChainPanel.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.NewSize, new Size(swapChainPanel.CompositionScaleX, swapChainPanel.CompositionScaleY)));
                     swapChainPanel.CompositionScaleChanged += (s, e) => this.swapChain.MatrixTransform = GetInverseCompositionScale(s);
 
                     using (Factory4 factory = new Factory4())
@@ -103,7 +104,7 @@ namespace DirectX12GameEngine
 #if NETCOREAPP
                 case GameContextWinForms context:
                     System.Windows.Forms.Control control = context.Control;
-                    control.ClientSizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(control.ClientSize.Width, control.ClientSize.Height));
+                    control.ClientSizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(new Size(control.ClientSize.Width, control.ClientSize.Height), new Size(1.0, 1.0)));
 
                     using (Factory4 factory = new Factory4())
                     using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, control.Handle, ref swapChainDescription))
@@ -161,8 +162,8 @@ namespace DirectX12GameEngine
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            PresentationParameters.BackBufferWidth = (int)(e.Width * e.ResolutionScale);
-            PresentationParameters.BackBufferHeight = (int)(e.Height * e.ResolutionScale);
+            PresentationParameters.BackBufferWidth = (int)(e.Size.Width * e.ResolutionScale.Width);
+            PresentationParameters.BackBufferHeight = (int)(e.Size.Height * e.ResolutionScale.Height);
         }
     }
 }

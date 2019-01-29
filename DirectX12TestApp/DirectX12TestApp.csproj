@@ -19,7 +19,7 @@
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <PackageCertificateKeyFile>DirectX12TestApp_TemporaryKey.pfx</PackageCertificateKeyFile>
     <LangVersion>8.0</LangVersion>
-    <NullableReferenceTypes>true</NullableReferenceTypes>
+    <NullableContextOptions>enable</NullableContextOptions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -107,7 +107,6 @@
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\**" />
     <Content Include="..\DirectX12Game\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Content Include="..\DirectX12GameEngine\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.2" />

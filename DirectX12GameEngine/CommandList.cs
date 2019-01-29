@@ -54,7 +54,7 @@ namespace DirectX12GameEngine
 
         public void CopyBufferRegion(Texture destination, long destinationOffset, Texture source, long sourceOffset, long? numBytes = null)
         {
-            currentCommandList.NativeCommandList.CopyBufferRegion(destination.NativeResource, 0, source.NativeResource, 0, numBytes ?? source.Width * source.Height);
+            currentCommandList.NativeCommandList.CopyBufferRegion(destination.NativeResource, destinationOffset, source.NativeResource, sourceOffset, numBytes ?? source.Width * source.Height);
         }
 
         public void CopyResource(Texture destination, Texture source)
@@ -81,7 +81,7 @@ namespace DirectX12GameEngine
                     GraphicsDevice.CopyAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextCopyFenceValue - 1);
                     break;
                 default:
-                    throw new ArgumentException("This command list type is not supported.");
+                    throw new NotSupportedException("This command list type is not supported.");
             }
 
             currentCommandList.NativeCommandList.Dispose();
@@ -112,22 +112,13 @@ namespace DirectX12GameEngine
 
         public void Reset()
         {
-            CommandAllocator commandAllocator;
-
-            switch (CommandListType)
+            CommandAllocator commandAllocator = CommandListType switch
             {
-                case CommandListType.Direct:
-                    commandAllocator = GraphicsDevice.DirectAllocatorPool.GetCommandAllocator();
-                    break;
-                case CommandListType.Bundle:
-                    commandAllocator = GraphicsDevice.BundleAllocatorPool.GetCommandAllocator();
-                    break;
-                case CommandListType.Copy:
-                    commandAllocator = GraphicsDevice.CopyAllocatorPool.GetCommandAllocator();
-                    break;
-                default:
-                    throw new ArgumentException("This command list type is not supported.");
-            }
+                CommandListType.Direct => GraphicsDevice.DirectAllocatorPool.GetCommandAllocator(),
+                CommandListType.Bundle => GraphicsDevice.BundleAllocatorPool.GetCommandAllocator(),
+                CommandListType.Copy => GraphicsDevice.CopyAllocatorPool.GetCommandAllocator(),
+                _ => throw new NotSupportedException("This command list type is not supported.")
+            };
 
             if (currentCommandList.NativeCommandList is null)
             {

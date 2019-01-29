@@ -47,20 +47,13 @@ namespace DirectX12GameEngine
                 {
                     (CommandAllocator commandAllocator, long fenceValue) = commandAllocatorQueue.Peek();
 
-                    long completedValue;
-
-                    switch (CommandListType)
+                    long completedValue = CommandListType switch
                     {
-                        case CommandListType.Direct:
-                        case CommandListType.Bundle:
-                            completedValue = GraphicsDevice.NativeFence.CompletedValue;
-                            break;
-                        case CommandListType.Copy:
-                            completedValue = GraphicsDevice.NativeCopyFence.CompletedValue;
-                            break;
-                        default:
-                            throw new ArgumentException("This command list type is not supported.");
-                    }
+                        CommandListType.Direct => GraphicsDevice.NativeFence.CompletedValue,
+                        CommandListType.Bundle => GraphicsDevice.NativeFence.CompletedValue,
+                        CommandListType.Copy => GraphicsDevice.NativeCopyFence.CompletedValue,
+                        _ => throw new NotSupportedException("This command list type is not supported.")
+                    };
 
                     if (fenceValue <= completedValue)
                     {

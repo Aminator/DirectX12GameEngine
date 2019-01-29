@@ -17,18 +17,13 @@ namespace DirectX12GameEngine
             Width = (int)NativeResource.Description.Width;
             Height = NativeResource.Description.Height;
 
-            switch (descriptorHeapType)
+            (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = descriptorHeapType switch
             {
-                case DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView:
-                    (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = CreateShaderResourceView();
-                    break;
-                case DescriptorHeapType.RenderTargetView:
-                    (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = CreateRenderTargetView();
-                    break;
-                case DescriptorHeapType.DepthStencilView:
-                    (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = CreateDepthStencilView();
-                    break;
-            }
+                DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView => CreateShaderResourceView(),
+                DescriptorHeapType.RenderTargetView => CreateRenderTargetView(),
+                DescriptorHeapType.DepthStencilView => CreateDepthStencilView(),
+                _ => default
+            };
         }
 
         public GraphicsDevice GraphicsDevice { get; }
@@ -52,7 +47,7 @@ namespace DirectX12GameEngine
                 resourceDescription, resourceStates), descriptorHeapType);
         }
 
-        public static Texture New2D(GraphicsDevice device, SharpDX.DXGI.Format format, int width, int height, DescriptorHeapType? descriptorHeapType = null, ResourceStates resourceStates = ResourceStates.GenericRead, ResourceFlags resourceFlags = ResourceFlags.None, HeapType heapType = HeapType.Default, short arraySize = 1, short mipLevels = 0)
+        public static Texture New2D(GraphicsDevice device, Format format, int width, int height, DescriptorHeapType? descriptorHeapType = null, ResourceStates resourceStates = ResourceStates.GenericRead, ResourceFlags resourceFlags = ResourceFlags.None, HeapType heapType = HeapType.Default, short arraySize = 1, short mipLevels = 0)
         {
             return new Texture(device, device.NativeDevice.CreateCommittedResource(
                 new HeapProperties(heapType), HeapFlags.None,
@@ -130,7 +125,7 @@ namespace DirectX12GameEngine
                 case Format.R32_UInt:
                     break;
                 default:
-                    throw new ArgumentException("Index buffer type must be ushort or uint");
+                    throw new NotSupportedException("Index buffer type must be ushort or uint");
             }
 
             return new IndexBufferView
@@ -178,17 +173,12 @@ namespace DirectX12GameEngine
 
         public static unsafe Texture CreateTexture2D<T>(GraphicsDevice device, Span<T> data, Format format, int width, int height) where T : unmanaged
         {
-            int texturePixelSize;
-
-            switch (format)
+            int texturePixelSize = format switch
             {
-                case Format.R8G8B8A8_UNorm:
-                case Format.B8G8R8A8_UNorm:
-                    texturePixelSize = 4;
-                    break;
-                default:
-                    throw new ArgumentException("This format is not supported.");
-            }
+                Format.R8G8B8A8_UNorm => 4,
+                Format.B8G8R8A8_UNorm => 4,
+                _ => throw new NotSupportedException("This format is not supported.")
+            };
 
             Texture texture = New2D(device, format, width, height, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, ResourceStates.CopyDestination);
             Texture textureUploadBuffer = New(device, new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), texture.NativeResource.Description);

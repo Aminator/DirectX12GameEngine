@@ -105,14 +105,14 @@ namespace DirectX12GameEngine
                         modelComponentIndex++;
                     }
 
-                    bundle = bundle ?? RecordCommandList(
+                    bundle ??= RecordCommandList(
                         model,
                         new CommandList(GraphicsDevice, SharpDX.Direct3D12.CommandListType.Bundle),
                         worldMatrixBuffers,
                         modelComponents.Count());
 
                     // Without bundles:
-                    //RecordCommandList(model, commandList, modelComponents.Count());
+                    //RecordCommandList(model, commandList, worldMatrixBuffers, modelComponents.Count());
 
                     if (bundle != null && bundle.Builder.CommandListType == SharpDX.Direct3D12.CommandListType.Bundle)
                     {
@@ -177,11 +177,8 @@ namespace DirectX12GameEngine
                 commandList.SetGraphicsRoot32BitConstant(0, renderTargetCount, 0);
                 commandList.SetGraphicsRootDescriptorTable(1, ViewProjectionBuffer.NativeGpuDescriptorHandle);
                 commandList.SetGraphicsRootDescriptorTable(2, worldMatrixBuffers[i].NativeGpuDescriptorHandle);
-
-                for (int j = 0; j < material.Textures.Count; j++)
-                {
-                    commandList.SetGraphicsRootDescriptorTable(j + 3, material.Textures[j].NativeGpuDescriptorHandle);
-                }
+                commandList.SetGraphicsRootDescriptorTable(3, material.NativeGpuDescriptorHandle);
+                commandList.SetGraphicsRootDescriptorTable(4, material.NativeGpuDescriptorHandle);
 
                 commandList.SetIndexBuffer(mesh.IndexBufferView);
                 commandList.SetVertexBuffers(mesh.VertexBufferViews);

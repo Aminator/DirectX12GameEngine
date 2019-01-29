@@ -7,23 +7,26 @@ namespace DirectX12GameEngine
 {
     public sealed class GraphicsPipelineState
     {
-        public GraphicsPipelineState(GraphicsDevice device, SharpDX.D3DCompiler.ShaderBytecode vertexShader, SharpDX.D3DCompiler.ShaderBytecode pixelShader, InputElement[] inputElements, RootSignature? rootSignature = null, RasterizerStateDescription? rasterizerStateDescription = null)
+        public GraphicsPipelineState(GraphicsDevice device, InputElement[] inputElements, RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode hullShader = default, ShaderBytecode domainShader = default, ShaderBytecode geometryShader = default, RasterizerStateDescription? rasterizerStateDescription = null)
         {
             if (device.Presenter is null) throw new InvalidOperationException("The presenter of the graphics device cannot be null.");
 
-            RootSignature = rootSignature ?? device.CreateRootSignature(vertexShader.GetPart(SharpDX.D3DCompiler.ShaderBytecodePart.RootSignature));
+            RootSignature = rootSignature;
 
             RasterizerStateDescription rasterizerDescription = rasterizerStateDescription ?? RasterizerStateDescription.Default();
             rasterizerDescription.IsFrontCounterClockwise = true;
 
             DepthStencilStateDescription depthStencilStateDescription = DepthStencilStateDescription.Default();
 
-            PipelineStateDescription = new GraphicsPipelineStateDescription
+            GraphicsPipelineStateDescription pipelineStateDescription = new GraphicsPipelineStateDescription
             {
                 InputLayout = new InputLayoutDescription(inputElements),
                 RootSignature = RootSignature,
-                VertexShader = new ShaderBytecode(vertexShader),
-                PixelShader = new ShaderBytecode(pixelShader),
+                VertexShader = vertexShader,
+                HullShader = hullShader,
+                DomainShader = domainShader,
+                GeometryShader = geometryShader,
+                PixelShader = pixelShader,
                 RasterizerState = rasterizerDescription,
                 BlendState = BlendStateDescription.Default(),
                 DepthStencilFormat = device.Presenter.PresentationParameters.DepthStencilFormat,
@@ -33,15 +36,13 @@ namespace DirectX12GameEngine
                 RenderTargetCount = 1,
                 Flags = PipelineStateFlags.None,
                 SampleDescription = new SampleDescription(1, 0),
-                StreamOutput = new StreamOutputDescription(),
+                StreamOutput = new StreamOutputDescription()
             };
 
-            PipelineStateDescription.RenderTargetFormats[0] = device.Presenter.PresentationParameters.BackBufferFormat;
+            pipelineStateDescription.RenderTargetFormats[0] = device.Presenter.PresentationParameters.BackBufferFormat;
 
-            NativePipelineState = device.NativeDevice.CreateGraphicsPipelineState(PipelineStateDescription);
+            NativePipelineState = device.NativeDevice.CreateGraphicsPipelineState(pipelineStateDescription);
         }
-
-        public GraphicsPipelineStateDescription PipelineStateDescription { get; }
 
         public PrimitiveTopology PrimitiveTopology { get; } = PrimitiveTopology.TriangleList;
 

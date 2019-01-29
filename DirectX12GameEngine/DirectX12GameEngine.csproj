@@ -3,20 +3,18 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
-    <NullableReferenceTypes>true</NullableReferenceTypes>
+    <NullableContextOptions>enable</NullableContextOptions>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="DotNetDxc" Version="1.2.0-alpha" />
+    <PackageReference Include="ICSharpCode.Decompiler" Version="4.0.0.4521" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.0.0-beta2-final" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="ShaderGen" Version="1.2.0-beta2" />
+    <PackageReference Include="ShaderGen.Primitives" Version="1.2.0-beta2" />
     <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />

@@ -100,30 +100,6 @@ namespace DirectX12GameEngine
 
         internal long NextFenceValue { get; private set; } = 1;
 
-        public static SharpDX.D3DCompiler.ShaderBytecode? CompileShaders(string filePath, out SharpDX.D3DCompiler.ShaderBytecode vertexShader, out SharpDX.D3DCompiler.ShaderBytecode pixelShader)
-        {
-            SharpDX.D3DCompiler.ShaderFlags shaderFlags = SharpDX.D3DCompiler.ShaderFlags.PackMatrixRowMajor;
-#if DEBUG
-            shaderFlags |= SharpDX.D3DCompiler.ShaderFlags.Debug | SharpDX.D3DCompiler.ShaderFlags.SkipOptimization;
-#endif
-            string shaderSource = SharpDX.D3DCompiler.ShaderBytecode.PreprocessFromFile(filePath, null, new Includer(filePath));
-
-            vertexShader = SharpDX.D3DCompiler.ShaderBytecode.Compile(
-                    shaderSource, "VSMain", "vs_5_1", shaderFlags);
-
-            pixelShader = SharpDX.D3DCompiler.ShaderBytecode.Compile(
-                    shaderSource, "PSMain", "ps_5_1", shaderFlags);
-
-            try
-            {
-                return vertexShader.GetPart(SharpDX.D3DCompiler.ShaderBytecodePart.RootSignature);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         public RootSignature CreateRootSignature(RootSignatureDescription rootSignatureDescription)
         {
             return NativeDevice.CreateRootSignature(rootSignatureDescription.Serialize());
@@ -165,19 +141,12 @@ namespace DirectX12GameEngine
 
         public void ExecuteCommandLists(bool wait, params CompiledCommandList[] commandLists)
         {
-            Fence fence;
-
-            switch (commandLists[0].NativeCommandList.TypeInfo)
+            Fence fence = commandLists[0].NativeCommandList.TypeInfo switch
             {
-                case CommandListType.Direct:
-                    fence = NativeFence;
-                    break;
-                case CommandListType.Copy:
-                    fence = NativeCopyFence;
-                    break;
-                default:
-                    throw new ArgumentException("This command list type is not supported.");
-            }
+                CommandListType.Direct => NativeFence,
+                CommandListType.Copy => NativeCopyFence,
+                _ => throw new NotSupportedException("This command list type is not supported.")
+            };
 
             long fenceValue = ExecuteCommandLists(commandLists);
 
@@ -213,7 +182,7 @@ namespace DirectX12GameEngine
                     NextCopyFenceValue++;
                     break;
                 default:
-                    throw new ArgumentException("This command list type is not supported.");
+                    throw new NotSupportedException("This command list type is not supported.");
             }
 
             SharpDX.Direct3D12.CommandList[] nativeCommandLists = new SharpDX.Direct3D12.CommandList[commandLists.Length];
@@ -339,7 +308,7 @@ namespace DirectX12GameEngine
         }
     }
 
-    internal class Includer : SharpDX.D3DCompiler.Include
+    internal class Includer : CallbackBase, SharpDX.D3DCompiler.Include
     {
         private readonly string sourceFilePath;
 
@@ -348,20 +317,26 @@ namespace DirectX12GameEngine
             this.sourceFilePath = sourceFilePath;
         }
 
-        public IDisposable? Shadow { get; set; }
-
-        public void Close(Stream stream)
-        {
-            stream.Close();
-        }
-
-        public void Dispose()
-        {
-        }
+        public void Close(Stream stream) => stream.Close();
 
         public Stream Open(SharpDX.D3DCompiler.IncludeType type, string fileName, Stream parentStream)
         {
-            string filePath = Path.Combine(Path.GetDirectoryName(sourceFilePath), fileName);
+            string filePath = fileName;
+
+            if (!Path.IsPathRooted(filePath))
+            {
+                string selectedFile = type switch
+                {
+                    SharpDX.D3DCompiler.IncludeType.Local => Path.Combine(Environment.CurrentDirectory, Path.GetDirectoryName(sourceFilePath), fileName),
+                    SharpDX.D3DCompiler.IncludeType.System => Path.Combine(Environment.CurrentDirectory, fileName),
+                    _ => throw new NotSupportedException("This include type is not supported supported.")
+                };
+
+                if (File.Exists(selectedFile))
+                {
+                    filePath = selectedFile;
+                }
+            }
 
             using (StreamReader streamReader = new StreamReader(filePath))
             {
