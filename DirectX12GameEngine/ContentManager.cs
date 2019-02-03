@@ -18,8 +18,7 @@ namespace DirectX12GameEngine
         public ContentManager(IServiceProvider services)
         {
             GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
-
-            ModelLoader.GraphicsDevice = GraphicsDevice;
+            ModelLoader = services.GetRequiredService<ModelLoader>();
         }
 
         public Assembly[] Assemblies { get; } = AppDomain.CurrentDomain.GetAssemblies();
@@ -27,6 +26,8 @@ namespace DirectX12GameEngine
         public GraphicsDevice GraphicsDevice { get; }
 
         public Dictionary<string, object> LoadedAssets { get; } = new Dictionary<string, object>();
+
+        internal ModelLoader ModelLoader { get; }
 
         public async Task<T> LoadAsync<T>(string filePath)
         {
@@ -37,16 +38,43 @@ namespace DirectX12GameEngine
         {
             if (!LoadedAssets.TryGetValue(filePath, out object asset))
             {
-                if (type == typeof(Model))
+                if (Path.GetExtension(filePath) == ".gltf" || Path.GetExtension(filePath) == ".glb")
                 {
-                    asset = await ModelLoader.LoadGltfModelAsync(filePath);
+                    if (type == typeof(Model))
+                    {
+                        asset = await ModelLoader.LoadGltfModelAsync(filePath);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"The type {type} is not supported with GLTF or GLB files.");
+                    }
+                }
+                else if (Path.GetExtension(filePath) == ".png" || Path.GetExtension(filePath) == ".jpg" || Path.GetExtension(filePath) == ".jpeg")
+                {
+                    if (type == typeof(Texture))
+                    {
+                        asset = await ModelLoader.LoadTextureAsync(filePath);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"The type {type} is not supported with image files.");
+                    }
+                }
+                else if (Path.GetExtension(filePath) == ".xml")
+                {
+                    asset = await LoadElementAsync(filePath);
+
+                    if (asset is Material material)
+                    {
+                        asset = new Material(GraphicsDevice, material.Attributes);
+                    }
+
+                    LoadedAssets.Add(filePath, asset);
                 }
                 else
                 {
-                    asset = await LoadElementAsync(filePath);
+                    throw new NotSupportedException($"The file extension {Path.GetExtension(filePath)} is not supported.");
                 }
-
-                LoadedAssets.Add(filePath, asset);
             }
 
             return asset;
@@ -107,23 +135,36 @@ namespace DirectX12GameEngine
 
         private async Task<object> ParseElementAsync(XElement element, Type? type = null)
         {
-            if (type == null)
+            if (type is null)
             {
                 string typeName = element.Name.NamespaceName + Type.Delimiter + element.Name.LocalName;
                 type = Assemblies.SelectMany(a => a.GetExportedTypes()).SingleOrDefault(t => t.FullName == typeName);
             }
 
-            string text = element.Nodes().OfType<XText>().FirstOrDefault()?.Value;
-
-            object parsedElement = string.IsNullOrWhiteSpace(text)
-                ? Activator.CreateInstance(type)
-                : await ParseAsync(type, text);
+            string content = element.Nodes().OfType<XText>().FirstOrDefault()?.Value;
 
             IEnumerable<XAttribute> attributes = element.Attributes();
+            XAttribute? contentAttribute = attributes.FirstOrDefault(x => x.Name.LocalName == "Content");
+
+            if (!string.IsNullOrWhiteSpace(contentAttribute?.Value))
+            {
+                if (string.IsNullOrWhiteSpace(content))
+                {
+                    content = contentAttribute.Value;
+                }
+                else
+                {
+                    throw new ArgumentException("The content (inner text or child elements) and the content attribute cannot be set at the same time.");
+                }
+            }
+
+            object parsedElement = string.IsNullOrWhiteSpace(content)
+                ? Activator.CreateInstance(type)
+                : await ParseAsync(type, content);
 
             foreach (XAttribute attribute in attributes)
             {
-                if (!attribute.IsNamespaceDeclaration)
+                if (!attribute.IsNamespaceDeclaration && attribute.Name.LocalName != "Content")
                 {
                     PropertyInfo propertyInfo = type.GetProperty(attribute.Name.LocalName);
                     object parsedObject = await ParseAttributeAsync(propertyInfo.PropertyType, attribute.Value);

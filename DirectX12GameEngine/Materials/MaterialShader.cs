@@ -1,16 +1,15 @@
-﻿using ShaderGen;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace DirectX12GameEngine
 {
-    public class Shader
+    public class MaterialShader
     {
 #nullable disable
         public readonly SamplerResource Sampler;
 
-        public readonly uint RenderTargetCount;
-        public readonly Matrix4x4[] ViewProjectionMatrices;
-        public readonly Matrix4x4[] WorldMatrices;
+        [ConstantBufferResource] public readonly uint RenderTargetCount;
+        [ConstantBufferResource] public readonly Matrix4x4[] ViewProjectionMatrices;
+        [ConstantBufferResource] public readonly Matrix4x4[] WorldMatrices;
 #nullable enable
 
         public struct VSInput
@@ -32,7 +31,7 @@ namespace DirectX12GameEngine
 
         public struct PSOutput
         {
-            [ColorTargetSemantic] public Vector4 Color;
+            [SystemTargetSemantic] public Vector4 Color;
         }
 
         [Shader("vertex")]

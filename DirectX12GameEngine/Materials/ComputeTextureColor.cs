@@ -1,21 +1,27 @@
-﻿using ShaderGen;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace DirectX12GameEngine
 {
     [Texture2DResource]
-    public class ComputeTextureColor : Shader, IComputeColor
+    public class ComputeTextureColor : MaterialShader, IComputeColor
     {
-        private readonly Texture texture;
+        public ComputeTextureColor()
+        {
+        }
 
         public ComputeTextureColor(Texture texture)
         {
-            this.texture = texture;
+            Texture = texture;
         }
+
+        public Texture? Texture { get; set; }
 
         public void Visit(Material material)
         {
-            material.Textures.Add(texture);
+            if (Texture != null)
+            {
+                material.Textures.Add(Texture);
+            }
         }
 
         #region Shader

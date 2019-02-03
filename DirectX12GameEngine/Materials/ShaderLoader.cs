@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
@@ -12,7 +13,6 @@ using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.Metadata;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using ShaderGen;
 using SharpDX.D3DCompiler;
 
 namespace DirectX12GameEngine
@@ -24,24 +24,23 @@ namespace DirectX12GameEngine
             HlslDxcLib.DxcCreateInstanceFn = DefaultDxcLib.GetDxcCreateInstanceFn();
         }
 
-        public static byte[] CompileShaderFile(string filePath, ShaderVersion? version = null)
+        public static byte[] CompileShaderFile(string filePath, ShaderVersion? version = null, string? entryPoint = null)
         {
             string shaderSource = File.ReadAllText(filePath);
-
-            return CompileShader(shaderSource, version, filePath);
+            return CompileShader(shaderSource, version, entryPoint, filePath);
         }
 
-        public static byte[] CompileShader(string shaderSource, ShaderVersion? version = null, string filePath = "")
+        public static byte[] CompileShader(string shaderSource, ShaderVersion? version = null, string? entryPoint = null, string filePath = "")
         {
             IDxcCompiler compiler = HlslDxcLib.CreateDxcCompiler();
             IDxcLibrary library = HlslDxcLib.CreateDxcLibrary();
 
             const uint CP_UTF16 = 1200;
+
             IDxcBlobEncoding sourceBlob = library.CreateBlobWithEncodingOnHeapCopy(shaderSource, (uint)(shaderSource.Length * 2), CP_UTF16);
+            IDxcOperationResult result = compiler.Compile(sourceBlob, filePath, entryPoint ?? GetDefaultEntryPoint(version), $"{GetShaderProfile(version)}_6_1", new[] { "-Zpr" }, 1, null, 0, library.CreateIncludeHandler());
 
-            IDxcOperationResult result = compiler.Compile(sourceBlob, filePath, GetDefaultEntryPoint(version), $"{GetShaderProfile(version)}_6_3", new[] { "-Zpr" }, 1, null, 0, library.CreateIncludeHandler());
-
-            if (result.GetStatus() != 0)
+            if (result.GetStatus() == 0)
             {
                 IDxcBlob blob = result.GetResult();
                 byte[] bytecode = GetBytesFromBlob(blob);
@@ -50,7 +49,8 @@ namespace DirectX12GameEngine
             }
             else
             {
-                throw new Exception();
+                string resultText = GetStringFromBlob(library, result.GetErrors());
+                throw new Exception(resultText);
             }
         }
 
@@ -76,6 +76,12 @@ namespace DirectX12GameEngine
             return result;
         }
 
+        public static unsafe string GetStringFromBlob(IDxcLibrary library, IDxcBlob blob)
+        {
+            blob = library.GetBlobAstUf16(blob);
+            return new string(blob.GetBufferPointer(), 0, (int)(blob.GetBufferSize() / 2));
+        }
+
         public static ShaderGenerationResult GenerateShaderSource(object shader, BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)
         {
             StringWriter stringWriter = new StringWriter();
@@ -97,28 +103,38 @@ namespace DirectX12GameEngine
             {
                 Type fieldType = fieldInfo.GetValue(shader)?.GetType() ?? fieldInfo.FieldType;
 
-                if (!HlslKnownTypes.ContainsKey(fieldType))
+                ShaderResourceAttribute? resourceType = fieldInfo.GetCustomAttribute<ShaderResourceAttribute>() ?? fieldType.GetCustomAttribute<ShaderResourceAttribute>();
+
+                if (resourceType != null)
                 {
-                    WriteStructure(writer, fieldType, bindingAttr | BindingFlags.DeclaredOnly);
+                    if (!HlslKnownTypes.ContainsKey(fieldType))
+                    {
+                        WriteStructure(writer, fieldType, bindingAttr | BindingFlags.DeclaredOnly);
+                        writer.WriteLine();
+                    }
+
+                    WriteResource(writer, fieldInfo, fieldType, resourceType, ref tracker);
                     writer.WriteLine();
                 }
-
-                WriteResource(writer, fieldInfo, fieldInfo.FieldType, ref tracker);
-                writer.WriteLine();
             }
 
             foreach (PropertyInfo propertyInfo in shaderType.GetProperties(bindingAttr))
             {
                 Type propertyType = propertyInfo.GetValue(shader)?.GetType() ?? propertyInfo.PropertyType;
 
-                if (!HlslKnownTypes.ContainsKey(propertyType))
+                ShaderResourceAttribute? resourceType = propertyInfo.GetCustomAttribute<ShaderResourceAttribute>() ?? propertyType.GetCustomAttribute<ShaderResourceAttribute>();
+
+                if (resourceType != null)
                 {
-                    WriteStructure(writer, propertyType, bindingAttr | BindingFlags.DeclaredOnly);
+                    if (!HlslKnownTypes.ContainsKey(propertyType))
+                    {
+                        WriteStructure(writer, propertyType, bindingAttr | BindingFlags.DeclaredOnly);
+                        writer.WriteLine();
+                    }
+
+                    WriteResource(writer, propertyInfo, propertyType, resourceType, ref tracker);
                     writer.WriteLine();
                 }
-
-                WriteResource(writer, propertyInfo, propertyType, ref tracker);
-                writer.WriteLine();
             }
 
             foreach (MethodInfo methodInfo in shaderType.GetMethods(bindingAttr))
@@ -230,32 +246,25 @@ namespace DirectX12GameEngine
             int arrayCount = type.IsArray ? 2 : 0;
             writer.Write(WriteArray(arrayCount));
 
-            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<VertexSemanticAttribute>(), ref tracker));
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>(), ref tracker));
             writer.WriteLine(';');
         }
 
-        private static void WriteResource(IndentedTextWriter writer, MemberInfo memberInfo, Type type, ref HlslBindingTracker tracker)
+        private static void WriteResource(IndentedTextWriter writer, MemberInfo memberInfo, Type type, ShaderResourceAttribute resourceType, ref HlslBindingTracker tracker)
         {
-            ShaderResourceKind resourceKind = type switch
+            switch (resourceType)
             {
-                _ when type == typeof(SamplerResource) => ShaderResourceKind.Sampler,
-                _ when type == typeof(Texture2DResource) => ShaderResourceKind.Texture2D,
-                _ => type.GetCustomAttribute<ResourceAttribute>()?.Kind ?? ShaderResourceKind.Uniform
-            };
-
-            switch (resourceKind)
-            {
-                case ShaderResourceKind.Uniform:
-                    WriteUniform(writer, memberInfo, type, tracker.Uniform++);
+                case ConstantBufferResourceAttribute _:
+                    WriteConstantBuffer(writer, memberInfo, type, tracker.ConstantBuffer++);
                     break;
-                case ShaderResourceKind.Texture2D:
-                    WriteTexture2D(writer, memberInfo, type, tracker.Texture++);
-                    break;
-                case ShaderResourceKind.Sampler:
+                case SamplerResourceAttribute _:
                     WriteSampler(writer, memberInfo, type, tracker.Sampler++);
                     break;
+                case Texture2DResourceAttribute _:
+                    WriteTexture2D(writer, memberInfo, type, tracker.Texture++);
+                    break;
                 default:
-                    throw new NotSupportedException("This shader resource kind is not supported.");
+                    throw new NotSupportedException("This shader resource type is not supported.");
             }
         }
 
@@ -269,7 +278,7 @@ namespace DirectX12GameEngine
             writer.WriteLine($"{HlslKnownTypes.GetMappedName(type)} {memberInfo.Name} : register(t{binding});");
         }
 
-        private static void WriteUniform(IndentedTextWriter writer, MemberInfo memberInfo, Type type, int binding)
+        private static void WriteConstantBuffer(IndentedTextWriter writer, MemberInfo memberInfo, Type type, int binding)
         {
             int arrayCount = type.IsArray ? 2 : 0;
 
@@ -279,14 +288,11 @@ namespace DirectX12GameEngine
             writer.WriteLine("}");
         }
 
-        private static string WriteArray(int arrayCount)
-        {
-            return arrayCount > 0 ? $"[{arrayCount}]" : "";
-        }
+        private static string WriteArray(int arrayCount) => arrayCount > 0 ? $"[{arrayCount}]" : "";
 
         private static Type GetElementOrDeclaredType(this Type type) => type.IsArray ? type.GetElementType() : type;
 
-        private static string GetHlslSemantic(VertexSemanticAttribute semanticType, ref HlslSemanticTracker tracker) => semanticType switch
+        private static string GetHlslSemantic(ShaderSemanticAttribute semanticType, ref HlslSemanticTracker tracker) => semanticType switch
         {
             PositionSemanticAttribute _ => " : Position" + tracker.Position++,
             NormalSemanticAttribute _ => " : Normal" + tracker.Normal++,
@@ -296,39 +302,39 @@ namespace DirectX12GameEngine
             SystemPositionSemanticAttribute _ => " : SV_Position",
             SystemInstanceIdSemanticAttribute _ => " : SV_InstanceId",
             SystemRenderTargetArrayIndexSemanticAttribute _ => " : SV_RenderTargetArrayIndex",
-            ColorTargetSemanticAttribute _ => " : SV_Target" + tracker.ColorTarget++,
+            SystemTargetSemanticAttribute _ => " : SV_Target" + tracker.SystemTarget++,
             _ => ""
         };
 
         private static string GetDefaultEntryPoint(ShaderVersion? version) => version switch
         {
+            ShaderVersion.ComputeShader => "CSMain",
             ShaderVersion.VertexShader => "VSMain",
+            ShaderVersion.PixelShader => "PSMain",
             ShaderVersion.HullShader => "HSMain",
             ShaderVersion.DomainShader => "DSMain",
             ShaderVersion.GeometryShader => "GSMain",
-            ShaderVersion.PixelShader => "PSMain",
-            ShaderVersion.ComputeShader => "CSMain",
             _ => ""
         };
 
         private static string GetShaderProfile(ShaderVersion? version) => version switch
         {
+            ShaderVersion.ComputeShader => "cs",
             ShaderVersion.VertexShader => "vs",
+            ShaderVersion.PixelShader => "ps",
             ShaderVersion.HullShader => "hs",
             ShaderVersion.DomainShader => "ds",
             ShaderVersion.GeometryShader => "gs",
-            ShaderVersion.PixelShader => "ps",
-            ShaderVersion.ComputeShader => "cs",
             _ => "lib"
         };
 
         internal static class CSharpDecompilers
         {
-            private static readonly Dictionary<string, CSharpDecompiler> s_decompilers = new Dictionary<string, CSharpDecompiler>();
+            private static readonly Dictionary<string, CSharpDecompiler> decompilers = new Dictionary<string, CSharpDecompiler>();
 
             public static CSharpDecompiler GetMappedDecompiler(string assemblyPath)
             {
-                if (!s_decompilers.TryGetValue(assemblyPath, out CSharpDecompiler decompiler))
+                if (!decompilers.TryGetValue(assemblyPath, out CSharpDecompiler decompiler))
                 {
                     UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(assemblyPath, false, "netstandard2.0");
 
@@ -341,7 +347,7 @@ namespace DirectX12GameEngine
 
                     decompiler = new CSharpDecompiler(assemblyPath, resolver, decompilerSettings);
 
-                    s_decompilers.Add(assemblyPath, decompiler);
+                    decompilers.Add(assemblyPath, decompiler);
                 }
 
                 return decompiler;
@@ -350,58 +356,49 @@ namespace DirectX12GameEngine
 
         internal static class HlslKnownTypes
         {
-            private static readonly Dictionary<string, string> s_knownTypes = new Dictionary<string, string>()
+            private static readonly Dictionary<string, string> knownTypes = new Dictionary<string, string>()
             {
-                { "System.UInt32", "uint" },
-                { "System.Int32", "int" },
-                { "System.Single", "float" },
-                { "System.Numerics.Vector2", "float2" },
-                { "System.Numerics.Vector3", "float3" },
-                { "System.Numerics.Vector4", "float4" },
-                { "System.Numerics.Matrix4x4", "float4x4" },
-                { "System.Void", "void" },
-                { "ShaderGen.SamplerResource", "SamplerState" },
-                { "ShaderGen.SamplerComparisonResource", "SamplerComparisonState" },
-                { "ShaderGen.Texture2DResource", "Texture2D" },
-                { "ShaderGen.Texture2DArrayResource", "Texture2DArray" },
-                { "ShaderGen.TextureCubeResource", "TextureCube" },
-                { "ShaderGen.DepthTexture2DResource", "Texture2D" },
-                { "ShaderGen.DepthTexture2DArrayResource", "Texture2DArray" },
-                { "System.Boolean", "bool" },
-                { "ShaderGen.UInt2", "uint2" },
-                { "ShaderGen.UInt3", "uint3" },
-                { "ShaderGen.UInt4", "uint4" },
-                { "ShaderGen.Int2", "int2" },
-                { "ShaderGen.Int3", "int3" },
-                { "ShaderGen.Int4", "int4" },
-                { "ShaderGen.AtomicBufferUInt32", "RWStructuredBuffer<uint>" },
-                { "ShaderGen.AtomicBufferInt32", "RWStructuredBuffer<int>" },
+                { typeof(void).FullName, "void" },
+                { typeof(bool).FullName, "bool" },
+                { typeof(uint).FullName, "uint" },
+                { typeof(int).FullName, "int" },
+                { typeof(float).FullName, "float" },
+                { typeof(double).FullName, "double" },
+                { typeof(Vector2).FullName, "float2" },
+                { typeof(Vector3).FullName, "float3" },
+                { typeof(Vector4).FullName, "float4" },
+                { typeof(Matrix4x4).FullName, "float4x4" },
+                { typeof(SamplerResource).FullName, "SamplerState" },
+                { typeof(SamplerComparisonResource).FullName, "SamplerComparisonState" },
+                { typeof(Texture2DResource).FullName, "Texture2D" },
+                { typeof(Texture2DArrayResource).FullName, "Texture2DArray" },
+                { typeof(TextureCubeResource).FullName, "TextureCube" },
             };
 
             public static string GetMappedName(Type type)
             {
-                return s_knownTypes.TryGetValue(type.GetElementOrDeclaredType().FullName.Replace('+', '.'), out string mapped) ? mapped : type.Name;
+                return knownTypes.TryGetValue(type.GetElementOrDeclaredType().FullName.Replace('+', '.'), out string mapped) ? mapped : type.Name;
             }
 
             public static string GetMappedName(string name)
             {
-                return s_knownTypes.TryGetValue(name, out string mapped) ? mapped : Regex.Match(name, @"[^\.]+$").Value;
+                return knownTypes.TryGetValue(name, out string mapped) ? mapped : Regex.Match(name, @"[^\.]+$").Value;
             }
 
             public static bool ContainsKey(Type type)
             {
-                return s_knownTypes.ContainsKey(type.GetElementOrDeclaredType().FullName.Replace('+', '.'));
+                return knownTypes.ContainsKey(type.GetElementOrDeclaredType().FullName.Replace('+', '.'));
             }
 
             public static bool ContainsKey(string name)
             {
-                return s_knownTypes.ContainsKey(name);
+                return knownTypes.ContainsKey(name);
             }
         }
 
         internal static class HlslKnownMethods
         {
-            private static readonly Dictionary<string, string> s_knownMethod = new Dictionary<string, string>()
+            private static readonly Dictionary<string, string> knownMethods = new Dictionary<string, string>()
             {
                 { "System.Numerics.Vector4.Transform", "mul" },
                 { "System.Numerics.Vector4.Zero", "float4(0.0f, 0.0f, 0.0f, 0.0f)" }
@@ -409,15 +406,15 @@ namespace DirectX12GameEngine
 
             public static string GetMappedName(string name)
             {
-                return s_knownMethod.TryGetValue(name, out string mapped) ? mapped : name;
+                return knownMethods.TryGetValue(name, out string mapped) ? mapped : name;
             }
         }
 
         private struct HlslBindingTracker
         {
+            public int ConstantBuffer;
             public int Sampler;
             public int Texture;
-            public int Uniform;
         };
 
         private struct HlslSemanticTracker
@@ -427,7 +424,7 @@ namespace DirectX12GameEngine
             public int Normal;
             public int Tangent;
             public int Color;
-            public int ColorTarget;
+            public int SystemTarget;
         }
     }
 }

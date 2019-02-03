@@ -2,7 +2,7 @@
 
 namespace DirectX12GameEngine
 {
-    public class MaterialAttributes : Shader
+    public class MaterialAttributes : MaterialShader
     {
         public void Visit(Material material)
         {

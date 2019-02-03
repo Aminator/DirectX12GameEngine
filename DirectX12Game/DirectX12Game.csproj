@@ -14,6 +14,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Models\Cliffhouse_Bird_Material.xml" />
+    <None Remove="Assets\Models\Cliffhouse_Cliffhouse_Material.xml" />
+    <None Remove="Assets\Models\Cliffhouse_Water_Material.xml" />
+    <None Remove="Assets\Scenes\Cliffhouse_Model.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine\DirectX12GameEngine.csproj" />
   </ItemGroup>
 

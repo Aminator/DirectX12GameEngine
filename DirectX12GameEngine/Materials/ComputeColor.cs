@@ -2,10 +2,14 @@
 
 namespace DirectX12GameEngine
 {
-    [UniformResource]
-    public class ComputeColor : Shader, IComputeColor
+    [ConstantBufferResource]
+    public class ComputeColor : MaterialShader, IComputeColor
     {
         private Texture? colorBuffer;
+
+        public ComputeColor()
+        {
+        }
 
         public ComputeColor(in Vector4 color)
         {
@@ -21,7 +25,7 @@ namespace DirectX12GameEngine
 
         #region Shader
 
-        public Vector4 Color;
+        public Vector4 Color { get; set; }
 
         [ShaderMethod]
         public Vector4 Compute(Vector2 texCoord)

@@ -45,13 +45,29 @@ namespace DirectX12GameEngine
         public static TRoot ReplaceType<TRoot>(this TRoot node, TypeSyntax type) where TRoot : SyntaxNode
         {
             string value = ShaderLoader.HlslKnownTypes.GetMappedName(type.ToString());
-            return node.ReplaceNode(type, SyntaxFactory.ParseTypeName(value).WithLeadingTrivia(type.GetLeadingTrivia()).WithTrailingTrivia(type.GetTrailingTrivia()));
+
+            if (value == type.ToString())
+            {
+                return node;
+            }
+            else
+            {
+                return node.ReplaceNode(type, SyntaxFactory.ParseTypeName(value).WithLeadingTrivia(type.GetLeadingTrivia()).WithTrailingTrivia(type.GetTrailingTrivia()));
+            }
         }
 
-        public static IdentifierNameSyntax ReplaceMethod<TRoot>(this TRoot node) where TRoot : SyntaxNode
+        public static SyntaxNode ReplaceMethod(this SyntaxNode node)
         {
             string value = ShaderLoader.HlslKnownMethods.GetMappedName(node.ToString());
-            return SyntaxFactory.IdentifierName(value).WithLeadingTrivia(node.GetLeadingTrivia()).WithTrailingTrivia(node.GetTrailingTrivia());
+
+            if (value == node.ToString())
+            {
+                return node;
+            }
+            else
+            {
+                return SyntaxFactory.IdentifierName(value).WithLeadingTrivia(node.GetLeadingTrivia()).WithTrailingTrivia(node.GetTrailingTrivia());
+            }
         }
     }
 }

@@ -37,6 +37,7 @@ namespace DirectX12GameEngine
 
             Content = Services.GetRequiredService<ContentManager>();
             SceneSystem = Services.GetRequiredService<SceneSystem>();
+            GameSystems = Services.GetRequiredService<List<GameSystem>>();
 
             GameSystems.AddRange(new List<GameSystem>
             {
@@ -48,7 +49,7 @@ namespace DirectX12GameEngine
 
         public GameContext GameContext { get; }
 
-        public List<GameSystem> GameSystems { get; } = new List<GameSystem>();
+        public List<GameSystem> GameSystems { get; }
 
         public GraphicsDevice GraphicsDevice { get; } = new GraphicsDevice();
 
@@ -191,8 +192,9 @@ namespace DirectX12GameEngine
             return new ServiceCollection()
                 .AddSingleton(this)
                 .AddSingleton(GraphicsDevice)
+                .AddSingleton<ModelLoader>()
                 .AddSingleton<ContentManager>()
-                .AddSingleton(GameSystems)
+                .AddSingleton<List<GameSystem>>()
                 .AddSingleton<SceneSystem>()
                 .BuildServiceProvider();
         }

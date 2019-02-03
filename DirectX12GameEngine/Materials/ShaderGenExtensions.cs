@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using ShaderGen;
 
 namespace DirectX12GameEngine
 {

@@ -1,67 +1,71 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Scene xmlns="DirectX12GameEngine" xmlns:local="DirectX12Game">
-    <Scene.Entities>
-        <Entity Name="T-Rex">
-            <TransformComponent Scale="10,10,10" />
-            <ModelComponent>
-                <ModelComponent.Model>
-                    <Model>Assets\Models\Cliffhouse.glb</Model>
-                </ModelComponent.Model>
-            </ModelComponent>
-        </Entity>
+  <Entity Name="T-Rex">
+    <TransformComponent Scale="10,10,10" />
+    <ModelComponent>
+      <ModelComponent.Model>Assets\Models\Cliffhouse_Model.xml</ModelComponent.Model>
+    </ModelComponent>
+  </Entity>
 
-        <Entity Name="T-Rex">
-            <TransformComponent Scale="2,2,2" Position="-600,0,0" />
-            <ModelComponent Model="Assets\Models\Cliffhouse.glb" />
-        </Entity>
+  <Entity Name="T-Rex">
+    <TransformComponent Scale="2,2,2" Position="-600,0,0" />
+    <ModelComponent>
+      <ModelComponent.Model>
+        <Model>Assets\Models\Cliffhouse_Model.xml</Model>
+      </ModelComponent.Model>
+    </ModelComponent>
+  </Entity>
 
-        <Entity Name="T-Rex">
-            <TransformComponent Scale="2,2,2" Position="-500,0,0" />
-            <ModelComponent Model="Assets\Models\Cliffhouse.glb" />
-        </Entity>
+  <Entity Name="T-Rex">
+    <TransformComponent Scale="2,2,2" Position="-500,0,0" />
+    <ModelComponent>
+      <ModelComponent.Model>
+        <Model Content="Assets\Models\Cliffhouse_Model.xml" />
+      </ModelComponent.Model>
+    </ModelComponent>
+  </Entity>
 
-        <Entity Name="T-Rex">
-            <TransformComponent Scale="2,2,2" Position="500,0,0" />
-            <ModelComponent Model="Assets\Models\Cliffhouse.glb" />
-        </Entity>
+  <Entity Name="T-Rex">
+    <TransformComponent Scale="2,2,2" Position="500,0,0" />
+    <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
+  </Entity>
 
-        <Entity Name="T-Rex">
-            <TransformComponent Scale="2,2,2" Position="600,0,0" />
-            <ModelComponent Model="Assets\Models\Cliffhouse.glb" />
-        </Entity>
+  <Entity Name="T-Rex">
+    <TransformComponent Scale="2,2,2" Position="600,0,0" />
+    <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
+  </Entity>
 
-        <Entity Name="MyScript">Assets\Scenes\MyScriptEntity1.xml</Entity>
+  <Entity Name="MyScript">Assets\Scenes\MyScriptEntity1.xml</Entity>
 
-        <!--<Entity Name="MyVideo">
-            <VideoComponent SourceUri="{MyVideo1.xml}">
-                <VideoComponent.AutoPlay>True</VideoComponent.AutoPlay>
-            </VideoComponent>
-        </Entity>-->
+  <!--<Entity Name="MyVideo">
+    <VideoComponent SourceUri="{MyVideo1.xml}">
+      <VideoComponent.AutoPlay>True</VideoComponent.AutoPlay>
+    </VideoComponent>
+  </Entity>
 
-        <Entity Name="HoloTile">
-            <Entity.Components>
-                <ModelComponent Model="Assets\Models\HoloTile.glb" />
-            </Entity.Components>
-        </Entity>
+  <Entity Name="HoloTile">
+    <Entity.Components>
+      <ModelComponent Model="Assets\Models\HoloTile.glb" />
+    </Entity.Components>
+  </Entity>
 
-        <Entity Name="Icon_Failure">
-            <ModelComponent Model="Assets\Models\Icon_Failure.glb" />
-        </Entity>
+  <Entity Name="Icon_Failure">
+    <ModelComponent Model="Assets\Models\Icon_Failure.glb" />
+  </Entity>
 
-        <Entity Name="LiveCube">
-            <ModelComponent Model="Assets\Models\LiveCube.glb" />
-        </Entity>
+  <Entity Name="LiveCube">
+    <ModelComponent Model="Assets\Models\LiveCube.glb" />
+  </Entity>
 
-        <Entity Name="RightHandModel">
-            <ModelComponent Model="Assets\Models\RightHandModel.glb" />
-        </Entity>
+  <Entity Name="RightHandModel">
+    <ModelComponent Model="Assets\Models\RightHandModel.glb" />
+  </Entity>-->
 
-        <Entity Name="MyCamera">
-            <CameraComponent />
-        </Entity>
-    </Scene.Entities>
+  <Entity Name="MyCamera">
+    <CameraComponent />
+  </Entity>
 
-    <Entity Name="Cliffhouse">
-        <ModelComponent Model="Assets\Models\Cliffhouse.glb" />
-    </Entity>
+  <Entity Name="Cliffhouse">
+    <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
+  </Entity>
 </Scene>
