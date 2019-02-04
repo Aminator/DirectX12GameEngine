@@ -1,4 +1,7 @@
-﻿namespace DirectX12GameEngine
+﻿using System;
+using System.Numerics;
+
+namespace DirectX12GameEngine
 {
     public abstract class ShaderResource
     {
@@ -17,6 +20,7 @@
     [Texture2DResource]
     public class Texture2DResource : ShaderResource
     {
+        public Vector4 Sample(SamplerResource sampler, Vector2 texCoord) => throw new NotImplementedException();
     }
 
     [Texture2DArrayResource]
