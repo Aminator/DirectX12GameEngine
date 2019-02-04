@@ -118,30 +118,28 @@ namespace DirectX12GameEngine
 
         protected unsafe override void ResizeBackBuffer(int width, int height)
         {
-            using (SharpDX.Direct3D11.Device11On12 device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.Direct3D11.Device11On12>())
-            {
-                device11On12.ReleaseWrappedResources(new[] { d3D11RenderTarget }, 1);
+            using SharpDX.Direct3D11.Device11On12 device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.Direct3D11.Device11On12>();
+            device11On12.ReleaseWrappedResources(new[] { d3D11RenderTarget }, 1);
 
-                renderTarget.Dispose();
+            renderTarget.Dispose();
 
-                renderTarget = Texture.New2D(
-                    GraphicsDevice,
-                    PresentationParameters.BackBufferFormat,
-                    width,
-                    height,
-                    DescriptorHeapType.RenderTargetView,
-                    resourceFlags: ResourceFlags.AllowRenderTarget,
-                    arraySize: (short)HolographicBufferCount,
-                    mipLevels: 1);
+            renderTarget = Texture.New2D(
+                GraphicsDevice,
+                PresentationParameters.BackBufferFormat,
+                width,
+                height,
+                DescriptorHeapType.RenderTargetView,
+                resourceFlags: ResourceFlags.AllowRenderTarget,
+                arraySize: (short)HolographicBufferCount,
+                mipLevels: 1);
 
-                device11On12.CreateWrappedResource(
-                    BackBuffer.NativeResource,
-                    new SharpDX.Direct3D11.D3D11ResourceFlags { BindFlags = (int)Direct3DBindings.RenderTarget },
-                    (int)ResourceStates.RenderTarget,
-                    (int)ResourceStates.Present,
-                    Utilities.GetGuidFromType(typeof(SharpDX.Direct3D11.Resource)),
-                    out d3D11RenderTarget);
-            }
+            device11On12.CreateWrappedResource(
+                BackBuffer.NativeResource,
+                new SharpDX.Direct3D11.D3D11ResourceFlags { BindFlags = (int)Direct3DBindings.RenderTarget },
+                (int)ResourceStates.RenderTarget,
+                (int)ResourceStates.Present,
+                Utilities.GetGuidFromType(typeof(SharpDX.Direct3D11.Resource)),
+                out d3D11RenderTarget);
         }
 
         protected override void ResizeDepthStencilBuffer(int width, int height)

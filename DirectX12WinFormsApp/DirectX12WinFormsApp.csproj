@@ -6,7 +6,6 @@
     <UseWindowsForms>true</UseWindowsForms>
     <LangVersion>8.0</LangVersion>
     <NullableContextOptions>enable</NullableContextOptions>
-    <Platforms>x86;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

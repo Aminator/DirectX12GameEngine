@@ -10,8 +10,6 @@ using GltfLoader.Schema;
 using Microsoft.Extensions.DependencyInjection;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
-using Windows.Graphics.Imaging;
-using Windows.Storage;
 using Windows.Storage.Streams;
 
 namespace DirectX12GameEngine
@@ -32,7 +30,7 @@ namespace DirectX12GameEngine
 
             Model model = new Model();
 
-            IList<Mesh> meshes = GetMeshes(gltf, buffers);
+            IList<Mesh> meshes = await GetMeshesAsync(gltf, buffers);
 
             foreach (Mesh mesh in meshes)
             {
@@ -55,31 +53,7 @@ namespace DirectX12GameEngine
             Gltf gltf = await Task.Run(() => Interface.LoadModel(filePath));
             IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
 
-            return GetMeshes(gltf, buffers);
-        }
-
-        public async Task<Texture> LoadTextureAsync(string filePath)
-        {
-            StorageFile file = await StorageFile.GetFileFromPathAsync(Path.GetFullPath(filePath));
-
-            return await LoadTextureAsync(await file.OpenReadAsync());
-        }
-
-        public async Task<Texture> LoadTextureAsync(IRandomAccessStream stream)
-        {
-            BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream);
-            PixelDataProvider pixelDataProvider = await decoder.GetPixelDataAsync();
-
-            byte[] imageBuffer = pixelDataProvider.DetachPixelData();
-
-            Format pixelFormat = decoder.BitmapPixelFormat switch
-            {
-                BitmapPixelFormat.Rgba8 => Format.R8G8B8A8_UNorm,
-                BitmapPixelFormat.Bgra8 => Format.B8G8R8A8_UNorm,
-                _ => throw new NotSupportedException("This format is not supported.")
-            };
-
-            return Texture.CreateTexture2D(GraphicsDevice, imageBuffer.AsSpan(), pixelFormat, (int)decoder.PixelWidth, (int)decoder.PixelHeight);
+            return await GetMeshesAsync(gltf, buffers);
         }
 
         private static int GetCountOfAccessorType(Accessor.TypeEnum type) => type switch
@@ -146,11 +120,11 @@ namespace DirectX12GameEngine
 
                 byte[] currentBuffer = buffers[bufferView.Buffer];
 
-                InMemoryRandomAccessStream randomAccessStream = new InMemoryRandomAccessStream();
+                using InMemoryRandomAccessStream randomAccessStream = new InMemoryRandomAccessStream();
                 await randomAccessStream.WriteAsync(currentBuffer.AsBuffer(bufferView.ByteOffset, bufferView.ByteLength));
                 randomAccessStream.Seek(0);
 
-                Texture texture = await LoadTextureAsync(randomAccessStream);
+                Texture texture = await Texture.LoadAsync(GraphicsDevice, randomAccessStream.AsStreamForRead());
 
                 MaterialAttributes attributes = new MaterialAttributes
                 {
@@ -174,20 +148,20 @@ namespace DirectX12GameEngine
             }
         }
 
-        private IList<Mesh> GetMeshes(Gltf gltf, IList<byte[]> buffers)
+        private async Task<IList<Mesh>> GetMeshesAsync(Gltf gltf, IList<byte[]> buffers)
         {
             List<Mesh> meshes = new List<Mesh>(gltf.Meshes.Length);
 
             for (int i = 0; i < gltf.Meshes.Length; i++)
             {
-                Mesh mesh = GetMesh(gltf, buffers, i);
+                Mesh mesh = await GetMeshAsync(gltf, buffers, i);
                 meshes.Add(mesh);
             }
 
             return meshes;
         }
 
-        private Mesh GetMesh(Gltf gltf, IList<byte[]> buffers, int meshIndex)
+        private Task<Mesh> GetMeshAsync(Gltf gltf, IList<byte[]> buffers, int meshIndex)
         {
             GltfLoader.Schema.Mesh mesh = gltf.Meshes[meshIndex];
 
@@ -259,13 +233,13 @@ namespace DirectX12GameEngine
                 * Matrix4x4.CreateFromQuaternion(quaternion)
                 * Matrix4x4.CreateTranslation(translation);
 
-            return new Mesh
+            return Task.FromResult(new Mesh
             {
                 VertexBufferViews = vertexBufferViews,
                 MaterialIndex = materialIndex,
                 IndexBufferView = indexBufferView,
                 WorldMatrix = worldMatrix
-            };
+            });
         }
 
         private VertexBufferView GetVertexBufferView(Gltf gltf, IList<byte[]> buffers, int accessorIndex)

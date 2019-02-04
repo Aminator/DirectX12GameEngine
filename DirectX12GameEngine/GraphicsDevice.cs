@@ -338,17 +338,15 @@ namespace DirectX12GameEngine
                 }
             }
 
-            using (StreamReader streamReader = new StreamReader(filePath))
-            {
-                MemoryStream stream = new MemoryStream();
-                StreamWriter writer = new StreamWriter(stream);
+            using StreamReader streamReader = new StreamReader(filePath);
+            using MemoryStream stream = new MemoryStream();
+            using StreamWriter writer = new StreamWriter(stream);
 
-                writer.Write(streamReader.ReadToEnd());
-                writer.Flush();
-                stream.Position = 0;
+            writer.Write(streamReader.ReadToEnd());
+            writer.Flush();
+            stream.Position = 0;
 
-                return stream;
-            }
+            return stream;
         }
     }
 }

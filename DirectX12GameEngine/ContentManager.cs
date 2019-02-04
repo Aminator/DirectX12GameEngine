@@ -38,55 +38,51 @@ namespace DirectX12GameEngine
         {
             if (!LoadedAssets.TryGetValue(filePath, out object asset))
             {
-                if (Path.GetExtension(filePath) == ".gltf" || Path.GetExtension(filePath) == ".glb")
-                {
-                    if (type == typeof(Model))
-                    {
-                        asset = await ModelLoader.LoadGltfModelAsync(filePath);
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"The type {type} is not supported with GLTF or GLB files.");
-                    }
-                }
-                else if (Path.GetExtension(filePath) == ".png" || Path.GetExtension(filePath) == ".jpg" || Path.GetExtension(filePath) == ".jpeg")
-                {
-                    if (type == typeof(Texture))
-                    {
-                        asset = await ModelLoader.LoadTextureAsync(filePath);
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"The type {type} is not supported with image files.");
-                    }
-                }
-                else if (Path.GetExtension(filePath) == ".xml")
+                if (Path.GetExtension(filePath) == ".xml")
                 {
                     asset = await LoadElementAsync(filePath);
-
-                    if (asset is Material material)
-                    {
-                        asset = new Material(GraphicsDevice, material.Attributes);
-                    }
+                    asset = await InitializeAssetAsync(asset);
 
                     LoadedAssets.Add(filePath, asset);
                 }
                 else
                 {
-                    throw new NotSupportedException($"The file extension {Path.GetExtension(filePath)} is not supported.");
+                    asset = await LoadFileAsync(type, filePath);
                 }
             }
 
             return asset;
         }
 
+        private Task<object> InitializeAssetAsync(object asset)
+        {
+            if (asset is Material material)
+            {
+                asset = new Material(GraphicsDevice, material.Attributes);
+            }
+
+            return Task.FromResult(asset);
+        }
+
+        private async Task<object> LoadFileAsync(Type type, string filePath)
+        {
+            if (type == typeof(Model))
+            {
+                return await ModelLoader.LoadGltfModelAsync(filePath);
+            }
+            else if (type == typeof(Texture))
+            {
+                return await Texture.LoadAsync(GraphicsDevice, filePath);
+            }
+
+            throw new ArgumentException("This type could not be loaded.");
+        }
+
         private async Task<object> LoadElementAsync(string filePath)
         {
-            using (StreamReader streamReader = new StreamReader(filePath))
-            {
-                XElement root = XElement.Load(streamReader.BaseStream, LoadOptions.None);
-                return await GetParsedElementAsync(root);
-            }
+            using FileStream stream = File.OpenRead(filePath);
+            XElement root = XElement.Load(stream, LoadOptions.None);
+            return await GetParsedElementAsync(root);
         }
 
         private async Task<object> GetParsedElementAsync(XElement element, Type? type = null)
@@ -141,7 +137,7 @@ namespace DirectX12GameEngine
                 type = Assemblies.SelectMany(a => a.GetExportedTypes()).SingleOrDefault(t => t.FullName == typeName);
             }
 
-            string content = element.Nodes().OfType<XText>().FirstOrDefault()?.Value;
+            string? content = element.Nodes().OfType<XText>().FirstOrDefault()?.Value;
 
             IEnumerable<XAttribute> attributes = element.Attributes();
             XAttribute? contentAttribute = attributes.FirstOrDefault(x => x.Name.LocalName == "Content");
@@ -207,6 +203,10 @@ namespace DirectX12GameEngine
             {
                 return double.Parse(value);
             }
+            else if (type == typeof(float))
+            {
+                return float.Parse(value);
+            }
             else if (type == typeof(Vector3))
             {
                 float[] vector = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
@@ -252,7 +252,7 @@ namespace DirectX12GameEngine
                 return await LoadAsync(type, value);
             }
 
-            throw new ArgumentException();
+            throw new ArgumentException("This type could not be parsed.");
         }
     }
 }

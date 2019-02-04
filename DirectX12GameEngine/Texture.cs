@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
-
+using Windows.Graphics.Imaging;
 using Resource = SharpDX.Direct3D12.Resource;
 
 namespace DirectX12GameEngine
@@ -59,6 +61,29 @@ namespace DirectX12GameEngine
             return new Texture(device, device.NativeDevice.CreateCommittedResource(
                 new HeapProperties(heapType), HeapFlags.None,
                 ResourceDescription.Buffer(size, resourceFlags), resourceStates), descriptorHeapType);
+        }
+
+        public static async Task<Texture> LoadAsync(GraphicsDevice device, string filePath)
+        {
+            using FileStream stream = File.OpenRead(filePath);
+            return await LoadAsync(device, stream);
+        }
+
+        public static async Task<Texture> LoadAsync(GraphicsDevice device, Stream stream)
+        {
+            BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream.AsRandomAccessStream());
+            PixelDataProvider pixelDataProvider = await decoder.GetPixelDataAsync();
+
+            byte[] imageBuffer = pixelDataProvider.DetachPixelData();
+
+            Format pixelFormat = decoder.BitmapPixelFormat switch
+            {
+                BitmapPixelFormat.Rgba8 => Format.R8G8B8A8_UNorm,
+                BitmapPixelFormat.Bgra8 => Format.B8G8R8A8_UNorm,
+                _ => throw new NotSupportedException("This format is not supported.")
+            };
+
+            return CreateTexture2D(device, imageBuffer.AsSpan(), pixelFormat, (int)decoder.PixelWidth, (int)decoder.PixelHeight);
         }
 
         public static unsafe Texture CreateBuffer<T>(GraphicsDevice device, Span<T> data, DescriptorHeapType? descriptorHeapType = null) where T : unmanaged
