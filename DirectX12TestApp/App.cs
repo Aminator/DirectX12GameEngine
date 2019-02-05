@@ -1,5 +1,5 @@
 ﻿using DirectX12Game;
-using DirectX12GameEngine;
+using DirectX12GameEngine.Games;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;

@@ -1,5 +1,6 @@
 ﻿using System.IO;
-using DirectX12GameEngine;
+using DirectX12GameEngine.Engine;
+using DirectX12GameEngine.Games;
 
 namespace DirectX12Game
 {

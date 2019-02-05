@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Material xmlns="DirectX12GameEngine" xmlns:local="DirectX12Game">
+<Material xmlns="DirectX12GameEngine.Rendering">
   <Material.Attributes>
-    <MaterialAttributes>
+    <MaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
       <MaterialAttributes.Diffuse>
         <ComputeColor Color="1,0,0,0" />
       </MaterialAttributes.Diffuse>

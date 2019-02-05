@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Scene xmlns="DirectX12GameEngine" xmlns:local="DirectX12Game">
+<Scene xmlns="DirectX12GameEngine.Engine">
   <Entity Name="T-Rex">
     <TransformComponent Scale="10,10,10" />
     <ModelComponent>

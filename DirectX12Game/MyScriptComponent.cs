@@ -1,4 +1,4 @@
-﻿using DirectX12GameEngine;
+﻿using DirectX12GameEngine.Engine;
 
 namespace DirectX12Game
 {

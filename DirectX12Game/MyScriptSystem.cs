@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
-using DirectX12GameEngine;
+using DirectX12GameEngine.Engine;
+using DirectX12GameEngine.Games;
+using DirectX12GameEngine.Rendering;
 
 namespace DirectX12Game
 {
