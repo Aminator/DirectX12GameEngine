@@ -1,10 +1,12 @@
 ﻿using System.Numerics;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Rendering.Core;
+using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
     [Texture2DResource]
-    public class ComputeTextureColor : MaterialShader, IComputeColor
+    public class ComputeTextureColor : IComputeColor
     {
         public ComputeTextureColor()
         {
@@ -17,24 +19,24 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public Texture? Texture { get; set; }
 
-        public void Visit(Material material)
+        public void Visit(MaterialGeneratorContext context)
         {
             if (Texture != null)
             {
-                material.Textures.Add(Texture);
+                context.Textures.Add(Texture);
             }
         }
 
         #region Shader
 
 #nullable disable
-        public Texture2DResource ColorTexture;
+        [ShaderResource] public Texture2DResource ColorTexture;
 #nullable enable
 
         [ShaderMethod]
-        public Vector4 Compute(Vector2 texCoord)
+        public Vector4 Compute()
         {
-            return ColorTexture.Sample(Sampler, texCoord);
+            return ColorTexture.Sample(Texturing.Sampler, Texturing.TexCoord);
         }
 
         #endregion

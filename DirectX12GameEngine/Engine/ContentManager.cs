@@ -60,7 +60,7 @@ namespace DirectX12GameEngine.Engine
         {
             if (asset is Material material)
             {
-                asset = new Material(GraphicsDevice, material.Attributes);
+                asset = new Material(GraphicsDevice, material.Descriptor);
             }
 
             return Task.FromResult(asset);
@@ -136,7 +136,7 @@ namespace DirectX12GameEngine.Engine
             if (type is null)
             {
                 string typeName = element.Name.NamespaceName + Type.Delimiter + element.Name.LocalName;
-                type = Assemblies.SelectMany(a => a.GetExportedTypes()).SingleOrDefault(t => t.FullName == typeName);
+                type = Assemblies.SelectMany(a => a.GetTypes()).SingleOrDefault(t => t.FullName == typeName);
             }
 
             string? content = element.Nodes().OfType<XText>().FirstOrDefault()?.Value;

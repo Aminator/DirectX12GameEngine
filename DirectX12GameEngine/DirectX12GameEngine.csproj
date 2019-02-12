@@ -13,9 +13,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.0.0-beta2-final" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview.19074.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
-    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
-    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.0" />
+    <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.1-beta0-g81dd0b0626" />
+    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.1-beta0-g81dd0b0626" />
+    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.1-beta0-g81dd0b0626" />
     <PackageReference Include="System.Memory" Version="4.5.2" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.6.0-preview.19073.11" />
     <PackageReference Include="System.Runtime.InteropServices.WindowsRuntime" Version="4.3.0" />

@@ -31,8 +31,7 @@ namespace DirectX12GameEngine.Engine
                     cameraComponent.NearPlaneDistance,
                     cameraComponent.FarPlaneDistance);
 
-                Matrix4x4 viewProjectionMatrix = cameraComponent.ViewMatrix * cameraComponent.ProjectionMatrix;
-                cameraComponent.ViewProjectionMatrix = viewProjectionMatrix;
+                cameraComponent.ViewProjectionMatrix = cameraComponent.ViewMatrix * cameraComponent.ProjectionMatrix;
             }
         }
     }

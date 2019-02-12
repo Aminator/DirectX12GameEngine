@@ -35,7 +35,10 @@
     <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
   </Entity>
 
-  <Entity Name="MyScript">Assets\Scenes\MyScriptEntity1.xml</Entity>
+  <Entity Name="Icon_Failure">
+    <TransformComponent Position="-800,0,0" Scale="50,50,50" />
+    <ModelComponent Model="Assets\Models\Icon_Failure_Model.xml" />
+  </Entity>
 
   <!--<Entity Name="MyVideo">
     <VideoComponent SourceUri="{MyVideo1.xml}">
@@ -49,10 +52,6 @@
     </Entity.Components>
   </Entity>
 
-  <Entity Name="Icon_Failure">
-    <ModelComponent Model="Assets\Models\Icon_Failure.glb" />
-  </Entity>
-
   <Entity Name="LiveCube">
     <ModelComponent Model="Assets\Models\LiveCube.glb" />
   </Entity>
@@ -61,8 +60,20 @@
     <ModelComponent Model="Assets\Models\RightHandModel.glb" />
   </Entity>-->
 
+  <Entity Name="MyScript">Assets\Scenes\MyScriptEntity1.xml</Entity>
+
   <Entity Name="MyCamera">
+    <TransformComponent Position="0,300,1500" />
     <CameraComponent />
+  </Entity>
+  
+  <Entity Name="MyLight">
+    <TransformComponent Position="0,300,1500" />
+    <LightComponent Intensity="1">
+      <LightComponent.Light>
+        <DirectionalLight xmlns="DirectX12GameEngine.Rendering.Lights" Color="1,1,1" />
+      </LightComponent.Light>
+    </LightComponent>
   </Entity>
 
   <Entity Name="Cliffhouse">

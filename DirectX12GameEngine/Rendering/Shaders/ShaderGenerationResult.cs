@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace DirectX12GameEngine.Rendering.Materials
+namespace DirectX12GameEngine.Rendering.Shaders
 {
     public class ShaderGenerationResult
     {

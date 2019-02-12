@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Model xmlns="DirectX12GameEngine.Rendering" Content="Assets\Resources\Models\Icon_Failure.glb">
+  <Model.Materials>
+    <Material>Assets\Materials\Icon_Failure_Material.xml</Material>
+  </Model.Materials>
+</Model>

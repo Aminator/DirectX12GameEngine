@@ -63,7 +63,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        public ObservableCollection<TComponent> Components { get; } = new ObservableCollection<TComponent>();
+        protected ObservableCollection<TComponent> Components { get; } = new ObservableCollection<TComponent>();
 
         protected internal override void ProcessEntityComponent(EntityComponent entityComponent, bool forceRemove)
         {

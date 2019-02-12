@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace DirectX12GameEngine.Rendering.Materials
+namespace DirectX12GameEngine.Rendering.Shaders
 {
     public static class StringBuilderExtensions
     {

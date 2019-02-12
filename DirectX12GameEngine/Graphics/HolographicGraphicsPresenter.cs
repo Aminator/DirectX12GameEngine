@@ -1,5 +1,4 @@
 ﻿using System;
-using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Games;
 using SharpDX;
 using SharpDX.Direct3D12;

@@ -1,10 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Material xmlns="DirectX12GameEngine.Rendering">
-  <Material.Attributes>
-    <MaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
-      <MaterialAttributes.Diffuse>
-        <ComputeTextureColor Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img4.png" />
-      </MaterialAttributes.Diffuse>
-    </MaterialAttributes>
-  </Material.Attributes>
+  <Material.Descriptor>
+    <MaterialDescriptor xmlns="DirectX12GameEngine.Rendering.Materials">
+      <MaterialDescriptor.Attributes>
+        <MaterialAttributes>
+          <MaterialAttributes.Diffuse>
+            <ComputeTextureColor Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img4.png" />
+          </MaterialAttributes.Diffuse>
+        </MaterialAttributes>
+      </MaterialDescriptor.Attributes>
+    </MaterialDescriptor>
+  </Material.Descriptor>
 </Material>

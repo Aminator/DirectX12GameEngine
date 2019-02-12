@@ -1,11 +1,12 @@
 ﻿using System.Numerics;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
     [ConstantBufferResource]
-    public class ComputeColor : MaterialShader, IComputeColor
+    public class ComputeColor : IComputeColor
     {
         private Texture? colorBuffer;
 
@@ -18,19 +19,19 @@ namespace DirectX12GameEngine.Rendering.Materials
             Color = color;
         }
 
-        public void Visit(Material material)
+        public void Visit(MaterialGeneratorContext context)
         {
-            colorBuffer ??= Texture.CreateConstantBufferView(material.GraphicsDevice, Color).DisposeBy(material.GraphicsDevice);
+            colorBuffer ??= Texture.CreateConstantBufferView(context.GraphicsDevice, Color).DisposeBy(context.GraphicsDevice);
 
-            material.Textures.Add(colorBuffer);
+            context.Textures.Add(colorBuffer);
         }
 
         #region Shader
 
-        public Vector4 Color { get; set; }
+        [ShaderResource] public Vector4 Color { get; set; }
 
         [ShaderMethod]
-        public Vector4 Compute(Vector2 texCoord)
+        public Vector4 Compute()
         {
             return Color;
         }

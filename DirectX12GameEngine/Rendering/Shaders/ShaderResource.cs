@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace DirectX12GameEngine.Rendering.Materials
+namespace DirectX12GameEngine.Rendering.Shaders
 {
     public abstract class ShaderResource
     {

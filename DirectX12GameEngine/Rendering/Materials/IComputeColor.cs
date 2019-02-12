@@ -4,6 +4,6 @@ namespace DirectX12GameEngine.Rendering.Materials
 {
     public interface IComputeColor : IComputeNode
     {
-        Vector4 Compute(Vector2 texCoord);
+        Vector4 Compute();
     }
 }

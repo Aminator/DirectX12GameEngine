@@ -17,7 +17,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        public List<EntitySystem> EntitySystems { get; } = new List<EntitySystem>();
+        public EntitySystemCollection EntitySystems { get; } = new EntitySystemCollection();
 
         public CameraComponent? CurrentCamera { get; set; }
 

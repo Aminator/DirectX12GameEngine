@@ -1,7 +1,7 @@
-﻿using DirectX12Game;
-using DirectX12GameEngine;
-using System;
+﻿using System;
 using System.Windows.Forms;
+using DirectX12Game;
+using DirectX12GameEngine.Games;
 
 namespace DirectX12WinFormsApp
 {

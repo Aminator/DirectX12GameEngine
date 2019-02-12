@@ -51,14 +51,14 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        public T Get<T>() where T : EntityComponent
+        public T? Get<T>() where T : EntityComponent
         {
             return this.OfType<T>().FirstOrDefault();
         }
 
         public T GetOrCreate<T>() where T : EntityComponent, new()
         {
-            T entityComponent = Get<T>();
+            T? entityComponent = Get<T>();
 
             if (entityComponent is null)
             {
@@ -71,7 +71,7 @@ namespace DirectX12GameEngine.Engine
 
         public bool Remove<T>() where T : EntityComponent
         {
-            EntityComponent entityComponent = Get<T>();
+            T? entityComponent = Get<T>();
 
             if (entityComponent != null)
             {

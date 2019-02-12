@@ -127,12 +127,15 @@ namespace DirectX12GameEngine.Rendering
 
                 Texture texture = await Texture.LoadAsync(GraphicsDevice, stream);
 
-                MaterialAttributes attributes = new MaterialAttributes
+                MaterialDescriptor descriptor = new MaterialDescriptor
                 {
-                    Diffuse = new ComputeTextureColor(texture)
+                    Attributes =
+                    {
+                        Diffuse = new ComputeTextureColor(texture)
+                    }
                 };
 
-                return new Material(GraphicsDevice, attributes);
+                return new Material(GraphicsDevice, descriptor);
             }
             else
             {
@@ -140,12 +143,15 @@ namespace DirectX12GameEngine.Rendering
 
                 Vector4 color = new Vector4(baseColor[0], baseColor[1], baseColor[2], baseColor[3]);
 
-                MaterialAttributes attributes = new MaterialAttributes
+                MaterialDescriptor descriptor = new MaterialDescriptor
                 {
-                    Diffuse = new ComputeColor(color)
+                    Attributes =
+                    {
+                        Diffuse = new ComputeColor(color)
+                    }
                 };
 
-                return new Material(GraphicsDevice, attributes);
+                return new Material(GraphicsDevice, descriptor);
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using Windows.Foundation;
 
-namespace DirectX12GameEngine.Core
+namespace DirectX12GameEngine.Graphics
 {
     public sealed class SizeChangedEventArgs : EventArgs
     {

@@ -31,7 +31,7 @@ namespace DirectX12Game
             {
                 time += (float)deltaTime.TotalSeconds;
 
-                Quaternion timeRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time);
+                Quaternion timeRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time * 0.2f);
 
                 var scene = SceneSystem.RootScene;
 
@@ -42,6 +42,12 @@ namespace DirectX12Game
                     {
                         SceneSystem.CurrentCamera = camera.Get<CameraComponent>();
                         camera.Transform.Position = new Vector3(0.0f, 300.0f, 10.0f * scrollAmount * 3);
+                    }
+
+                    Entity light = scene.FirstOrDefault(m => m.Name == "MyLight");
+                    if (light != null)
+                    {
+                        light.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time);
                     }
 
                     Entity tRex = scene.FirstOrDefault(m => m.Name == "T-Rex");
@@ -59,12 +65,11 @@ namespace DirectX12Game
                     Entity video = scene.FirstOrDefault(m => m.Name == "MyVideo");
                     if (video != null)
                     {
-                        VideoComponent videoComponent = video.Get<VideoComponent>();
+                        VideoComponent? videoComponent = video.Get<VideoComponent>();
 
-                        if (videoComponent.Target is null)
+                        if (videoComponent?.Target is null)
                         {
-                            Model? model = tRex?.Get<ModelComponent>().Model;
-                            videoComponent.Target = model?.Materials[0].Textures[0];
+                            Model? model = tRex?.Get<ModelComponent>()?.Model;
                             //videoComponent.Target = GraphicsDevice.Presenter?.BackBuffer;
                         }
                     }
@@ -72,41 +77,31 @@ namespace DirectX12Game
                     Entity cliffhouse = scene.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
-                        cliffhouse.Transform.Position = new Vector3(1000.0f, 0.0f, 0.0f);
                         cliffhouse.Transform.Rotation = timeRotation;
-                        cliffhouse.Transform.Scale = new Vector3(10.0f);
                     }
 
                     Entity rightHandModel = scene.FirstOrDefault(m => m.Name == "RightHandModel");
                     if (rightHandModel != null)
                     {
-                        rightHandModel.Transform.Position = new Vector3(600.0f, 0.0f, 0.0f);
                         rightHandModel.Transform.Rotation = timeRotation;
-                        rightHandModel.Transform.Scale = new Vector3(1000.0f);
                     }
 
                     Entity leftHandModel = scene.FirstOrDefault(m => m.Name == "HoloTile");
                     if (leftHandModel != null)
                     {
-                        leftHandModel.Transform.Position = new Vector3(-300.0f, 0.0f, 0.0f);
                         leftHandModel.Transform.Rotation = timeRotation;
-                        leftHandModel.Transform.Scale = new Vector3(10.0f);
                     }
 
                     Entity icon = scene.FirstOrDefault(m => m.Name == "Icon_Failure");
                     if (icon != null)
                     {
-                        icon.Transform.Position = new Vector3(-800.0f, 0.0f, 0.0f);
                         icon.Transform.Rotation = timeRotation;
-                        icon.Transform.Scale = new Vector3(10.0f);
                     }
 
                     Entity cube = scene.FirstOrDefault(m => m.Name == "LiveCube");
                     if (cube != null)
                     {
-                        cube.Transform.Position = new Vector3(-1100.0f, 0.0f, 0.0f);
                         cube.Transform.Rotation = timeRotation;
-                        cube.Transform.Scale = new Vector3(1.0f);
                     }
                 }
             }

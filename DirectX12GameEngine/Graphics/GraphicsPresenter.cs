@@ -1,5 +1,4 @@
 ﻿using System;
-using DirectX12GameEngine.Core;
 using SharpDX.Direct3D12;
 using SharpDX.Mathematics.Interop;
 

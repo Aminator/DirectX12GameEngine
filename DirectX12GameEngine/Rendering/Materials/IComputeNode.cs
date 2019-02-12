@@ -2,6 +2,6 @@
 {
     public interface IComputeNode
     {
-        void Visit(Material material);
+        void Visit(MaterialGeneratorContext context);
     }
 }
