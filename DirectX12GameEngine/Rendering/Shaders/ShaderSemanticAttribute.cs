@@ -1,76 +1,73 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace DirectX12GameEngine.Rendering.Shaders
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public abstract class ShaderSemanticAttribute : ShaderResourceAttribute
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter | AttributeTargets.ReturnValue, AllowMultiple = false, Inherited = false)]
+    public abstract class ShaderSemanticAttribute : Attribute
     {
-        public ShaderSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
+    }
+
+    public abstract class ShaderSemanticWithIndexAttribute : ShaderSemanticAttribute
+    {
+        public ShaderSemanticWithIndexAttribute(int index = 0)
+        {
+            Index = index;
+        }
+
+        public int Index { get; }
+    }
+
+    public class PositionSemanticAttribute : ShaderSemanticWithIndexAttribute
+    {
+        public PositionSemanticAttribute(int index = 0) : base(index)
         {
         }
     }
 
-    public class PositionSemanticAttribute : ShaderSemanticAttribute
+    public class NormalSemanticAttribute : ShaderSemanticWithIndexAttribute
     {
-        public PositionSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
+        public NormalSemanticAttribute(int index = 0) : base(index)
         {
         }
     }
 
-    public class NormalSemanticAttribute : ShaderSemanticAttribute
+    public class TextureCoordinateSemanticAttribute : ShaderSemanticWithIndexAttribute
     {
-        public NormalSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
+        public TextureCoordinateSemanticAttribute(int index = 0) : base(index)
         {
         }
     }
 
-    public class TextureCoordinateSemanticAttribute : ShaderSemanticAttribute
+    public class ColorSemanticAttribute : ShaderSemanticWithIndexAttribute
     {
-        public TextureCoordinateSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
+        public ColorSemanticAttribute(int index = 0) : base(index)
+        {
+        }
+    }
+
+    public class TangentSemanticAttribute : ShaderSemanticWithIndexAttribute
+    {
+        public TangentSemanticAttribute(int index = 0) : base(index)
+        {
+        }
+    }
+
+    public class SystemTargetSemanticAttribute : ShaderSemanticWithIndexAttribute
+    {
+        public SystemTargetSemanticAttribute(int index = 0) : base(index)
         {
         }
     }
 
     public class SystemInstanceIdSemanticAttribute : ShaderSemanticAttribute
     {
-        public SystemInstanceIdSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
-        {
-        }
-    }
-
-    public class ColorSemanticAttribute : ShaderSemanticAttribute
-    {
-        public ColorSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
-        {
-        }
-    }
-
-    public class TangentSemanticAttribute : ShaderSemanticAttribute
-    {
-        public TangentSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
-        {
-        }
     }
 
     public class SystemPositionSemanticAttribute : ShaderSemanticAttribute
     {
-        public SystemPositionSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
-        {
-        }
-    }
-
-    public class SystemTargetSemanticAttribute : ShaderSemanticAttribute
-    {
-        public SystemTargetSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
-        {
-        }
     }
 
     public class SystemRenderTargetArrayIndexSemanticAttribute : ShaderSemanticAttribute
     {
-        public SystemRenderTargetArrayIndexSemanticAttribute([CallerLineNumber] int order = 0) : base(order)
-        {
-        }
     }
 }

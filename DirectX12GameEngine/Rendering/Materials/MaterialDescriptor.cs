@@ -1,6 +1,6 @@
 ﻿namespace DirectX12GameEngine.Rendering.Materials
 {
-    public class MaterialDescriptor
+    public class MaterialDescriptor : IMaterialDescriptor
     {
         public MaterialAttributes Attributes { get; set; } = new MaterialAttributes();
 

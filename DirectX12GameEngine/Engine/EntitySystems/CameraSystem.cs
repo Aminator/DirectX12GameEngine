@@ -21,8 +21,8 @@ namespace DirectX12GameEngine.Engine
                     out Quaternion rotation,
                     out Vector3 translation);
 
-                Vector3 forwardVector = Vector3.Transform(-Vector3.UnitZ, rotation);
-                Vector3 upVector = Vector3.Transform(Vector3.UnitY, rotation);
+                Vector3 forwardVector = Vector3.Normalize(Vector3.Transform(-Vector3.UnitZ, rotation));
+                Vector3 upVector = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, rotation));
                 cameraComponent.ViewMatrix = Matrix4x4.CreateLookAt(translation, translation + forwardVector, upVector);
 
                 cameraComponent.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(

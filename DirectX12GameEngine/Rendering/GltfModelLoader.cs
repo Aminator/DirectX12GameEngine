@@ -131,7 +131,7 @@ namespace DirectX12GameEngine.Rendering
                 {
                     Attributes =
                     {
-                        Diffuse = new ComputeTextureColor(texture)
+                        Diffuse = new MaterialDiffuseMapFeature(new ComputeTextureColor(texture))
                     }
                 };
 
@@ -147,7 +147,7 @@ namespace DirectX12GameEngine.Rendering
                 {
                     Attributes =
                     {
-                        Diffuse = new ComputeColor(color)
+                        Diffuse = new MaterialDiffuseMapFeature(new ComputeColor(color))
                     }
                 };
 

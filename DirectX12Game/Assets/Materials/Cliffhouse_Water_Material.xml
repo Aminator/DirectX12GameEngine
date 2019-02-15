@@ -4,9 +4,31 @@
     <MaterialDescriptor xmlns="DirectX12GameEngine.Rendering.Materials">
       <MaterialDescriptor.Attributes>
         <MaterialAttributes>
+          
           <MaterialAttributes.Diffuse>
-            <ComputeTextureColor Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img1.png" />
+            <MaterialDiffuseMapFeature>
+              <MaterialDiffuseMapFeature.DiffuseMap>
+                <ComputeTextureColor Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img1.png" />
+              </MaterialDiffuseMapFeature.DiffuseMap>
+            </MaterialDiffuseMapFeature>
           </MaterialAttributes.Diffuse>
+
+          <MaterialAttributes.MicroSurface>
+            <MaterialRoughnessMapFeature>
+              <MaterialRoughnessMapFeature.RoughnessMap>
+                <ComputeScalar Value="0.5" />
+              </MaterialRoughnessMapFeature.RoughnessMap>
+            </MaterialRoughnessMapFeature>
+          </MaterialAttributes.MicroSurface>
+
+          <MaterialAttributes.Specular>
+            <MaterialMetalnessMapFeature>
+              <MaterialMetalnessMapFeature.MetalnessMap>
+                <ComputeScalar Value="1.0" />
+              </MaterialMetalnessMapFeature.MetalnessMap>
+            </MaterialMetalnessMapFeature>
+          </MaterialAttributes.Specular>
+        
         </MaterialAttributes>
       </MaterialDescriptor.Attributes>
     </MaterialDescriptor>

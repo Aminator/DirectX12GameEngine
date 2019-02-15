@@ -12,7 +12,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 {
     public class MaterialGeneratorContext
     {
-        private readonly Stack<MaterialDescriptor> materialDescriptorStack = new Stack<MaterialDescriptor>();
+        private readonly Stack<IMaterialDescriptor> materialDescriptorStack = new Stack<IMaterialDescriptor>();
 
         public MaterialGeneratorContext(GraphicsDevice device, Material material)
         {
@@ -24,9 +24,13 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public Material Material { get; }
 
+        public IList<Texture> ConstantBuffers { get; } = new List<Texture>();
+
+        public IList<Texture> Samplers { get; } = new List<Texture>();
+
         public IList<Texture> Textures { get; } = new List<Texture>();
 
-        public MaterialDescriptor? MaterialDescriptor => materialDescriptorStack.Count > 0 ? materialDescriptorStack.Peek() : null;
+        public IMaterialDescriptor? MaterialDescriptor => materialDescriptorStack.Count > 0 ? materialDescriptorStack.Peek() : null;
 
         public MaterialPass? MaterialPass { get; private set; }
 
@@ -34,12 +38,12 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public int PassIndex { get; private set; }
 
-        public void PushMaterialDescriptor(MaterialDescriptor descriptor)
+        public void PushMaterialDescriptor(IMaterialDescriptor descriptor)
         {
             materialDescriptorStack.Push(descriptor);
         }
 
-        public MaterialDescriptor? PopMaterialDescriptor()
+        public IMaterialDescriptor? PopMaterialDescriptor()
         {
             return materialDescriptorStack.Count > 0 ? materialDescriptorStack.Pop() : null;
         }
@@ -66,20 +70,22 @@ namespace DirectX12GameEngine.Rendering.Materials
             return materialPass;
         }
 
-        public (CpuDescriptorHandle, GpuDescriptorHandle) CopyDescriptors()
+        public (CpuDescriptorHandle, GpuDescriptorHandle) CopyDescriptors(IList<Texture> resources)
         {
-            int[] srcDescriptorRangeStarts = new int[Textures.Count];
+            if (resources.Count == 0) return default;
+
+            int[] srcDescriptorRangeStarts = new int[resources.Count];
 
             for (int i = 0; i < srcDescriptorRangeStarts.Length; i++)
             {
                 srcDescriptorRangeStarts[i] = 1;
             }
 
-            var (cpuDescriptorHandle, gpuDescriptorHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(Textures.Count);
+            var (cpuDescriptorHandle, gpuDescriptorHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(resources.Count);
 
             GraphicsDevice.NativeDevice.CopyDescriptors(
-                1, new[] { cpuDescriptorHandle }, new[] { Textures.Count },
-                Textures.Count, Textures.Select(t => t.NativeCpuDescriptorHandle).ToArray(), srcDescriptorRangeStarts,
+                1, new[] { cpuDescriptorHandle }, new[] { resources.Count },
+                resources.Count, resources.Select(t => t.NativeCpuDescriptorHandle).ToArray(), srcDescriptorRangeStarts,
                 DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
 
             return (cpuDescriptorHandle, gpuDescriptorHandle);
@@ -116,9 +122,8 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public RootSignature CreateRootSignature()
         {
-            RootSignatureDescription rootSignatureDescription = new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout,
-                new RootParameter[]
-                {
+            List<RootParameter> rootParameters = new List<RootParameter>
+            {
                     new RootParameter(ShaderVisibility.All,
                         new RootConstants(0, 0, 1)),
                     new RootParameter(ShaderVisibility.All,
@@ -126,19 +131,37 @@ namespace DirectX12GameEngine.Rendering.Materials
                     new RootParameter(ShaderVisibility.All,
                         new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 2)),
                     new RootParameter(ShaderVisibility.All,
-                        new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 3)),
-                    new RootParameter(ShaderVisibility.All,
-                        new DescriptorRange(DescriptorRangeType.ConstantBufferView, Textures.Count, 4)),
-                    new RootParameter(ShaderVisibility.All,
-                        new DescriptorRange(DescriptorRangeType.ShaderResourceView, Textures.Count, 0))
-                },
-                new StaticSamplerDescription[]
+                        new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 3))
+            };
+
+            if (ConstantBuffers.Count > 0)
+            {
+                rootParameters.Add(new RootParameter(ShaderVisibility.All,
+                    new DescriptorRange(DescriptorRangeType.ConstantBufferView, ConstantBuffers.Count, 4)));
+            }
+
+            if (Samplers.Count > 0)
+            {
+                rootParameters.Add(new RootParameter(ShaderVisibility.All,
+                    new DescriptorRange(DescriptorRangeType.Sampler, Samplers.Count, 1)));
+            }
+
+            if (Textures.Count > 0)
+            {
+                rootParameters.Add(new RootParameter(ShaderVisibility.All,
+                    new DescriptorRange(DescriptorRangeType.ShaderResourceView, Textures.Count, 0)));
+            }
+
+            StaticSamplerDescription[] staticSamplers = new StaticSamplerDescription[]
+            {
+                new StaticSamplerDescription(ShaderVisibility.All, 0, 0)
                 {
-                    new StaticSamplerDescription(ShaderVisibility.All, 0, 0)
-                    {
-                        Filter = Filter.MinLinearMagMipPoint
-                    }
-                });
+                    Filter = Filter.MinLinearMagMipPoint
+                }
+            };
+
+            RootSignatureDescription rootSignatureDescription = new RootSignatureDescription(
+                RootSignatureFlags.AllowInputAssemblerInputLayout, rootParameters.ToArray(), staticSamplers);
 
             return GraphicsDevice.CreateRootSignature(rootSignatureDescription);
         }

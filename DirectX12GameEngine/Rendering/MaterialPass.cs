@@ -10,10 +10,18 @@ namespace DirectX12GameEngine.Rendering
 
 #nullable disable
         public PipelineState PipelineState { get; set; }
-
-        internal CpuDescriptorHandle NativeCpuDescriptorHandle { get; set; }
-
-        internal GpuDescriptorHandle NativeGpuDescriptorHandle { get; set; }
 #nullable enable
+
+        internal CpuDescriptorHandle NativeConstantBufferCpuDescriptorHandle { get; set; }
+
+        internal GpuDescriptorHandle NativeConstantBufferGpuDescriptorHandle { get; set; }
+
+        internal CpuDescriptorHandle NativeSamplerCpuDescriptorHandle { get; set; }
+
+        internal GpuDescriptorHandle NativeSamplerGpuDescriptorHandle { get; set; }
+
+        internal CpuDescriptorHandle NativeTextureCpuDescriptorHandle { get; set; }
+
+        internal GpuDescriptorHandle NativeTextureGpuDescriptorHandle { get; set; }
     }
 }

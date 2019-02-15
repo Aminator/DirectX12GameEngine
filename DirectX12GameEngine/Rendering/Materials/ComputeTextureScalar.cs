@@ -6,13 +6,13 @@ using DirectX12GameEngine.Rendering.Shaders;
 namespace DirectX12GameEngine.Rendering.Materials
 {
     [StaticResource]
-    public class ComputeTextureColor : IComputeColor
+    public class ComputeTextureScalar : IComputeScalar
     {
-        public ComputeTextureColor()
+        public ComputeTextureScalar()
         {
         }
 
-        public ComputeTextureColor(Texture texture)
+        public ComputeTextureScalar(Texture texture)
         {
             Texture = texture;
         }
@@ -30,13 +30,14 @@ namespace DirectX12GameEngine.Rendering.Materials
         #region Shader
 
 #nullable disable
-        [ShaderResource] public Texture2DResource ColorTexture;
+        [ShaderResource] public Texture2DResource ScalarTexture;
 #nullable enable
 
         [ShaderMethod]
-        public Vector4 Compute()
+        public float Compute()
         {
-            return ColorTexture.Sample(Texturing.Sampler, Texturing.TexCoord);
+            Vector4 color = ScalarTexture.Sample(Texturing.Sampler, Texturing.TexCoord);
+            return color.X;
         }
 
         #endregion

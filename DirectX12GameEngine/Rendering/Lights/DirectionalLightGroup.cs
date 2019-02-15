@@ -16,7 +16,7 @@ namespace DirectX12GameEngine.Rendering.Lights
         protected override void PrepareDirectLightCore(int lightIndex)
         {
             LightStream.LightColor = Lights[lightIndex].Color;
-            LightStream.LightDirection = -Lights[lightIndex].Direction;
+            LightStream.LightDirectionWS = -Lights[lightIndex].Direction;
         }
     }
 }

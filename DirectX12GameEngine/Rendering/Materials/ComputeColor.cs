@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             colorBuffer ??= Texture.CreateConstantBufferView(context.GraphicsDevice, Color).DisposeBy(context.GraphicsDevice);
 
-            context.Textures.Add(colorBuffer);
+            context.ConstantBuffers.Add(colorBuffer);
         }
 
         #region Shader

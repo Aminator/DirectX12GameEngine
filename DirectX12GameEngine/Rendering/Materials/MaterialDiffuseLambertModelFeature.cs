@@ -1,11 +1,12 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using DirectX12GameEngine.Rendering.Lights;
 using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
     [StaticResource]
-    public class MaterialSurfaceShadingDiffuseLambert : IMaterialSurfaceShading
+    public class MaterialDiffuseLambertModelFeature : IMaterialDiffuseModelFeature
     {
         public void Visit(MaterialGeneratorContext context)
         {
@@ -16,7 +17,11 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderMethod]
         public Vector3 ComputeDirectLightContribution()
         {
-            return MaterialPixelStream.MaterialDiffuseVisible * LightStream.LightColorNDotL;
+            Vector3 diffuseColor = MaterialPixelStream.MaterialDiffuseVisible;
+
+            diffuseColor *= Vector3.One - MaterialPixelStream.MaterialSpecularVisible;
+
+            return diffuseColor / (float)Math.PI * LightStream.LightColorNDotL;
         }
 
         [ShaderMethod]

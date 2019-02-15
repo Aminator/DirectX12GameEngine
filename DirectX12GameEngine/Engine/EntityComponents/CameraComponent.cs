@@ -5,9 +5,9 @@ namespace DirectX12GameEngine.Engine
     [DefaultEntitySystem(typeof(CameraSystem))]
     public sealed class CameraComponent : EntityComponent
     {
-        public Matrix4x4 ProjectionMatrix { get; set; } = Matrix4x4.Identity;
-
         public Matrix4x4 ViewMatrix { get; set; } = Matrix4x4.Identity;
+
+        public Matrix4x4 ProjectionMatrix { get; set; } = Matrix4x4.Identity;
 
         public Matrix4x4 ViewProjectionMatrix { get; set; } = Matrix4x4.Identity;
 

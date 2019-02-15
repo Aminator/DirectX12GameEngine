@@ -6,7 +6,7 @@ namespace DirectX12GameEngine.Rendering.Shadows
     [StaticShaderClass]
     public static class ShadowStream
     {
-        [StaticResource] public static Vector3 ShadowColor;
-        [StaticResource] public static Vector3 Thickness;
+        [ShaderResource] public static Vector3 ShadowColor;
+        [ShaderResource] public static Vector3 Thickness;
     }
 }

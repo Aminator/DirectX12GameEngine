@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
+using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
 using SharpDX.Direct3D12;
 
@@ -22,13 +23,13 @@ namespace DirectX12GameEngine.Engine
 
         public unsafe RenderSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
-            Span<Matrix4x4> matrices = stackalloc Matrix4x4[] { Matrix4x4.Identity, Matrix4x4.Identity };
-            ViewProjectionBuffer = Texture.CreateConstantBufferView(GraphicsDevice, matrices);
+            Span<ViewProjectionTransform> viewProjectionTransforms = stackalloc ViewProjectionTransform[2];
+            ViewProjectionTransformBuffer = Texture.CreateConstantBufferView(GraphicsDevice, viewProjectionTransforms);
 
             DirectionalLightGroupBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
         }
 
-        public Texture ViewProjectionBuffer { get; }
+        public Texture ViewProjectionTransformBuffer { get; }
 
         public Texture DirectionalLightGroupBuffer { get; }
 
@@ -174,7 +175,7 @@ namespace DirectX12GameEngine.Engine
 
         public override void Dispose()
         {
-            ViewProjectionBuffer.Dispose();
+            ViewProjectionTransformBuffer.Dispose();
 
             foreach (CommandList commandList in commandLists)
             {
@@ -224,14 +225,28 @@ namespace DirectX12GameEngine.Engine
 
                 commandList.SetPipelineState(materialPass.PipelineState);
 
-                commandList.SetGraphicsRoot32BitConstant(0, renderTargetCount, 0);
-                commandList.SetGraphicsRootDescriptorTable(1, ViewProjectionBuffer.NativeGpuDescriptorHandle);
-                commandList.SetGraphicsRootDescriptorTable(2, worldMatrixBuffers[i].NativeGpuDescriptorHandle);
+                int rootParameterIndex = 0;
 
-                commandList.SetGraphicsRootDescriptorTable(3, DirectionalLightGroupBuffer.NativeGpuDescriptorHandle);
+                commandList.SetGraphicsRoot32BitConstant(rootParameterIndex++, renderTargetCount, 0);
+                commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, ViewProjectionTransformBuffer.NativeGpuDescriptorHandle);
+                commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, worldMatrixBuffers[i].NativeGpuDescriptorHandle);
 
-                commandList.SetGraphicsRootDescriptorTable(4, materialPass.NativeGpuDescriptorHandle);
-                commandList.SetGraphicsRootDescriptorTable(5, materialPass.NativeGpuDescriptorHandle);
+                commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, DirectionalLightGroupBuffer.NativeGpuDescriptorHandle);
+
+                if (materialPass.NativeConstantBufferGpuDescriptorHandle.Ptr != 0)
+                {
+                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.NativeConstantBufferGpuDescriptorHandle);
+                }
+
+                if (materialPass.NativeSamplerGpuDescriptorHandle.Ptr != 0)
+                {
+                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.NativeSamplerGpuDescriptorHandle);
+                }
+
+                if (materialPass.NativeTextureGpuDescriptorHandle.Ptr != 0)
+                {
+                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.NativeTextureGpuDescriptorHandle);
+                }
 
                 if (mesh.IndexBufferView.HasValue)
                 {
@@ -259,8 +274,7 @@ namespace DirectX12GameEngine.Engine
 
                     var viewTransform = cameraPose.TryGetViewTransform(graphicsPresenter.SpatialStationaryFrameOfReference.CoordinateSystem);
 
-                    Span<Matrix4x4> viewMatrices = stackalloc Matrix4x4[] { Matrix4x4.Identity, Matrix4x4.Identity };
-                    Span<Matrix4x4> projectionMatrices = stackalloc Matrix4x4[] { Matrix4x4.Identity, Matrix4x4.Identity };
+                    Span<ViewProjectionTransform> viewProjectionTransforms = stackalloc ViewProjectionTransform[2];
 
                     if (viewTransform.HasValue)
                     {
@@ -270,26 +284,29 @@ namespace DirectX12GameEngine.Engine
 
                         Matrix4x4 positionMatrix = Matrix4x4.CreateTranslation(-translation) * Matrix4x4.CreateFromQuaternion(rotation);
 
-                        viewMatrices[0] = positionMatrix * viewTransform.Value.Left;
-                        viewMatrices[1] = positionMatrix * viewTransform.Value.Right;
+                        viewProjectionTransforms[0].ViewMatrix = positionMatrix * viewTransform.Value.Left;
+                        viewProjectionTransforms[1].ViewMatrix = positionMatrix * viewTransform.Value.Right;
                     }
 
-                    projectionMatrices[0] = cameraPose.ProjectionTransform.Left;
-                    projectionMatrices[1] = cameraPose.ProjectionTransform.Right;
+                    viewProjectionTransforms[0].ProjectionMatrix = cameraPose.ProjectionTransform.Left;
+                    viewProjectionTransforms[1].ProjectionMatrix = cameraPose.ProjectionTransform.Right;
 
-                    Span<Matrix4x4> matrices = stackalloc Matrix4x4[]
-                    {
-                        viewMatrices[0] * projectionMatrices[0],
-                        viewMatrices[1] * projectionMatrices[1]
-                    };
+                    viewProjectionTransforms[0].ViewProjectionMatrix = viewProjectionTransforms[0].ViewMatrix * viewProjectionTransforms[0].ProjectionMatrix;
+                    viewProjectionTransforms[1].ViewProjectionMatrix = viewProjectionTransforms[1].ViewMatrix * viewProjectionTransforms[1].ProjectionMatrix;
 
-                    SharpDX.Utilities.Write(ViewProjectionBuffer.MappedResource, matrices.ToArray(), 0, matrices.Length);
+                    SharpDX.Utilities.Write(ViewProjectionTransformBuffer.MappedResource, viewProjectionTransforms.ToArray(), 0, viewProjectionTransforms.Length);
                 }
                 else
                 {
-                    Matrix4x4 viewProjectionMatrix = SceneSystem.CurrentCamera.ViewProjectionMatrix;
-                    Span<Matrix4x4> matrices = stackalloc Matrix4x4[] { viewProjectionMatrix, viewProjectionMatrix };
-                    SharpDX.Utilities.Write(ViewProjectionBuffer.MappedResource, matrices.ToArray(), 0, matrices.Length);
+                    ViewProjectionTransform viewProjectionTransform = new ViewProjectionTransform
+                    {
+                        ViewMatrix = SceneSystem.CurrentCamera.ViewMatrix,
+                        ProjectionMatrix = SceneSystem.CurrentCamera.ProjectionMatrix,
+                        ViewProjectionMatrix = SceneSystem.CurrentCamera.ViewProjectionMatrix
+                    };
+
+                    Span<ViewProjectionTransform> viewProjectionTransforms = stackalloc ViewProjectionTransform[] { viewProjectionTransform, viewProjectionTransform };
+                    SharpDX.Utilities.Write(ViewProjectionTransformBuffer.MappedResource, viewProjectionTransforms.ToArray(), 0, viewProjectionTransforms.Length);
                 }
             }
         }

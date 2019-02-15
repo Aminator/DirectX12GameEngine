@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace DirectX12GameEngine.Rendering.Shaders
 {
-    internal static class ShaderGenerator
+    public static class ShaderGenerator
     {
         public static Assembly[] Assemblies { get; } = AppDomain.CurrentDomain.GetAssemblies();
         public static IEnumerable<MetadataReference> MetadataReferences { get; }
@@ -36,48 +36,42 @@ namespace DirectX12GameEngine.Rendering.Shaders
 
             Type shaderType = shader.GetType();
 
-            HlslBindingTracker tracker = new HlslBindingTracker();
-            HashSet<Type> alreadyWrittenTypes = new HashSet<Type>();
+            HlslBindingTracker bindingTracker = new HlslBindingTracker();
 
-            var staticClasses = Assemblies.SelectMany(a => a.GetTypes()).Where(t => t.IsDefined(typeof(StaticShaderClassAttribute)));
+            Dictionary<Type, List<ResourceDefinition>> alreadyWrittenTypes = new Dictionary<Type, List<ResourceDefinition>>();
 
-            foreach (Type staticType in staticClasses)
+            foreach (Type staticType in Assemblies.SelectMany(a => a.GetTypes()).Where(t => t.IsDefined(typeof(StaticShaderClassAttribute))))
             {
-                WriteStructure(writer, staticType, alreadyWrittenTypes, bindingAttr);
+                WriteStructure(writer, staticType, null, alreadyWrittenTypes, bindingAttr);
             }
 
             foreach (Type nestedType in shaderType.GetNestedTypesInTypeHierarchy(bindingAttr))
             {
-                WriteStructure(writer, nestedType, alreadyWrittenTypes, bindingAttr);
+                WriteStructure(writer, nestedType, null, alreadyWrittenTypes, bindingAttr);
             }
 
-            foreach (MemberInfo memberInfo in shaderType.GetMembersInOrder(bindingAttr))
+            foreach (MemberInfo memberInfo in shaderType.GetMembersInOrder(bindingAttr).Where(m => m.IsDefined(typeof(ShaderResourceAttribute))))
             {
-                if (memberInfo.IsDefined(typeof(ShaderResourceAttribute)))
+                Type? memberType = memberInfo.GetMemberType(shader);
+
+                if (memberType != null)
                 {
-                    Type? memberType = memberInfo.GetMemberType(shader);
+                    WriteStructure(writer, memberType, memberInfo.GetMemberValue(shader), alreadyWrittenTypes, bindingAttr);
+                }
 
-                    if (memberType != null)
-                    {
-                        WriteStructure(writer, memberType, alreadyWrittenTypes, bindingAttr);
-                    }
+                ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
 
-                    ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
-
-                    if (resourceType is ShaderMethodAttribute && memberInfo is MethodInfo methodInfo)
-                    {
-                        WriteMethod(writer, methodInfo);
-                    }
-                    else if (memberType != null && resourceType != null)
-                    {
-                        WriteResource(writer, memberInfo, memberType, resourceType, tracker);
-                    }
+                if (resourceType is ShaderMethodAttribute && memberInfo is MethodInfo methodInfo)
+                {
+                    WriteMethod(writer, methodInfo);
+                }
+                else if (memberType != null && resourceType != null)
+                {
+                    WriteResource(writer, memberInfo, memberType, resourceType, alreadyWrittenTypes, bindingTracker);
                 }
             }
 
-            var shaderMethodInfos = shaderType.GetMethods(bindingAttr).Where(m => m.IsDefined(typeof(ShaderAttribute)));
-
-            foreach (MethodInfo shaderMethodInfo in shaderMethodInfos)
+            foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingAttr).Where(m => m.IsDefined(typeof(ShaderAttribute))))
             {
                 ShaderAttribute shaderAttribute = shaderMethodInfo.GetCustomAttribute<ShaderAttribute>();
                 result.SetShader(shaderAttribute.Name, shaderMethodInfo);
@@ -91,23 +85,29 @@ namespace DirectX12GameEngine.Rendering.Shaders
             return result;
         }
 
-        private static void WriteStructure(IndentedTextWriter writer, Type type, ISet<Type> alreadyWrittenTypes, BindingFlags bindingAttr)
+        private static void WriteStructure(IndentedTextWriter writer, Type type, object? obj, Dictionary<Type, List<ResourceDefinition>> alreadyWrittenTypes, BindingFlags bindingAttr)
         {
             type = GetElementOrDeclaredType(type);
 
-            if (HlslKnownTypes.ContainsKey(type) || !alreadyWrittenTypes.Add(type)) return;
+            if (HlslKnownTypes.ContainsKey(type) || alreadyWrittenTypes.ContainsKey(type)) return;
 
-            var memberInfos = type.GetMembersInOrder(bindingAttr);
+            alreadyWrittenTypes.Add(type, new List<ResourceDefinition>());
+
+            var memberInfos = type.GetMembersInOrder(bindingAttr).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
 
             foreach (MemberInfo memberInfo in memberInfos)
             {
-                if (memberInfo.IsDefined(typeof(ShaderResourceAttribute)))
-                {
-                    Type? memberType = memberInfo.GetMemberType();
+                Type? memberType = memberInfo.GetMemberType(obj);
 
-                    if (memberType != null)
+                if (memberType != null)
+                {
+                    WriteStructure(writer, memberType, memberInfo.GetMemberValue(obj), alreadyWrittenTypes, bindingAttr);
+
+                    ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
+
+                    if (resourceType != null)
                     {
-                        WriteStructure(writer, memberType, alreadyWrittenTypes, bindingAttr);
+                        alreadyWrittenTypes[type].Add(new ResourceDefinition(memberType, resourceType));
                     }
                 }
             }
@@ -116,11 +116,9 @@ namespace DirectX12GameEngine.Rendering.Shaders
             writer.WriteLine("{");
             writer.Indent++;
 
-            HlslSemanticTracker tracker = new HlslSemanticTracker();
-
             foreach (MemberInfo memberInfo in memberInfos)
             {
-                Type? memberType = memberInfo.GetMemberType();
+                Type? memberType = memberInfo.GetMemberType(obj);
                 ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
 
                 if (resourceType is ShaderMethodAttribute && memberInfo is MethodInfo methodInfo)
@@ -129,7 +127,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 }
                 else if (memberType != null && resourceType != null)
                 {
-                    WriteStructureField(writer, memberInfo, memberType, tracker);
+                    WriteStructureField(writer, memberInfo, memberType);
                 }
             }
 
@@ -140,54 +138,60 @@ namespace DirectX12GameEngine.Rendering.Shaders
             writer.WriteLine("};");
             writer.WriteLine();
 
-            foreach (MemberInfo memberInfo in memberInfos)
+            foreach (MemberInfo memberInfo in memberInfos.Where(m => m.IsStatic()))
             {
-                Type? memberType = memberInfo.GetMemberType();
-                ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
+                Type? memberType = memberInfo.GetMemberType(obj);
 
-                if (memberType != null && resourceType is StaticResourceAttribute)
+                if (memberType != null)
                 {
-                    WriteStaticResource(writer, memberInfo, memberType);
+                    WriteStaticStructureField(writer, memberInfo, memberType);
                 }
             }
         }
 
-        private static void WriteStructureField(IndentedTextWriter writer, MemberInfo memberInfo, Type type, HlslSemanticTracker tracker)
+        private static void WriteStructureField(IndentedTextWriter writer, MemberInfo memberInfo, Type memberType)
         {
             if (memberInfo.IsStatic())
             {
                 writer.Write("static");
-                writer.Write(' ');
+                writer.Write(" ");
             }
 
-            writer.Write(HlslKnownTypes.GetMappedName(type));
-            writer.Write(' ');
-            writer.Write(memberInfo.Name);
+            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
 
-            int arrayCount = type.IsArray ? 2 : 0;
-            writer.Write(WriteArray(arrayCount));
+            int arrayCount = memberType.IsArray ? 2 : 0;
+            writer.Write(GetArrayString(arrayCount));
 
-            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>(), tracker));
-            writer.WriteLine(';');
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.WriteLine(";");
             writer.WriteLine();
         }
 
-        private static void WriteResource(IndentedTextWriter writer, MemberInfo memberInfo, Type memberType, ShaderResourceAttribute resourceType, HlslBindingTracker tracker)
+        private static void WriteStaticStructureField(IndentedTextWriter writer, MemberInfo memberInfo, Type memberType)
+        {
+            string declaringType = HlslKnownTypes.GetMappedName(memberInfo.DeclaringType);
+            writer.WriteLine($"static {HlslKnownTypes.GetMappedName(memberType)} {declaringType}::{memberInfo.Name};");
+            writer.WriteLine();
+        }
+
+        private static void WriteResource(IndentedTextWriter writer, MemberInfo memberInfo, Type memberType, ShaderResourceAttribute resourceType, Dictionary<Type, List<ResourceDefinition>> alreadyWrittenTypes, HlslBindingTracker bindingTracker)
         {
             switch (resourceType)
             {
                 case ConstantBufferResourceAttribute _:
-                    WriteConstantBuffer(writer, memberInfo, memberType, tracker.ConstantBuffer++);
+                    WriteConstantBuffer(writer, memberInfo, memberType, bindingTracker.ConstantBuffer++);
                     break;
                 case SamplerResourceAttribute _:
-                    WriteSampler(writer, memberInfo, memberType, tracker.Sampler++);
+                    WriteSampler(writer, memberInfo, memberType, bindingTracker.Sampler++);
                     break;
                 case Texture2DResourceAttribute _:
-                    WriteTexture2D(writer, memberInfo, memberType, tracker.Texture++);
+                    WriteTexture2D(writer, memberInfo, memberType, bindingTracker.Texture++);
                     break;
                 case StaticResourceAttribute _:
-                    WriteStaticResource(writer, memberInfo, memberType);
+                    WriteStaticResource(writer, memberInfo, memberType, alreadyWrittenTypes, bindingTracker);
                     break;
+                default:
+                    throw new NotSupportedException("This shader resource type is not supported.");
             }
         }
 
@@ -195,47 +199,82 @@ namespace DirectX12GameEngine.Rendering.Shaders
         {
             int arrayCount = memberType.IsArray ? 2 : 0;
 
-            writer.WriteLine($"cbuffer {memberInfo.Name}Buffer : register(b{binding})");
+            writer.Write($"cbuffer {memberInfo.Name}Buffer");
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.WriteLine($" : register(b{binding})");
             writer.WriteLine("{");
-            writer.WriteLine($"    {HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}{WriteArray(arrayCount)};");
+            writer.Indent++;
+            writer.WriteLine($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}{GetArrayString(arrayCount)};");
+            writer.Indent--;
             writer.WriteLine("}");
             writer.WriteLine();
         }
 
         private static void WriteSampler(IndentedTextWriter writer, MemberInfo memberInfo, Type memberType, int binding)
         {
-            writer.WriteLine($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name} : register(s{binding});");
-            writer.WriteLine();
-        }
-
-        private static void WriteStaticResource(IndentedTextWriter writer, MemberInfo memberInfo, Type memberType)
-        {
-            string declaringType = memberInfo.IsStatic() ? HlslKnownTypes.GetMappedName(memberInfo.DeclaringType) + "::" : "";
-            writer.WriteLine($"static {HlslKnownTypes.GetMappedName(memberType)} {declaringType}{memberInfo.Name};");
+            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.Write($" : register(s{binding})");
+            writer.WriteLine(";");
             writer.WriteLine();
         }
 
         private static void WriteTexture2D(IndentedTextWriter writer, MemberInfo memberInfo, Type memberType, int binding)
         {
-            writer.WriteLine($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name} : register(t{binding});");
+            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.Write($" : register(t{binding})");
+            writer.WriteLine(";");
             writer.WriteLine();
         }
 
-        private static string WriteArray(int arrayCount) => arrayCount > 0 ? $"[{arrayCount}]" : "";
+        private static void WriteStaticResource(IndentedTextWriter writer, MemberInfo memberInfo, Type memberType, Dictionary<Type, List<ResourceDefinition>> alreadyWrittenTypes, HlslBindingTracker bindingTracker)
+        {
+            List<MemberInfo> generatedMemberInfos = new List<MemberInfo>();
+
+            foreach (ResourceDefinition resourceDefinition in alreadyWrittenTypes[memberType])
+            {
+                MemberInfo generatedMemberInfo = new FakeMemberInfo($"__Generated__{bindingTracker.StaticResource++}__");
+                generatedMemberInfos.Add(generatedMemberInfo);
+
+                WriteResource(writer, generatedMemberInfo, resourceDefinition.MemberType, resourceDefinition.ResourceType, alreadyWrittenTypes, bindingTracker);
+            }
+
+            writer.Write($"static {HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+
+            if (generatedMemberInfos.Count != 0)
+            {
+                writer.Write(" = { ");
+
+                foreach (MemberInfo generatedMemberInfo in generatedMemberInfos)
+                {
+                    writer.Write(generatedMemberInfo.Name);
+                    writer.Write(", ");
+                }
+
+                writer.Write("}");
+            }
+
+            writer.WriteLine(";");
+            writer.WriteLine();
+        }
+
+        private static string GetArrayString(int arrayCount) => arrayCount > 0 ? $"[{arrayCount}]" : "";
 
         private static Type GetElementOrDeclaredType(this Type type) => type.IsArray ? type.GetElementType() : type;
 
-        private static string GetHlslSemantic(ShaderSemanticAttribute? semanticType, HlslSemanticTracker tracker) => semanticType switch
+        private static string GetHlslSemantic(ShaderSemanticAttribute? semanticType) => semanticType switch
         {
-            PositionSemanticAttribute _ => " : Position" + tracker.Position++,
-            NormalSemanticAttribute _ => " : Normal" + tracker.Normal++,
-            TextureCoordinateSemanticAttribute _ => " : TexCoord" + tracker.TexCoord++,
-            ColorSemanticAttribute _ => " : Color" + tracker.Color++,
-            TangentSemanticAttribute _ => " : Tangent" + tracker.Tangent++,
+            PositionSemanticAttribute a => " : Position" + a.Index,
+            NormalSemanticAttribute a => " : Normal" + a.Index,
+            TextureCoordinateSemanticAttribute a => " : TexCoord" + a.Index,
+            ColorSemanticAttribute a => " : Color" + a.Index,
+            TangentSemanticAttribute a => " : Tangent" + a.Index,
+            SystemTargetSemanticAttribute a => " : SV_Target" + a.Index,
             SystemPositionSemanticAttribute _ => " : SV_Position",
             SystemInstanceIdSemanticAttribute _ => " : SV_InstanceId",
             SystemRenderTargetArrayIndexSemanticAttribute _ => " : SV_RenderTargetArrayIndex",
-            SystemTargetSemanticAttribute _ => " : SV_Target" + tracker.SystemTarget++,
             _ => ""
         };
 
@@ -259,6 +298,10 @@ namespace DirectX12GameEngine.Rendering.Shaders
             root = syntaxRewriter.Visit(root);
 
             string shaderSource = root.ToFullString();
+
+            // TODO: See why the System namespace in System.Math is not present in UWP projects.
+            shaderSource = shaderSource.Replace("Math.Max", "max");
+            shaderSource = shaderSource.Replace("Math.Pow", "pow");
 
             // Indent every line
             string indent = "";
@@ -348,21 +391,46 @@ namespace DirectX12GameEngine.Rendering.Shaders
             private static readonly Dictionary<string, string> knownMethods = new Dictionary<string, string>()
             {
                 { "System.Math.Max", "max" },
+                { "System.Math.Pow", "pow" },
                 { "System.Math.PI", "3.1415926535897931" },
                 { "System.MathF.PI", "3.14159274f" },
 
+                { "System.Numerics.Vector3.X", ".x" },
+                { "System.Numerics.Vector3.Y", ".y" },
+                { "System.Numerics.Vector3.Z", ".z" },
                 { "System.Numerics.Vector3.Dot", "dot" },
-                { "System.Numerics.Vector3.Normalize", "normalize" },
+                { "System.Numerics.Vector3.Lerp", "lerp" },
                 { "System.Numerics.Vector3.Transform", "mul" },
                 { "System.Numerics.Vector3.TransformNormal", "mul" },
+                { "System.Numerics.Vector3.Normalize", "normalize" },
                 { "System.Numerics.Vector3.Zero", "(float3)0" },
+                { "System.Numerics.Vector3.One", "float3(1.0f, 1.0f, 1.0f)" },
 
-                { "System.Numerics.Vector4.X", "x" },
-                { "System.Numerics.Vector4.Y", "y" },
-                { "System.Numerics.Vector4.Z", "z" },
-                { "System.Numerics.Vector4.W", "w" },
+                { "System.Numerics.Vector4.X", ".x" },
+                { "System.Numerics.Vector4.Y", ".y" },
+                { "System.Numerics.Vector4.Z", ".z" },
+                { "System.Numerics.Vector4.W", ".w" },
+                { "System.Numerics.Vector4.Lerp", "lerp" },
                 { "System.Numerics.Vector4.Transform", "mul" },
-                { "System.Numerics.Vector4.Zero", "(float4)0" }
+                { "System.Numerics.Vector4.Zero", "(float4)0" },
+                { "System.Numerics.Vector4.One", "float4(1.0f, 1.0f, 1.0f, 1.0f)" },
+
+                { "System.Numerics.Matrix4x4.M11", "[0][0]" },
+                { "System.Numerics.Matrix4x4.M12", "[0][1]" },
+                { "System.Numerics.Matrix4x4.M13", "[0][2]" },
+                { "System.Numerics.Matrix4x4.M14", "[0][3]" },
+                { "System.Numerics.Matrix4x4.M21", "[1][0]" },
+                { "System.Numerics.Matrix4x4.M22", "[1][1]" },
+                { "System.Numerics.Matrix4x4.M23", "[1][2]" },
+                { "System.Numerics.Matrix4x4.M24", "[1][3]" },
+                { "System.Numerics.Matrix4x4.M31", "[2][0]" },
+                { "System.Numerics.Matrix4x4.M32", "[2][1]" },
+                { "System.Numerics.Matrix4x4.M33", "[2][2]" },
+                { "System.Numerics.Matrix4x4.M34", "[2][3]" },
+                { "System.Numerics.Matrix4x4.M41", "[3][0]" },
+                { "System.Numerics.Matrix4x4.M42", "[3][1]" },
+                { "System.Numerics.Matrix4x4.M43", "[3][2]" },
+                { "System.Numerics.Matrix4x4.M44", "[3][3]" }
             };
 
             public static string? GetMappedName(ISymbol containingMemberSymbol, ISymbol memberSymbol)
@@ -373,7 +441,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 {
                     if (!memberSymbol.IsStatic)
                     {
-                        return containingMemberSymbol.ToString() + Type.Delimiter + mapped;
+                        return containingMemberSymbol.ToString() + mapped;
                     }
 
                     return mapped;
@@ -393,16 +461,50 @@ namespace DirectX12GameEngine.Rendering.Shaders
             public int ConstantBuffer { get; set; }
             public int Sampler { get; set; }
             public int Texture { get; set; }
+            public int StaticResource { get; set; }
         }
 
-        private class HlslSemanticTracker
+        private class ResourceDefinition
         {
-            public int Position { get; set; }
-            public int TexCoord { get; set; }
-            public int Normal { get; set; }
-            public int Tangent { get; set; }
-            public int Color { get; set; }
-            public int SystemTarget { get; set; }
+            public ResourceDefinition(Type memberType, ShaderResourceAttribute resourceType)
+            {
+                MemberType = memberType;
+                ResourceType = resourceType;
+            }
+
+            public Type MemberType { get; }
+            public ShaderResourceAttribute ResourceType { get; }
+        }
+
+        private class FakeMemberInfo : MemberInfo
+        {
+            public FakeMemberInfo(string name)
+            {
+                Name = name;
+            }
+
+            public override Type DeclaringType => throw new NotImplementedException();
+
+            public override MemberTypes MemberType => MemberTypes.Field;
+
+            public override string Name { get; }
+
+            public override Type ReflectedType => throw new NotImplementedException();
+
+            public override object[] GetCustomAttributes(bool inherit)
+            {
+                return Array.Empty<object>();
+            }
+
+            public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+            {
+                return Array.Empty<object>();
+            }
+
+            public override bool IsDefined(Type attributeType, bool inherit)
+            {
+                return false;
+            }
         }
     }
 }

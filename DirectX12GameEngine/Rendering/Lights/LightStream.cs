@@ -6,16 +6,32 @@ namespace DirectX12GameEngine.Rendering.Lights
     [StaticShaderClass]
     public class LightStream
     {
-        [StaticResource] public static Vector3 LightPosition;
-        [StaticResource] public static Vector3 LightDirection;
-        [StaticResource] public static Vector3 LightColor;
-        [StaticResource] public static Vector3 LightColorNDotL;
-        [StaticResource] public static Vector3 LightSpecularColorNDotL;
+        [ShaderResource] public static Vector3 LightPositionWS;
+        [ShaderResource] public static Vector3 LightDirectionWS;
+        [ShaderResource] public static Vector3 LightColor;
 
-        [StaticResource] public static Vector3 EnvironmentDiffuseColor;
-        [StaticResource] public static Vector3 EnvironmentSpecularColor;
+        [ShaderResource] public static Vector3 LightColorNDotL;
+        [ShaderResource] public static Vector3 LightSpecularColorNDotL;
 
-        [StaticResource] public static float NDotL;
-        [StaticResource] public static float LightDirectAmbientOcclusion;
+        [ShaderResource] public static Vector3 EnvironmentLightDiffuseColor;
+        [ShaderResource] public static Vector3 EnvironmentLightSpecularColor;
+
+        [ShaderResource] public static float NDotL;
+
+        [ShaderResource] public static float LightDirectAmbientOcclusion;
+
+        [ShaderMethod]
+        public static void Reset()
+        {
+            LightPositionWS = default;
+            LightDirectionWS = default;
+            LightColor = default;
+            LightColorNDotL = default;
+            LightSpecularColorNDotL = default;
+            EnvironmentLightDiffuseColor = default;
+            EnvironmentLightSpecularColor = default;
+            NDotL = default;
+            LightDirectAmbientOcclusion = 1.0f;
+        }
     }
 }

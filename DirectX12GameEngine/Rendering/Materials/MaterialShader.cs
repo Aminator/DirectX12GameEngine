@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
 using DirectX12GameEngine.Rendering.Shaders;
 
@@ -8,7 +9,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     {
 #nullable disable
         [ConstantBufferResource] public readonly uint RenderTargetCount;
-        [ConstantBufferResource] public readonly Matrix4x4[] ViewProjectionMatrices;
+        [ConstantBufferResource] public readonly ViewProjectionTransform[] ViewProjectionTransforms;
         [ConstantBufferResource] public Matrix4x4[] WorldMatrices;
 
         [ShaderResource] public readonly DirectionalLightGroup DirectionalLights;
@@ -24,7 +25,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             Vector4 position = new Vector4(input.Position, 1.0f);
             position = Vector4.Transform(position, WorldMatrices[actualId]);
-            position = Vector4.Transform(position, ViewProjectionMatrices[targetId]);
+            position = Vector4.Transform(position, ViewProjectionTransforms[targetId].ViewProjectionMatrix);
 
             PSInput output;
             output.Position = position;

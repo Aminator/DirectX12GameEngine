@@ -4,9 +4,31 @@
     <MaterialDescriptor xmlns="DirectX12GameEngine.Rendering.Materials">
       <MaterialDescriptor.Attributes>
         <MaterialAttributes>
+          
           <MaterialAttributes.Diffuse>
-            <ComputeColor Color="1,0,0,1" />
+            <MaterialDiffuseMapFeature>
+              <MaterialDiffuseMapFeature.DiffuseMap>
+                <ComputeColor Color="1,0,0,1" />
+              </MaterialDiffuseMapFeature.DiffuseMap>
+            </MaterialDiffuseMapFeature>
           </MaterialAttributes.Diffuse>
+
+          <MaterialAttributes.MicroSurface>
+            <MaterialRoughnessMapFeature>
+              <MaterialRoughnessMapFeature.RoughnessMap>
+                <ComputeScalar Value="0.5" />
+              </MaterialRoughnessMapFeature.RoughnessMap>
+            </MaterialRoughnessMapFeature>
+          </MaterialAttributes.MicroSurface>
+
+          <MaterialAttributes.Specular>
+            <MaterialMetalnessMapFeature>
+              <MaterialMetalnessMapFeature.MetalnessMap>
+                <ComputeScalar Value="1.0" />
+              </MaterialMetalnessMapFeature.MetalnessMap>
+            </MaterialMetalnessMapFeature>
+          </MaterialAttributes.Specular>
+          
         </MaterialAttributes>
       </MaterialDescriptor.Attributes>
     </MaterialDescriptor>

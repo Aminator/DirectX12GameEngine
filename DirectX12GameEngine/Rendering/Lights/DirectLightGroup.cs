@@ -18,13 +18,7 @@ namespace DirectX12GameEngine.Rendering.Lights
         {
             PrepareDirectLightCore(lightIndex);
 
-            // TODO: See why the System namespace in Math.Max is not present in UWP projects.
-#if NETCOREAPP
-            LightStream.NDotL = Math.Max(Vector3.Dot(NormalStream.Normal, LightStream.LightDirection), 0.0001f);
-#else
-            LightStream.NDotL = Vector3.Dot(NormalStream.Normal, LightStream.LightDirection);
-            LightStream.NDotL = LightStream.NDotL > 0.0001f ? LightStream.NDotL : 0.0001f;
-#endif
+            LightStream.NDotL = Math.Max(Vector3.Dot(NormalStream.NormalWS, LightStream.LightDirectionWS), 0.0001f);
 
             LightStream.LightColorNDotL = LightStream.LightColor * LightStream.NDotL;
             LightStream.LightSpecularColorNDotL = LightStream.LightColorNDotL;

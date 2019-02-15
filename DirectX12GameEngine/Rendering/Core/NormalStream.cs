@@ -6,6 +6,8 @@ namespace DirectX12GameEngine.Rendering.Core
     [StaticShaderClass]
     public static class NormalStream
     {
-        [StaticResource] public static Vector3 Normal;
+        [ShaderResource] [NormalSemantic(0)] public static Vector3 Normal;
+
+        [ShaderResource] [NormalSemantic(1)] public static Vector3 NormalWS;
     }
 }

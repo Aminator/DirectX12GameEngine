@@ -49,10 +49,17 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 .SelectMany(g => g);
         }
 
-        public static Type? GetMemberType(this MemberInfo memberInfo, object obj) => memberInfo switch
+        public static object? GetMemberValue(this MemberInfo memberInfo, object? obj) => memberInfo switch
         {
-            FieldInfo fieldInfo => fieldInfo.GetValue(obj)?.GetType() ?? fieldInfo.FieldType,
-            PropertyInfo propertyInfo => propertyInfo.GetValue(obj)?.GetType() ?? propertyInfo.PropertyType,
+            FieldInfo fieldInfo => obj is null ? null : fieldInfo.GetValue(obj),
+            PropertyInfo propertyInfo => obj is null ? null : propertyInfo.GetValue(obj),
+            _ => null
+        };
+
+        public static Type? GetMemberType(this MemberInfo memberInfo, object? obj) => memberInfo switch
+        {
+            FieldInfo fieldInfo => obj is null ? fieldInfo.FieldType : fieldInfo.GetValue(obj)?.GetType() ?? fieldInfo.FieldType,
+            PropertyInfo propertyInfo => obj is null ? propertyInfo.PropertyType : propertyInfo.GetValue(obj)?.GetType() ?? propertyInfo.PropertyType,
             _ => null
         };
 
