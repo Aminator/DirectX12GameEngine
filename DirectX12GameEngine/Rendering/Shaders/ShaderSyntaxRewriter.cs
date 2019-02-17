@@ -17,6 +17,8 @@ namespace DirectX12GameEngine.Rendering.Shaders
         {
             node = (MethodDeclarationSyntax)base.VisitMethodDeclaration(node);
 
+            node = node.WithAttributeLists(default);
+
             SyntaxTokenList modifiers = new SyntaxTokenList();
 
             if (node.Modifiers.Any(SyntaxKind.StaticKeyword))
@@ -37,6 +39,12 @@ namespace DirectX12GameEngine.Rendering.Shaders
         {
             node = (AttributeSyntax)base.VisitAttribute(node);
             return node.ReplaceType(node.Name);
+        }
+
+        public override SyntaxNode VisitCastExpression(CastExpressionSyntax node)
+        {
+            node = (CastExpressionSyntax)base.VisitCastExpression(node);
+            return node.ReplaceType(node.Type);
         }
 
         public override SyntaxNode VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax node)

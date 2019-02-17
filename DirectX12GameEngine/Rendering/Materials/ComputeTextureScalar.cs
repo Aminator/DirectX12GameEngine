@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+﻿using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Shaders;
@@ -8,6 +8,8 @@ namespace DirectX12GameEngine.Rendering.Materials
     [StaticResource]
     public class ComputeTextureScalar : IComputeScalar
     {
+        private Texture? colorChannelBuffer;
+
         public ComputeTextureScalar()
         {
         }
@@ -25,6 +27,9 @@ namespace DirectX12GameEngine.Rendering.Materials
             {
                 context.Textures.Add(Texture);
             }
+
+            colorChannelBuffer ??= Texture.CreateConstantBufferView(context.GraphicsDevice, Channel).DisposeBy(context.GraphicsDevice);
+            context.ConstantBuffers.Add(colorChannelBuffer);
         }
 
         #region Shader
@@ -33,11 +38,13 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderResource] public Texture2DResource ScalarTexture;
 #nullable enable
 
+        [ConstantBufferResource] public ColorChannel Channel { get; set; } = ColorChannel.R;
+
         [ShaderMethod]
         public float Compute()
         {
-            Vector4 color = ScalarTexture.Sample(Texturing.Sampler, Texturing.TexCoord);
-            return color.X;
+            Numerics.Vector4 color = ScalarTexture.Sample(Texturing.Sampler, Texturing.TexCoord);
+            return color[(int)Channel];
         }
 
         #endregion

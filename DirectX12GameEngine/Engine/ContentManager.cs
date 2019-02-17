@@ -189,6 +189,10 @@ namespace DirectX12GameEngine.Engine
             {
                 return value;
             }
+            else if (typeof(Enum).IsAssignableFrom(type))
+            {
+                return Enum.Parse(type, value);
+            }
             else if (type == typeof(Uri))
             {
                 return new Uri(value);

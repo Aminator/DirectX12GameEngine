@@ -24,7 +24,7 @@
           <MaterialAttributes.Specular>
             <MaterialMetalnessMapFeature>
               <MaterialMetalnessMapFeature.MetalnessMap>
-                <ComputeScalar Value="1.0" />
+                <ComputeScalar Value="0.5" />
               </MaterialMetalnessMapFeature.MetalnessMap>
             </MaterialMetalnessMapFeature>
           </MaterialAttributes.Specular>

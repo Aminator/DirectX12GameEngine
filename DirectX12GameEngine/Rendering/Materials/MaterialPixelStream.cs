@@ -1,6 +1,4 @@
-﻿using System;
-using System.Numerics;
-using DirectX12GameEngine.Rendering.Core;
+﻿using System.Numerics;
 using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
@@ -8,6 +6,8 @@ namespace DirectX12GameEngine.Rendering.Materials
     [StaticShaderClass]
     public static class MaterialPixelStream
     {
+        [ShaderResource] public static Vector3 MaterialNormal;
+
         [ShaderResource] public static float MaterialRoughness;
 
         [ShaderResource] public static Vector4 MaterialColorBase;
@@ -27,6 +27,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderMethod]
         public static void Reset()
         {
+            MaterialNormal = Vector3.UnitZ;
             MaterialRoughness = default;
             MaterialDiffuse = default;
             MaterialSpecular = default;

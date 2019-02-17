@@ -286,6 +286,12 @@ namespace DirectX12GameEngine.Engine
 
                         viewProjectionTransforms[0].ViewMatrix = positionMatrix * viewTransform.Value.Left;
                         viewProjectionTransforms[1].ViewMatrix = positionMatrix * viewTransform.Value.Right;
+
+                        Matrix4x4.Invert(viewProjectionTransforms[0].ViewMatrix, out Matrix4x4 inverseViewMatrix0);
+                        Matrix4x4.Invert(viewProjectionTransforms[1].ViewMatrix, out Matrix4x4 inverseViewMatrix1);
+
+                        viewProjectionTransforms[0].InverseViewMatrix = inverseViewMatrix0;
+                        viewProjectionTransforms[1].InverseViewMatrix = inverseViewMatrix1;
                     }
 
                     viewProjectionTransforms[0].ProjectionMatrix = cameraPose.ProjectionTransform.Left;
@@ -298,9 +304,12 @@ namespace DirectX12GameEngine.Engine
                 }
                 else
                 {
+                    Matrix4x4.Invert(SceneSystem.CurrentCamera.ViewMatrix, out Matrix4x4 inverseViewMatrix);
+
                     ViewProjectionTransform viewProjectionTransform = new ViewProjectionTransform
                     {
                         ViewMatrix = SceneSystem.CurrentCamera.ViewMatrix,
+                        InverseViewMatrix = inverseViewMatrix,
                         ProjectionMatrix = SceneSystem.CurrentCamera.ProjectionMatrix,
                         ViewProjectionMatrix = SceneSystem.CurrentCamera.ViewProjectionMatrix
                     };

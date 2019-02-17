@@ -112,7 +112,15 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 }
             }
 
-            writer.WriteLine($"struct {type.Name}");
+            if (type.IsEnum)
+            {
+                writer.WriteLine($"enum class {type.Name}");
+            }
+            else
+            {
+                writer.WriteLine($"struct {type.Name}");
+            }
+
             writer.WriteLine("{");
             writer.Indent++;
 
@@ -127,7 +135,15 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 }
                 else if (memberType != null && resourceType != null)
                 {
-                    WriteStructureField(writer, memberInfo, memberType);
+                    if (type.IsEnum)
+                    {
+                        writer.Write(memberInfo.Name);
+                        writer.WriteLine(",");
+                    }
+                    else
+                    {
+                        WriteStructureField(writer, memberInfo, memberType);
+                    }
                 }
             }
 
@@ -137,6 +153,8 @@ namespace DirectX12GameEngine.Rendering.Shaders
             writer.WriteLine();
             writer.WriteLine("};");
             writer.WriteLine();
+
+            if (type.IsEnum) return;
 
             foreach (MemberInfo memberInfo in memberInfos.Where(m => m.IsStatic()))
             {
@@ -355,6 +373,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 { typeof(Vector2).FullName, "float2" },
                 { typeof(Vector3).FullName, "float3" },
                 { typeof(Vector4).FullName, "float4" },
+                { typeof(Numerics.Vector4).FullName, "float4" },
                 { typeof(Matrix4x4).FullName, "float4x4" },
                 { typeof(SamplerResource).FullName, "SamplerState" },
                 { typeof(SamplerComparisonResource).FullName, "SamplerComparisonState" },
@@ -398,6 +417,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 { "System.Numerics.Vector3.X", ".x" },
                 { "System.Numerics.Vector3.Y", ".y" },
                 { "System.Numerics.Vector3.Z", ".z" },
+                { "System.Numerics.Vector3.Cross", "cross" },
                 { "System.Numerics.Vector3.Dot", "dot" },
                 { "System.Numerics.Vector3.Lerp", "lerp" },
                 { "System.Numerics.Vector3.Transform", "mul" },
@@ -405,6 +425,9 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 { "System.Numerics.Vector3.Normalize", "normalize" },
                 { "System.Numerics.Vector3.Zero", "(float3)0" },
                 { "System.Numerics.Vector3.One", "float3(1.0f, 1.0f, 1.0f)" },
+                { "System.Numerics.Vector3.UnitX", "float3(1.0f, 0.0f, 0.0f)" },
+                { "System.Numerics.Vector3.UnitY", "float3(0.0f, 1.0f, 0.0f)" },
+                { "System.Numerics.Vector3.UnitZ", "float3(0.0f, 0.0f, 1.0f)" },
 
                 { "System.Numerics.Vector4.X", ".x" },
                 { "System.Numerics.Vector4.Y", ".y" },
@@ -412,9 +435,12 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 { "System.Numerics.Vector4.W", ".w" },
                 { "System.Numerics.Vector4.Lerp", "lerp" },
                 { "System.Numerics.Vector4.Transform", "mul" },
+                { "System.Numerics.Vector4.Normalize", "normalize" },
                 { "System.Numerics.Vector4.Zero", "(float4)0" },
                 { "System.Numerics.Vector4.One", "float4(1.0f, 1.0f, 1.0f, 1.0f)" },
 
+                { "System.Numerics.Matrix4x4.Multiply", "mul" },
+                { "System.Numerics.Matrix4x4.Translation", "[3].xyz" },
                 { "System.Numerics.Matrix4x4.M11", "[0][0]" },
                 { "System.Numerics.Matrix4x4.M12", "[0][1]" },
                 { "System.Numerics.Matrix4x4.M13", "[0][2]" },
@@ -441,7 +467,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 {
                     if (!memberSymbol.IsStatic)
                     {
-                        return containingMemberSymbol.ToString() + mapped;
+                        return containingMemberSymbol.Name + mapped;
                     }
 
                     return mapped;

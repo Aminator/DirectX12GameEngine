@@ -29,7 +29,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public IComputeScalar RoughnessMap { get; set; } = new ComputeTextureScalar();
+        [ShaderResource] public IComputeScalar RoughnessMap { get; set; } = new ComputeScalar();
 
         [ConstantBufferResource] public bool Invert { get; set; }
 

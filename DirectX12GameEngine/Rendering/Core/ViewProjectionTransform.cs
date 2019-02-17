@@ -7,6 +7,8 @@ namespace DirectX12GameEngine.Rendering.Core
     {
         [ShaderResource] public Matrix4x4 ViewMatrix { get; set; }
 
+        [ShaderResource] public Matrix4x4 InverseViewMatrix { get; set; }
+
         [ShaderResource] public Matrix4x4 ProjectionMatrix { get; set; }
 
         [ShaderResource] public Matrix4x4 ViewProjectionMatrix { get; set; }

@@ -47,7 +47,7 @@ namespace DirectX12Game
                     Entity light = scene.FirstOrDefault(m => m.Name == "MyLight");
                     if (light != null)
                     {
-                        light.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time);
+                        light.Transform.Rotation =  Quaternion.CreateFromAxisAngle(Vector3.UnitY, time) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, -(float)Math.PI / 4.0f);
                     }
 
                     Entity tRex = scene.FirstOrDefault(m => m.Name == "T-Rex");

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 using DirectX12GameEngine.Rendering.Brdf;
 using DirectX12GameEngine.Rendering.Lights;
 using DirectX12GameEngine.Rendering.Shaders;

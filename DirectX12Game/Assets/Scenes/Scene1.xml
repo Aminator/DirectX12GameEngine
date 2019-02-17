@@ -69,7 +69,7 @@
   
   <Entity Name="MyLight">
     <TransformComponent Position="0,300,1500" />
-    <LightComponent Intensity="1">
+    <LightComponent Intensity="2">
       <LightComponent.Light>
         <DirectionalLight xmlns="DirectX12GameEngine.Rendering.Lights" Color="1,1,1" />
       </LightComponent.Light>

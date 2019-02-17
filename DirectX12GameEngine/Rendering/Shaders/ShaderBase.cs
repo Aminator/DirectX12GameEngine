@@ -8,6 +8,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
         {
             [ShaderResource] [PositionSemantic] public Vector3 Position;
             [ShaderResource] [NormalSemantic] public Vector3 Normal;
+            [ShaderResource] [TangentSemantic] public Vector4 Tangent;
             [ShaderResource] [TextureCoordinateSemantic] public Vector2 TexCoord;
 
             [ShaderResource] [SystemInstanceIdSemantic] public uint InstanceId;
@@ -15,16 +16,20 @@ namespace DirectX12GameEngine.Rendering.Shaders
 
         public struct PSInput
         {
-            [ShaderResource] [SystemPositionSemantic] public Vector4 Position;
-            [ShaderResource] [NormalSemantic] public Vector3 Normal;
+            [ShaderResource] [PositionSemantic] public Vector4 PositionWS;
+            [ShaderResource] [NormalSemantic(0)] public Vector3 Normal;
+            [ShaderResource] [NormalSemantic(1)] public Vector3 NormalWS;
+            [ShaderResource] [TangentSemantic] public Vector4 Tangent;
             [ShaderResource] [TextureCoordinateSemantic] public Vector2 TexCoord;
 
+            [ShaderResource] [SystemPositionSemantic] public Vector4 ShadingPosition;
+            [ShaderResource] [SystemInstanceIdSemantic] public uint InstanceId;
             [ShaderResource] [SystemRenderTargetArrayIndexSemantic] public uint TargetId;
         }
 
         public struct PSOutput
         {
-            [ShaderResource] [SystemTargetSemantic] public Vector4 Color;
+            [ShaderResource] [SystemTargetSemantic] public Vector4 ColorTarget;
         }
 
         [Shader("vertex")]

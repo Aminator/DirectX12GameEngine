@@ -23,14 +23,17 @@ namespace DirectX12GameEngine.Rendering.Materials
             uint actualId = input.InstanceId / RenderTargetCount;
             uint targetId = input.InstanceId % RenderTargetCount;
 
-            Vector4 position = new Vector4(input.Position, 1.0f);
-            position = Vector4.Transform(position, WorldMatrices[actualId]);
-            position = Vector4.Transform(position, ViewProjectionTransforms[targetId].ViewProjectionMatrix);
-
             PSInput output;
-            output.Position = position;
-            output.Normal = Vector3.Normalize(Vector3.TransformNormal(input.Normal, WorldMatrices[actualId]));
+
+            output.PositionWS = Vector4.Transform(new Vector4(input.Position, 1.0f), WorldMatrices[actualId]);
+            output.ShadingPosition = Vector4.Transform(output.PositionWS, ViewProjectionTransforms[targetId].ViewProjectionMatrix);
+
+            output.Normal = input.Normal;
+            output.NormalWS = Vector3.TransformNormal(input.Normal, WorldMatrices[actualId]);
+            output.Tangent = input.Tangent;
             output.TexCoord = input.TexCoord;
+
+            output.InstanceId = input.InstanceId;
             output.TargetId = targetId;
 
             return output;
@@ -39,8 +42,10 @@ namespace DirectX12GameEngine.Rendering.Materials
         [Shader("pixel")]
         public override PSOutput PSMain(PSInput input)
         {
-            PSOutput output;
-            output.Color = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+            PSOutput output = base.PSMain(input);
+
+            ShaderBaseStream.ColorTarget = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+            output.ColorTarget = ShaderBaseStream.ColorTarget;
 
             return output;
         }

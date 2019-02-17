@@ -12,6 +12,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             Diffuse.Visit(context);
             DiffuseModel.Visit(context);
+            Surface.Visit(context);
             MicroSurface.Visit(context);
             Specular.Visit(context);
             SpecularModel.Visit(context);
@@ -23,11 +24,35 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         [ShaderResource] public IMaterialDiffuseModelFeature DiffuseModel { get; set; } = new MaterialDiffuseLambertModelFeature();
 
+        [ShaderResource] public IMaterialSurfaceFeature Surface { get; set; } = new MaterialNormalMapFeature();
+
         [ShaderResource] public IMaterialMicroSurfaceFeature MicroSurface { get; set; } = new MaterialRoughnessMapFeature();
 
         [ShaderResource] public IMaterialSpecularFeature Specular { get; set; } = new MaterialMetalnessMapFeature();
 
         [ShaderResource] public IMaterialSpecularModelFeature SpecularModel { get; set; } = new MaterialSpecularMicrofacetModelFeature();
+
+        [ShaderMethod]
+        public void UpdateNormalFromTangentSpace(Vector3 normalInTangetSpace)
+        {
+            Vector3 normal = Vector3.Normalize(NormalStream.Normal);
+
+            Vector4 tangent4 = NormalStream.Tangent;
+            Vector3 tangent = Vector3.Normalize(new Vector3(tangent4.X, tangent4.Y, tangent4.Z));
+
+            Vector3 bitangent = Vector3.Cross(normal, tangent);
+
+            Matrix4x4 tangentMatrix = new Matrix4x4(
+                tangent.X, tangent.Y, tangent.Z, 0.0f,
+                bitangent.X, bitangent.Y, bitangent.Z, 0.0f,
+                normal.X, normal.Y, normal.Z, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f);
+
+            uint actualId = ShaderBaseStream.InstanceId / RenderTargetCount;
+            NormalStream.TangentToWorld = Matrix4x4.Multiply(tangentMatrix, WorldMatrices[actualId]);
+
+            NormalStream.NormalWS = Vector3.Normalize(Vector3.TransformNormal(normalInTangetSpace, NormalStream.TangentToWorld));
+        }
 
         [ShaderMethod]
         public static void PrepareMaterialForLightingAndShading()
@@ -53,19 +78,11 @@ namespace DirectX12GameEngine.Rendering.Materials
             MaterialPixelShadingStream.VDotH = MaterialPixelShadingStream.LDotH;
         }
 
-        [Shader("pixel")]
-        public override PSOutput PSMain(PSInput input)
+        [ShaderMethod]
+        public void ComputeMaterialSurfaceLightingAndShading()
         {
-            Texturing.Sampler = Sampler;
-            Texturing.TexCoord = input.TexCoord;
-            NormalStream.NormalWS = Vector3.Normalize(input.Normal);
-
-            Matrix4x4 viewMatrix = ViewProjectionTransforms[input.TargetId].ViewMatrix;
-            MaterialPixelStream.ViewWS = Vector3.Normalize(new Vector3(viewMatrix.M31, viewMatrix.M32, viewMatrix.M33));
-
-            Diffuse.Compute();
-            MicroSurface.Compute();
-            Specular.Compute();
+            Vector3 materialNormal = Vector3.Normalize(MaterialPixelStream.MaterialNormal);
+            UpdateNormalFromTangentSpace(materialNormal);
 
             LightStream.Reset();
             PrepareMaterialForLightingAndShading();
@@ -85,9 +102,57 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             MaterialPixelShadingStream.ShadingColor += directLightingContribution * (float)Math.PI;
             MaterialPixelShadingStream.ShadingColorAlpha = materialDiffuse.W;
+        }
 
+        [Shader("pixel")]
+        public override PSOutput PSMain(PSInput input)
+        {
+            PSOutput output = SetPSInputs(input);
+
+            Diffuse.Compute();
+            Surface.Compute();
+            MicroSurface.Compute();
+            Specular.Compute();
+
+            ComputeMaterialSurfaceLightingAndShading();
+
+            ShaderBaseStream.ColorTarget = new Vector4(MaterialPixelShadingStream.ShadingColor, MaterialPixelShadingStream.ShadingColorAlpha);
+            output.ColorTarget = ShaderBaseStream.ColorTarget;
+
+            return output;
+        }
+
+        // TODO: Allow base class method calls. Like this: PSOutput output = base.PSMain(input);
+        // TODO: Write every method declaration at the beginning so that order does not matter.
+        [ShaderMethod(0)]
+        private PSOutput SetPSInputs(PSInput input)
+        {
             PSOutput output;
-            output.Color = new Vector4(MaterialPixelShadingStream.ShadingColor, MaterialPixelShadingStream.ShadingColorAlpha);
+
+            ShaderBaseStream.ShadingPosition = input.ShadingPosition;
+            ShaderBaseStream.InstanceId = input.InstanceId;
+            ShaderBaseStream.TargetId = input.TargetId;
+
+            Texturing.Sampler = Sampler;
+            Texturing.TexCoord = input.TexCoord;
+
+            NormalStream.Normal = Vector3.Normalize(input.Normal);
+            NormalStream.NormalWS = Vector3.Normalize(input.NormalWS);
+            NormalStream.Tangent = input.Tangent;
+
+            PositionStream.PositionWS = input.PositionWS;
+
+            Matrix4x4 inverseViewMatrix = ViewProjectionTransforms[input.TargetId].InverseViewMatrix;
+            Vector3 eyePosition = inverseViewMatrix.Translation;
+            Vector4 positionWS = input.PositionWS;
+            Vector3 worldPosition = new Vector3(positionWS.X, positionWS.Y, positionWS.Z);
+            MaterialPixelStream.ViewWS = Vector3.Normalize(eyePosition - worldPosition);
+
+            // TODO: Remove this.
+            Matrix4x4 dummy = inverseViewMatrix * 4;
+
+            ShaderBaseStream.ColorTarget = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+            output.ColorTarget = ShaderBaseStream.ColorTarget;
 
             return output;
         }

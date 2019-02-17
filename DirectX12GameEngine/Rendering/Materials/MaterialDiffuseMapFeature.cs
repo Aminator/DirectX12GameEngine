@@ -22,7 +22,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public IComputeColor DiffuseMap { get; set; } = new ComputeTextureColor();
+        [ShaderResource] public IComputeColor DiffuseMap { get; set; } = new ComputeColor();
 
         [ShaderMethod]
         public void Compute()
