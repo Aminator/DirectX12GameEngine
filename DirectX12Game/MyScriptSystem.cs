@@ -41,7 +41,7 @@ namespace DirectX12Game
                     if (camera != null)
                     {
                         SceneSystem.CurrentCamera = camera.Get<CameraComponent>();
-                        camera.Transform.Position = new Vector3(0.0f, 300.0f, 10.0f * scrollAmount * 3);
+                        camera.Transform.Position = new Vector3(camera.Transform.Position.X, camera.Transform.Position.Y, 10.0f * scrollAmount * 3);
                     }
 
                     Entity light = scene.FirstOrDefault(m => m.Name == "MyLight");

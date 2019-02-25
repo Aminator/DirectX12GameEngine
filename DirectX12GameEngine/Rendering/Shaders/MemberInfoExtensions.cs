@@ -7,6 +7,11 @@ namespace DirectX12GameEngine.Rendering.Shaders
 {
     public static class MemberInfoExtensions
     {
+        public static bool IsOverride(this MethodInfo methodInfo)
+        {
+            return methodInfo != methodInfo.GetBaseDefinition();
+        }
+
         public static IEnumerable<Type> GetNestedTypesInTypeHierarchy(this Type type, BindingFlags bindingAttr)
         {
             IEnumerable<Type> nestedTypes = type.GetNestedTypes(bindingAttr);

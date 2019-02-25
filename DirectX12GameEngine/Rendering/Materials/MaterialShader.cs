@@ -44,6 +44,28 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             PSOutput output = base.PSMain(input);
 
+            ShaderBaseStream.ShadingPosition = input.ShadingPosition;
+            ShaderBaseStream.InstanceId = input.InstanceId;
+            ShaderBaseStream.TargetId = input.TargetId;
+
+            Texturing.Sampler = Sampler;
+            Texturing.TexCoord = input.TexCoord;
+
+            NormalStream.Normal = Vector3.Normalize(input.Normal);
+            NormalStream.NormalWS = Vector3.Normalize(input.NormalWS);
+            NormalStream.Tangent = input.Tangent;
+
+            PositionStream.PositionWS = input.PositionWS;
+
+            Matrix4x4 inverseViewMatrix = ViewProjectionTransforms[input.TargetId].InverseViewMatrix;
+            Vector3 eyePosition = inverseViewMatrix.Translation;
+            Vector4 positionWS = input.PositionWS;
+            Vector3 worldPosition = new Vector3(positionWS.X, positionWS.Y, positionWS.Z);
+            MaterialPixelStream.ViewWS = Vector3.Normalize(eyePosition - worldPosition);
+
+            // TODO: Remove this.
+            Matrix4x4 dummy = inverseViewMatrix * 4;
+
             ShaderBaseStream.ColorTarget = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
             output.ColorTarget = ShaderBaseStream.ColorTarget;
 

@@ -1,8 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Model xmlns="DirectX12GameEngine.Rendering" Content="Assets\Resources\Models\Cliffhouse\Cliffhouse.glb">
   <Model.Materials>
-    <Material>Assets\Materials\Cliffhouse_Water_Material.xml</Material>
+    <!--<Material>Assets\Materials\Cliffhouse_Water_Material.xml</Material>
     <Material>Assets\Materials\Cliffhouse_Bird_Material.xml</Material>
-    <Material>Assets\Materials\Cliffhouse_Cliffhouse_Material.xml</Material>
+    <Material>Assets\Materials\Cliffhouse_Cliffhouse_Material.xml</Material>-->
+    <Material>Assets\Resources\Models\Cliffhouse\Cliffhouse.glb[0]</Material>
+    <Material>Assets\Resources\Models\Cliffhouse\Cliffhouse.glb[1]</Material>
+    <Material>Assets\Resources\Models\Cliffhouse\Cliffhouse.glb[2]</Material>
   </Model.Materials>
 </Model>

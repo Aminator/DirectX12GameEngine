@@ -125,14 +125,14 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             List<RootParameter> rootParameters = new List<RootParameter>
             {
-                    new RootParameter(ShaderVisibility.All,
-                        new RootConstants(0, 0, 1)),
-                    new RootParameter(ShaderVisibility.All,
-                        new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 1)),
-                    new RootParameter(ShaderVisibility.All,
-                        new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 2)),
-                    new RootParameter(ShaderVisibility.All,
-                        new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 3))
+                new RootParameter(ShaderVisibility.All,
+                    new RootConstants(0, 0, 1)),
+                new RootParameter(ShaderVisibility.All,
+                    new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 1)),
+                new RootParameter(ShaderVisibility.All,
+                    new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 2)),
+                new RootParameter(ShaderVisibility.All,
+                    new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 3))
             };
 
             if (ConstantBuffers.Count > 0)

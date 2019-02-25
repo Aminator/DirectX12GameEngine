@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
+using DirectX12GameEngine.Rendering.Materials;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
@@ -43,27 +44,27 @@ namespace DirectX12GameEngine.Engine
                 if (Path.GetExtension(filePath) == ".xml")
                 {
                     asset = await LoadElementAsync(filePath);
-                    asset = await InitializeAssetAsync(asset);
 
                     LoadedAssets.Add(filePath, asset);
                 }
                 else
                 {
                     asset = await LoadFileAsync(type, filePath);
+                    asset = await InitializeAssetAsync(asset);
                 }
             }
 
             return asset;
         }
 
-        private Task<object> InitializeAssetAsync(object asset)
+        private async Task<object> InitializeAssetAsync(object asset)
         {
             if (asset is Material material)
             {
-                asset = new Material(GraphicsDevice, material.Descriptor);
+                asset = await Task.Run(() => Material.Create(GraphicsDevice, material.Descriptor!));
             }
 
-            return Task.FromResult(asset);
+            return asset;
         }
 
         private async Task<object> LoadFileAsync(Type type, string filePath)
@@ -71,6 +72,32 @@ namespace DirectX12GameEngine.Engine
             if (type == typeof(Model))
             {
                 return await ModelLoader.LoadModelAsync(filePath);
+            }
+            else if (type == typeof(Material) || type == typeof(MaterialDescriptor) || type == typeof(MaterialAttributes))
+            {
+                Match match = Regex.Match(filePath, @"\[\d+\]$");
+                int materialIndex = 0;
+
+                if (match.Success)
+                {
+                    filePath = filePath.Remove(match.Index);
+                    materialIndex = int.Parse(match.Value.Trim('[', ']'));
+                }
+
+                MaterialAttributes materialAttributes = await ModelLoader.LoadMaterialAsync(filePath, materialIndex);
+                
+                if (type == typeof(MaterialAttributes))
+                {
+                    return materialAttributes;
+                }
+                else if (type == typeof(MaterialDescriptor))
+                {
+                    return new MaterialDescriptor { Attributes = materialAttributes };
+                }
+                else if (type == typeof(Material))
+                {
+                    return new Material(new MaterialDescriptor { Attributes = materialAttributes });
+                }
             }
             else if (type == typeof(Texture))
             {
@@ -127,6 +154,8 @@ namespace DirectX12GameEngine.Engine
                     list.Add(parsedObject);
                 }
             }
+
+            parsedElement = await InitializeAssetAsync(parsedElement);
 
             return parsedElement;
         }

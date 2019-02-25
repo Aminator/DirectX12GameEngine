@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Model xmlns="DirectX12GameEngine.Rendering" Content="Assets\Resources\Models\SwimmingShark.glb">
+  <Model.Materials>
+    <Material>
+      <Material.Descriptor>
+        <MaterialDescriptor xmlns="DirectX12GameEngine.Rendering.Materials">
+          <MaterialDescriptor.Attributes>
+            <MaterialAttributes Content="Assets\Resources\Models\SwimmingShark.glb">
+              <!--<MaterialAttributes.MicroSurface>
+                <MaterialRoughnessMapFeature>
+                  <MaterialRoughnessMapFeature.RoughnessMap>
+                    <ComputeScalar Value="1.0" />
+                  </MaterialRoughnessMapFeature.RoughnessMap>
+                </MaterialRoughnessMapFeature>
+              </MaterialAttributes.MicroSurface>-->
+            </MaterialAttributes>
+          </MaterialDescriptor.Attributes>
+        </MaterialDescriptor>
+      </Material.Descriptor>
+    </Material>
+  </Model.Materials>
+</Model>

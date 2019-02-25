@@ -18,6 +18,7 @@
     <None Remove="Assets\Models\Cliffhouse_Cliffhouse_Material.xml" />
     <None Remove="Assets\Models\Cliffhouse_Water_Material.xml" />
     <None Remove="Assets\Models\Icon_Failure_Model.xml" />
+    <None Remove="Assets\Models\SwimmingShark_Model.xml" />
     <None Remove="Assets\Scenes\Cliffhouse_Model.xml" />
   </ItemGroup>
 

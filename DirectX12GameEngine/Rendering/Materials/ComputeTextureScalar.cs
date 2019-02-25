@@ -14,9 +14,10 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
         }
 
-        public ComputeTextureScalar(Texture texture)
+        public ComputeTextureScalar(Texture texture, ColorChannel channel = ColorChannel.R)
         {
             Texture = texture;
+            Channel = channel;
         }
 
         public Texture? Texture { get; set; }

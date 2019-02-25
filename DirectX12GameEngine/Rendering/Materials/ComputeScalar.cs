@@ -21,7 +21,6 @@ namespace DirectX12GameEngine.Rendering.Materials
         public void Visit(MaterialGeneratorContext context)
         {
             valueBuffer ??= Texture.CreateConstantBufferView(context.GraphicsDevice, Value).DisposeBy(context.GraphicsDevice);
-
             context.ConstantBuffers.Add(valueBuffer);
         }
 

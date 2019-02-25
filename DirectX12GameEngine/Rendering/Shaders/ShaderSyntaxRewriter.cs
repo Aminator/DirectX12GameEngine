@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -7,15 +8,22 @@ namespace DirectX12GameEngine.Rendering.Shaders
     public class ShaderSyntaxRewriter : CSharpSyntaxRewriter
     {
         private readonly SemanticModel semanticModel;
+        private readonly int depth;
 
-        public ShaderSyntaxRewriter(SemanticModel semanticModel)
+        public ShaderSyntaxRewriter(SemanticModel semanticModel, int depth = 0)
         {
             this.semanticModel = semanticModel;
+            this.depth = depth;
         }
 
         public override SyntaxNode VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
             node = (MethodDeclarationSyntax)base.VisitMethodDeclaration(node);
+
+            if (depth > 0)
+            {
+                node = node.ReplaceToken(node.Identifier, SyntaxFactory.Identifier($"Base_{depth}_{node.Identifier.ValueText}"));
+            }
 
             node = node.WithAttributeLists(default);
 
@@ -78,7 +86,15 @@ namespace DirectX12GameEngine.Rendering.Shaders
         public override SyntaxNode VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
         {
             node = (MemberAccessExpressionSyntax)base.VisitMemberAccessExpression(node);
-            return node.ReplaceMethod(semanticModel);
+
+            if (node.Expression is BaseExpressionSyntax)
+            {
+                return SyntaxFactory.IdentifierName($"Base_{depth + 1}_{node.Name}");
+            }
+            else
+            {
+                return node.ReplaceMethod(semanticModel);
+            }
         }
     }
 }

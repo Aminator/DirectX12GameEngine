@@ -22,7 +22,6 @@ namespace DirectX12GameEngine.Rendering.Materials
         public void Visit(MaterialGeneratorContext context)
         {
             colorBuffer ??= Texture.CreateConstantBufferView(context.GraphicsDevice, Color).DisposeBy(context.GraphicsDevice);
-
             context.ConstantBuffers.Add(colorBuffer);
         }
 

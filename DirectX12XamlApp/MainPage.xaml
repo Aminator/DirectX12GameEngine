@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="DirectX12XamlApp.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,18 +9,6 @@
     Background="{ThemeResource SystemControlAcrylicWindowBrush}">
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition Width="3*" />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-
-        <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="3*" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-
-        <SwapChainPanel x:Name="swapChainPanel" Grid.Row="1" Grid.Column="1" />
+        <SwapChainPanel x:Name="swapChainPanel" />
     </Grid>
 </Page>

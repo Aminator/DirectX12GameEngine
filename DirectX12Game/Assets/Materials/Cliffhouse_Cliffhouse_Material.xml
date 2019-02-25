@@ -13,6 +13,14 @@
             </MaterialDiffuseMapFeature>
           </MaterialAttributes.Diffuse>
 
+          <!--<MaterialAttributes.DiffuseModel>
+            <MaterialDiffuseCelShadingModelFeature xmlns="DirectX12GameEngine.Rendering.Materials.CelShading">
+              <MaterialDiffuseCelShadingModelFeature.RampFunction>
+                <MaterialCelShadingLightDefault IsBlackAndWhite ="False" />
+              </MaterialDiffuseCelShadingModelFeature.RampFunction>
+            </MaterialDiffuseCelShadingModelFeature>
+          </MaterialAttributes.DiffuseModel>-->
+
           <MaterialAttributes.Surface>
             <MaterialNormalMapFeature>
               <MaterialNormalMapFeature.NormalMap>
@@ -33,6 +41,7 @@
             <MaterialMetalnessMapFeature>
               <MaterialMetalnessMapFeature.MetalnessMap>
                 <ComputeTextureScalar Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img3.png" Channel="B" />
+                <!--<ComputeScalar Value="0.0" />-->
               </MaterialMetalnessMapFeature.MetalnessMap>
             </MaterialMetalnessMapFeature>
           </MaterialAttributes.Specular>

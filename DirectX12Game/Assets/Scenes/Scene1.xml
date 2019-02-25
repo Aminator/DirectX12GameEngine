@@ -1,26 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Scene xmlns="DirectX12GameEngine.Engine">
   <Entity Name="T-Rex">
-    <TransformComponent Scale="10,10,10" />
+    <TransformComponent Scale="5,5,5" Position="-400,0,0" />
     <ModelComponent>
       <ModelComponent.Model>Assets\Models\Cliffhouse_Model.xml</ModelComponent.Model>
     </ModelComponent>
   </Entity>
 
   <Entity Name="T-Rex">
-    <TransformComponent Scale="2,2,2" Position="-600,0,0" />
+    <TransformComponent Scale="0.2,0.2,0.2" Position="0,100,0" />
     <ModelComponent>
       <ModelComponent.Model>
-        <Model>Assets\Models\Cliffhouse_Model.xml</Model>
-      </ModelComponent.Model>
-    </ModelComponent>
-  </Entity>
-
-  <Entity Name="T-Rex">
-    <TransformComponent Scale="2,2,2" Position="-500,0,0" />
-    <ModelComponent>
-      <ModelComponent.Model>
-        <Model Content="Assets\Models\Cliffhouse_Model.xml" />
+        <Model>Assets\Models\SwimmingShark_Model.xml</Model>
       </ModelComponent.Model>
     </ModelComponent>
   </Entity>
@@ -31,7 +22,7 @@
   </Entity>
 
   <Entity Name="T-Rex">
-    <TransformComponent Scale="2,2,2" Position="600,0,0" />
+    <TransformComponent Scale="2,2,2" Position="700,0,0" />
     <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
   </Entity>
 
@@ -63,13 +54,22 @@
   <Entity Name="MyScript">Assets\Scenes\MyScriptEntity1.xml</Entity>
 
   <Entity Name="MyCamera">
-    <TransformComponent Position="0,300,1500" />
+    <TransformComponent Position="0,150,1500" />
     <CameraComponent />
   </Entity>
   
   <Entity Name="MyLight">
     <TransformComponent Position="0,300,1500" />
-    <LightComponent Intensity="2">
+    <LightComponent Intensity="1">
+      <LightComponent.Light>
+        <DirectionalLight xmlns="DirectX12GameEngine.Rendering.Lights" Color="1,1,1" />
+      </LightComponent.Light>
+    </LightComponent>
+  </Entity>
+
+  <Entity Name="MyLight2">
+    <TransformComponent Position="0,300,1500" />
+    <LightComponent Intensity="1">
       <LightComponent.Light>
         <DirectionalLight xmlns="DirectX12GameEngine.Rendering.Lights" Color="1,1,1" />
       </LightComponent.Light>

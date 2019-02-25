@@ -43,12 +43,28 @@ namespace DirectX12GameEngine.Rendering
             return model;
         }
 
-        public async Task<IList<Material>> LoadMaterialsAsync(string filePath)
+        public async Task<MaterialAttributes> LoadMaterialAsync(string filePath, int materialIndex)
+        {
+            Gltf gltf = await Task.Run(() => Interface.LoadModel(filePath));
+            IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
+
+            return await GetMaterialAsync(gltf, buffers, materialIndex);
+        }
+
+        public async Task<IList<MaterialAttributes>> LoadMaterialsAsync(string filePath)
         {
             Gltf gltf = await Task.Run(() => Interface.LoadModel(filePath));
             IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
 
             return await GetMaterialsAsync(gltf, buffers);
+        }
+
+        public async Task<Mesh> LoadMeshAsync(string filePath, int meshIndex)
+        {
+            Gltf gltf = await Task.Run(() => Interface.LoadModel(filePath));
+            IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
+
+            return await GetMeshAsync(gltf, buffers, meshIndex);
         }
 
         public async Task<IList<Mesh>> LoadMeshesAsync(string filePath)
@@ -83,76 +99,108 @@ namespace DirectX12GameEngine.Rendering
             return buffers;
         }
 
-        private async Task<IList<Material>> GetMaterialsAsync(Gltf gltf, IList<byte[]> buffers)
+        private async Task<IList<MaterialAttributes>> GetMaterialsAsync(Gltf gltf, IList<byte[]> buffers)
         {
-            List<Material> materials = new List<Material>(gltf.Materials.Length);
+            List<MaterialAttributes> materials = new List<MaterialAttributes>(gltf.Materials.Length);
 
             for (int i = 0; i < gltf.Materials.Length; i++)
             {
-                Material material = await GetMaterialAsync(gltf, buffers, i);
+                MaterialAttributes material = await GetMaterialAsync(gltf, buffers, i);
                 materials.Add(material);
             }
 
             return materials;
         }
 
-        private async Task<Material> GetMaterialAsync(Gltf gltf, IList<byte[]> buffers, int materialIndex)
+        private async Task<MaterialAttributes> GetMaterialAsync(Gltf gltf, IList<byte[]> buffers, int materialIndex)
         {
             GltfLoader.Schema.Material material = gltf.Materials[materialIndex];
 
-            int? textureIndex = material.PbrMetallicRoughness.BaseColorTexture?.Index;
+            int? diffuseTextureIndex = material.PbrMetallicRoughness.BaseColorTexture?.Index;
+            int? metallicRoughnessTextureIndex = material.PbrMetallicRoughness.MetallicRoughnessTexture?.Index;
+            int? normalTextureIndex = material.NormalTexture?.Index;
 
-            if (!textureIndex.HasValue)
+            if (!diffuseTextureIndex.HasValue)
             {
                 if (material.Extensions?.FirstOrDefault().Value is Newtonsoft.Json.Linq.JObject jObject && jObject.TryGetValue("diffuseTexture", out Newtonsoft.Json.Linq.JToken token))
                 {
                     if (token.FirstOrDefault(t => (t as Newtonsoft.Json.Linq.JProperty)?.Name == "index") is Newtonsoft.Json.Linq.JProperty indexToken)
                     {
-                        textureIndex = (int)indexToken.Value;
+                        diffuseTextureIndex = (int)indexToken.Value;
                     }
                 }
             }
 
-            if (textureIndex.HasValue)
+            int? specularGlossinessTextureIndex = null;
+
+            if (!metallicRoughnessTextureIndex.HasValue)
             {
-                int imageIndex = gltf.Textures[textureIndex.Value].Source ?? throw new Exception();
-                Image image = gltf.Images[imageIndex];
-
-                int bufferViewIndex = image.BufferView ?? throw new Exception();
-                BufferView bufferView = gltf.BufferViews[bufferViewIndex];
-
-                byte[] currentBuffer = buffers[bufferView.Buffer];
-
-                MemoryStream stream = new MemoryStream(currentBuffer, bufferView.ByteOffset, bufferView.ByteLength);
-
-                Texture texture = await Texture.LoadAsync(GraphicsDevice, stream);
-
-                MaterialDescriptor descriptor = new MaterialDescriptor
+                if (material.Extensions?.FirstOrDefault().Value is Newtonsoft.Json.Linq.JObject jObject && jObject.TryGetValue("specularGlossinessTexture", out Newtonsoft.Json.Linq.JToken token))
                 {
-                    Attributes =
+                    if (token.FirstOrDefault(t => (t as Newtonsoft.Json.Linq.JProperty)?.Name == "index") is Newtonsoft.Json.Linq.JProperty indexToken)
                     {
-                        Diffuse = new MaterialDiffuseMapFeature(new ComputeTextureColor(texture))
+                        specularGlossinessTextureIndex = (int)indexToken.Value;
                     }
-                };
+                }
+            }
 
-                return new Material(GraphicsDevice, descriptor);
+            MaterialAttributes materialAttributes = new MaterialAttributes();
+
+            if (diffuseTextureIndex.HasValue)
+            {
+                Texture diffuseTexture = await GetTextureAsync(gltf, buffers, diffuseTextureIndex.Value);
+                materialAttributes.Diffuse = new MaterialDiffuseMapFeature(new ComputeTextureColor(diffuseTexture));
             }
             else
             {
                 float[] baseColor = material.PbrMetallicRoughness.BaseColorFactor;
-
                 Vector4 color = new Vector4(baseColor[0], baseColor[1], baseColor[2], baseColor[3]);
-
-                MaterialDescriptor descriptor = new MaterialDescriptor
-                {
-                    Attributes =
-                    {
-                        Diffuse = new MaterialDiffuseMapFeature(new ComputeColor(color))
-                    }
-                };
-
-                return new Material(GraphicsDevice, descriptor);
+                materialAttributes.Diffuse = new MaterialDiffuseMapFeature(new ComputeColor(color));
             }
+
+            if (metallicRoughnessTextureIndex.HasValue)
+            {
+                Texture metallicRoughnessTexture = await GetTextureAsync(gltf, buffers, metallicRoughnessTextureIndex.Value);
+                materialAttributes.MicroSurface = new MaterialRoughnessMapFeature(new ComputeTextureScalar(metallicRoughnessTexture, ColorChannel.G));
+                materialAttributes.Specular = new MaterialMetalnessMapFeature(new ComputeTextureScalar(metallicRoughnessTexture, ColorChannel.B));
+            }
+            else if (specularGlossinessTextureIndex.HasValue)
+            {
+                Texture specularGlossinessTexture = await GetTextureAsync(gltf, buffers, specularGlossinessTextureIndex.Value);
+                materialAttributes.MicroSurface = new MaterialRoughnessMapFeature(new ComputeTextureScalar(specularGlossinessTexture, ColorChannel.A)) { Invert = true };
+                materialAttributes.Specular = new MaterialSpecularMapFeature(new ComputeTextureColor(specularGlossinessTexture));
+            }
+            else
+            {
+                float roughness = material.PbrMetallicRoughness.RoughnessFactor;
+                float metalness = material.PbrMetallicRoughness.MetallicFactor;
+
+                materialAttributes.MicroSurface = new MaterialRoughnessMapFeature(new ComputeScalar(roughness));
+                materialAttributes.Specular = new MaterialMetalnessMapFeature(new ComputeScalar(metalness));
+            }
+
+            if (normalTextureIndex.HasValue)
+            {
+                Texture normalTexture = await GetTextureAsync(gltf, buffers, normalTextureIndex.Value);
+                materialAttributes.Surface = new MaterialNormalMapFeature(new ComputeTextureColor(normalTexture));
+            }
+
+            return materialAttributes;
+        }
+
+        private async Task<Texture> GetTextureAsync(Gltf gltf, IList<byte[]> buffers, int textureIndex)
+        {
+            int imageIndex = gltf.Textures[textureIndex].Source ?? throw new Exception();
+            Image image = gltf.Images[imageIndex];
+
+            int bufferViewIndex = image.BufferView ?? throw new Exception();
+            BufferView bufferView = gltf.BufferViews[bufferViewIndex];
+
+            byte[] currentBuffer = buffers[bufferView.Buffer];
+
+            MemoryStream stream = new MemoryStream(currentBuffer, bufferView.ByteOffset, bufferView.ByteLength);
+            Texture texture = await Texture.LoadAsync(GraphicsDevice, stream);
+            return texture;
         }
 
         private async Task<IList<Mesh>> GetMeshesAsync(Gltf gltf, IList<byte[]> buffers)
@@ -221,10 +269,9 @@ namespace DirectX12GameEngine.Rendering
             });
         }
 
-        private unsafe VertexBufferView[] GetVertexBufferViews(Gltf gltf, IList<byte[]> buffers, GltfLoader.Schema.Mesh mesh, Span<byte> indexBuffer = default, bool is32bitIndex = false)
+        private VertexBufferView[] GetVertexBufferViews(Gltf gltf, IList<byte[]> buffers, GltfLoader.Schema.Mesh mesh, Span<byte> indexBuffer = default, bool is32bitIndex = false)
         {
             VertexBufferView[] vertexBufferViews = new VertexBufferView[4];
-            bool hasIndexBuffer = indexBuffer.IsEmpty;
 
             Dictionary<string, int> attributes = mesh.Primitives[0].Attributes;
 
@@ -238,12 +285,9 @@ namespace DirectX12GameEngine.Rendering
                 Span<byte> positionBuffer = GetVertexBuffer(gltf, buffers, positionIndex, out int positionStride);
                 vertexBufferViews[0] = Texture.CreateVertexBufferView(GraphicsDevice, positionBuffer, out _, positionStride);
 
-                Span<byte> normalBuffer = default;
-                Span<byte> texCoord0Buffer = default;
-
                 if (hasNormal)
                 {
-                    normalBuffer = GetVertexBuffer(gltf, buffers, normalIndex, out int normalStride);
+                    Span<byte> normalBuffer = GetVertexBuffer(gltf, buffers, normalIndex, out int normalStride);
                     vertexBufferViews[1] = Texture.CreateVertexBufferView(GraphicsDevice, normalBuffer, out _, normalStride);
                 }
 
@@ -255,94 +299,105 @@ namespace DirectX12GameEngine.Rendering
 
                 if (hasTexCoord0)
                 {
-                    texCoord0Buffer = GetVertexBuffer(gltf, buffers, texCoord0Index, out int texCoord0Stride);
+                    Span<byte> texCoord0Buffer = GetVertexBuffer(gltf, buffers, texCoord0Index, out int texCoord0Stride);
                     vertexBufferViews[3] = Texture.CreateVertexBufferView(GraphicsDevice, texCoord0Buffer, out _, texCoord0Stride);
-                }
 
-                if (!hasTangent && !normalBuffer.IsEmpty && !texCoord0Buffer.IsEmpty)
-                {
-                    Span<Vector4> tangentBuffer = new Vector4[positionBuffer.Length / sizeof(Vector3)];
-
-                    Span<short> indexBuffer16;
-                    Span<int> indexBuffer32;
-
-                    fixed (byte* indexBufferPointer = indexBuffer)
+                    if (!hasTangent)
                     {
-                        indexBuffer16 = new Span<short>(indexBufferPointer, indexBuffer.Length);
-                        indexBuffer32 = new Span<int>(indexBufferPointer, indexBuffer.Length);
+                        Span<Vector4> tangentBuffer = GenerateTangents(positionBuffer, texCoord0Buffer, indexBuffer, is32bitIndex);
+                        vertexBufferViews[2] = Texture.CreateVertexBufferView(GraphicsDevice, tangentBuffer, out _);
                     }
-
-                    Span<Vector3> posBuffer;
-
-                    fixed (byte* positionBufferPointer = positionBuffer)
-                    {
-                        posBuffer = new Span<Vector3>(positionBufferPointer, positionBuffer.Length);
-                    }
-
-                    Span<Vector2> uvBuffer;
-
-                    fixed (byte* texCoord0BufferPointer = texCoord0Buffer)
-                    {
-                        uvBuffer = new Span<Vector2>(texCoord0BufferPointer, texCoord0Buffer.Length);
-                    }
-
-                    int indexCount = indexBuffer.IsEmpty
-                        ? positionBuffer.Length / sizeof(Vector3)
-                        : indexBuffer.Length / (is32bitIndex ? sizeof(int) : sizeof(short));
-
-                    for (int i = 0; i < indexCount; i += 3)
-                    {
-                        int index1 = i + 0;
-                        int index2 = i + 1;
-                        int index3 = i + 2;
-
-                        if (!indexBuffer16.IsEmpty)
-                        {
-                            index1 = indexBuffer16[index1];
-                            index2 = indexBuffer16[index2];
-                            index3 = indexBuffer16[index3];
-                        }
-                        else if (!indexBuffer32.IsEmpty)
-                        {
-                            index1 = indexBuffer32[index1];
-                            index2 = indexBuffer32[index2];
-                            index3 = indexBuffer32[index3];
-                        }
-
-                        Vector3 position1 = posBuffer[index1];
-                        Vector3 position2 = posBuffer[index2];
-                        Vector3 position3 = posBuffer[index3];
-
-                        Vector2 uv1 = uvBuffer[index1];
-                        Vector2 uv2 = uvBuffer[index2];
-                        Vector2 uv3 = uvBuffer[index3];
-
-                        Vector3 edge1 = position2 - position1;
-                        Vector3 edge2 = position3 - position1;
-
-                        Vector2 uvEdge1 = uv2 - uv1;
-                        Vector2 uvEdge2 = uv3 - uv1;
-
-                        float dR = uvEdge1.X * uvEdge2.Y - uvEdge2.X * uvEdge1.Y;
-
-                        if (Math.Abs(dR) < 1e-6f)
-                        {
-                            dR = 1.0f;
-                        }
-
-                        float r = 1.0f / dR;
-                        Vector3 t = (uvEdge2.Y * edge1 - uvEdge1.Y * edge2) * r;
-
-                        tangentBuffer[index1] += new Vector4(t, 0.0f);
-                        tangentBuffer[index2] += new Vector4(t, 0.0f);
-                        tangentBuffer[index3] += new Vector4(t, 0.0f);
-                    }
-
-                    vertexBufferViews[2] = Texture.CreateVertexBufferView(GraphicsDevice, tangentBuffer, out _);
                 }
             }
 
             return vertexBufferViews;
+        }
+
+        private static unsafe Span<Vector4> GenerateTangents(Span<byte> positionBuffer, Span<byte> texCoordBuffer, Span<byte> indexBuffer = default, bool is32bitIndex = false)
+        {
+            Span<Vector4> tangentBuffer = new Vector4[positionBuffer.Length / sizeof(Vector3)];
+
+            Span<short> indexBuffer16;
+            Span<int> indexBuffer32;
+
+            fixed (byte* indexBufferPointer = indexBuffer)
+            {
+                indexBuffer16 = !indexBuffer.IsEmpty && !is32bitIndex ? new Span<short>(indexBufferPointer, indexBuffer.Length / sizeof(short)) : default;
+                indexBuffer32 = !indexBuffer.IsEmpty && is32bitIndex ? new Span<int>(indexBufferPointer, indexBuffer.Length / sizeof(int)) : default;
+            }
+
+            Span<Vector3> posBuffer;
+
+            fixed (byte* positionBufferPointer = positionBuffer)
+            {
+                posBuffer = new Span<Vector3>(positionBufferPointer, positionBuffer.Length);
+            }
+
+            Span<Vector2> uvBuffer;
+
+            fixed (byte* texCoordBufferPointer = texCoordBuffer)
+            {
+                uvBuffer = new Span<Vector2>(texCoordBufferPointer, texCoordBuffer.Length);
+            }
+
+            int indexCount = indexBuffer.IsEmpty
+                ? positionBuffer.Length / sizeof(Vector3)
+                : indexBuffer32.IsEmpty ? indexBuffer16.Length : indexBuffer32.Length;
+
+            for (int i = 0; i < indexCount; i += 3)
+            {
+                int index1 = i + 0;
+                int index2 = i + 1;
+                int index3 = i + 2;
+
+                if (!indexBuffer16.IsEmpty)
+                {
+                    index1 = indexBuffer16[index1];
+                    index2 = indexBuffer16[index2];
+                    index3 = indexBuffer16[index3];
+                }
+                else if (!indexBuffer32.IsEmpty)
+                {
+                    index1 = indexBuffer32[index1];
+                    index2 = indexBuffer32[index2];
+                    index3 = indexBuffer32[index3];
+                }
+
+                Vector3 position1 = posBuffer[index1];
+                Vector3 position2 = posBuffer[index2];
+                Vector3 position3 = posBuffer[index3];
+
+                Vector2 uv1 = uvBuffer[index1];
+                Vector2 uv2 = uvBuffer[index2];
+                Vector2 uv3 = uvBuffer[index3];
+
+                Vector3 edge1 = position2 - position1;
+                Vector3 edge2 = position3 - position1;
+
+                Vector2 uvEdge1 = uv2 - uv1;
+                Vector2 uvEdge2 = uv3 - uv1;
+
+                float dR = uvEdge1.X * uvEdge2.Y - uvEdge2.X * uvEdge1.Y;
+
+                if (Math.Abs(dR) < 1e-6f)
+                {
+                    dR = 1.0f;
+                }
+
+                float r = 1.0f / dR;
+                Vector3 t = (uvEdge2.Y * edge1 - uvEdge1.Y * edge2) * r;
+
+                tangentBuffer[index1] += new Vector4(t, 0.0f);
+                tangentBuffer[index2] += new Vector4(t, 0.0f);
+                tangentBuffer[index3] += new Vector4(t, 0.0f);
+            }
+
+            for (int i = 0; i < tangentBuffer.Length; i++)
+            {
+                tangentBuffer[i].W = 1.0f;
+            }
+
+            return tangentBuffer;
         }
 
         private static Span<byte> GetIndexBuffer(Gltf gltf, IList<byte[]> buffers, GltfLoader.Schema.Mesh mesh, out Format format)

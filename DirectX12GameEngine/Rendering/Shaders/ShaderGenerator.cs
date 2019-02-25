@@ -298,40 +298,58 @@ namespace DirectX12GameEngine.Rendering.Shaders
 
         private static void WriteMethod(IndentedTextWriter writer, MethodInfo methodInfo)
         {
-            CSharpDecompiler decompiler = CSharpDecompilers.GetMappedDecompiler(methodInfo.DeclaringType.Assembly.Location);
+            List<MethodInfo> methodInfos = new List<MethodInfo>() { methodInfo };
+            int counter = 1;
 
-            EntityHandle methodHandle = MetadataTokenHelpers.TryAsEntityHandle(methodInfo.MetadataToken) ?? throw new Exception();
-            string sourceCode = decompiler.DecompileAsString(methodHandle);
-
-            sourceCode = sourceCode.Replace("vector", "vec");
-            sourceCode = Regex.Replace(sourceCode, @"\d+[fF]", m => m.Value.Replace("f", ""));
-
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
-            SyntaxNode root = syntaxTree.GetRoot();
-
-            Compilation = Compilation.AddSyntaxTrees(syntaxTree);
-            SemanticModel semanticModel = Compilation.GetSemanticModel(syntaxTree);
-
-            ShaderSyntaxRewriter syntaxRewriter = new ShaderSyntaxRewriter(semanticModel);
-            root = syntaxRewriter.Visit(root);
-
-            string shaderSource = root.ToFullString();
-
-            // TODO: See why the System namespace in System.Math is not present in UWP projects.
-            shaderSource = shaderSource.Replace("Math.Max", "max");
-            shaderSource = shaderSource.Replace("Math.Pow", "pow");
-
-            // Indent every line
-            string indent = "";
-
-            for (int i = 0; i < writer.Indent; i++)
+            if (methodInfo.IsOverride())
             {
-                indent += IndentedTextWriter.DefaultTabString;
+                MethodInfo? currentMethodInfo = methodInfo.DeclaringType.BaseType?.GetMethod(methodInfo.Name);
+
+                while (currentMethodInfo != null)
+                {
+                    methodInfos.Add(currentMethodInfo);
+                    currentMethodInfo = currentMethodInfo.DeclaringType.BaseType?.GetMethod(currentMethodInfo.Name);
+                    counter++;
+                }
             }
 
-            shaderSource = shaderSource.Replace(Environment.NewLine, Environment.NewLine + indent).TrimEnd(' ');
+            for (int depth = counter - 1; depth >= 0; depth--)
+            {
+                CSharpDecompiler decompiler = CSharpDecompilers.GetMappedDecompiler(methodInfos[depth].DeclaringType.Assembly.Location);
 
-            writer.WriteLine(shaderSource);
+                EntityHandle methodHandle = MetadataTokenHelpers.TryAsEntityHandle(methodInfos[depth].MetadataToken) ?? throw new Exception();
+                string sourceCode = decompiler.DecompileAsString(methodHandle);
+
+                sourceCode = sourceCode.Replace("vector", "vec");
+                sourceCode = Regex.Replace(sourceCode, @"\d+[fF]", m => m.Value.Replace("f", ""));
+
+                SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
+                SyntaxNode root = syntaxTree.GetRoot();
+
+                Compilation = Compilation.AddSyntaxTrees(syntaxTree);
+                SemanticModel semanticModel = Compilation.GetSemanticModel(syntaxTree);
+
+                ShaderSyntaxRewriter syntaxRewriter = new ShaderSyntaxRewriter(semanticModel, depth);
+                root = syntaxRewriter.Visit(root);
+
+                string shaderSource = root.ToFullString();
+
+                // TODO: See why the System namespace in System.Math is not present in UWP projects.
+                shaderSource = shaderSource.Replace("Math.Max", "max");
+                shaderSource = shaderSource.Replace("Math.Pow", "pow");
+
+                // Indent every line
+                string indent = "";
+
+                for (int i = 0; i < writer.Indent; i++)
+                {
+                    indent += IndentedTextWriter.DefaultTabString;
+                }
+
+                shaderSource = shaderSource.Replace(Environment.NewLine, Environment.NewLine + indent).TrimEnd(' ');
+
+                writer.WriteLine(shaderSource);
+            }
         }
 
         internal static class CSharpDecompilers
