@@ -73,7 +73,9 @@ namespace DirectX12GameEngine.Graphics
         public static async Task<Texture> LoadAsync(GraphicsDevice device, Stream stream)
         {
             BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream.AsRandomAccessStream());
-            PixelDataProvider pixelDataProvider = await decoder.GetPixelDataAsync();
+            PixelDataProvider pixelDataProvider = await decoder.GetPixelDataAsync(
+                decoder.BitmapPixelFormat, decoder.BitmapAlphaMode, new BitmapTransform(), ExifOrientationMode.RespectExifOrientation,
+                ColorManagementMode.DoNotColorManage);
 
             byte[] imageBuffer = pixelDataProvider.DetachPixelData();
 
@@ -203,6 +205,8 @@ namespace DirectX12GameEngine.Graphics
             {
                 Format.R8G8B8A8_UNorm => 4,
                 Format.B8G8R8A8_UNorm => 4,
+                Format.R8G8B8A8_UNorm_SRgb => 4,
+                Format.B8G8R8A8_UNorm_SRgb => 4,
                 _ => throw new NotSupportedException("This format is not supported.")
             };
 

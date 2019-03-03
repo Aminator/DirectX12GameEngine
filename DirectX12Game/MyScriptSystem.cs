@@ -107,7 +107,7 @@ namespace DirectX12Game
             }
         }
 
-        private void Control_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
+        private async void Control_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
         {
             switch (args.VirtualKey)
             {
@@ -122,6 +122,22 @@ namespace DirectX12Game
                     break;
                 case Windows.System.VirtualKey.Number1 when GraphicsDevice.Presenter != null:
                     GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
+                    break;
+                case Windows.System.VirtualKey.D:
+                    Entity? cliffhouse = SceneSystem.RootScene?.FirstOrDefault(m => m.Name == "Cliffhouse");
+                    if (cliffhouse != null)
+                    {
+                        SceneSystem.RootScene?.Remove(cliffhouse);
+                    }
+                    break;
+                case Windows.System.VirtualKey.A:
+                    Entity newCliffhouse = new Entity("Cliffhouse")
+                    {
+                        new TransformComponent { Position = new Vector3(-200.0f, 120.0f, 500.0f) },
+                        new ModelComponent(await Content.LoadAsync<Model>(@"Assets\Models\Cliffhouse_Model.xml"))
+                    };
+
+                    SceneSystem.RootScene?.Add(newCliffhouse);
                     break;
             }
         }

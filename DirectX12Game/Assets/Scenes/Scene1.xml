@@ -8,7 +8,7 @@
   </Entity>
 
   <Entity Name="T-Rex">
-    <TransformComponent Scale="0.2,0.2,0.2" Position="0,100,0" />
+    <TransformComponent Scale="0.2,0.2,0.2" Position="0,120,0" />
     <ModelComponent>
       <ModelComponent.Model>
         <Model>Assets\Models\SwimmingShark_Model.xml</Model>
@@ -77,6 +77,7 @@
   </Entity>
 
   <Entity Name="Cliffhouse">
+    <TransformComponent Position="0,120,500" />
     <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
   </Entity>
 </Scene>

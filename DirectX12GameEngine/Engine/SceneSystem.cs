@@ -172,7 +172,7 @@ namespace DirectX12GameEngine.Engine
                     systemsPerComponentType.Add(componentType, systemsForComponent);
                 }
 
-                UpdateDependentSystems(entityComponent.Entity);
+                UpdateDependentSystems(entityComponent.Entity, entityComponent);
             }
         }
 
@@ -194,10 +194,12 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void UpdateDependentSystems(Entity entity)
+        private void UpdateDependentSystems(Entity entity, EntityComponent skipComponent)
         {
             foreach (EntityComponent entityComponent in entity.Components)
             {
+                if (entityComponent == skipComponent) continue;
+
                 Type componentType = entityComponent.GetType();
 
                 if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))

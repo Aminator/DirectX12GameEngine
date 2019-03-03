@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -19,10 +20,12 @@ namespace DirectX12GameEngine.Engine
 
         private readonly List<CommandList> commandLists = new List<CommandList>();
 
-        private readonly Dictionary<Model, (CompiledCommandList[]?, Texture[]?)> models = new Dictionary<Model, (CompiledCommandList[]?, Texture[]?)>();
+        private readonly Dictionary<Model, (CompiledCommandList[] Bundles, Texture[] WorldMatrixBuffers)> models = new Dictionary<Model, (CompiledCommandList[], Texture[])>();
 
         public unsafe RenderSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
+            Components.CollectionChanged += Components_CollectionChanged;
+
             Span<ViewProjectionTransform> viewProjectionTransforms = stackalloc ViewProjectionTransform[2];
             ViewProjectionTransformBuffer = Texture.CreateConstantBufferView(GraphicsDevice, viewProjectionTransforms);
 
@@ -73,60 +76,39 @@ namespace DirectX12GameEngine.Engine
 
                     if (model is null) continue;
 
-                    if (!models.ContainsKey(model))
-                    {
-                        models.Add(model, (null, null));
-                    }
-
-                    (CompiledCommandList[]? bundles, Texture[]? worldMatrixBuffers) = models[model];
-
                     int meshCount = model.Meshes.Count;
                     int highestPassCount = model.Materials.Max(m => m.Passes.Count);
 
-                    if (worldMatrixBuffers is null || worldMatrixBuffers.Length != meshCount)
+                    if (!models.ContainsKey(model))
                     {
-                        if (worldMatrixBuffers != null)
-                        {
-                            foreach (Texture constantBuffer in worldMatrixBuffers)
-                            {
-                                constantBuffer?.Dispose();
-                            }
-                        }
-
-                        worldMatrixBuffers = new Texture[meshCount];
+                        Texture[] newWorldMatrixBuffers = new Texture[meshCount];
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            worldMatrixBuffers[meshIndex] = Texture.CreateConstantBufferView(GraphicsDevice, modelComponents.Count() * 16 * sizeof(float));
+                            newWorldMatrixBuffers[meshIndex] = Texture.CreateConstantBufferView(GraphicsDevice, modelComponents.Count() * 16 * sizeof(float));
                         }
 
-                        if (bundles != null)
-                        {
-                            foreach (CompiledCommandList bundle in bundles)
-                            {
-                                bundle.Builder.Dispose();
-                            }
-                        }
-
-                        bundles = new CompiledCommandList[highestPassCount];
+                        CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];
 
                         for (int passIndex = 0; passIndex < highestPassCount; passIndex++)
                         {
                             CompiledCommandList? bundle = RecordCommandList(
                                 model,
                                 new CommandList(GraphicsDevice, CommandListType.Bundle),
-                                worldMatrixBuffers,
+                                newWorldMatrixBuffers,
                                 modelComponents.Count(),
                                 passIndex);
 
                             if (bundle != null)
                             {
-                                bundles[passIndex] = bundle;
+                                newBundles[passIndex] = bundle;
                             }
                         }
 
-                        models[model] = (bundles, worldMatrixBuffers);
+                        models.Add(model, (newBundles, newWorldMatrixBuffers));
                     }
+
+                    (CompiledCommandList[] bundles, Texture[] worldMatrixBuffers) = models[model];
 
                     int modelComponentIndex = 0;
 
@@ -186,20 +168,25 @@ namespace DirectX12GameEngine.Engine
             {
                 (CompiledCommandList[]? bundles, Texture[]? worldMatrixBuffers) = item.Value;
 
-                if (worldMatrixBuffers != null)
-                {
-                    foreach (Texture constantBuffer in worldMatrixBuffers)
-                    {
-                        constantBuffer.Dispose();
-                    }
-                }
+                DisposeModel(bundles, worldMatrixBuffers);
+            }
+        }
 
-                if (bundles != null)
+        private static void DisposeModel(CompiledCommandList[] bundles, Texture[] worldMatrixBuffers)
+        {
+            if (worldMatrixBuffers != null)
+            {
+                foreach (Texture constantBuffer in worldMatrixBuffers)
                 {
-                    foreach (CompiledCommandList bundle in bundles)
-                    {
-                        bundle.Builder.Dispose();
-                    }
+                    constantBuffer.Dispose();
+                }
+            }
+
+            if (bundles != null)
+            {
+                foreach (CompiledCommandList bundle in bundles)
+                {
+                    bundle.Builder.Dispose();
                 }
             }
         }
@@ -338,6 +325,33 @@ namespace DirectX12GameEngine.Engine
 
             SharpDX.Utilities.Write(DirectionalLightGroupBuffer.MappedResource, ref lightCount);
             SharpDX.Utilities.Write(DirectionalLightGroupBuffer.MappedResource + sizeof(Vector4), lightData, 0, lightData.Length);
+        }
+
+        private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (ModelComponent modelComponent in e.NewItems)
+                    {
+                        if (modelComponent.Model != null && models.TryGetValue(modelComponent.Model, out var tuple))
+                        {
+                            models.Remove(modelComponent.Model);
+                            DisposeModel(tuple.Bundles, tuple.WorldMatrixBuffers);
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (ModelComponent modelComponent in e.OldItems)
+                    {
+                        if (modelComponent.Model != null && models.TryGetValue(modelComponent.Model, out var tuple))
+                        {
+                            models.Remove(modelComponent.Model);
+                            DisposeModel(tuple.Bundles, tuple.WorldMatrixBuffers);
+                        }
+                    }
+                    break;
+            }
         }
     }
 }

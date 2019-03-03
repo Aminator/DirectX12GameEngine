@@ -156,9 +156,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             StaticSamplerDescription[] staticSamplers = new StaticSamplerDescription[]
             {
                 new StaticSamplerDescription(ShaderVisibility.All, 0, 0)
-                {
-                    Filter = Filter.MinLinearMagMipPoint
-                }
             };
 
             RootSignatureDescription rootSignatureDescription = new RootSignatureDescription(

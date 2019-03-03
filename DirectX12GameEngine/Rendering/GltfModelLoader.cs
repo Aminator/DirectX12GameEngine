@@ -317,12 +317,12 @@ namespace DirectX12GameEngine.Rendering
         {
             Span<Vector4> tangentBuffer = new Vector4[positionBuffer.Length / sizeof(Vector3)];
 
-            Span<short> indexBuffer16;
+            Span<ushort> indexBuffer16;
             Span<int> indexBuffer32;
 
             fixed (byte* indexBufferPointer = indexBuffer)
             {
-                indexBuffer16 = !indexBuffer.IsEmpty && !is32bitIndex ? new Span<short>(indexBufferPointer, indexBuffer.Length / sizeof(short)) : default;
+                indexBuffer16 = !indexBuffer.IsEmpty && !is32bitIndex ? new Span<ushort>(indexBufferPointer, indexBuffer.Length / sizeof(ushort)) : default;
                 indexBuffer32 = !indexBuffer.IsEmpty && is32bitIndex ? new Span<int>(indexBufferPointer, indexBuffer.Length / sizeof(int)) : default;
             }
 

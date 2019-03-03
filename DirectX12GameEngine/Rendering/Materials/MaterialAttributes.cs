@@ -42,15 +42,14 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             Vector3 bitangent = meshTangent.W * Vector3.Cross(normal, tangent);
 
-            Matrix4x4 tangentMatrix = new Matrix4x4(
-                tangent.X,   tangent.Y,   tangent.Z,   0.0f,
+            NormalStream.TangentMatrix = new Matrix4x4(
+                tangent.X, tangent.Y, tangent.Z, 0.0f,
                 bitangent.X, bitangent.Y, bitangent.Z, 0.0f,
-                normal.X,    normal.Y,    normal.Z,    0.0f,
-                0.0f,        0.0f,        0.0f,        1.0f);
+                normal.X, normal.Y, normal.Z, 0.0f,
+                0.0f, 0.0f, 0.0f, 1.0f);
 
             uint actualId = ShaderBaseStream.InstanceId / RenderTargetCount;
-            NormalStream.TangentToWorld = Matrix4x4.Multiply(tangentMatrix, WorldMatrices[actualId]);
-
+            NormalStream.TangentToWorld = Matrix4x4.Multiply(NormalStream.TangentMatrix, WorldMatrices[actualId]);
             NormalStream.NormalWS = Vector3.Normalize(Vector3.TransformNormal(normalInTangetSpace, NormalStream.TangentToWorld));
         }
 
@@ -83,6 +82,11 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             Vector3 materialNormal = Vector3.Normalize(MaterialPixelStream.MaterialNormal);
             UpdateNormalFromTangentSpace(materialNormal);
+
+            if (!ShaderBaseStream.IsFrontFace)
+            {
+                NormalStream.NormalWS = -NormalStream.NormalWS;
+            }
 
             LightStream.Reset();
             PrepareMaterialForLightingAndShading();

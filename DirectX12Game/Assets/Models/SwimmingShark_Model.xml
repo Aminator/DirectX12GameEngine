@@ -6,6 +6,7 @@
         <MaterialDescriptor xmlns="DirectX12GameEngine.Rendering.Materials">
           <MaterialDescriptor.Attributes>
             <MaterialAttributes Content="Assets\Resources\Models\SwimmingShark.glb">
+              
               <!--<MaterialAttributes.MicroSurface>
                 <MaterialRoughnessMapFeature>
                   <MaterialRoughnessMapFeature.RoughnessMap>
@@ -13,6 +14,15 @@
                   </MaterialRoughnessMapFeature.RoughnessMap>
                 </MaterialRoughnessMapFeature>
               </MaterialAttributes.MicroSurface>-->
+
+              <!--<MaterialAttributes.Surface>
+                <MaterialNormalMapFeature>
+                  <MaterialNormalMapFeature.NormalMap>
+                    <ComputeTextureColor Texture="Assets\Resources\Models\Swimming_Shark_img2.png" />
+                  </MaterialNormalMapFeature.NormalMap>
+                </MaterialNormalMapFeature>
+              </MaterialAttributes.Surface>-->
+              
             </MaterialAttributes>
           </MaterialDescriptor.Attributes>
         </MaterialDescriptor>

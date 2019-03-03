@@ -15,6 +15,17 @@ namespace DirectX12GameEngine.Graphics
 
             RasterizerStateDescription rasterizerDescription = rasterizerStateDescription ?? RasterizerStateDescription.Default();
             rasterizerDescription.IsFrontCounterClockwise = true;
+            rasterizerDescription.CullMode = CullMode.None;
+
+            BlendStateDescription blendStateDescription = BlendStateDescription.Default();
+            RenderTargetBlendDescription[] renderTargetDescriptions = blendStateDescription.RenderTarget;
+
+            for (int i = 0; i < renderTargetDescriptions.Length; i++)
+            {
+                renderTargetDescriptions[i].IsBlendEnabled = true;
+                renderTargetDescriptions[i].SourceBlend = BlendOption.SourceAlpha;
+                renderTargetDescriptions[i].DestinationBlend = BlendOption.InverseSourceAlpha;
+            }
 
             DepthStencilStateDescription depthStencilStateDescription = DepthStencilStateDescription.Default();
 
@@ -28,7 +39,7 @@ namespace DirectX12GameEngine.Graphics
                 DomainShader = domainShader,
                 GeometryShader = geometryShader,
                 RasterizerState = rasterizerDescription,
-                BlendState = BlendStateDescription.Default(),
+                BlendState = blendStateDescription,
                 DepthStencilFormat = device.Presenter.PresentationParameters.DepthStencilFormat,
                 DepthStencilState = depthStencilStateDescription,
                 SampleMask = int.MaxValue,

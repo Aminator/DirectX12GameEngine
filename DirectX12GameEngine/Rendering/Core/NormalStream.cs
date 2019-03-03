@@ -12,6 +12,8 @@ namespace DirectX12GameEngine.Rendering.Core
 
         [ShaderResource] [TangentSemantic] public static Vector4 Tangent;
 
+        [ShaderResource] public static Matrix4x4 TangentMatrix;
+
         [ShaderResource] public static Matrix4x4 TangentToWorld;
     }
 }

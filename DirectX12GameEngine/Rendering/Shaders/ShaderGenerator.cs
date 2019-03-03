@@ -290,8 +290,9 @@ namespace DirectX12GameEngine.Rendering.Shaders
             ColorSemanticAttribute a => " : Color" + a.Index,
             TangentSemanticAttribute a => " : Tangent" + a.Index,
             SystemTargetSemanticAttribute a => " : SV_Target" + a.Index,
-            SystemPositionSemanticAttribute _ => " : SV_Position",
+            SystemIsFrontFaceSemanticAttribute _ => " : SV_IsFrontFace",
             SystemInstanceIdSemanticAttribute _ => " : SV_InstanceId",
+            SystemPositionSemanticAttribute _ => " : SV_Position",
             SystemRenderTargetArrayIndexSemanticAttribute _ => " : SV_RenderTargetArrayIndex",
             _ => ""
         };
@@ -458,6 +459,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 { "System.Numerics.Vector4.One", "float4(1.0f, 1.0f, 1.0f, 1.0f)" },
 
                 { "System.Numerics.Matrix4x4.Multiply", "mul" },
+                { "System.Numerics.Matrix4x4.Transpose", "transpose" },
                 { "System.Numerics.Matrix4x4.Translation", "[3].xyz" },
                 { "System.Numerics.Matrix4x4.M11", "[0][0]" },
                 { "System.Numerics.Matrix4x4.M12", "[0][1]" },

@@ -13,5 +13,7 @@ namespace DirectX12GameEngine.Rendering.Core
         [ShaderResource] [SystemInstanceIdSemantic] public static uint InstanceId;
 
         [ShaderResource] [SystemRenderTargetArrayIndexSemantic] public static uint TargetId;
+
+        [ShaderResource] [SystemIsFrontFaceSemantic] public static bool IsFrontFace;
     }
 }

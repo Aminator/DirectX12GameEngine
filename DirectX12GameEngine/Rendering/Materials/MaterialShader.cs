@@ -18,23 +18,27 @@ namespace DirectX12GameEngine.Rendering.Materials
 #nullable enable
 
         [Shader("vertex")]
-        public override PSInput VSMain(VSInput input)
+        public override VSOutput VSMain(VSInput input)
         {
             uint actualId = input.InstanceId / RenderTargetCount;
             uint targetId = input.InstanceId % RenderTargetCount;
 
-            PSInput output;
+            Vector4 positionWS = Vector4.Transform(new Vector4(input.Position, 1.0f), WorldMatrices[actualId]);
+            Vector4 shadingPosition = Vector4.Transform(positionWS, ViewProjectionTransforms[targetId].ViewProjectionMatrix);
 
-            output.PositionWS = Vector4.Transform(new Vector4(input.Position, 1.0f), WorldMatrices[actualId]);
-            output.ShadingPosition = Vector4.Transform(output.PositionWS, ViewProjectionTransforms[targetId].ViewProjectionMatrix);
+            VSOutput output = new VSOutput
+            {
+                PositionWS = positionWS,
+                ShadingPosition = shadingPosition,
 
-            output.Normal = input.Normal;
-            output.NormalWS = Vector3.TransformNormal(input.Normal, WorldMatrices[actualId]);
-            output.Tangent = input.Tangent;
-            output.TexCoord = input.TexCoord;
+                Normal = input.Normal,
+                NormalWS = Vector3.TransformNormal(input.Normal, WorldMatrices[actualId]),
+                Tangent = input.Tangent,
+                TexCoord = input.TexCoord,
 
-            output.InstanceId = input.InstanceId;
-            output.TargetId = targetId;
+                InstanceId = input.InstanceId,
+                TargetId = targetId
+            };
 
             return output;
         }
@@ -47,6 +51,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             ShaderBaseStream.ShadingPosition = input.ShadingPosition;
             ShaderBaseStream.InstanceId = input.InstanceId;
             ShaderBaseStream.TargetId = input.TargetId;
+            ShaderBaseStream.IsFrontFace = input.IsFrontFace;
 
             Texturing.Sampler = Sampler;
             Texturing.TexCoord = input.TexCoord;
@@ -65,9 +70,6 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             // TODO: Remove this.
             Matrix4x4 dummy = inverseViewMatrix * 4;
-
-            ShaderBaseStream.ColorTarget = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
-            output.ColorTarget = ShaderBaseStream.ColorTarget;
 
             return output;
         }

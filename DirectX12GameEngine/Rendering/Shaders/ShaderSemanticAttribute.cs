@@ -63,6 +63,10 @@ namespace DirectX12GameEngine.Rendering.Shaders
     {
     }
 
+    public class SystemIsFrontFaceSemanticAttribute : ShaderSemanticAttribute
+    {
+    }
+
     public class SystemPositionSemanticAttribute : ShaderSemanticAttribute
     {
     }
