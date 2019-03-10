@@ -18,6 +18,8 @@ namespace DirectX12GameEngine.Engine
 {
     public sealed class ContentManager
     {
+        private readonly Dictionary<string, Task<object>> pendingTasks = new Dictionary<string, Task<object>>();
+
         public ContentManager(IServiceProvider services)
         {
             GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
@@ -32,6 +34,20 @@ namespace DirectX12GameEngine.Engine
 
         internal GltfModelLoader ModelLoader { get; }
 
+        private static int GetIndex(ref string filePath)
+        {
+            Match match = Regex.Match(filePath, @"\[\d+\]$");
+            int index = 0;
+
+            if (match.Success)
+            {
+                filePath = filePath.Remove(match.Index);
+                index = int.Parse(match.Value.Trim('[', ']'));
+            }
+
+            return index;
+        }
+
         public async Task<T> LoadAsync<T>(string filePath)
         {
             return (T)await LoadAsync(typeof(T), filePath);
@@ -39,18 +55,24 @@ namespace DirectX12GameEngine.Engine
 
         public async Task<object> LoadAsync(Type type, string filePath)
         {
+            if (pendingTasks.TryGetValue(filePath, out Task<object> task))
+            {
+                return await task;
+            }
+
             if (!LoadedAssets.TryGetValue(filePath, out object asset))
             {
                 if (Path.GetExtension(filePath) == ".xml")
                 {
-                    asset = await LoadElementAsync(filePath);
+                    Task<object> assetTask = LoadElementAsync(filePath);
+                    pendingTasks.Add(filePath, assetTask);
 
+                    asset = await assetTask;
                     LoadedAssets.Add(filePath, asset);
                 }
                 else
                 {
                     asset = await LoadFileAsync(type, filePath);
-                    asset = await InitializeAssetAsync(asset);
                 }
             }
 
@@ -59,9 +81,9 @@ namespace DirectX12GameEngine.Engine
 
         private async Task<object> InitializeAssetAsync(object asset)
         {
-            if (asset is Material material)
+            if (asset is Material material && material.Descriptor != null)
             {
-                asset = await Task.Run(() => Material.Create(GraphicsDevice, material.Descriptor!));
+                asset = await Task.Run(() => Material.Create(GraphicsDevice, material.Descriptor));
             }
 
             return asset;
@@ -69,39 +91,42 @@ namespace DirectX12GameEngine.Engine
 
         private async Task<object> LoadFileAsync(Type type, string filePath)
         {
+            int index = GetIndex(ref filePath);
+            string extension = Path.GetExtension(filePath);
+
             if (type == typeof(Model))
             {
-                return await ModelLoader.LoadModelAsync(filePath);
+                if (extension == ".gltf" || extension == ".glb")
+                {
+                    return await ModelLoader.LoadModelAsync(filePath);
+                }
             }
             else if (type == typeof(Material) || type == typeof(MaterialDescriptor) || type == typeof(MaterialAttributes))
             {
-                Match match = Regex.Match(filePath, @"\[\d+\]$");
-                int materialIndex = 0;
+                if (extension == ".gltf" || extension == ".glb")
+                {
+                    MaterialAttributes materialAttributes = await ModelLoader.LoadMaterialAsync(filePath, index);
 
-                if (match.Success)
-                {
-                    filePath = filePath.Remove(match.Index);
-                    materialIndex = int.Parse(match.Value.Trim('[', ']'));
-                }
-
-                MaterialAttributes materialAttributes = await ModelLoader.LoadMaterialAsync(filePath, materialIndex);
-                
-                if (type == typeof(MaterialAttributes))
-                {
-                    return materialAttributes;
-                }
-                else if (type == typeof(MaterialDescriptor))
-                {
-                    return new MaterialDescriptor { Attributes = materialAttributes };
-                }
-                else if (type == typeof(Material))
-                {
-                    return new Material(new MaterialDescriptor { Attributes = materialAttributes });
+                    if (type == typeof(MaterialAttributes))
+                    {
+                        return materialAttributes;
+                    }
+                    else if (type == typeof(MaterialDescriptor))
+                    {
+                        return new MaterialDescriptor { Attributes = materialAttributes };
+                    }
+                    else if (type == typeof(Material))
+                    {
+                        return new Material { Descriptor = new MaterialDescriptor { Attributes = materialAttributes } };
+                    }
                 }
             }
             else if (type == typeof(Texture))
             {
-                return await Texture.LoadAsync(GraphicsDevice, filePath);
+                if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
+                {
+                    return await Texture.LoadAsync(GraphicsDevice, filePath);
+                }
             }
 
             throw new ArgumentException("This type could not be loaded.");
@@ -118,9 +143,9 @@ namespace DirectX12GameEngine.Engine
         {
             object parsedElement = await ParseElementAsync(element, type);
 
-            IEnumerable<XElement> innerElements = element.Elements();
+            List<Task<object>> taskList = new List<Task<object>>();
 
-            foreach (XElement innerElement in innerElements)
+            foreach (XElement innerElement in element.Elements())
             {
                 bool isProperty = innerElement.Name.LocalName.StartsWith(innerElement.Parent.Name.LocalName + Type.Delimiter);
 
@@ -131,12 +156,21 @@ namespace DirectX12GameEngine.Engine
 
                     if (propertyInfo.GetValue(parsedElement) is IList propertyList)
                     {
-                        IEnumerable<XElement> innerPropertyElements = innerElement.Elements();
+                        List<Task<object>> propertyTaskList = new List<Task<object>>();
 
-                        foreach (XElement innerPropertyElement in innerPropertyElements)
+                        foreach (XElement innerPropertyElement in innerElement.Elements())
                         {
-                            object parsedObject = await GetParsedElementAsync(innerPropertyElement);
-                            propertyList.Add(parsedObject);
+                            //var elem = await GetParsedElementAsync(innerPropertyElement);
+                            //propertyList.Add(elem);
+                            //propertyTaskList.Add(Task.Run(() => GetParsedElementAsync(innerPropertyElement)));
+                            propertyTaskList.Add(GetParsedElementAsync(innerPropertyElement));
+                        }
+
+                        object[] loadedElements = await Task.WhenAll(propertyTaskList);
+
+                        foreach (object loadedElement in loadedElements)
+                        {
+                            propertyList.Add(loadedElement);
                         }
                     }
                     else if (propertyInfo.CanWrite)
@@ -148,10 +182,26 @@ namespace DirectX12GameEngine.Engine
                         propertyInfo.SetValue(parsedElement, parsedObject);
                     }
                 }
-                else if (parsedElement is IList list)
+                else if (parsedElement is IList elementList)
                 {
-                    object parsedObject = await GetParsedElementAsync(innerElement);
-                    list.Add(parsedObject);
+                    //var elem = await GetParsedElementAsync(innerElement);
+                    //elementList.Add(elem);
+                    //taskList.Add(Task.Run(() => GetParsedElementAsync(innerElement)));
+                    taskList.Add(GetParsedElementAsync(innerElement));
+                }
+                else
+                {
+                    throw new InvalidOperationException("An inner element must be a property syntax or a list element.");
+                }
+            }
+
+            if (parsedElement is IList list)
+            {
+                object[] loadedElements = await Task.WhenAll(taskList.ToArray());
+
+                foreach (object loadedElement in loadedElements)
+                {
+                    list.Add(loadedElement);
                 }
             }
 

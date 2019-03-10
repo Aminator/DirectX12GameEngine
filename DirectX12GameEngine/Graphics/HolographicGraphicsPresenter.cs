@@ -42,8 +42,6 @@ namespace DirectX12GameEngine.Graphics
                         HolographicSpace.SetDirect3D11Device(direct3DInteropDevice);
                     }
 
-                    coreWindow.Activate();
-
                     HolographicDisplay = HolographicDisplay.GetDefault();
                     SpatialStationaryFrameOfReference = HolographicDisplay.SpatialLocator.CreateStationaryFrameOfReferenceAtCurrentLocation();
 

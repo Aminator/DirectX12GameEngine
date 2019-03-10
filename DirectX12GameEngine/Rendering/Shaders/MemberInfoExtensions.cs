@@ -7,9 +7,29 @@ namespace DirectX12GameEngine.Rendering.Shaders
 {
     public static class MemberInfoExtensions
     {
+        public static Type GetElementOrDeclaredType(this Type type) => type.IsArray ? type.GetElementType() : type;
+
         public static bool IsOverride(this MethodInfo methodInfo)
         {
             return methodInfo != methodInfo.GetBaseDefinition();
+        }
+
+        public static IList<MethodInfo> GetBaseMethods(this MethodInfo methodInfo)
+        {
+            List<MethodInfo> methodInfos = new List<MethodInfo>() { methodInfo };
+
+            if (methodInfo.IsOverride())
+            {
+                MethodInfo? currentMethodInfo = methodInfo.DeclaringType.BaseType?.GetMethod(methodInfo.Name);
+
+                while (currentMethodInfo != null)
+                {
+                    methodInfos.Add(currentMethodInfo);
+                    currentMethodInfo = currentMethodInfo.DeclaringType.BaseType?.GetMethod(currentMethodInfo.Name);
+                }
+            }
+
+            return methodInfos;
         }
 
         public static IEnumerable<Type> GetNestedTypesInTypeHierarchy(this Type type, BindingFlags bindingAttr)

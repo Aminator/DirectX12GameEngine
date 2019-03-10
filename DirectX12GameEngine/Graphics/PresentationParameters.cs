@@ -17,11 +17,11 @@ namespace DirectX12GameEngine.Graphics
             SyncInterval = syncInterval;
         }
 
-        public Format BackBufferFormat { get; set; }
+        public int BackBufferWidth { get; set; }
 
         public int BackBufferHeight { get; set; }
 
-        public int BackBufferWidth { get; set; }
+        public Format BackBufferFormat { get; set; }
 
         public Format DepthStencilFormat { get; set; }
 

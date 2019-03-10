@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using DirectX12GameEngine.Core;
@@ -59,7 +60,7 @@ namespace DirectX12GameEngine.Graphics
         [ComVisible(true)]
         private interface IDirect3DDxgiInterfaceAccess : IDisposable
         {
-            IntPtr GetInterface(in Guid iid);
+            IntPtr GetInterface([In] ref Guid iid);
         }
 
         public CommandList CommandList { get; }
@@ -99,6 +100,37 @@ namespace DirectX12GameEngine.Graphics
         internal long NextCopyFenceValue { get; private set; } = 1;
 
         internal long NextFenceValue { get; private set; } = 1;
+
+        public void CopyDescriptors(int numDestDescriptorRanges, CpuDescriptorHandle[] destDescriptorRangeStartsRef, int[] destDescriptorRangeSizesRef, int numSrcDescriptorRanges, CpuDescriptorHandle[] srcDescriptorRangeStartsRef, int[] srcDescriptorRangeSizesRef, DescriptorHeapType descriptorHeapsType)
+        {
+            NativeDevice.CopyDescriptors(numDestDescriptorRanges, destDescriptorRangeStartsRef, destDescriptorRangeSizesRef, numSrcDescriptorRanges, srcDescriptorRangeStartsRef, srcDescriptorRangeSizesRef, descriptorHeapsType);
+        }
+
+        public (CpuDescriptorHandle, GpuDescriptorHandle) CopyDescriptorsToOneDescriptorHandle(IEnumerable<Texture> resources)
+        {
+            return CopyDescriptorsToOneDescriptorHandle(resources.Select(t => t.NativeCpuDescriptorHandle).ToArray());
+        }
+
+        public (CpuDescriptorHandle, GpuDescriptorHandle) CopyDescriptorsToOneDescriptorHandle(CpuDescriptorHandle[] descriptors)
+        {
+            if (descriptors.Length == 0) return default;
+
+            int[] srcDescriptorRangeStarts = new int[descriptors.Length];
+
+            for (int i = 0; i < srcDescriptorRangeStarts.Length; i++)
+            {
+                srcDescriptorRangeStarts[i] = 1;
+            }
+
+            var (cpuDescriptorHandle, gpuDescriptorHandle) = ShaderResourceViewAllocator.Allocate(descriptors.Length);
+
+            CopyDescriptors(
+                1, new[] { cpuDescriptorHandle }, new[] { descriptors.Length },
+                descriptors.Length, descriptors, srcDescriptorRangeStarts,
+                DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
+
+            return (cpuDescriptorHandle, gpuDescriptorHandle);
+        }
 
         public RootSignature CreateRootSignature(RootSignatureDescription rootSignatureDescription)
         {

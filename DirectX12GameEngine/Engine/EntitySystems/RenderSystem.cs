@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Core;
@@ -74,7 +76,7 @@ namespace DirectX12GameEngine.Engine
                     Model? model = componentsWithSameModel[i].Key;
                     var modelComponents = componentsWithSameModel[i];
 
-                    if (model is null) continue;
+                    if (model is null || model.Meshes.Count == 0 || model.Materials.Count == 0) continue;
 
                     int meshCount = model.Meshes.Count;
                     int highestPassCount = model.Materials.Max(m => m.Passes.Count);
@@ -92,12 +94,16 @@ namespace DirectX12GameEngine.Engine
 
                         for (int passIndex = 0; passIndex < highestPassCount; passIndex++)
                         {
-                            CompiledCommandList? bundle = RecordCommandList(
+                            CommandList bundleCommandList = new CommandList(GraphicsDevice, CommandListType.Bundle);
+
+                            RecordCommandList(
                                 model,
-                                new CommandList(GraphicsDevice, CommandListType.Bundle),
+                                bundleCommandList,
                                 newWorldMatrixBuffers,
                                 modelComponents.Count(),
                                 passIndex);
+
+                            CompiledCommandList? bundle = bundleCommandList.Close();
 
                             if (bundle != null)
                             {
@@ -121,7 +127,7 @@ namespace DirectX12GameEngine.Engine
                                 unsafe
                                 {
                                     Matrix4x4 worldMatrix = model.Meshes[meshIndex].WorldMatrix * modelComponent.Entity.Transform.WorldMatrix;
-                                    SharpDX.Utilities.Write(worldMatrixBuffers[meshIndex].MappedResource + modelComponentIndex * sizeof(Matrix4x4), ref worldMatrix);
+                                    MemoryHelper.Copy(worldMatrix, worldMatrixBuffers[meshIndex].MappedResource + modelComponentIndex * sizeof(Matrix4x4));
                                 }
                             }
                         }
@@ -191,7 +197,7 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private CompiledCommandList? RecordCommandList(Model model, CommandList commandList, Texture[] worldMatrixBuffers, int instanceCount, int passIndex)
+        private void RecordCommandList(Model model, CommandList commandList, Texture[] worldMatrixBuffers, int instanceCount, int passIndex)
         {
             int renderTargetCount = GraphicsDevice.Presenter is null ? 1 : GraphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
             instanceCount *= renderTargetCount;
@@ -244,8 +250,6 @@ namespace DirectX12GameEngine.Engine
                     commandList.DrawInstanced(mesh.VertexBufferViews[0].SizeInBytes / mesh.VertexBufferViews[0].StrideInBytes, instanceCount);
                 }
             }
-
-            return commandList.CommandListType == CommandListType.Bundle ? commandList.Close() : null;
         }
 
         private void UpdateViewProjectionMatrices()
@@ -287,7 +291,7 @@ namespace DirectX12GameEngine.Engine
                     viewProjectionTransforms[0].ViewProjectionMatrix = viewProjectionTransforms[0].ViewMatrix * viewProjectionTransforms[0].ProjectionMatrix;
                     viewProjectionTransforms[1].ViewProjectionMatrix = viewProjectionTransforms[1].ViewMatrix * viewProjectionTransforms[1].ProjectionMatrix;
 
-                    SharpDX.Utilities.Write(ViewProjectionTransformBuffer.MappedResource, viewProjectionTransforms.ToArray(), 0, viewProjectionTransforms.Length);
+                    MemoryHelper.Copy(viewProjectionTransforms, ViewProjectionTransformBuffer.MappedResource);
                 }
                 else
                 {
@@ -302,14 +306,15 @@ namespace DirectX12GameEngine.Engine
                     };
 
                     Span<ViewProjectionTransform> viewProjectionTransforms = stackalloc ViewProjectionTransform[] { viewProjectionTransform, viewProjectionTransform };
-                    SharpDX.Utilities.Write(ViewProjectionTransformBuffer.MappedResource, viewProjectionTransforms.ToArray(), 0, viewProjectionTransforms.Length);
+
+                    MemoryHelper.Copy(viewProjectionTransforms, ViewProjectionTransformBuffer.MappedResource);
                 }
             }
         }
 
         private unsafe void UpdateLights()
         {
-            LightSystem? lightSystem = SceneSystem.EntitySystems.Get<LightSystem>();
+            LightSystem? lightSystem = SceneSystem.Systems.Get<LightSystem>();
 
             if (lightSystem is null) return;
 
@@ -323,8 +328,8 @@ namespace DirectX12GameEngine.Engine
                 lightData[i] = new DirectionalLightData { Color = lights[i].Color, Direction = lights[i].Direction };
             }
 
-            SharpDX.Utilities.Write(DirectionalLightGroupBuffer.MappedResource, ref lightCount);
-            SharpDX.Utilities.Write(DirectionalLightGroupBuffer.MappedResource + sizeof(Vector4), lightData, 0, lightData.Length);
+            MemoryHelper.Copy(lightCount, DirectionalLightGroupBuffer.MappedResource);
+            MemoryHelper.Copy(lightData.AsSpan(), DirectionalLightGroupBuffer.MappedResource + sizeof(Vector4));
         }
 
         private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

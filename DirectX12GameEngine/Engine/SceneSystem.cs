@@ -17,7 +17,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        public EntitySystemCollection EntitySystems { get; } = new EntitySystemCollection();
+        public EntitySystemCollection Systems { get; } = new EntitySystemCollection();
 
         public CameraComponent? CurrentCamera { get; set; }
 
@@ -54,31 +54,31 @@ namespace DirectX12GameEngine.Engine
 
         public override void Update(TimeSpan deltaTime)
         {
-            lock (EntitySystems)
+            lock (Systems)
             {
-                foreach (EntitySystem entitySystem in EntitySystems)
+                foreach (EntitySystem system in Systems)
                 {
-                    entitySystem.Update(deltaTime);
+                    system.Update(deltaTime);
                 }
             }
         }
 
         public override void Draw(TimeSpan deltaTime)
         {
-            lock (EntitySystems)
+            lock (Systems)
             {
-                foreach (EntitySystem entitySystem in EntitySystems)
+                foreach (EntitySystem system in Systems)
                 {
-                    entitySystem.Draw(deltaTime);
+                    system.Draw(deltaTime);
                 }
             }
         }
 
         public override void Dispose()
         {
-            foreach (EntitySystem entitySystem in EntitySystems)
+            foreach (EntitySystem system in Systems)
             {
-                entitySystem.Dispose();
+                system.Dispose();
             }
         }
 
@@ -140,15 +140,15 @@ namespace DirectX12GameEngine.Engine
         {
             if (entityComponent.Entity is null) throw new ArgumentException("The entity component must be attached to an entity.", nameof(entityComponent));
 
-            lock (EntitySystems)
+            lock (Systems)
             {
                 Type componentType = entityComponent.GetType();
 
                 if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))
                 {
-                    foreach (EntitySystem entitySystem in systemsForComponent)
+                    foreach (EntitySystem system in systemsForComponent)
                     {
-                        entitySystem.ProcessEntityComponent(entityComponent, forceRemove);
+                        system.ProcessEntityComponent(entityComponent, forceRemove);
                     }
                 }
                 else
@@ -160,12 +160,12 @@ namespace DirectX12GameEngine.Engine
 
                     systemsForComponent = new List<EntitySystem>();
 
-                    foreach (EntitySystem entitySystem in EntitySystems)
+                    foreach (EntitySystem system in Systems)
                     {
-                        if (entitySystem.Accept(componentType))
+                        if (system.Accept(componentType))
                         {
-                            systemsForComponent.Add(entitySystem);
-                            entitySystem.ProcessEntityComponent(entityComponent, forceRemove);
+                            systemsForComponent.Add(system);
+                            system.ProcessEntityComponent(entityComponent, forceRemove);
                         }
                     }
 
@@ -182,14 +182,14 @@ namespace DirectX12GameEngine.Engine
 
             foreach (DefaultEntitySystemAttribute entitySystemAttribute in entitySystemAttributes)
             {
-                bool addNewSystem = !EntitySystems.Exists(s => s.GetType() == entitySystemAttribute.Type);
+                bool addNewSystem = !Systems.Exists(s => s.GetType() == entitySystemAttribute.Type);
 
                 if (addNewSystem)
                 {
-                    EntitySystem entitySystem = (EntitySystem)Activator.CreateInstance(entitySystemAttribute.Type, Services);
-                    EntitySystems.Add(entitySystem);
+                    EntitySystem system = (EntitySystem)Activator.CreateInstance(entitySystemAttribute.Type, Services);
+                    Systems.Add(system);
 
-                    EntitySystems.Sort(EntitySystemComparer.Default);
+                    Systems.Sort(EntitySystemCollection.EntitySystemComparer.Default);
                 }
             }
         }
@@ -204,9 +204,9 @@ namespace DirectX12GameEngine.Engine
 
                 if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))
                 {
-                    foreach (EntitySystem entitySystem in systemsForComponent)
+                    foreach (EntitySystem system in systemsForComponent)
                     {
-                        entitySystem.ProcessEntityComponent(entityComponent, false);
+                        system.ProcessEntityComponent(entityComponent, false);
                     }
                 }
             }
@@ -247,16 +247,6 @@ namespace DirectX12GameEngine.Engine
                         Remove(entityComponent);
                     }
                     break;
-            }
-        }
-
-        private class EntitySystemComparer : Comparer<EntitySystem>
-        {
-            public static new EntitySystemComparer Default { get; } = new EntitySystemComparer();
-
-            public override int Compare(EntitySystem x, EntitySystem y)
-            {
-                return x.Order.CompareTo(y.Order);
             }
         }
     }

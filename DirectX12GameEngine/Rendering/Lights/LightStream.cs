@@ -3,7 +3,6 @@ using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Lights
 {
-    [StaticShaderClass]
     public class LightStream
     {
         [ShaderResource] public static Vector3 LightPositionWS;

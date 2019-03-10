@@ -106,17 +106,17 @@ namespace DirectX12GameEngine.Graphics
             return currentCommandList;
         }
 
-        public void CopyBufferRegion(Texture destination, long destinationOffset, Texture source, long sourceOffset, long? numBytes = null)
+        public void CopyBufferRegion(Texture source, long sourceOffset, Texture destination, long destinationOffset, long? numBytes = null)
         {
             currentCommandList.NativeCommandList.CopyBufferRegion(destination.NativeResource, destinationOffset, source.NativeResource, sourceOffset, numBytes ?? source.Width * source.Height);
         }
 
-        public void CopyResource(Texture destination, Texture source)
+        public void CopyResource(Texture source, Texture destination)
         {
             currentCommandList.NativeCommandList.CopyResource(destination.NativeResource, source.NativeResource);
         }
 
-        public void CopyTextureRegion(TextureCopyLocation destination, TextureCopyLocation source)
+        public void CopyTextureRegion(TextureCopyLocation source, TextureCopyLocation destination)
         {
             currentCommandList.NativeCommandList.CopyTextureRegion(destination, 0, 0, 0, source, null);
         }
@@ -229,7 +229,7 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.PrimitiveTopology = pipelineState.PrimitiveTopology;
         }
 
-        public void SetRenderTargets(Texture depthStencilView, params Texture[] renderTargetViews)
+        public void SetRenderTargets(Texture? depthStencilView, params Texture[] renderTargetViews)
         {
             DepthStencilBuffer = depthStencilView;
 

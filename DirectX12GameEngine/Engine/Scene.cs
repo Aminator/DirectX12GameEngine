@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
 {
-    public sealed class Scene : ObservableCollection<Entity>
+    public sealed class Scene : ObservableCollection<Entity>, IIdentifiable
     {
         public Scene()
         {
@@ -13,7 +14,7 @@ namespace DirectX12GameEngine.Engine
 
         public ObservableCollection<Entity> Entities => this;
 
-        public Guid Id { get; } = Guid.NewGuid();
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         private void AddInternal(Entity entity)
         {

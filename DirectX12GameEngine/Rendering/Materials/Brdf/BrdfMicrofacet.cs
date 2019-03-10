@@ -4,7 +4,6 @@ using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials.Brdf
 {
-    [StaticShaderClass]
     public static class BrdfMicrofacet
     {
         [ShaderMethod]

@@ -2,10 +2,11 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
 {
-    public sealed class Entity : ObservableCollection<EntityComponent>
+    public sealed class Entity : ObservableCollection<EntityComponent>, IIdentifiable
     {
         private TransformComponent transform;
 
@@ -21,14 +22,15 @@ namespace DirectX12GameEngine.Engine
         {
             CollectionChanged += Components_CollectionChanged;
 
-            Name = name ?? nameof(Entity) + Id;
+            Name = name ?? GetType().Name;
+
             this.transform = transform ?? new TransformComponent();
             Add(this.transform);
         }
 
         public ObservableCollection<EntityComponent> Components => this;
 
-        public Guid Id { get; } = Guid.NewGuid();
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         public string Name { get; set; }
 

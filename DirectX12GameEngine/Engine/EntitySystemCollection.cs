@@ -9,5 +9,15 @@ namespace DirectX12GameEngine.Engine
         {
             return this.OfType<T>().FirstOrDefault();
         }
+
+        public class EntitySystemComparer : Comparer<EntitySystem>
+        {
+            public static new EntitySystemComparer Default { get; } = new EntitySystemComparer();
+
+            public override int Compare(EntitySystem x, EntitySystem y)
+            {
+                return x.Order.CompareTo(y.Order);
+            }
+        }
     }
 }

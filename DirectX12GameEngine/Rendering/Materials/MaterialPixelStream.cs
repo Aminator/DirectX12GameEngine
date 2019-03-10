@@ -3,7 +3,6 @@ using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    [StaticShaderClass]
     public static class MaterialPixelStream
     {
         [ShaderResource] public static Vector3 MaterialNormal;

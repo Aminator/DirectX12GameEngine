@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Core;
 using SharpDX;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
@@ -31,9 +32,9 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsDevice GraphicsDevice { get; }
 
-        public int Height { get; }
-
         public int Width { get; }
+
+        public int Height { get; }
 
         public IntPtr MappedResource { get; private set; }
 
@@ -43,7 +44,7 @@ namespace DirectX12GameEngine.Graphics
 
         internal Resource NativeResource { get; }
 
-        public static Texture New(GraphicsDevice device, HeapProperties heapProperties, ResourceDescription resourceDescription, DescriptorHeapType? descriptorHeapType = null, ResourceStates resourceStates = ResourceStates.GenericRead, ResourceFlags resourceFlags = ResourceFlags.None)
+        public static Texture New(GraphicsDevice device, HeapProperties heapProperties, ResourceDescription resourceDescription, DescriptorHeapType? descriptorHeapType = null, ResourceStates resourceStates = ResourceStates.GenericRead)
         {
             return new Texture(device, device.NativeDevice.CreateCommittedResource(
                 heapProperties, HeapFlags.None,
@@ -94,26 +95,30 @@ namespace DirectX12GameEngine.Graphics
             int bufferSize = data.Length * sizeof(T);
 
             Texture buffer = NewBuffer(device, bufferSize, descriptorHeapType, ResourceStates.CopyDestination, heapType: HeapType.Default);
-            Texture uploadBuffer = New(device, new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), buffer.NativeResource.Description);
+            using Texture uploadBuffer = New(device, new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), buffer.NativeResource.Description);
 
             IntPtr uploadPointer = uploadBuffer.Map(0);
-            Utilities.Write(uploadPointer, data.ToArray(), 0, data.Length);
+            MemoryHelper.Copy(data, uploadPointer);
             uploadBuffer.Unmap(0);
 
             CommandList copyCommandList = device.GetOrCreateCopyCommandList();
 
-            copyCommandList.CopyResource(buffer, uploadBuffer);
-            copyCommandList.Flush();
+            copyCommandList.CopyResource(uploadBuffer, buffer);
+            copyCommandList.Flush(true);
 
             device.CopyCommandLists.Enqueue(copyCommandList);
 
             return buffer;
         }
 
-        public static Texture CreateConstantBufferView<T>(GraphicsDevice device, in T data) where T : unmanaged
+        public static unsafe Texture CreateConstantBufferView<T>(GraphicsDevice device, in T data) where T : unmanaged
         {
-            Span<T> span = stackalloc T[] { data };
-            return CreateConstantBufferView(device, span);
+            int bufferSize = sizeof(T);
+
+            Texture constantBuffer = CreateConstantBufferView(device, bufferSize);
+            MemoryHelper.Copy(data, constantBuffer.MappedResource);
+
+            return constantBuffer;
         }
 
         public static unsafe Texture CreateConstantBufferView<T>(GraphicsDevice device, Span<T> data) where T : unmanaged
@@ -121,8 +126,7 @@ namespace DirectX12GameEngine.Graphics
             int bufferSize = data.Length * sizeof(T);
 
             Texture constantBuffer = CreateConstantBufferView(device, bufferSize);
-
-            Utilities.Write(constantBuffer.MappedResource, data.ToArray(), 0, data.Length);
+            MemoryHelper.Copy(data, constantBuffer.MappedResource);
 
             return constantBuffer;
         }
@@ -211,7 +215,7 @@ namespace DirectX12GameEngine.Graphics
             };
 
             Texture texture = New2D(device, format, width, height, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, ResourceStates.CopyDestination);
-            Texture textureUploadBuffer = New(device, new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), texture.NativeResource.Description);
+            using Texture textureUploadBuffer = New(device, new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), texture.NativeResource.Description);
 
             fixed (T* ptr = data)
             {
@@ -230,8 +234,8 @@ namespace DirectX12GameEngine.Graphics
 
             CommandList copyCommandList = device.GetOrCreateCopyCommandList();
 
-            copyCommandList.CopyResource(texture, textureUploadBuffer);
-            copyCommandList.Flush();
+            copyCommandList.CopyResource(textureUploadBuffer, texture);
+            copyCommandList.Flush(true);
 
             device.CopyCommandLists.Enqueue(copyCommandList);
 

@@ -13,9 +13,9 @@
                 descriptor.Visit(context);
 
                 materialPass.PipelineState = context.CreateGraphicsPipelineState();
-                (materialPass.NativeConstantBufferCpuDescriptorHandle, materialPass.NativeConstantBufferGpuDescriptorHandle) = context.CopyDescriptors(context.ConstantBuffers);
-                (materialPass.NativeSamplerCpuDescriptorHandle, materialPass.NativeSamplerGpuDescriptorHandle) = context.CopyDescriptors(context.Samplers);
-                (materialPass.NativeTextureCpuDescriptorHandle, materialPass.NativeTextureGpuDescriptorHandle) = context.CopyDescriptors(context.Textures);
+                (materialPass.NativeConstantBufferCpuDescriptorHandle, materialPass.NativeConstantBufferGpuDescriptorHandle) = context.GraphicsDevice.CopyDescriptorsToOneDescriptorHandle(context.ConstantBuffers);
+                (materialPass.NativeSamplerCpuDescriptorHandle, materialPass.NativeSamplerGpuDescriptorHandle) = context.GraphicsDevice.CopyDescriptorsToOneDescriptorHandle(context.Samplers);
+                (materialPass.NativeTextureCpuDescriptorHandle, materialPass.NativeTextureGpuDescriptorHandle) = context.GraphicsDevice.CopyDescriptorsToOneDescriptorHandle(context.Textures);
 
                 context.PopPass();
             }

@@ -7,11 +7,13 @@ namespace DirectX12GameEngine.Rendering.Shaders
 {
     public class ShaderSyntaxRewriter : CSharpSyntaxRewriter
     {
-        private readonly SemanticModel semanticModel;
         private readonly int depth;
+        private readonly SemanticModel semanticModel;
+        private readonly ShaderGenerator shaderGenerator;
 
-        public ShaderSyntaxRewriter(SemanticModel semanticModel, int depth = 0)
+        public ShaderSyntaxRewriter(ShaderGenerator shaderGenerator, SemanticModel semanticModel, int depth = 0)
         {
+            this.shaderGenerator = shaderGenerator;
             this.semanticModel = semanticModel;
             this.depth = depth;
         }

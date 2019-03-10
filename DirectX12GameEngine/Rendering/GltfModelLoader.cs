@@ -26,9 +26,14 @@ namespace DirectX12GameEngine.Rendering
 
         public GraphicsDevice GraphicsDevice { get; }
 
+        public static async Task<Gltf> LoadGltfModelAsync(string filePath)
+        {
+            return await Task.Run(() => Interface.LoadModel(filePath));
+        }
+
         public async Task<Model> LoadModelAsync(string filePath)
         {
-            Gltf gltf = await Task.Run(() => Interface.LoadModel(filePath));
+            Gltf gltf = await LoadGltfModelAsync(filePath);
             IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
 
             Model model = new Model();
@@ -45,7 +50,7 @@ namespace DirectX12GameEngine.Rendering
 
         public async Task<MaterialAttributes> LoadMaterialAsync(string filePath, int materialIndex)
         {
-            Gltf gltf = await Task.Run(() => Interface.LoadModel(filePath));
+            Gltf gltf = await LoadGltfModelAsync(filePath);
             IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
 
             return await GetMaterialAsync(gltf, buffers, materialIndex);
@@ -53,7 +58,7 @@ namespace DirectX12GameEngine.Rendering
 
         public async Task<IList<MaterialAttributes>> LoadMaterialsAsync(string filePath)
         {
-            Gltf gltf = await Task.Run(() => Interface.LoadModel(filePath));
+            Gltf gltf = await LoadGltfModelAsync(filePath);
             IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
 
             return await GetMaterialsAsync(gltf, buffers);
@@ -61,7 +66,7 @@ namespace DirectX12GameEngine.Rendering
 
         public async Task<Mesh> LoadMeshAsync(string filePath, int meshIndex)
         {
-            Gltf gltf = await Task.Run(() => Interface.LoadModel(filePath));
+            Gltf gltf = await LoadGltfModelAsync(filePath);
             IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
 
             return await GetMeshAsync(gltf, buffers, meshIndex);
@@ -69,7 +74,7 @@ namespace DirectX12GameEngine.Rendering
 
         public async Task<IList<Mesh>> LoadMeshesAsync(string filePath)
         {
-            Gltf gltf = await Task.Run(() => Interface.LoadModel(filePath));
+            Gltf gltf = await LoadGltfModelAsync(filePath);
             IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
 
             return await GetMeshesAsync(gltf, buffers);

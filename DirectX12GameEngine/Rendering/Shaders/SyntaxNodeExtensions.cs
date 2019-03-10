@@ -28,9 +28,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
 
             ISymbol? memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
 
-            if (memberSymbol is null) return node;
-
-            if (memberSymbol.Kind != SymbolKind.Field && memberSymbol.Kind != SymbolKind.Property && memberSymbol.Kind != SymbolKind.Method)
+            if (memberSymbol is null || (memberSymbol.Kind != SymbolKind.Field && memberSymbol.Kind != SymbolKind.Property && memberSymbol.Kind != SymbolKind.Method))
             {
                 return node;
             }

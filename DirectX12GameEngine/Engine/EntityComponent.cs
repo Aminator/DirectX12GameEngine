@@ -1,11 +1,12 @@
 ﻿using System;
+using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
 {
-    public abstract class EntityComponent
+    public abstract class EntityComponent : IIdentifiable
     {
-        public Guid Id { get; } = Guid.NewGuid();
-
         public Entity? Entity { get; internal set; }
+
+        public Guid Id { get; set; } = Guid.NewGuid();
     }
 }

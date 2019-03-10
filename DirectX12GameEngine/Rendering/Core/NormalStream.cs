@@ -3,7 +3,6 @@ using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Core
 {
-    [StaticShaderClass]
     public static class NormalStream
     {
         [ShaderResource] [NormalSemantic(0)] public static Vector3 Normal;

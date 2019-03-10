@@ -3,7 +3,6 @@ using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Core
 {
-    [StaticShaderClass]
     public static class ShaderBaseStream
     {
         [ShaderResource] [SystemPositionSemantic] public static Vector4 ShadingPosition;

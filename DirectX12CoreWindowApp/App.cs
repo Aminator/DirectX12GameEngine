@@ -1,8 +1,11 @@
-﻿using DirectX12Game;
+﻿using System;
+using DirectX12Game;
 using DirectX12GameEngine.Games;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel.Preview.Holographic;
+using Windows.Graphics.Holographic;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
@@ -14,11 +17,9 @@ namespace DirectX12CoreWindowApp
     public sealed class App : IFrameworkViewSource, IFrameworkView
     {
         private MyGame? game;
+        private GameContext? gameContext;
 
-        public IFrameworkView CreateView()
-        {
-            return this;
-        }
+        public IFrameworkView CreateView() => this;
 
         public void Initialize(CoreApplicationView applicationView)
         {
@@ -28,6 +29,17 @@ namespace DirectX12CoreWindowApp
 
         private void ApplicationView_Activated(CoreApplicationView sender, IActivatedEventArgs args)
         {
+            if (HolographicApplicationPreview.IsCurrentViewPresentedOnHolographicDisplay())
+            {
+                HolographicSpace holographicSpace = HolographicSpace.CreateForCoreWindow(sender.CoreWindow);
+
+                gameContext = new GameContextHolographic(holographicSpace);
+            }
+            else
+            {
+                gameContext = new GameContextCoreWindow();
+            }
+
             sender.CoreWindow.Activate();
         }
 
@@ -42,7 +54,9 @@ namespace DirectX12CoreWindowApp
 
         public void Run()
         {
-            game = new MyGame(new GameContextCoreWindow());
+            if (gameContext is null) throw new InvalidOperationException();
+
+            game = new MyGame(gameContext);
             game.Run();
         }
 
