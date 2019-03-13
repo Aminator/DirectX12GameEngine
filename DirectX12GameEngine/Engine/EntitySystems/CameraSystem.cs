@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -9,7 +10,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        public override void Update(TimeSpan deltaTime)
+        public override void Update(GameTime gameTime)
         {
             if (GraphicsDevice.Presenter is null) return;
 

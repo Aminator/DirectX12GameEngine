@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -11,7 +12,7 @@ namespace DirectX12GameEngine.Engine
 
         public IReadOnlyList<LightComponent> Lights => Components;
 
-        public override void Draw(TimeSpan deltaTime)
+        public override void Draw(GameTime gameTime)
         {
             foreach (LightComponent light in Lights)
             {

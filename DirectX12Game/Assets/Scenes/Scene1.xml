@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Scene xmlns="DirectX12GameEngine.Engine">
+<Scene xmlns="DirectX12GameEngine.Engine" xmlns:local="DirectX12Game">
   <Entity Name="T-Rex">
     <TransformComponent Scale="5,5,5" Position="-400,0,0" />
     <ModelComponent>
-      <ModelComponent.Model>Assets\Models\Cliffhouse_Model.xml</ModelComponent.Model>
+      <ModelComponent.Model>Assets\Models\Cliffhouse_Custom_Model.xml</ModelComponent.Model>
     </ModelComponent>
   </Entity>
 
@@ -51,11 +51,15 @@
     <ModelComponent Model="Assets\Models\RightHandModel.glb" />
   </Entity>-->
 
-  <Entity Name="MyScript">Assets\Scenes\MyScriptEntity1.xml</Entity>
+  <!--<Entity Name="MyScript">Assets\Scenes\MyScriptEntity1.xml</Entity>-->
+  
+  <Entity Name="MyScript">
+    <local:MyScriptComponent Camera="9eb4f8c5-4909-4ce6-a8bb-9569bb5fd3d7" />
+  </Entity>
 
-  <Entity Name="MyCamera">
+  <Entity>
     <TransformComponent Position="0,150,1500" />
-    <CameraComponent />
+    <CameraComponent Id="9eb4f8c5-4909-4ce6-a8bb-9569bb5fd3d7" />
   </Entity>
   
   <Entity Name="MyLight">

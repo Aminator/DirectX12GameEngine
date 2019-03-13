@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,7 +38,7 @@ namespace DirectX12GameEngine.Engine
             return Task.CompletedTask;
         }
 
-        public virtual void Update(TimeSpan deltaTime)
+        public virtual void Update(GameTime gameTime)
         {
         }
 
@@ -45,7 +46,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        public virtual void Draw(TimeSpan deltaTime)
+        public virtual void Draw(GameTime gameTime)
         {
         }
 

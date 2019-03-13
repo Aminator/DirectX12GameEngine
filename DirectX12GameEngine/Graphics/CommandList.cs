@@ -8,16 +8,19 @@ namespace DirectX12GameEngine.Graphics
     {
         private const int MaxRenderTargetCount = 8;
 
-        private CompiledCommandList currentCommandList;
+        private readonly CompiledCommandList currentCommandList;
 
         public CommandList(GraphicsDevice device, CommandListType commandListType)
         {
             GraphicsDevice = device;
             CommandListType = commandListType;
 
-            currentCommandList = new CompiledCommandList(this, null!, null!);
+            CommandAllocator commandAllocator = GetCommandAllocator();
 
-            Reset();
+            GraphicsCommandList nativeCommandList = GraphicsDevice.NativeDevice.CreateCommandList(CommandListType, commandAllocator, null);
+            currentCommandList = new CompiledCommandList(this, commandAllocator, nativeCommandList);
+
+            SetDescriptorHeaps(GraphicsDevice.ShaderResourceViewAllocator.DescriptorHeap);
         }
 
         public CommandListType CommandListType { get; }
@@ -166,29 +169,12 @@ namespace DirectX12GameEngine.Graphics
 
         public void Reset()
         {
-            CommandAllocator commandAllocator = CommandListType switch
-            {
-                CommandListType.Direct => GraphicsDevice.DirectAllocatorPool.GetCommandAllocator(),
-                CommandListType.Bundle => GraphicsDevice.BundleAllocatorPool.GetCommandAllocator(),
-                CommandListType.Copy => GraphicsDevice.CopyAllocatorPool.GetCommandAllocator(),
-                _ => throw new NotSupportedException("This command list type is not supported.")
-            };
+            CommandAllocator commandAllocator = GetCommandAllocator();
 
-            if (currentCommandList.NativeCommandList is null)
-            {
-                GraphicsCommandList nativeCommandList = GraphicsDevice.NativeDevice.CreateCommandList(CommandListType, commandAllocator, null);
-                currentCommandList = new CompiledCommandList(this, commandAllocator, nativeCommandList);
-            }
-            else
-            {
-                currentCommandList.NativeCommandAllocator = commandAllocator;
-                currentCommandList.NativeCommandList.Reset(currentCommandList.NativeCommandAllocator, null);
-            }
+            currentCommandList.NativeCommandAllocator = commandAllocator;
+            currentCommandList.NativeCommandList.Reset(currentCommandList.NativeCommandAllocator, null);
 
-            if (CommandListType != CommandListType.Copy)
-            {
-                SetDescriptorHeaps(GraphicsDevice.ShaderResourceViewAllocator.DescriptorHeap);
-            }
+            SetDescriptorHeaps(GraphicsDevice.ShaderResourceViewAllocator.DescriptorHeap);
         }
 
         public void ResourceBarrierTransition(Texture resource, ResourceStates stateBefore, ResourceStates stateAfter)
@@ -198,7 +184,10 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetDescriptorHeaps(params DescriptorHeap[] descriptorHeaps)
         {
-            currentCommandList.NativeCommandList.SetDescriptorHeaps(descriptorHeaps);
+            if (CommandListType != CommandListType.Copy)
+            {
+                currentCommandList.NativeCommandList.SetDescriptorHeaps(descriptorHeaps);
+            }
         }
 
         public void SetGraphicsRoot32BitConstant(int rootParameterIndex, int srcData, int destOffsetIn32BitValues)
@@ -269,6 +258,17 @@ namespace DirectX12GameEngine.Graphics
         public void SetViewport(RawViewportF viewport)
         {
             currentCommandList.NativeCommandList.SetViewport(viewport);
+        }
+
+        private CommandAllocator GetCommandAllocator()
+        {
+            return CommandListType switch
+            {
+                CommandListType.Direct => GraphicsDevice.DirectAllocatorPool.GetCommandAllocator(),
+                CommandListType.Bundle => GraphicsDevice.BundleAllocatorPool.GetCommandAllocator(),
+                CommandListType.Copy => GraphicsDevice.CopyAllocatorPool.GetCommandAllocator(),
+                _ => throw new NotSupportedException("This command list type is not supported.")
+            };
         }
     }
 }

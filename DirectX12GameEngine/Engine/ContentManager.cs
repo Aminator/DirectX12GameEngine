@@ -9,6 +9,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Materials;
@@ -18,6 +19,8 @@ namespace DirectX12GameEngine.Engine
 {
     public sealed class ContentManager
     {
+        private readonly Dictionary<Guid, IIdentifiable> identifiableObjects = new Dictionary<Guid, IIdentifiable>();
+
         private readonly Dictionary<string, Task<object>> pendingTasks = new Dictionary<string, Task<object>>();
 
         public ContentManager(IServiceProvider services)
@@ -33,20 +36,6 @@ namespace DirectX12GameEngine.Engine
         public Dictionary<string, object> LoadedAssets { get; } = new Dictionary<string, object>();
 
         internal GltfModelLoader ModelLoader { get; }
-
-        private static int GetIndex(ref string filePath)
-        {
-            Match match = Regex.Match(filePath, @"\[\d+\]$");
-            int index = 0;
-
-            if (match.Success)
-            {
-                filePath = filePath.Remove(match.Index);
-                index = int.Parse(match.Value.Trim('[', ']'));
-            }
-
-            return index;
-        }
 
         public async Task<T> LoadAsync<T>(string filePath)
         {
@@ -77,6 +66,20 @@ namespace DirectX12GameEngine.Engine
             }
 
             return asset;
+        }
+
+        private static int GetIndex(ref string filePath)
+        {
+            Match match = Regex.Match(filePath, @"\[\d+\]$");
+            int index = 0;
+
+            if (match.Success)
+            {
+                filePath = filePath.Remove(match.Index);
+                index = int.Parse(match.Value.Trim('[', ']'));
+            }
+
+            return index;
         }
 
         private async Task<object> InitializeAssetAsync(object asset)
@@ -160,9 +163,6 @@ namespace DirectX12GameEngine.Engine
 
                         foreach (XElement innerPropertyElement in innerElement.Elements())
                         {
-                            //var elem = await GetParsedElementAsync(innerPropertyElement);
-                            //propertyList.Add(elem);
-                            //propertyTaskList.Add(Task.Run(() => GetParsedElementAsync(innerPropertyElement)));
                             propertyTaskList.Add(GetParsedElementAsync(innerPropertyElement));
                         }
 
@@ -184,9 +184,6 @@ namespace DirectX12GameEngine.Engine
                 }
                 else if (parsedElement is IList elementList)
                 {
-                    //var elem = await GetParsedElementAsync(innerElement);
-                    //elementList.Add(elem);
-                    //taskList.Add(Task.Run(() => GetParsedElementAsync(innerElement)));
                     taskList.Add(GetParsedElementAsync(innerElement));
                 }
                 else
@@ -206,6 +203,15 @@ namespace DirectX12GameEngine.Engine
             }
 
             parsedElement = await InitializeAssetAsync(parsedElement);
+
+            if (parsedElement is IIdentifiable identifiable)
+            {
+                if (!identifiableObjects.ContainsKey(identifiable.Id))
+                {
+                    identifiableObjects.Add(identifiable.Id, identifiable);
+
+                }
+            }
 
             return parsedElement;
         }
@@ -268,31 +274,43 @@ namespace DirectX12GameEngine.Engine
             {
                 return value;
             }
-            else if (typeof(Enum).IsAssignableFrom(type))
+
+            if (typeof(Enum).IsAssignableFrom(type))
             {
                 return Enum.Parse(type, value);
             }
-            else if (type == typeof(Uri))
+
+            if (type == typeof(Guid))
+            {
+                return Guid.Parse(value);
+            }
+
+            if (type == typeof(Uri))
             {
                 return new Uri(value);
             }
-            else if (type == typeof(bool))
+
+            if (type == typeof(bool))
             {
                 return bool.Parse(value);
             }
-            else if (type == typeof(int))
+
+            if (type == typeof(int))
             {
                 return int.Parse(value);
             }
-            else if (type == typeof(double))
+
+            if (type == typeof(double))
             {
                 return double.Parse(value);
             }
-            else if (type == typeof(float))
+
+            if (type == typeof(float))
             {
                 return float.Parse(value);
             }
-            else if (type == typeof(Vector3))
+
+            if (type == typeof(Vector3))
             {
                 float[] vector = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
 
@@ -301,7 +319,8 @@ namespace DirectX12GameEngine.Engine
                     return new Vector3(vector[0], vector[1], vector[2]);
                 }
             }
-            else if (type == typeof(Vector4))
+
+            if (type == typeof(Vector4))
             {
                 float[] vector = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
 
@@ -310,7 +329,8 @@ namespace DirectX12GameEngine.Engine
                     return new Vector4(vector[0], vector[1], vector[2], vector[3]);
                 }
             }
-            else if (type == typeof(Quaternion))
+
+            if (type == typeof(Quaternion))
             {
                 float[] quaternion = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
 
@@ -319,7 +339,8 @@ namespace DirectX12GameEngine.Engine
                     return new Quaternion(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
                 }
             }
-            else if (type == typeof(Matrix4x4))
+
+            if (type == typeof(Matrix4x4))
             {
                 float[] matrix = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
 
@@ -332,12 +353,24 @@ namespace DirectX12GameEngine.Engine
                         matrix[12], matrix[13], matrix[14], matrix[15]);
                 }
             }
-            else
+
+            if (typeof(IIdentifiable).IsAssignableFrom(type))
             {
-                return await LoadAsync(type, value);
+                if (Guid.TryParse(value, out Guid guid))
+                {
+                    while (true)
+                    {
+                        if (identifiableObjects.TryGetValue(guid, out IIdentifiable identifiable))
+                        {
+                            return identifiable;
+                        }
+
+                        await Task.Delay(10);
+                    }
+                }
             }
 
-            throw new ArgumentException("This type could not be parsed.");
+            return await LoadAsync(type, value);
         }
     }
 }

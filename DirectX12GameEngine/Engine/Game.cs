@@ -13,6 +13,7 @@ namespace DirectX12GameEngine.Engine
         private readonly object tickLock = new object();
 
         private DateTime previousTime;
+        private TimeSpan totalTime;
 
         public Game(GameContext gameContext)
         {
@@ -57,6 +58,8 @@ namespace DirectX12GameEngine.Engine
 
         public IServiceProvider Services { get; }
 
+        public GameTime Time { get; } = new GameTime();
+
         public virtual void Dispose()
         {
             GraphicsDevice.Dispose();
@@ -100,13 +103,17 @@ namespace DirectX12GameEngine.Engine
             lock (tickLock)
             {
                 DateTime currentTime = DateTime.Now;
-                TimeSpan deltaTime = currentTime - previousTime;
-                previousTime = currentTime;
+                TimeSpan elapsedTime = currentTime - previousTime;
 
-                Update(deltaTime);
+                previousTime = currentTime;
+                totalTime += elapsedTime;
+
+                Time.Update(totalTime, elapsedTime);
+
+                Update(Time);
 
                 BeginDraw();
-                Draw(deltaTime);
+                Draw(Time);
                 EndDraw();
             }
         }
@@ -131,11 +138,11 @@ namespace DirectX12GameEngine.Engine
             return Task.WhenAll(loadingTasks);
         }
 
-        protected virtual void Update(TimeSpan deltaTime)
+        protected virtual void Update(GameTime gameTime)
         {
             foreach (GameSystem gameSystem in GameSystems)
             {
-                gameSystem.Update(deltaTime);
+                gameSystem.Update(gameTime);
             }
         }
 
@@ -167,11 +174,11 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        protected virtual void Draw(TimeSpan deltaTime)
+        protected virtual void Draw(GameTime gameTime)
         {
             foreach (GameSystem gameSystem in GameSystems)
             {
-                gameSystem.Draw(deltaTime);
+                gameSystem.Draw(gameTime);
             }
         }
 

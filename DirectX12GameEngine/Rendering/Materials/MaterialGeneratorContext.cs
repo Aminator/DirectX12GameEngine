@@ -112,13 +112,15 @@ namespace DirectX12GameEngine.Rendering.Materials
                 new RootParameter(ShaderVisibility.All,
                     new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 2)),
                 new RootParameter(ShaderVisibility.All,
-                    new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 3))
+                    new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 3)),
+                new RootParameter(ShaderVisibility.All,
+                    new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 4))
             };
 
             if (ConstantBuffers.Count > 0)
             {
                 rootParameters.Add(new RootParameter(ShaderVisibility.All,
-                    new DescriptorRange(DescriptorRangeType.ConstantBufferView, ConstantBuffers.Count, 4)));
+                    new DescriptorRange(DescriptorRangeType.ConstantBufferView, ConstantBuffers.Count, 5)));
             }
 
             if (Samplers.Count > 0)

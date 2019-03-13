@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,11 +37,11 @@ namespace DirectX12GameEngine.Engine
 
         protected SceneSystem SceneSystem { get; }
 
-        public virtual void Update(TimeSpan deltaTime)
+        public virtual void Update(GameTime gameTime)
         {
         }
 
-        public virtual void Draw(TimeSpan deltaTime)
+        public virtual void Draw(GameTime gameTime)
         {
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -52,24 +53,24 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        public override void Update(TimeSpan deltaTime)
+        public override void Update(GameTime gameTime)
         {
             lock (Systems)
             {
                 foreach (EntitySystem system in Systems)
                 {
-                    system.Update(deltaTime);
+                    system.Update(gameTime);
                 }
             }
         }
 
-        public override void Draw(TimeSpan deltaTime)
+        public override void Draw(GameTime gameTime)
         {
             lock (Systems)
             {
                 foreach (EntitySystem system in Systems)
                 {
-                    system.Draw(deltaTime);
+                    system.Draw(gameTime);
                 }
             }
         }

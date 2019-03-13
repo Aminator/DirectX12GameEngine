@@ -9,6 +9,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     {
 #nullable disable
         [ConstantBufferResource] public readonly uint RenderTargetCount;
+        [ConstantBufferResource] public readonly GlobalBuffer Globals;
         [ConstantBufferResource] public readonly ViewProjectionTransform[] ViewProjectionTransforms;
         [ConstantBufferResource] public Matrix4x4[] WorldMatrices;
 
@@ -47,6 +48,9 @@ namespace DirectX12GameEngine.Rendering.Materials
         public override PSOutput PSMain(PSInput input)
         {
             PSOutput output = base.PSMain(input);
+
+            Global.ElapsedTime = Globals.ElapsedTime;
+            Global.TotalTime = Globals.TotalTime;
 
             ShaderBaseStream.ShadingPosition = input.ShadingPosition;
             ShaderBaseStream.InstanceId = input.InstanceId;

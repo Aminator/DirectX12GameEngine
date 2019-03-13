@@ -23,13 +23,13 @@ namespace DirectX12Game
             }
         }
 
-        public override void Update(TimeSpan deltaTime)
+        public override void Update(GameTime gameTime)
         {
             //System.Diagnostics.Debug.WriteLine(1.0 / deltaTime.TotalSeconds);
 
             foreach (MyScriptComponent component in Components)
             {
-                time += (float)deltaTime.TotalSeconds;
+                time += (float)gameTime.Elapsed.TotalSeconds;
 
                 Quaternion timeRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time * 0.2f);
 
@@ -37,11 +37,12 @@ namespace DirectX12Game
 
                 if (scene != null)
                 {
-                    Entity camera = scene.FirstOrDefault(m => m.Name == "MyCamera");
-                    if (camera != null)
+                    CameraComponent? camera = component.Camera;
+                    //Entity camera = scene.FirstOrDefault(m => m.Name == "MyCamera");
+                    if (camera != null && camera.Entity != null)
                     {
-                        SceneSystem.CurrentCamera = camera.Get<CameraComponent>();
-                        camera.Transform.Position = new Vector3(camera.Transform.Position.X, camera.Transform.Position.Y, 10.0f * scrollAmount * 3);
+                        SceneSystem.CurrentCamera = camera;
+                        camera.Entity.Transform.Position = new Vector3(camera.Entity.Transform.Position.X, camera.Entity.Transform.Position.Y, 10.0f * scrollAmount * 3);
                     }
 
                     Entity light = scene.FirstOrDefault(m => m.Name == "MyLight");

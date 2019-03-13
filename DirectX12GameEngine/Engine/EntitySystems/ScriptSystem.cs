@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -15,7 +16,7 @@ namespace DirectX12GameEngine.Engine
             Components.CollectionChanged += Components_CollectionChanged;
         }
 
-        public override void Update(TimeSpan deltaTime)
+        public override void Update(GameTime gameTime)
         {
         }
 

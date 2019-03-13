@@ -397,6 +397,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 // TODO: See why the System namespace in System.Math is not present in UWP projects.
                 shaderSource = shaderSource.Replace("Math.Max", "max");
                 shaderSource = shaderSource.Replace("Math.Pow", "pow");
+                shaderSource = shaderSource.Replace("Math.Sin", "sin");
 
                 shaderSource = shaderSource.Replace("vector", "vec");
                 shaderSource = Regex.Replace(shaderSource, @"\d+[fF]", m => m.Value.Replace("f", ""));
@@ -539,10 +540,16 @@ namespace DirectX12GameEngine.Rendering.Shaders
         {
             private static readonly Dictionary<string, string> knownMethods = new Dictionary<string, string>()
             {
+                { "System.Math.Cos", "cos" },
+                { "System.MathF.Cos", "cos" },
                 { "System.Math.Max", "max" },
                 { "System.Math.Pow", "pow" },
+                { "System.Math.Sin", "sin" },
+                { "System.MathF.Sin", "sin" },
                 { "System.Math.PI", "3.1415926535897931" },
                 { "System.MathF.PI", "3.14159274f" },
+
+                { "DirectX12GameEngine.Rendering.Numerics.Vector2.Length", "length" },
 
                 { "System.Numerics.Vector3.X", ".x" },
                 { "System.Numerics.Vector3.Y", ".y" },

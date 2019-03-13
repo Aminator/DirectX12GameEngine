@@ -1,4 +1,5 @@
 ﻿using System;
+using DirectX12GameEngine.Games;
 using SharpDX;
 using SharpDX.Direct3D12;
 using Windows.Graphics.DirectX.Direct3D11;
@@ -12,7 +13,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        public override void Draw(TimeSpan deltaTime)
+        public override void Draw(GameTime gameTime)
         {
             foreach (VideoComponent videoComponent in Components)
             {

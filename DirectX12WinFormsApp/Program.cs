@@ -5,7 +5,7 @@ using DirectX12GameEngine.Games;
 
 namespace DirectX12WinFormsApp
 {
-    class MyForm : Form
+    public class MyForm : Form
     {
         public MyForm()
         {
@@ -22,13 +22,13 @@ namespace DirectX12WinFormsApp
         }
     }
 
-    static class Program
+    public static class Program
     {
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

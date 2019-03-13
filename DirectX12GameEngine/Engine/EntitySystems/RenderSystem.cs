@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
+using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Core;
@@ -28,22 +29,27 @@ namespace DirectX12GameEngine.Engine
         {
             Components.CollectionChanged += Components_CollectionChanged;
 
+            DirectionalLightGroupBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
+
+            GlobalBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(GlobalBuffer));
+
             Span<ViewProjectionTransform> viewProjectionTransforms = stackalloc ViewProjectionTransform[2];
             ViewProjectionTransformBuffer = Texture.CreateConstantBufferView(GraphicsDevice, viewProjectionTransforms);
-
-            DirectionalLightGroupBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
         }
-
-        public Texture ViewProjectionTransformBuffer { get; }
 
         public Texture DirectionalLightGroupBuffer { get; }
 
-        public override void Draw(TimeSpan deltaTime)
+        public Texture GlobalBuffer { get; }
+
+        public Texture ViewProjectionTransformBuffer { get; }
+
+        public override void Draw(GameTime gameTime)
         {
             if (GraphicsDevice.Presenter is null) return;
 
-            UpdateViewProjectionMatrices();
+            UpdateGlobals();
             UpdateLights();
+            UpdateViewProjectionMatrices();
 
             var componentsWithSameModel = Components.GroupBy(m => m.Model).ToArray();
 
@@ -221,6 +227,7 @@ namespace DirectX12GameEngine.Engine
                 int rootParameterIndex = 0;
 
                 commandList.SetGraphicsRoot32BitConstant(rootParameterIndex++, renderTargetCount, 0);
+                commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, GlobalBuffer.NativeGpuDescriptorHandle);
                 commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, ViewProjectionTransformBuffer.NativeGpuDescriptorHandle);
                 commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, worldMatrixBuffers[i].NativeGpuDescriptorHandle);
 
@@ -250,6 +257,37 @@ namespace DirectX12GameEngine.Engine
                     commandList.DrawInstanced(mesh.VertexBufferViews[0].SizeInBytes / mesh.VertexBufferViews[0].StrideInBytes, instanceCount);
                 }
             }
+        }
+
+        private void UpdateGlobals()
+        {
+            GlobalBuffer globalBuffer = new GlobalBuffer
+            {
+                ElapsedTime = (float)Game.Time.Elapsed.TotalSeconds,
+                TotalTime = (float)Game.Time.Total.TotalSeconds
+            };
+
+            MemoryHelper.Copy(globalBuffer, GlobalBuffer.MappedResource);
+        }
+
+        private unsafe void UpdateLights()
+        {
+            LightSystem? lightSystem = SceneSystem.Systems.Get<LightSystem>();
+
+            if (lightSystem is null) return;
+
+            var lights = lightSystem.Lights;
+            int lightCount = lights.Count;
+
+            DirectionalLightData[] lightData = new DirectionalLightData[lights.Count];
+
+            for (int i = 0; i < lights.Count; i++)
+            {
+                lightData[i] = new DirectionalLightData { Color = lights[i].Color, Direction = lights[i].Direction };
+            }
+
+            MemoryHelper.Copy(lightCount, DirectionalLightGroupBuffer.MappedResource);
+            MemoryHelper.Copy(lightData.AsSpan(), DirectionalLightGroupBuffer.MappedResource + sizeof(Vector4));
         }
 
         private void UpdateViewProjectionMatrices()
@@ -310,26 +348,6 @@ namespace DirectX12GameEngine.Engine
                     MemoryHelper.Copy(viewProjectionTransforms, ViewProjectionTransformBuffer.MappedResource);
                 }
             }
-        }
-
-        private unsafe void UpdateLights()
-        {
-            LightSystem? lightSystem = SceneSystem.Systems.Get<LightSystem>();
-
-            if (lightSystem is null) return;
-
-            var lights = lightSystem.Lights;
-            int lightCount = lights.Count;
-
-            DirectionalLightData[] lightData = new DirectionalLightData[lights.Count];
-
-            for (int i = 0; i < lights.Count; i++)
-            {
-                lightData[i] = new DirectionalLightData { Color = lights[i].Color, Direction = lights[i].Direction };
-            }
-
-            MemoryHelper.Copy(lightCount, DirectionalLightGroupBuffer.MappedResource);
-            MemoryHelper.Copy(lightData.AsSpan(), DirectionalLightGroupBuffer.MappedResource + sizeof(Vector4));
         }
 
         private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
