@@ -8,8 +8,6 @@ namespace DirectX12GameEngine.Engine
 {
     public sealed class Entity : ObservableCollection<EntityComponent>, IIdentifiable
     {
-        private TransformComponent transform;
-
         public Entity() : this(null)
         {
         }
@@ -24,8 +22,8 @@ namespace DirectX12GameEngine.Engine
 
             Name = name ?? GetType().Name;
 
-            this.transform = transform ?? new TransformComponent();
-            Add(this.transform);
+            Transform = transform ?? new TransformComponent();
+            Add(Transform);
         }
 
         public ObservableCollection<EntityComponent> Components => this;
@@ -36,22 +34,7 @@ namespace DirectX12GameEngine.Engine
 
         public Scene? Scene { get; internal set; }
 
-        public TransformComponent Transform
-        {
-            get => transform;
-            set
-            {
-                if (transform == value) return;
-
-                Remove(transform);
-                transform = value;
-
-                if (!Contains(transform))
-                {
-                    Add(transform);
-                }
-            }
-        }
+        public TransformComponent Transform { get; private set; }
 
         public T? Get<T>() where T : EntityComponent
         {
@@ -85,14 +68,15 @@ namespace DirectX12GameEngine.Engine
 
         private void AddInternal(EntityComponent entityComponent)
         {
-            if (entityComponent is TransformComponent transformComponent)
-            {
-                Transform = transformComponent;
-            }
-
             if (entityComponent.Entity != null)
             {
                 throw new InvalidOperationException("An entity component cannot be set on more than one entity.");
+            }
+
+            if (entityComponent is TransformComponent transformComponent && Transform != transformComponent)
+            {
+                Remove(Transform);
+                Transform = transformComponent;
             }
 
             entityComponent.Entity = this;

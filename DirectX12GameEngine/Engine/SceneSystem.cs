@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
@@ -7,7 +8,7 @@ using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
-    public sealed class SceneSystem : GameSystem
+    public sealed class SceneSystem : GameSystem, IEnumerable<Entity>
     {
         private readonly HashSet<Entity> entities = new HashSet<Entity>();
         private readonly Dictionary<Type, List<EntitySystem>> systemsPerComponentType = new Dictionary<Type, List<EntitySystem>>();
@@ -44,6 +45,10 @@ namespace DirectX12GameEngine.Engine
                 rootScene = value;
             }
         }
+
+        public IEnumerator<Entity> GetEnumerator() => entities.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public override async Task LoadContentAsync()
         {
@@ -83,17 +88,17 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void Add(Scene scene)
+        public void Add(Entity entity)
         {
-            foreach (Entity entity in scene)
+            if (entity.Transform.Parent != null)
             {
-                Add(entity);
+                throw new ArgumentException("This entity should not have a parent.", nameof(entity));
             }
 
-            scene.CollectionChanged += Entities_CollectionChanged;
+            AddInternal(entity);
         }
 
-        private void Add(Entity entity)
+        internal void AddInternal(Entity entity)
         {
             if (!entities.Add(entity)) return;
 
@@ -103,6 +108,38 @@ namespace DirectX12GameEngine.Engine
             }
 
             entity.CollectionChanged += Components_CollectionChanged;
+        }
+
+        internal void Remove(Entity entity)
+        {
+            RemoveInternal(entity, true);
+        }
+
+        internal void RemoveInternal(Entity entity, bool removeParent)
+        {
+            if (!entities.Remove(entity)) return;
+
+            entity.CollectionChanged -= Components_CollectionChanged;
+
+            if (removeParent)
+            {
+                entity.Transform.Parent = null;
+            }
+
+            foreach (EntityComponent entityComponent in entity)
+            {
+                Remove(entityComponent);
+            }
+        }
+
+        private void Add(Scene scene)
+        {
+            foreach (Entity entity in scene)
+            {
+                Add(entity);
+            }
+
+            scene.CollectionChanged += Entities_CollectionChanged;
         }
 
         private void Add(EntityComponent entityComponent)
@@ -117,18 +154,6 @@ namespace DirectX12GameEngine.Engine
             foreach (Entity entity in scene)
             {
                 Remove(entity);
-            }
-        }
-
-        private void Remove(Entity entity)
-        {
-            if (!entities.Remove(entity)) return;
-
-            entity.CollectionChanged -= Components_CollectionChanged;
-
-            foreach (EntityComponent entityComponent in entity)
-            {
-                Remove(entityComponent);
             }
         }
 

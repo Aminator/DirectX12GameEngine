@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if WINDOWS_UWP
+using System;
 using DirectX12GameEngine.Games;
 using SharpDX;
 using SharpDX.Direct3D12;
@@ -54,3 +55,4 @@ namespace DirectX12GameEngine.Engine
         }
     }
 }
+#endif

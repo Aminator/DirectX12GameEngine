@@ -2,10 +2,9 @@
 using System.IO;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
-using SharpDX;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
-using Windows.Graphics.Imaging;
+using SharpDX.WIC;
 
 using Resource = SharpDX.Direct3D12.Resource;
 
@@ -71,23 +70,24 @@ namespace DirectX12GameEngine.Graphics
             return await LoadAsync(device, stream);
         }
 
-        public static async Task<Texture> LoadAsync(GraphicsDevice device, Stream stream)
+        public static unsafe Task<Texture> LoadAsync(GraphicsDevice device, Stream stream)
         {
-            BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream.AsRandomAccessStream());
-            PixelDataProvider pixelDataProvider = await decoder.GetPixelDataAsync(
-                decoder.BitmapPixelFormat, decoder.BitmapAlphaMode, new BitmapTransform(), ExifOrientationMode.RespectExifOrientation,
-                ColorManagementMode.DoNotColorManage);
-
-            byte[] imageBuffer = pixelDataProvider.DetachPixelData();
-
-            Format pixelFormat = decoder.BitmapPixelFormat switch
+            return Task.Run(() =>
             {
-                BitmapPixelFormat.Rgba8 => Format.R8G8B8A8_UNorm,
-                BitmapPixelFormat.Bgra8 => Format.B8G8R8A8_UNorm,
-                _ => throw new NotSupportedException("This format is not supported.")
-            };
+                ImagingFactory2 imagingFactory = new ImagingFactory2();
+                BitmapDecoder decoder = new BitmapDecoder(imagingFactory, stream, DecodeOptions.CacheOnDemand);
 
-            return CreateTexture2D(device, imageBuffer.AsSpan(), pixelFormat, (int)decoder.PixelWidth, (int)decoder.PixelHeight);
+                FormatConverter bitmapSource = new FormatConverter(imagingFactory);
+                bitmapSource.Initialize(decoder.GetFrame(0), PixelFormat.Format32bppBGRA);
+
+                Format pixelFormat = Format.B8G8R8A8_UNorm;
+                int stride = bitmapSource.Size.Width * FormatHelper.SizeOfInBytes(pixelFormat);
+                byte[] imageBuffer = new byte[stride * bitmapSource.Size.Height];
+
+                bitmapSource.CopyPixels(imageBuffer, stride);
+
+                return CreateTexture2D(device, imageBuffer.AsSpan(), pixelFormat, bitmapSource.Size.Width, bitmapSource.Size.Height);
+            });
         }
 
         public static unsafe Texture CreateBuffer<T>(GraphicsDevice device, Span<T> data, DescriptorHeapType? descriptorHeapType = null) where T : unmanaged

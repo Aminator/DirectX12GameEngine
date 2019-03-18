@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Rendering;
@@ -15,12 +16,20 @@ namespace DirectX12Game
 
         public MyScriptSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
+#if WINDOWS_UWP
             if (Game.GameContext is GameContextCoreWindow context)
             {
-                context.Control.KeyDown += Control_KeyDown;
-                context.Control.PointerPressed += Control_PointerPressed;
-                context.Control.PointerWheelChanged += Control_PointerWheelChanged;
+                context.Control.KeyDown += (s, e) => OnKeyDown(e.VirtualKey);
+                context.Control.PointerPressed += (s, e) => OnPointerPressed(e.CurrentPoint);
+                context.Control.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.CurrentPoint);
             }
+            else if (Game.GameContext is GameContextXaml xamlContext)
+            {
+                xamlContext.Control.KeyDown += (s, e) => OnKeyDown(e.Key);
+                xamlContext.Control.PointerPressed += (s, e) => OnPointerPressed(e.GetCurrentPoint(xamlContext.Control));
+                xamlContext.Control.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.GetCurrentPoint(xamlContext.Control));
+            }
+#endif
         }
 
         public override void Update(GameTime gameTime)
@@ -48,32 +57,26 @@ namespace DirectX12Game
                     Entity light = scene.FirstOrDefault(m => m.Name == "MyLight");
                     if (light != null)
                     {
-                        light.Transform.Rotation =  Quaternion.CreateFromAxisAngle(Vector3.UnitY, time) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, -(float)Math.PI / 4.0f);
-                    }
-
-                    Entity tRex = scene.FirstOrDefault(m => m.Name == "T-Rex");
-                    if (tRex != null)
-                    {
-                        tRex.Transform.Rotation = timeRotation;
+                        light.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, -(float)Math.PI / 4.0f);
                     }
 
                     var rexes = scene.Where(m => m.Name == "T-Rex");
                     foreach (var item in rexes)
                     {
-                        item.Transform.Rotation = timeRotation;
+                        item.Transform.RotationEuler = QuaternionExtensions.ToEuler(timeRotation);
                     }
 
-                    Entity video = scene.FirstOrDefault(m => m.Name == "MyVideo");
-                    if (video != null)
-                    {
-                        VideoComponent? videoComponent = video.Get<VideoComponent>();
+                    //Entity video = scene.FirstOrDefault(m => m.Name == "MyVideo");
+                    //if (video != null)
+                    //{
+                    //    VideoComponent? videoComponent = video.Get<VideoComponent>();
 
-                        if (videoComponent?.Target is null)
-                        {
-                            Model? model = tRex?.Get<ModelComponent>()?.Model;
-                            //videoComponent.Target = GraphicsDevice.Presenter?.BackBuffer;
-                        }
-                    }
+                    //    if (videoComponent?.Target is null)
+                    //    {
+                    //        Model? model = tRex?.Get<ModelComponent>()?.Model;
+                    //        //videoComponent.Target = GraphicsDevice.Presenter?.BackBuffer;
+                    //    }
+                    //}
 
                     Entity cliffhouse = scene.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
@@ -99,6 +102,12 @@ namespace DirectX12Game
                         icon.Transform.Rotation = timeRotation;
                     }
 
+                    Entity iconChild = SceneSystem.FirstOrDefault(m => m.Name == "Icon_Failure_Child");
+                    if (iconChild != null)
+                    {
+                        iconChild.Transform.Rotation = timeRotation;
+                    }
+
                     Entity cube = scene.FirstOrDefault(m => m.Name == "LiveCube");
                     if (cube != null)
                     {
@@ -108,9 +117,10 @@ namespace DirectX12Game
             }
         }
 
-        private async void Control_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
+#if WINDOWS_UWP
+        private async void OnKeyDown(Windows.System.VirtualKey key)
         {
-            switch (args.VirtualKey)
+            switch (key)
             {
                 case Windows.System.VirtualKey.Up:
                     scrollAmount--;
@@ -143,21 +153,22 @@ namespace DirectX12Game
             }
         }
 
-        private void Control_PointerPressed(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        private void OnPointerPressed(Windows.UI.Input.PointerPoint pointerPoint)
         {
-            if (args.CurrentPoint.Properties.IsLeftButtonPressed)
+            if (pointerPoint.Properties.IsLeftButtonPressed)
             {
                 scrollAmount--;
             }
-            else if (args.CurrentPoint.Properties.IsRightButtonPressed)
+            else if (pointerPoint.Properties.IsRightButtonPressed)
             {
                 scrollAmount++;
             }
         }
 
-        private void Control_PointerWheelChanged(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        private void OnPointerWheelChanged(Windows.UI.Input.PointerPoint pointerPoint)
         {
-            scrollAmount -= args.CurrentPoint.Properties.MouseWheelDelta * scrollSpeed;
+            scrollAmount -= pointerPoint.Properties.MouseWheelDelta * scrollSpeed;
         }
+#endif
     }
 }

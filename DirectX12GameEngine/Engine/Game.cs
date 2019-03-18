@@ -24,10 +24,12 @@ namespace DirectX12GameEngine.Engine
 
             switch (GameContext)
             {
+#if WINDOWS_UWP
                 case GameContextHolographic context:
                     presentationParameters.Stereo = Windows.Graphics.Holographic.HolographicDisplay.GetDefault().IsStereo;
                     GraphicsDevice.Presenter = new HolographicGraphicsPresenter(GraphicsDevice, presentationParameters);
                     break;
+#endif
                 default:
                     GraphicsDevice.Presenter = new SwapChainGraphicsPresenter(GraphicsDevice, presentationParameters);
                     break;
@@ -79,21 +81,26 @@ namespace DirectX12GameEngine.Engine
 
             switch (GameContext)
             {
+#if WINDOWS_UWP
                 case GameContextXaml context:
                     Windows.UI.Xaml.Media.CompositionTarget.Rendering += (s, e) => Tick();
                     return;
-#if NETCOREAPP
+#elif NETCOREAPP
                 case GameContextWinForms context:
                     System.Windows.Media.CompositionTarget.Rendering += (s, e) => Tick();
                     return;
 #endif
             }
 
+#if WINDOWS_UWP
             Windows.UI.Core.CoreWindow? coreWindow = (GameContext as GameContextCoreWindow)?.Control;
+#endif
 
             while (true)
             {
+#if WINDOWS_UWP
                 coreWindow?.Dispatcher.ProcessEvents(Windows.UI.Core.CoreProcessEventsOption.ProcessAllIfPresent);
+#endif
                 Tick();
             }
         }

@@ -1,11 +1,11 @@
 ﻿using System;
-using Windows.Foundation;
+using System.Drawing;
 
 namespace DirectX12GameEngine.Graphics
 {
     public sealed class SizeChangedEventArgs : EventArgs
     {
-        public SizeChangedEventArgs(Size size, Size resolutionScale)
+        public SizeChangedEventArgs(Size size, double resolutionScale)
         {
             Size = size;
             ResolutionScale = resolutionScale;
@@ -13,6 +13,6 @@ namespace DirectX12GameEngine.Graphics
 
         public Size Size { get; }
 
-        public Size ResolutionScale { get; }
+        public double ResolutionScale { get; }
     }
 }

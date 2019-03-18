@@ -104,7 +104,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             Vector4 materialDiffuse = MaterialPixelStream.MaterialDiffuse;
 
-            MaterialPixelShadingStream.ShadingColor += directLightingContribution * (float)Math.PI;
+            MaterialPixelShadingStream.ShadingColor += directLightingContribution * MathF.PI;
             MaterialPixelShadingStream.ShadingColorAlpha = materialDiffuse.W;
         }
 

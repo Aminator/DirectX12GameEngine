@@ -1,8 +1,9 @@
-﻿using System;
+﻿#if WINDOWS_UWP
+using System;
+using System.Drawing;
 using DirectX12GameEngine.Games;
 using SharpDX;
 using SharpDX.Direct3D12;
-using Windows.Foundation;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Holographic;
 using Windows.Perception.Spatial;
@@ -32,7 +33,7 @@ namespace DirectX12GameEngine.Graphics
             {
                 case GameContextHolographic context:
                     CoreWindow coreWindow = context.Control;
-                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(e.Size, new Size(1.0, 1.0)));
+                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(new Size((int)e.Size.Width, (int)e.Size.Height), 1.0));
 
                     using (SharpDX.DXGI.Device dxgiDevice = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.DXGI.Device>())
                     {
@@ -160,3 +161,4 @@ namespace DirectX12GameEngine.Graphics
         }
     }
 }
+#endif

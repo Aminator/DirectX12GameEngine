@@ -7,14 +7,12 @@ using DirectX12GameEngine.Core;
 using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D12;
-using SharpDX.DXGI;
-using Windows.Graphics.DirectX.Direct3D11;
 
 using Device = SharpDX.Direct3D12.Device;
 
 namespace DirectX12GameEngine.Graphics
 {
-    public sealed class GraphicsDevice : IDisposable, ICollector
+    public sealed partial class GraphicsDevice : IDisposable, ICollector
     {
         private static readonly Guid ID3D11Resource = new Guid("DC8E63F3-D12B-4952-B47B-5E45026A862D");
 
@@ -229,42 +227,6 @@ namespace DirectX12GameEngine.Graphics
             commandQueue.Signal(fence, fenceValue);
 
             return fenceValue;
-        }
-
-        internal static IDirect3DDevice CreateDirect3DDevice(SharpDX.DXGI.Device dxgiDevice)
-        {
-            Result result = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.NativePointer, out IntPtr graphicsDevice);
-
-            IDirect3DDevice d3DInteropDevice = (IDirect3DDevice)Marshal.GetObjectForIUnknown(graphicsDevice);
-            Marshal.Release(graphicsDevice);
-
-            return d3DInteropDevice;
-        }
-
-        internal static IDirect3DSurface CreateDirect3DSurface(Surface dxgiSurface)
-        {
-            Result result = CreateDirect3D11SurfaceFromDXGISurface(dxgiSurface.NativePointer, out IntPtr graphicsSurface);
-
-            IDirect3DSurface d3DSurface = (IDirect3DSurface)Marshal.GetObjectForIUnknown(graphicsSurface);
-            Marshal.Release(graphicsSurface);
-
-            return d3DSurface;
-        }
-
-        internal static SharpDX.DXGI.Device CreateDXGIDevice(IDirect3DDevice direct3DDevice)
-        {
-            IDirect3DDxgiInterfaceAccess dxgiDeviceInterfaceAccess = (IDirect3DDxgiInterfaceAccess)direct3DDevice;
-            IntPtr device = dxgiDeviceInterfaceAccess.GetInterface(ID3D11Resource);
-
-            return new SharpDX.DXGI.Device(device);
-        }
-
-        internal static Surface CreateDXGISurface(IDirect3DSurface direct3DSurface)
-        {
-            IDirect3DDxgiInterfaceAccess dxgiSurfaceInterfaceAccess = (IDirect3DDxgiInterfaceAccess)direct3DSurface;
-            IntPtr surface = dxgiSurfaceInterfaceAccess.GetInterface(ID3D11Resource);
-
-            return new Surface(surface);
         }
 
         internal CommandList GetOrCreateCopyCommandList()

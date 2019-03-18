@@ -49,12 +49,22 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
+        protected internal abstract void ProcessEntityComponent(EntityComponent entityComponent, bool forceRemove);
+
+        protected internal void InternalAddEntity(Entity entity)
+        {
+            SceneSystem.AddInternal(entity);
+        }
+
+        protected internal void InternalRemoveEntity(Entity entity, bool removeParent)
+        {
+            SceneSystem.RemoveInternal(entity, removeParent);
+        }
+
         internal bool Accept(Type type)
         {
             return MainType.IsAssignableFrom(type);
         }
-
-        protected internal abstract void ProcessEntityComponent(EntityComponent entityComponent, bool forceRemove);
     }
 
     public abstract class EntitySystem<TComponent> : EntitySystem where TComponent : EntityComponent

@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -180,6 +179,10 @@ namespace DirectX12GameEngine.Engine
 
                         object parsedObject = await GetParsedElementAsync(propertyElement, propertyType);
                         propertyInfo.SetValue(parsedElement, parsedObject);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("An inner element must be a writable property or a list element.");
                     }
                 }
                 else if (parsedElement is IList elementList)

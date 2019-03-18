@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Games;
@@ -294,6 +293,7 @@ namespace DirectX12GameEngine.Engine
         {
             if (SceneSystem.CurrentCamera != null && SceneSystem.CurrentCamera.Entity != null)
             {
+#if WINDOWS_UWP
                 if (GraphicsDevice.Presenter is HolographicGraphicsPresenter graphicsPresenter)
                 {
                     var cameraPose = graphicsPresenter.HolographicFrame.CurrentPrediction.CameraPoses[0];
@@ -332,6 +332,7 @@ namespace DirectX12GameEngine.Engine
                     MemoryHelper.Copy(viewProjectionTransforms, ViewProjectionTransformBuffer.MappedResource);
                 }
                 else
+#endif
                 {
                     Matrix4x4.Invert(SceneSystem.CurrentCamera.ViewMatrix, out Matrix4x4 inverseViewMatrix);
 

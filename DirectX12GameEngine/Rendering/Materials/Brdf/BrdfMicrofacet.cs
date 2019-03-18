@@ -15,7 +15,7 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
         [ShaderMethod]
         public static Vector3 FresnelSchlick(Vector3 f0, Vector3 f90, float lOrVDotH)
         {
-            return f0 + (f90 - f0) * (float)Math.Pow(1 - lOrVDotH, 5);
+            return f0 + (f90 - f0) * MathF.Pow(1 - lOrVDotH, 5);
         }
 
         [ShaderMethod]
@@ -36,7 +36,7 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
         {
             float alphaRoughness2 = alphaRoughness * alphaRoughness;
             float d = Math.Max(nDotH * nDotH * (alphaRoughness2 - 1) + 1, 0.0001f);
-            return alphaRoughness2 / ((float)Math.PI * d * d);
+            return alphaRoughness2 / (MathF.PI * d * d);
         }
     }
 }

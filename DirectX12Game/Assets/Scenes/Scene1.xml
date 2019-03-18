@@ -17,7 +17,21 @@
   </Entity>
 
   <Entity Name="T-Rex">
-    <TransformComponent Scale="2,2,2" Position="500,0,0" />
+    <TransformComponent Scale="2,2,2" Position="500,0,0">
+      <TransformComponent.ChildEntities>
+        
+        <Entity Name="Child1">
+          <TransformComponent Position="0,-100,0" Scale="25,25,25" />
+          <ModelComponent Model="Assets\Models\Icon_Failure_Model.xml" />
+        </Entity>
+
+        <Entity Name="Child2">
+          <TransformComponent Position="0,100,0" Scale="15,15,15" RotationEuler="0,1.57,0" />
+          <ModelComponent Model="Assets\Models\Icon_Failure_Model.xml" />
+        </Entity>
+        
+      </TransformComponent.ChildEntities>
+    </TransformComponent>
     <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
   </Entity>
 

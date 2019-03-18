@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.0-preview.21">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks><!--netcoreapp3.0;-->uap10.0.17763</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <NullableContextOptions>enable</NullableContextOptions>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -9,31 +9,24 @@
 
   <ItemGroup>
     <PackageReference Include="DotNetDxc" Version="1.2.0-alpha" />
-    <PackageReference Include="ICSharpCode.Decompiler" Version="4.0.0.4521" />
+    <PackageReference Include="ICSharpCode.Decompiler" Version="5.0.0.4688-preview1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0-beta4-final" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview.19074.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview3.19153.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.1-beta0-g81dd0b0626" />
-    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.1-beta0-g81dd0b0626" />
-    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.1-beta0-g81dd0b0626" />
+    <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.1-beta0-g3060495c2a" />
+    <PackageReference Include="SharpDX.Direct2D1" Version="4.2.1-beta0-g3060495c2a" />
+    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.1-beta0-g3060495c2a" />
+    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.1-beta0-g3060495c2a" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'uap10.0.17763'">
     <PackageReference Include="System.Memory" Version="4.5.2" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.6.0-preview.19073.11" />
-    <PackageReference Include="System.Runtime.InteropServices.WindowsRuntime" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.WindowsRuntime" Version="4.6.0-preview.19073.11" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="GltfLoader">
       <HintPath>..\Libs\GltfLoader.dll</HintPath>
     </Reference>
-    <Reference Include="Windows">
-      <HintPath>..\Libs\Windows.winmd</HintPath>
-      <IsWinMDFile>true</IsWinMDFile>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <PackageReference Include="Microsoft.WindowsDesktop.App" Version="3.0.0-alpha-27128-4" />
   </ItemGroup>
 
 </Project>

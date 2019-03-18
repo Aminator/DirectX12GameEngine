@@ -109,7 +109,7 @@
     <Content Include="..\DirectX12Game\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.2" />
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.12" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine\DirectX12GameEngine.csproj">

@@ -544,6 +544,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
                 { "System.MathF.Cos", "cos" },
                 { "System.Math.Max", "max" },
                 { "System.Math.Pow", "pow" },
+                { "System.MathF.Pow", "pow" },
                 { "System.Math.Sin", "sin" },
                 { "System.MathF.Sin", "sin" },
                 { "System.Math.PI", "3.1415926535897931" },

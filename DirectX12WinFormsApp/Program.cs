@@ -12,17 +12,17 @@ namespace DirectX12WinFormsApp
             Width = 1200;
             Height = 800;
 
-            Activated += MyForm_Activated;
+            Load += MyForm_Load;
         }
 
-        private void MyForm_Activated(object sender, EventArgs e)
+        private void MyForm_Load(object sender, EventArgs e)
         {
             MyGame game = new MyGame(new GameContextWinForms(this));
             game.Run();
         }
     }
 
-    public static class Program
+    public class Program
     {
         /// <summary>
         /// The main entry point for the application.
