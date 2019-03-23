@@ -66,6 +66,8 @@ namespace DirectX12GameEngine.Engine
             return false;
         }
 
+        public override string ToString() => $"Entity {Name}";
+
         private void AddInternal(EntityComponent entityComponent)
         {
             if (entityComponent.Entity != null)

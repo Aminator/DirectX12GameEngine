@@ -66,14 +66,21 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             PositionStream.PositionWS = input.PositionWS;
 
-            Matrix4x4 inverseViewMatrix = ViewProjectionTransforms[input.TargetId].InverseViewMatrix;
+            uint actualId = input.InstanceId / RenderTargetCount;
+            Transformation.WorldMatrix = WorldMatrices[actualId];
+
+            ViewProjectionTransform viewProjectionTransform = ViewProjectionTransforms[input.TargetId];
+            Matrix4x4 inverseViewMatrix = viewProjectionTransform.InverseViewMatrix;
+
+            Transformation.ViewMatrix = viewProjectionTransform.ViewMatrix;
+            Transformation.InverseViewMatrix = inverseViewMatrix;
+            Transformation.ProjectionMatrix = viewProjectionTransform.ProjectionMatrix;
+            Transformation.ViewProjectionMatrix = viewProjectionTransform.ViewProjectionMatrix;
+
             Vector3 eyePosition = inverseViewMatrix.Translation;
             Vector4 positionWS = input.PositionWS;
             Vector3 worldPosition = new Vector3(positionWS.X, positionWS.Y, positionWS.Z);
             MaterialPixelStream.ViewWS = Vector3.Normalize(eyePosition - worldPosition);
-
-            // TODO: Remove this.
-            Matrix4x4 dummy = inverseViewMatrix * 4;
 
             return output;
         }

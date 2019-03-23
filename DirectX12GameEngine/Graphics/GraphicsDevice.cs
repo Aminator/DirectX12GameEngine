@@ -1,21 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using DirectX12GameEngine.Core;
-using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D12;
-
-using Device = SharpDX.Direct3D12.Device;
 
 namespace DirectX12GameEngine.Graphics
 {
     public sealed partial class GraphicsDevice : IDisposable, ICollector
     {
-        private static readonly Guid ID3D11Resource = new Guid("DC8E63F3-D12B-4952-B47B-5E45026A862D");
-
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
 
         public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level_11_0)
@@ -42,23 +36,14 @@ namespace DirectX12GameEngine.Graphics
             DirectAllocatorPool = new CommandAllocatorPool(this, CommandListType.Direct);
 
             DepthStencilViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.DepthStencilView, descriptorCount: 1);
-            ShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, DescriptorHeapFlags.ShaderVisible);
             RenderTargetViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.RenderTargetView, descriptorCount: 2);
+            ShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, DescriptorHeapFlags.ShaderVisible);
 
             NativeCopyFence = NativeDevice.CreateFence(0, FenceFlags.None);
             NativeFence = NativeDevice.CreateFence(0, FenceFlags.None);
 
             CommandList = new CommandList(this, CommandListType.Direct);
             CommandList.Close();
-        }
-
-        [ComImport]
-        [Guid("A9B3D012-3DF2-4EE3-B8D1-8695F457D3C1")]
-        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        [ComVisible(true)]
-        private interface IDirect3DDxgiInterfaceAccess : IDisposable
-        {
-            IntPtr GetInterface([In] ref Guid iid);
         }
 
         public CommandList CommandList { get; }
@@ -89,11 +74,11 @@ namespace DirectX12GameEngine.Graphics
 
         internal Fence NativeFence { get; }
 
-        internal DescriptorAllocator DepthStencilViewAllocator { get; }
-
-        internal DescriptorAllocator ShaderResourceViewAllocator { get; }
+        internal DescriptorAllocator DepthStencilViewAllocator { get; set; }
 
         internal DescriptorAllocator RenderTargetViewAllocator { get; set; }
+
+        internal DescriptorAllocator ShaderResourceViewAllocator { get; set; }
 
         internal long NextCopyFenceValue { get; private set; } = 1;
 
@@ -114,11 +99,7 @@ namespace DirectX12GameEngine.Graphics
             if (descriptors.Length == 0) return default;
 
             int[] srcDescriptorRangeStarts = new int[descriptors.Length];
-
-            for (int i = 0; i < srcDescriptorRangeStarts.Length; i++)
-            {
-                srcDescriptorRangeStarts[i] = 1;
-            }
+            Array.Fill(srcDescriptorRangeStarts, 1);
 
             var (cpuDescriptorHandle, gpuDescriptorHandle) = ShaderResourceViewAllocator.Allocate(descriptors.Length);
 
@@ -264,14 +245,6 @@ namespace DirectX12GameEngine.Graphics
                 fenceEvent.WaitOne();
             }
         }
-
-        [DllImport("d3d11.dll", EntryPoint = "CreateDirect3D11DeviceFromDXGIDevice",
-            SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-        private static extern Result CreateDirect3D11DeviceFromDXGIDevice(IntPtr dxgiDevice, out IntPtr graphicsDevice);
-
-        [DllImport("d3d11.dll", EntryPoint = "CreateDirect3D11SurfaceFromDXGISurface",
-            SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-        private static extern Result CreateDirect3D11SurfaceFromDXGISurface(IntPtr dxgiSurface, out IntPtr graphicsSurface);
     }
 
     internal class D3DXUtilities

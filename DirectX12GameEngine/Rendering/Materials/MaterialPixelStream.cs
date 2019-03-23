@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
+using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
@@ -22,6 +24,20 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderResource] public static float NDotV;
 
         [ShaderResource] public static float AlphaRoughness;
+
+        [ShaderMethod]
+        public static void PrepareMaterialForLightingAndShading()
+        {
+            Vector4 materialDiffuse = MaterialDiffuse;
+            Vector3 materialSpecular = MaterialSpecular;
+
+            MaterialDiffuseVisible = new Vector3(materialDiffuse.X, materialDiffuse.Y, materialDiffuse.Z);
+            MaterialSpecularVisible = materialSpecular;
+
+            NDotV = Math.Max(Vector3.Dot(NormalStream.NormalWS, ViewWS), 0.0001f);
+
+            AlphaRoughness = Math.Max(MaterialRoughness * MaterialRoughness, 0.001f);
+        }
 
         [ShaderMethod]
         public static void Reset()

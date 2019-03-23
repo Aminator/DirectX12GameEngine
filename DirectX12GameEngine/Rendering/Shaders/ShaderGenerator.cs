@@ -483,6 +483,7 @@ namespace DirectX12GameEngine.Rendering.Shaders
 
             DecompilerSettings decompilerSettings = new DecompilerSettings(ICSharpCode.Decompiler.CSharp.LanguageVersion.Latest)
             {
+                ObjectOrCollectionInitializers = false,
                 UsingDeclarations = false
             };
 

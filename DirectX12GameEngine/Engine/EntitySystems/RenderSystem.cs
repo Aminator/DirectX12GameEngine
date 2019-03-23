@@ -29,11 +29,8 @@ namespace DirectX12GameEngine.Engine
             Components.CollectionChanged += Components_CollectionChanged;
 
             DirectionalLightGroupBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
-
             GlobalBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(GlobalBuffer));
-
-            Span<ViewProjectionTransform> viewProjectionTransforms = stackalloc ViewProjectionTransform[2];
-            ViewProjectionTransformBuffer = Texture.CreateConstantBufferView(GraphicsDevice, viewProjectionTransforms);
+            ViewProjectionTransformBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(StereoViewProjectionTransform));
         }
 
         public Texture DirectionalLightGroupBuffer { get; }
@@ -303,7 +300,7 @@ namespace DirectX12GameEngine.Engine
 
                     var viewTransform = cameraPose.TryGetViewTransform(graphicsPresenter.SpatialStationaryFrameOfReference.CoordinateSystem);
 
-                    Span<ViewProjectionTransform> viewProjectionTransforms = stackalloc ViewProjectionTransform[2];
+                    StereoViewProjectionTransform stereoViewProjectionTransform = new StereoViewProjectionTransform();
 
                     if (viewTransform.HasValue)
                     {
@@ -313,23 +310,23 @@ namespace DirectX12GameEngine.Engine
 
                         Matrix4x4 positionMatrix = Matrix4x4.CreateTranslation(-translation) * Matrix4x4.CreateFromQuaternion(rotation);
 
-                        viewProjectionTransforms[0].ViewMatrix = positionMatrix * viewTransform.Value.Left;
-                        viewProjectionTransforms[1].ViewMatrix = positionMatrix * viewTransform.Value.Right;
+                        stereoViewProjectionTransform.Left.ViewMatrix = positionMatrix * viewTransform.Value.Left;
+                        stereoViewProjectionTransform.Right.ViewMatrix = positionMatrix * viewTransform.Value.Right;
 
-                        Matrix4x4.Invert(viewProjectionTransforms[0].ViewMatrix, out Matrix4x4 inverseViewMatrix0);
-                        Matrix4x4.Invert(viewProjectionTransforms[1].ViewMatrix, out Matrix4x4 inverseViewMatrix1);
+                        Matrix4x4.Invert(stereoViewProjectionTransform.Left.ViewMatrix, out Matrix4x4 inverseViewMatrix0);
+                        Matrix4x4.Invert(stereoViewProjectionTransform.Right.ViewMatrix, out Matrix4x4 inverseViewMatrix1);
 
-                        viewProjectionTransforms[0].InverseViewMatrix = inverseViewMatrix0;
-                        viewProjectionTransforms[1].InverseViewMatrix = inverseViewMatrix1;
+                        stereoViewProjectionTransform.Left.InverseViewMatrix = inverseViewMatrix0;
+                        stereoViewProjectionTransform.Right.InverseViewMatrix = inverseViewMatrix1;
                     }
 
-                    viewProjectionTransforms[0].ProjectionMatrix = cameraPose.ProjectionTransform.Left;
-                    viewProjectionTransforms[1].ProjectionMatrix = cameraPose.ProjectionTransform.Right;
+                    stereoViewProjectionTransform.Left.ProjectionMatrix = cameraPose.ProjectionTransform.Left;
+                    stereoViewProjectionTransform.Right.ProjectionMatrix = cameraPose.ProjectionTransform.Right;
 
-                    viewProjectionTransforms[0].ViewProjectionMatrix = viewProjectionTransforms[0].ViewMatrix * viewProjectionTransforms[0].ProjectionMatrix;
-                    viewProjectionTransforms[1].ViewProjectionMatrix = viewProjectionTransforms[1].ViewMatrix * viewProjectionTransforms[1].ProjectionMatrix;
+                    stereoViewProjectionTransform.Left.ViewProjectionMatrix = stereoViewProjectionTransform.Left.ViewMatrix * stereoViewProjectionTransform.Left.ProjectionMatrix;
+                    stereoViewProjectionTransform.Right.ViewProjectionMatrix = stereoViewProjectionTransform.Right.ViewMatrix * stereoViewProjectionTransform.Right.ProjectionMatrix;
 
-                    MemoryHelper.Copy(viewProjectionTransforms, ViewProjectionTransformBuffer.MappedResource);
+                    MemoryHelper.Copy(stereoViewProjectionTransform, ViewProjectionTransformBuffer.MappedResource);
                 }
                 else
 #endif
@@ -344,9 +341,9 @@ namespace DirectX12GameEngine.Engine
                         ViewProjectionMatrix = SceneSystem.CurrentCamera.ViewProjectionMatrix
                     };
 
-                    Span<ViewProjectionTransform> viewProjectionTransforms = stackalloc ViewProjectionTransform[] { viewProjectionTransform, viewProjectionTransform };
+                    StereoViewProjectionTransform stereoViewProjectionTransform = new StereoViewProjectionTransform { Left = viewProjectionTransform, Right = viewProjectionTransform };
 
-                    MemoryHelper.Copy(viewProjectionTransforms, ViewProjectionTransformBuffer.MappedResource);
+                    MemoryHelper.Copy(stereoViewProjectionTransform, ViewProjectionTransformBuffer.MappedResource);
                 }
             }
         }
@@ -376,6 +373,13 @@ namespace DirectX12GameEngine.Engine
                     }
                     break;
             }
+        }
+
+        private struct StereoViewProjectionTransform
+        {
+            public ViewProjectionTransform Left;
+
+            public ViewProjectionTransform Right;
         }
     }
 }

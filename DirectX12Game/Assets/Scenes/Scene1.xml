@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Scene xmlns="DirectX12GameEngine.Engine" xmlns:local="DirectX12Game">
+<Scene xmlns="DirectX12GameEngine.Engine" xmlns:local="DirectX12Game" Offset="500,0,0">
   <Entity Name="T-Rex">
     <TransformComponent Scale="5,5,5" Position="-400,0,0" />
     <ModelComponent>
@@ -16,7 +16,7 @@
     </ModelComponent>
   </Entity>
 
-  <Entity Name="T-Rex">
+  <Entity Name="Parent1">
     <TransformComponent Scale="2,2,2" Position="500,0,0">
       <TransformComponent.ChildEntities>
         

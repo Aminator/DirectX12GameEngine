@@ -134,12 +134,18 @@ namespace DirectX12GameEngine.Engine
 
         private void Add(Scene scene)
         {
-            foreach (Entity entity in scene)
+            foreach (Entity entity in scene.Entities)
             {
                 Add(entity);
             }
 
-            scene.CollectionChanged += Entities_CollectionChanged;
+            foreach (Scene childScene in scene.Children)
+            {
+                Add(childScene);
+            }
+
+            scene.Children.CollectionChanged += Children_CollectionChanged;
+            scene.Entities.CollectionChanged += Entities_CollectionChanged;
         }
 
         private void Add(EntityComponent entityComponent)
@@ -149,9 +155,15 @@ namespace DirectX12GameEngine.Engine
 
         private void Remove(Scene scene)
         {
-            scene.CollectionChanged -= Entities_CollectionChanged;
+            scene.Entities.CollectionChanged -= Entities_CollectionChanged;
+            scene.Children.CollectionChanged += Children_CollectionChanged;
 
-            foreach (Entity entity in scene)
+            foreach (Scene childScene in scene.Children)
+            {
+                Remove(childScene);
+            }
+
+            foreach (Entity entity in scene.Entities)
             {
                 Remove(entity);
             }
@@ -252,6 +264,25 @@ namespace DirectX12GameEngine.Engine
                     foreach (Entity entity in e.OldItems)
                     {
                         Remove(entity);
+                    }
+                    break;
+            }
+        }
+
+        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (Scene scene in e.NewItems)
+                    {
+                        Add(scene);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (Scene scene in e.OldItems)
+                    {
+                        Remove(scene);
                     }
                     break;
             }

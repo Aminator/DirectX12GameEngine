@@ -54,13 +54,13 @@ namespace DirectX12Game
                         camera.Entity.Transform.Position = new Vector3(camera.Entity.Transform.Position.X, camera.Entity.Transform.Position.Y, 10.0f * scrollAmount * 3);
                     }
 
-                    Entity light = scene.FirstOrDefault(m => m.Name == "MyLight");
+                    Entity light = SceneSystem.FirstOrDefault(m => m.Name == "MyLight");
                     if (light != null)
                     {
-                        light.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, -(float)Math.PI / 4.0f);
+                        light.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, -MathF.PI / 4.0f);
                     }
 
-                    var rexes = scene.Where(m => m.Name == "T-Rex");
+                    var rexes = SceneSystem.Where(m => m.Name == "T-Rex");
                     foreach (var item in rexes)
                     {
                         item.Transform.RotationEuler = QuaternionExtensions.ToEuler(timeRotation);
@@ -78,40 +78,40 @@ namespace DirectX12Game
                     //    }
                     //}
 
-                    Entity cliffhouse = scene.FirstOrDefault(m => m.Name == "Cliffhouse");
+                    Entity cliffhouse = SceneSystem.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
                         cliffhouse.Transform.Rotation = timeRotation;
                     }
 
-                    Entity rightHandModel = scene.FirstOrDefault(m => m.Name == "RightHandModel");
+                    Entity rightHandModel = SceneSystem.FirstOrDefault(m => m.Name == "RightHandModel");
                     if (rightHandModel != null)
                     {
                         rightHandModel.Transform.Rotation = timeRotation;
                     }
 
-                    Entity leftHandModel = scene.FirstOrDefault(m => m.Name == "HoloTile");
+                    Entity leftHandModel = SceneSystem.FirstOrDefault(m => m.Name == "HoloTile");
                     if (leftHandModel != null)
                     {
                         leftHandModel.Transform.Rotation = timeRotation;
                     }
 
-                    Entity icon = scene.FirstOrDefault(m => m.Name == "Icon_Failure");
+                    Entity icon = SceneSystem.FirstOrDefault(m => m.Name == "Icon_Failure");
                     if (icon != null)
                     {
                         icon.Transform.Rotation = timeRotation;
                     }
 
-                    Entity iconChild = SceneSystem.FirstOrDefault(m => m.Name == "Icon_Failure_Child");
-                    if (iconChild != null)
-                    {
-                        iconChild.Transform.Rotation = timeRotation;
-                    }
-
-                    Entity cube = scene.FirstOrDefault(m => m.Name == "LiveCube");
+                    Entity cube = SceneSystem.FirstOrDefault(m => m.Name == "LiveCube");
                     if (cube != null)
                     {
                         cube.Transform.Rotation = timeRotation;
+                    }
+
+                    Entity parent1 = SceneSystem.FirstOrDefault(m => m.Name == "Parent1");
+                    if (parent1 != null)
+                    {
+                        parent1.Transform.Rotation = timeRotation;
                     }
                 }
             }
@@ -120,8 +120,16 @@ namespace DirectX12Game
 #if WINDOWS_UWP
         private async void OnKeyDown(Windows.System.VirtualKey key)
         {
+            Entity? cameraEntity = SceneSystem.CurrentCamera?.Entity;
+
             switch (key)
             {
+                case Windows.System.VirtualKey.Left:
+                    if (cameraEntity != null) cameraEntity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, 10 * MathF.PI / 180.0f);
+                    break;
+                case Windows.System.VirtualKey.Right:
+                    if (cameraEntity != null) cameraEntity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, -10 * MathF.PI / 180.0f);
+                    break;
                 case Windows.System.VirtualKey.Up:
                     scrollAmount--;
                     break;
@@ -149,6 +157,34 @@ namespace DirectX12Game
                     };
 
                     SceneSystem.RootScene?.Add(newCliffhouse);
+                    break;
+                case Windows.System.VirtualKey.P:
+                    Entity? child1 = SceneSystem.FirstOrDefault(m => m.Name == "Child1");
+                    if (child1 != null && child1.Scene is null)
+                    {
+                        child1.Transform.Parent = null;
+                        SceneSystem.RootScene?.Add(child1);
+                    }
+                    break;
+                case Windows.System.VirtualKey.Q:
+                    Entity? child2 = SceneSystem.FirstOrDefault(m => m.Name == "Child1");
+                    if (child2 != null && child2.Scene != null)
+                    {
+                        child2.Scene.Remove(child2);
+                        child2.Transform.Parent = SceneSystem.FirstOrDefault(m => m.Name == "Parent1").Transform;
+                    }
+                    break;
+                case Windows.System.VirtualKey.S:
+                    Scene? previousRootScene = SceneSystem.RootScene;
+
+                    if (previousRootScene != null && cameraEntity != null)
+                    {
+                        cameraEntity.Scene?.Remove(cameraEntity);
+
+                        SceneSystem.RootScene = new Scene { Offset = new Vector3(500.0f, 0.0f, 0.0f) };
+                        SceneSystem.RootScene.Add(cameraEntity);
+                        SceneSystem.RootScene.Children.Add(previousRootScene);
+                    }
                     break;
             }
         }
