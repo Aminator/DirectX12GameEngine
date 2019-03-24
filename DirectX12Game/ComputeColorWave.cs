@@ -2,7 +2,7 @@
 using System.Numerics;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Materials;
-using DirectX12GameEngine.Rendering.Shaders;
+using DirectX12GameEngine.Shaders;
 
 namespace DirectX12Game
 {
@@ -27,7 +27,7 @@ namespace DirectX12Game
         [ShaderMethod]
         public Vector4 Compute()
         {
-            float phase = DirectX12GameEngine.Rendering.Numerics.Vector2.Length(Texturing.TexCoord - new Vector2(0.5f, 0.5f));
+            float phase = DirectX12GameEngine.Shaders.Numerics.Vector2.Length(Texturing.TexCoord - new Vector2(0.5f, 0.5f));
             float value = (float)Math.Sin((phase + Global.TotalTime * Speed.Compute()) * 2.0f * 3.14f * Frequency.Compute()) * Amplitude.Compute();
             value = value * 0.5f + 0.5f;
 

@@ -136,6 +136,7 @@
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\**" />
     <Content Include="..\DirectX12Game\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\Libs\runtimes\win-x64\native\*.*" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -148,18 +149,20 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.1.12</Version>
-    </PackageReference>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.12" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DirectX12GameEngine\DirectX12GameEngine.csproj">
-      <Project>{74d32730-d25c-4d53-ba1b-b767038d46f8}</Project>
-      <Name>DirectX12GameEngine</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DirectX12Game\DirectX12Game.csproj">
-      <Project>{30f0ecd3-e8a8-4790-bbbb-57dcb363fc15}</Project>
+      <Project>{30F0ECD3-E8A8-4790-BBBB-57DCB363FC15}</Project>
       <Name>DirectX12Game</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj">
+      <Project>{693635ED-FC5E-43FF-A869-B37A2D601ED3}</Project>
+      <Name>DirectX12GameEngine.Engine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Games\DirectX12GameEngine.Games.csproj">
+      <Project>{6D3387FC-C108-4EC0-AE82-66184570CF6C}</Project>
+      <Name>DirectX12GameEngine.Games</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

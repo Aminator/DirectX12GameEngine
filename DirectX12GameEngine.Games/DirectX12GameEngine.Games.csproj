@@ -1,0 +1,18 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.0-preview.21">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.0;uap10.0.17763</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
+    <NullableContextOptions>enable</NullableContextOptions>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview3.19153.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DirectX12GameEngine.Core\DirectX12GameEngine.Core.csproj" />
+  </ItemGroup>
+
+</Project>

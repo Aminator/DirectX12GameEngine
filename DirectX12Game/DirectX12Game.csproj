@@ -1,31 +1,21 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.0-preview.21">
 
   <PropertyGroup>
-    <TargetFrameworks><!--netcoreapp3.0;-->uap10.0.17763</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;uap10.0.17763</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <NullableContextOptions>enable</NullableContextOptions>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
-  <!--<ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'uap10.0.17763'">
     <Content Include="Assets\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
-  </ItemGroup>-->
-
-  <ItemGroup>
-    <None Remove="Assets\Materials\Cliffhouse_Cliffhouse_Custom_Material.xml" />
-    <None Remove="Assets\Materials\Icon_Failure_Material.xml" />
-    <None Remove="Assets\Models\Cliffhouse_Cliffhouse_Material.xml" />
-    <None Remove="Assets\Models\Cliffhouse_Custom_Model.xml" />
-    <None Remove="Assets\Models\Cliffhouse_Water_Material.xml" />
-    <None Remove="Assets\Models\Icon_Failure_Model.xml" />
-    <None Remove="Assets\Models\SwimmingShark_Model.xml" />
-    <None Remove="Assets\Scenes\Cliffhouse_Model.xml" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DirectX12GameEngine\DirectX12GameEngine.csproj" />
+    <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
   </ItemGroup>
 
 </Project>
