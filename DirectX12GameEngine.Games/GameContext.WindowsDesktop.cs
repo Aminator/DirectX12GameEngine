@@ -1,5 +1,6 @@
 ﻿#if NETCOREAPP
 using System.Windows.Forms;
+using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Games
 {

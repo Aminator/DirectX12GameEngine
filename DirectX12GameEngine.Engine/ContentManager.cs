@@ -135,7 +135,7 @@ namespace DirectX12GameEngine.Engine
         private async Task<object> LoadElementAsync(string filePath)
         {
             using FileStream stream = File.OpenRead(filePath);
-            XElement root = XElement.Load(stream, LoadOptions.None);
+            XElement root = await XElement.LoadAsync(stream, LoadOptions.None, default);
             return await GetParsedElementAsync(root);
         }
 

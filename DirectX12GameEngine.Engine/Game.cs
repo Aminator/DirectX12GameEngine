@@ -10,14 +10,14 @@ namespace DirectX12GameEngine.Engine
         public Game(GameContext gameContext) : base(gameContext)
         {
             PresentationParameters presentationParameters = new PresentationParameters(
-                gameContext.RequestedWidth, gameContext.RequestedHeight, gameContext);
+                GameWindow.ClientBounds.Width, GameWindow.ClientBounds.Height, GameWindow.NativeWindow);
 
-            switch (GameContext)
+            switch (Context)
             {
 #if WINDOWS_UWP
                 case GameContextHolographic context:
                     presentationParameters.Stereo = Windows.Graphics.Holographic.HolographicDisplay.GetDefault().IsStereo;
-                    GraphicsDevice.Presenter = new HolographicGraphicsPresenter(GraphicsDevice, presentationParameters);
+                    GraphicsDevice.Presenter = new HolographicGraphicsPresenter(GraphicsDevice, presentationParameters, context.HolographicSpace);
                     break;
 #endif
                 default:
@@ -54,13 +54,18 @@ namespace DirectX12GameEngine.Engine
 
             if (GraphicsDevice.Presenter != null)
             {
-                int width = GraphicsDevice.Presenter.PresentationParameters.BackBufferWidth;
-                int height = GraphicsDevice.Presenter.PresentationParameters.BackBufferHeight;
+                int width = GameWindow.ClientBounds.Width;
+                int height = GameWindow.ClientBounds.Height;
 
                 if (width != GraphicsDevice.Presenter.Viewport.Width || height != GraphicsDevice.Presenter.Viewport.Height)
                 {
-                    GraphicsDevice.Presenter.Resize(width, height);
-                    GraphicsDevice.Presenter.ResizeViewport(width, height);
+#if WINDOWS_UWP
+                    if (!(Context is GameContextHolographic))
+#endif
+                    {
+                        GraphicsDevice.Presenter.Resize(width, height);
+                        GraphicsDevice.Presenter.ResizeViewport(width, height);
+                    }
                 }
 
                 GraphicsDevice.Presenter.BeginDraw(GraphicsDevice.CommandList);

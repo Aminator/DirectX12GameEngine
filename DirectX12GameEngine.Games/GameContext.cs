@@ -1,4 +1,6 @@
-﻿namespace DirectX12GameEngine.Games
+﻿using DirectX12GameEngine.Core;
+
+namespace DirectX12GameEngine.Games
 {
     public abstract class GameContext
     {

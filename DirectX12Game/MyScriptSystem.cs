@@ -17,13 +17,13 @@ namespace DirectX12Game
         public MyScriptSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
 #if WINDOWS_UWP
-            if (Game.GameContext is GameContextCoreWindow context)
+            if (Game.Context is GameContextCoreWindow context)
             {
                 context.Control.KeyDown += (s, e) => OnKeyDown(e.VirtualKey);
                 context.Control.PointerPressed += (s, e) => OnPointerPressed(e.CurrentPoint);
                 context.Control.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.CurrentPoint);
             }
-            else if (Game.GameContext is GameContextXaml xamlContext)
+            else if (Game.Context is GameContextXaml xamlContext)
             {
                 xamlContext.Control.KeyDown += (s, e) => OnKeyDown(e.Key);
                 xamlContext.Control.PointerPressed += (s, e) => OnPointerPressed(e.GetCurrentPoint(xamlContext.Control));

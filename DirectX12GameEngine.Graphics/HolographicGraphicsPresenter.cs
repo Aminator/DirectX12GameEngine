@@ -1,13 +1,9 @@
 ﻿#if WINDOWS_UWP
-using System;
-using System.Drawing;
-using DirectX12GameEngine.Games;
 using SharpDX;
 using SharpDX.Direct3D12;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Holographic;
 using Windows.Perception.Spatial;
-using Windows.UI.Core;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -18,49 +14,35 @@ namespace DirectX12GameEngine.Graphics
         private Texture renderTarget;
         private SharpDX.Direct3D11.Resource direct3D11RenderTarget;
 
-        public HolographicGraphicsPresenter(GraphicsDevice device, PresentationParameters presentationParameters)
+        public HolographicGraphicsPresenter(GraphicsDevice device, PresentationParameters presentationParameters, HolographicSpace holographicSpace)
             : base(device, presentationParameters)
         {
-            SizeChanged += OnSizeChanged;
-
             if (GraphicsDevice.RenderTargetViewAllocator.DescriptorHeap.Description.DescriptorCount != BufferCount)
             {
                 GraphicsDevice.RenderTargetViewAllocator.Dispose();
                 GraphicsDevice.RenderTargetViewAllocator = new DescriptorAllocator(GraphicsDevice, DescriptorHeapType.RenderTargetView, descriptorCount: BufferCount);
             }
 
-            switch (PresentationParameters.GameContext)
+            using (SharpDX.DXGI.Device dxgiDevice = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.DXGI.Device>())
             {
-                case GameContextHolographic context:
-                    CoreWindow coreWindow = context.Control;
-                    coreWindow.SizeChanged += (s, e) => SizeChanged?.Invoke(this, new SizeChangedEventArgs(new Size((int)e.Size.Width, (int)e.Size.Height), 1.0));
+                IDirect3DDevice direct3DInteropDevice = GraphicsDevice.CreateDirect3DDevice(dxgiDevice);
 
-                    using (SharpDX.DXGI.Device dxgiDevice = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.DXGI.Device>())
-                    {
-                        IDirect3DDevice direct3DInteropDevice = GraphicsDevice.CreateDirect3DDevice(dxgiDevice);
-
-                        HolographicSpace = context.HolographicSpace;
-                        HolographicSpace.SetDirect3D11Device(direct3DInteropDevice);
-                    }
-
-                    HolographicDisplay = HolographicDisplay.GetDefault();
-                    SpatialStationaryFrameOfReference = HolographicDisplay.SpatialLocator.CreateStationaryFrameOfReferenceAtCurrentLocation();
-
-                    HolographicFrame = HolographicSpace.CreateNextFrame();
-                    HolographicSurface = HolographicFrame.GetRenderingParameters(HolographicFrame.CurrentPrediction.CameraPoses[0]).Direct3D11BackBuffer;
-                    HolographicBackBuffer = GetHolographicBackBuffer();
-
-                    renderTarget = CreateRenderTarget();
-                    direct3D11RenderTarget = CreateDirect3D11RenderTarget();
-
-                    Resize(PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
-                    break;
-                default:
-                    throw new NotSupportedException("This app context type is not supported while creating a swap chain.");
+                HolographicSpace = holographicSpace;
+                HolographicSpace.SetDirect3D11Device(direct3DInteropDevice);
             }
-        }
 
-        public override event EventHandler<SizeChangedEventArgs> SizeChanged;
+            HolographicDisplay = HolographicDisplay.GetDefault();
+            SpatialStationaryFrameOfReference = HolographicDisplay.SpatialLocator.CreateStationaryFrameOfReferenceAtCurrentLocation();
+
+            HolographicFrame = HolographicSpace.CreateNextFrame();
+            HolographicSurface = HolographicFrame.GetRenderingParameters(HolographicFrame.CurrentPrediction.CameraPoses[0]).Direct3D11BackBuffer;
+            HolographicBackBuffer = GetHolographicBackBuffer();
+
+            renderTarget = CreateRenderTarget();
+            direct3D11RenderTarget = CreateDirect3D11RenderTarget();
+
+            Resize(PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
+        }
 
         public override Texture BackBuffer => renderTarget;
 
@@ -152,12 +134,6 @@ namespace DirectX12GameEngine.Graphics
             PresentationParameters.BackBufferHeight = d3DBackBuffer.Description.Height;
 
             return d3DBackBuffer;
-        }
-
-        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            //PresentationParameters.BackBufferWidth = e.Width;
-            //PresentationParameters.BackBufferHeight = e.Height;
         }
     }
 }

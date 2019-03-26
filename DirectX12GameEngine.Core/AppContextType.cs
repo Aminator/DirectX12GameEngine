@@ -1,4 +1,4 @@
-﻿namespace DirectX12GameEngine.Games
+﻿namespace DirectX12GameEngine.Core
 {
     public enum AppContextType
     {

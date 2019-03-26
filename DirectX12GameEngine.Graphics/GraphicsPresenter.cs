@@ -14,8 +14,6 @@ namespace DirectX12GameEngine.Graphics
             DepthStencilBuffer = CreateDepthStencilBuffer(PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
         }
 
-        public abstract event EventHandler<SizeChangedEventArgs> SizeChanged;
-
         public abstract Texture BackBuffer { get; }
 
         public GraphicsDevice GraphicsDevice { get; }

@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DirectX12GameEngine.Games\DirectX12GameEngine.Games.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj" />
   </ItemGroup>
 

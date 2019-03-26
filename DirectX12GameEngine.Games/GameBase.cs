@@ -14,16 +14,20 @@ namespace DirectX12GameEngine.Games
 
         public GameBase(GameContext gameContext)
         {
-            GameContext = gameContext;
+            Context = gameContext;
 
             Services = ConfigureServices().BuildServiceProvider();
+
+            GameWindow = GameWindow.Create(this);
 
             GameSystems = Services.GetRequiredService<List<GameSystemBase>>();
         }
 
-        public GameContext GameContext { get; }
+        public GameContext Context { get; }
 
         public IList<GameSystemBase> GameSystems { get; }
+
+        public GameWindow GameWindow { get; }
 
         public IServiceProvider Services { get; }
 
@@ -42,32 +46,9 @@ namespace DirectX12GameEngine.Games
             Initialize();
             LoadContentAsync();
 
+            GameWindow.Run();
+
             previousTime = DateTime.Now;
-
-            switch (GameContext)
-            {
-#if WINDOWS_UWP
-                case GameContextXaml context:
-                    Windows.UI.Xaml.Media.CompositionTarget.Rendering += (s, e) => Tick();
-                    return;
-#elif NETCOREAPP
-                case GameContextWinForms context:
-                    System.Windows.Media.CompositionTarget.Rendering += (s, e) => Tick();
-                    return;
-#endif
-            }
-
-#if WINDOWS_UWP
-            Windows.UI.Core.CoreWindow? coreWindow = (GameContext as GameContextCoreWindow)?.Control;
-#endif
-
-            while (true)
-            {
-#if WINDOWS_UWP
-                coreWindow?.Dispatcher.ProcessEvents(Windows.UI.Core.CoreProcessEventsOption.ProcessAllIfPresent);
-#endif
-                Tick();
-            }
         }
 
         public void Tick()
