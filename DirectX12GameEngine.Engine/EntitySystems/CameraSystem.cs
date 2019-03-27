@@ -12,8 +12,6 @@ namespace DirectX12GameEngine.Engine
 
         public override void Update(GameTime gameTime)
         {
-            if (GraphicsDevice.Presenter is null) return;
-
             foreach (CameraComponent cameraComponent in Components)
             {
                 if (cameraComponent.Entity is null) continue;
@@ -28,7 +26,7 @@ namespace DirectX12GameEngine.Engine
 
                 cameraComponent.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(
                     cameraComponent.FieldOfView * (MathF.PI / 180.0f),
-                    GraphicsDevice.Presenter.Viewport.Width / GraphicsDevice.Presenter.Viewport.Height,
+                    GraphicsDevice.CommandList.Viewports[0].Width / GraphicsDevice.CommandList.Viewports[0].Height,
                     cameraComponent.NearPlaneDistance,
                     cameraComponent.FarPlaneDistance);
 

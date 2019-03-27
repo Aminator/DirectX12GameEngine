@@ -51,7 +51,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             lightingAndShading.Compute(DirectionalLights);
 
-            ShaderBaseStream.ColorTarget = new Vector4(MaterialPixelShadingStream.ShadingColor, 1.0f/*MaterialPixelShadingStream.ShadingColorAlpha*/);
+            ShaderBaseStream.ColorTarget = new Vector4(MaterialPixelShadingStream.ShadingColor, MaterialPixelShadingStream.ShadingColorAlpha);
             output.ColorTarget = ShaderBaseStream.ColorTarget;
 
             return output;

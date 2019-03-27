@@ -20,6 +20,8 @@ namespace DirectX12GameEngine.Graphics
             Width = (int)NativeResource.Description.Width;
             Height = NativeResource.Description.Height;
 
+            Description = NativeResource.Description;
+
             (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = descriptorHeapType switch
             {
                 DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView => CreateShaderResourceView(),
@@ -34,6 +36,8 @@ namespace DirectX12GameEngine.Graphics
         public int Width { get; }
 
         public int Height { get; }
+
+        public ResourceDescription Description { get; }
 
         public IntPtr MappedResource { get; private set; }
 
@@ -50,7 +54,7 @@ namespace DirectX12GameEngine.Graphics
                 resourceDescription, resourceStates), descriptorHeapType);
         }
 
-        public static Texture New2D(GraphicsDevice device, Format format, int width, int height, DescriptorHeapType? descriptorHeapType = null, ResourceStates resourceStates = ResourceStates.GenericRead, ResourceFlags resourceFlags = ResourceFlags.None, HeapType heapType = HeapType.Default, short arraySize = 1, short mipLevels = 0)
+        public static Texture New2D(GraphicsDevice device, Format format, int width, int height, DescriptorHeapType? descriptorHeapType = null, ResourceStates resourceStates = ResourceStates.GenericRead, ResourceFlags resourceFlags = ResourceFlags.None, HeapType heapType = HeapType.Default, short arraySize = 1, short mipLevels = 1)
         {
             return new Texture(device, device.NativeDevice.CreateCommittedResource(
                 new HeapProperties(heapType), HeapFlags.None,
@@ -222,15 +226,7 @@ namespace DirectX12GameEngine.Graphics
                 textureUploadBuffer.NativeResource.WriteToSubresource(0, null, (IntPtr)ptr, texturePixelSize * width, data.Length * sizeof(T));
             }
 
-            ShaderResourceViewDescription srvDescription = new ShaderResourceViewDescription
-            {
-                Shader4ComponentMapping = D3DXUtilities.DefaultComponentMapping(),
-                Format = format,
-                Dimension = ShaderResourceViewDimension.Texture2D,
-                Texture2D = { MipLevels = 1 },
-            };
-
-            device.NativeDevice.CreateShaderResourceView(texture.NativeResource, srvDescription, texture.NativeCpuDescriptorHandle);
+            device.NativeDevice.CreateShaderResourceView(texture.NativeResource, null, texture.NativeCpuDescriptorHandle);
 
             CommandList copyCommandList = device.GetOrCreateCopyCommandList();
 
@@ -260,7 +256,10 @@ namespace DirectX12GameEngine.Graphics
 
         public (CpuDescriptorHandle, GpuDescriptorHandle) CreateShaderResourceView()
         {
-            return GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            //GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, null, NativeCpuDescriptorHandle);
+
+            return (cpuHandle, gpuHandle);
         }
 
         public void Dispose()

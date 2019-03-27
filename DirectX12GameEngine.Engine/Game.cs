@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Engine
         public Game(GameContext gameContext) : base(gameContext)
         {
             PresentationParameters presentationParameters = new PresentationParameters(
-                GameWindow.ClientBounds.Width, GameWindow.ClientBounds.Height, GameWindow.NativeWindow);
+                Window.ClientBounds.Width, Window.ClientBounds.Height, Window.NativeWindow);
 
             switch (Context)
             {
@@ -24,10 +24,6 @@ namespace DirectX12GameEngine.Engine
                     GraphicsDevice.Presenter = new SwapChainGraphicsPresenter(GraphicsDevice, presentationParameters);
                     break;
             }
-
-            GraphicsDevice.Presenter.ResizeViewport(
-                GraphicsDevice.Presenter.PresentationParameters.BackBufferWidth,
-                GraphicsDevice.Presenter.PresentationParameters.BackBufferHeight);
 
             Content = Services.GetRequiredService<ContentManager>();
             SceneSystem = Services.GetRequiredService<SceneSystem>();
@@ -54,26 +50,23 @@ namespace DirectX12GameEngine.Engine
 
             if (GraphicsDevice.Presenter != null)
             {
-                int width = GameWindow.ClientBounds.Width;
-                int height = GameWindow.ClientBounds.Height;
+                int width = Window.ClientBounds.Width;
+                int height = Window.ClientBounds.Height;
 
-                if (width != GraphicsDevice.Presenter.Viewport.Width || height != GraphicsDevice.Presenter.Viewport.Height)
+                if (width != GraphicsDevice.Presenter.BackBuffer.Width || height != GraphicsDevice.Presenter.BackBuffer.Height)
                 {
 #if WINDOWS_UWP
                     if (!(Context is GameContextHolographic))
 #endif
                     {
                         GraphicsDevice.Presenter.Resize(width, height);
-                        GraphicsDevice.Presenter.ResizeViewport(width, height);
                     }
                 }
-
-                GraphicsDevice.Presenter.BeginDraw(GraphicsDevice.CommandList);
-
-                GraphicsDevice.CommandList.SetViewport(GraphicsDevice.Presenter.Viewport);
-                GraphicsDevice.CommandList.SetScissorRectangles(GraphicsDevice.Presenter.ScissorRect);
-                GraphicsDevice.CommandList.SetRenderTargets(GraphicsDevice.Presenter.DepthStencilBuffer, GraphicsDevice.Presenter.BackBuffer);
             }
+
+            GraphicsDevice.CommandList.ClearState();
+
+            GraphicsDevice.Presenter?.BeginDraw(GraphicsDevice.CommandList);
 
             base.BeginDraw();
         }

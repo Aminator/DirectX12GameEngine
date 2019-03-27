@@ -13,14 +13,6 @@ namespace DirectX12GameEngine.Games
             : base(control ?? CoreWindow.GetForCurrentThread(), requestedWidth, requestedHeight)
         {
             ContextType = AppContextType.CoreWindow;
-
-            if (requestedHeight == 0 || requestedWidth == 0)
-            {
-                double resolutionScale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
-
-                RequestedWidth = (int)(Control.Bounds.Width * resolutionScale);
-                RequestedHeight = (int)(Control.Bounds.Height * resolutionScale);
-            }
         }
     }
 
@@ -43,14 +35,6 @@ namespace DirectX12GameEngine.Games
             : base(control, requestedWidth, requestedHeight)
         {
             ContextType = AppContextType.Xaml;
-
-            if (requestedHeight == 0 || requestedWidth == 0)
-            {
-                double resolutionScale = Control.CompositionScaleX;
-
-                RequestedWidth = (int)(Control.ActualWidth * resolutionScale);
-                RequestedHeight = (int)(Control.ActualHeight * resolutionScale);
-            }
         }
     }
 }

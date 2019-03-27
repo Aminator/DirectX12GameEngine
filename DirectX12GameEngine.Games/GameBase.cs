@@ -18,7 +18,7 @@ namespace DirectX12GameEngine.Games
 
             Services = ConfigureServices().BuildServiceProvider();
 
-            GameWindow = GameWindow.Create(this);
+            Window = GameWindow.Create(this);
 
             GameSystems = Services.GetRequiredService<List<GameSystemBase>>();
         }
@@ -27,7 +27,7 @@ namespace DirectX12GameEngine.Games
 
         public IList<GameSystemBase> GameSystems { get; }
 
-        public GameWindow GameWindow { get; }
+        public GameWindow Window { get; }
 
         public IServiceProvider Services { get; }
 
@@ -46,9 +46,9 @@ namespace DirectX12GameEngine.Games
             Initialize();
             LoadContentAsync();
 
-            GameWindow.Run();
-
             previousTime = DateTime.Now;
+
+            Window.Run();
         }
 
         public void Tick()

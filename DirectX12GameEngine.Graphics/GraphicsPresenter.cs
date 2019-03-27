@@ -1,6 +1,5 @@
 ﻿using System;
 using SharpDX.Direct3D12;
-using SharpDX.Mathematics.Interop;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -24,10 +23,6 @@ namespace DirectX12GameEngine.Graphics
 
         public Texture DepthStencilBuffer { get; protected set; }
 
-        public RawRectangle ScissorRect { get; private set; }
-
-        public RawViewportF Viewport { get; private set; }
-
         public virtual void BeginDraw(CommandList commandList)
         {
         }
@@ -46,22 +41,6 @@ namespace DirectX12GameEngine.Graphics
 
             ResizeBackBuffer(width, height);
             ResizeDepthStencilBuffer(width, height);
-        }
-
-        public void ResizeViewport(int width, int height)
-        {
-            ScissorRect = new RawRectangle
-            {
-                Right = width,
-                Bottom = height
-            };
-
-            Viewport = new RawViewportF
-            {
-                Width = width,
-                Height = height,
-                MaxDepth = 1.0f
-            };
         }
 
         protected virtual Texture CreateDepthStencilBuffer(int width, int height)

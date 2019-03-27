@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using DirectX12GameEngine.Core;
+using Windows.Graphics.Display;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Controls;
@@ -59,11 +60,13 @@ namespace DirectX12GameEngine.Games
                 {
                     return new Rectangle(0, 0,
                         (int)(swapChainPanel.ActualWidth * swapChainPanel.CompositionScaleX + 0.5f),
-                        (int)(swapChainPanel.ActualWidth * swapChainPanel.CompositionScaleX + 0.5f));
+                        (int)(swapChainPanel.ActualHeight * swapChainPanel.CompositionScaleY + 0.5f));
                 }
 
+                double resolutionScale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+
                 return new Rectangle((int)coreWindow.Bounds.X, (int)coreWindow.Bounds.X,
-                    (int)coreWindow.Bounds.Width, (int)coreWindow.Bounds.Height);
+                    (int)(coreWindow.Bounds.Width * resolutionScale), (int)(coreWindow.Bounds.Height * resolutionScale));
 
                 throw new InvalidOperationException();
             }

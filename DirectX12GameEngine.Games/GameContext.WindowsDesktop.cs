@@ -10,14 +10,6 @@ namespace DirectX12GameEngine.Games
             : base(control ?? new Form(), requestedWidth, requestedHeight)
         {
             ContextType = AppContextType.WinForms;
-
-            if (requestedHeight == 0 || requestedWidth == 0)
-            {
-                double resolutionScale = 1.0;
-
-                RequestedWidth = (int)(Control.ClientSize.Width * resolutionScale);
-                RequestedHeight = (int)(Control.ClientSize.Height * resolutionScale);
-            }
         }
     }
 }

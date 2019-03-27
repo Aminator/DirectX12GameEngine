@@ -41,8 +41,6 @@ namespace DirectX12GameEngine.Engine
 
         public override void Draw(GameTime gameTime)
         {
-            if (GraphicsDevice.Presenter is null) return;
-
             UpdateGlobals();
             UpdateLights();
             UpdateViewProjectionMatrices();
@@ -51,6 +49,11 @@ namespace DirectX12GameEngine.Engine
 
             int batchCount = Math.Min(Environment.ProcessorCount, componentsWithSameModel.Length);
             int batchSize = (int)Math.Ceiling((double)componentsWithSameModel.Length / batchCount);
+
+            Texture? depthStencilBuffer = GraphicsDevice.CommandList.DepthStencilBuffer;
+            Texture[] renderTargets = GraphicsDevice.CommandList.RenderTargets;
+            var viewports = GraphicsDevice.CommandList.Viewports;
+            var scissorRectangles = GraphicsDevice.CommandList.ScissorRectangles;
 
             for (int i = commandLists.Count; i < batchCount; i++)
             {
@@ -67,9 +70,9 @@ namespace DirectX12GameEngine.Engine
                 CommandList commandList = commandLists[batchIndex];
                 commandList.Reset();
 
-                commandList.SetViewport(GraphicsDevice.Presenter.Viewport);
-                commandList.SetScissorRectangles(GraphicsDevice.Presenter.ScissorRect);
-                commandList.SetRenderTargets(GraphicsDevice.Presenter.DepthStencilBuffer, GraphicsDevice.Presenter.BackBuffer);
+                commandList.SetRenderTargets(depthStencilBuffer, renderTargets);
+                commandList.SetViewports(viewports);
+                commandList.SetScissorRectangles(scissorRectangles);
 
                 int end = Math.Min((batchIndex * batchSize) + batchSize, componentsWithSameModel.Length);
 
@@ -158,9 +161,9 @@ namespace DirectX12GameEngine.Engine
 
             GraphicsDevice.CommandList.Reset();
 
-            GraphicsDevice.CommandList.SetViewport(GraphicsDevice.Presenter.Viewport);
-            GraphicsDevice.CommandList.SetScissorRectangles(GraphicsDevice.Presenter.ScissorRect);
-            GraphicsDevice.CommandList.SetRenderTargets(GraphicsDevice.Presenter.DepthStencilBuffer, GraphicsDevice.Presenter.BackBuffer);
+            GraphicsDevice.CommandList.SetRenderTargets(depthStencilBuffer, renderTargets);
+            GraphicsDevice.CommandList.SetViewports(viewports);
+            GraphicsDevice.CommandList.SetScissorRectangles(scissorRectangles);
         }
 
         public override void Dispose()
