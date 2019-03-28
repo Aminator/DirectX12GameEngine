@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Numerics;
+using System.Xml.Serialization;
 
 namespace DirectX12GameEngine.Engine
 {
     [DefaultEntitySystem(typeof(TransformSystem))]
-    public sealed partial class TransformComponent : EntityComponent, IEnumerable<TransformComponent>
+    public sealed partial class TransformComponent : EntityComponent/*, IEnumerable<TransformComponent>*/
     {
         private TransformComponent? parent;
 
@@ -25,22 +26,27 @@ namespace DirectX12GameEngine.Engine
 
         public ObservableCollection<TransformComponent> Children { get; } = new ObservableCollection<TransformComponent>();
 
+        [XmlIgnore]
         public IList<Entity> ChildEntities { get; }
 
-        public Matrix4x4 LocalMatrix { get; private set; } = Matrix4x4.Identity;
+        [XmlIgnore]
+        public Matrix4x4 LocalMatrix { get; set; } = Matrix4x4.Identity;
 
-        public Matrix4x4 WorldMatrix { get; private set; } = Matrix4x4.Identity;
+        [XmlIgnore]
+        public Matrix4x4 WorldMatrix { get; set; } = Matrix4x4.Identity;
 
         public Vector3 Position { get => position; set => position = value; }
 
         public Quaternion Rotation { get => rotation; set => rotation = value; }
 
-        public Vector3 RotationEuler { get => QuaternionExtensions.ToEuler(Rotation); set => Rotation = QuaternionExtensions.ToQuaternion(value); }
-
         public Vector3 Scale { get => scale; set => scale = value; }
+
+        [XmlIgnore]
+        public Vector3 RotationEuler { get => QuaternionExtensions.ToEuler(Rotation); set => Rotation = QuaternionExtensions.ToQuaternion(value); }
 
         internal bool IsMovingInsideRootScene { get; private set; }
 
+        [XmlIgnore]
         public TransformComponent? Parent
         {
             get => parent;
@@ -82,7 +88,7 @@ namespace DirectX12GameEngine.Engine
 
         public IEnumerator<TransformComponent> GetEnumerator() => Children.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        //IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public void UpdateLocalMatrix()
         {

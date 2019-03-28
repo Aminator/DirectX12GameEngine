@@ -24,13 +24,26 @@ namespace DirectX12GameEngine.Engine
 
         public ContentManager(IServiceProvider services)
         {
+            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
+            LoadedTypes = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).SelectMany(a => a.GetExportedTypes().Where(t => !(t.IsAbstract && t.IsSealed)));
+
             GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
             ModelLoader = services.GetRequiredService<GltfModelLoader>();
+        }
+
+        private void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs args)
+        {
+            if (!args.LoadedAssembly.IsDynamic)
+            {
+                LoadedTypes = LoadedTypes.Concat(args.LoadedAssembly.GetExportedTypes().Where(t => !(t.IsAbstract && t.IsSealed)));
+            }
         }
 
         public GraphicsDevice GraphicsDevice { get; }
 
         public Dictionary<string, object> LoadedAssets { get; } = new Dictionary<string, object>();
+
+        public IEnumerable<Type> LoadedTypes { get; private set; }
 
         internal GltfModelLoader ModelLoader { get; }
 
@@ -222,7 +235,7 @@ namespace DirectX12GameEngine.Engine
             if (type is null)
             {
                 string typeName = element.Name.NamespaceName + Type.Delimiter + element.Name.LocalName;
-                type = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new[] { typeof(object) }; } } ).SingleOrDefault(t => t.FullName == typeName);
+                type = LoadedTypes.SingleOrDefault(t => t.FullName == typeName);
             }
 
             string? content = element.Nodes().OfType<XText>().FirstOrDefault()?.Value;
@@ -352,6 +365,23 @@ namespace DirectX12GameEngine.Engine
                         matrix[4], matrix[5], matrix[6], matrix[7],
                         matrix[8], matrix[9], matrix[10], matrix[11],
                         matrix[12], matrix[13], matrix[14], matrix[15]);
+                }
+            }
+
+            if (typeof(IComputeScalar).IsAssignableFrom(type))
+            {
+                float scalar = float.Parse(value);
+                return new ComputeScalar(scalar);
+            }
+
+            if (typeof(IComputeColor).IsAssignableFrom(type))
+            {
+                float[] vector = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
+
+                if (vector.Length == 4)
+                {
+                    Vector4 color = new Vector4(vector[0], vector[1], vector[2], vector[3]);
+                    return new ComputeColor(color);
                 }
             }
 

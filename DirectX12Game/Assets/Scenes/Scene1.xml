@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Scene xmlns="DirectX12GameEngine.Engine" xmlns:local="DirectX12Game" Offset="500,0,0">
-  <Entity Name="T-Rex">
+  <Entity Name="CustomCliffhouse">
     <TransformComponent Scale="5,5,5" Position="-400,0,0" />
     <ModelComponent>
       <ModelComponent.Model>Assets\Models\Cliffhouse_Custom_Model.xml</ModelComponent.Model>

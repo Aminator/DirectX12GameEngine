@@ -6,10 +6,6 @@ namespace DirectX12GameEngine.Rendering
 {
     public class Material
     {
-        public Material()
-        {
-        }
-
         public MaterialDescriptor? Descriptor { get; set; }
 
         public IList<MaterialPass> Passes { get; } = new List<MaterialPass>();

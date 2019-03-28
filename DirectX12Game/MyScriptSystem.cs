@@ -1,10 +1,13 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Xml.Serialization;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Rendering;
+using DirectX12GameEngine.Rendering.Materials;
 
 namespace DirectX12Game
 {
@@ -78,6 +81,12 @@ namespace DirectX12Game
                     //    }
                     //}
 
+                    Entity customCliffhouse = SceneSystem.FirstOrDefault(m => m.Name == "CustomCliffhouse");
+                    if (customCliffhouse != null)
+                    {
+                        customCliffhouse.Transform.Rotation = timeRotation;
+                    }
+
                     Entity cliffhouse = SceneSystem.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
@@ -143,6 +152,19 @@ namespace DirectX12Game
                     GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
                     break;
                 case Windows.System.VirtualKey.D:
+                    Entity? customCliffhouse = SceneSystem.FirstOrDefault(m => m.Name == "CustomCliffhouse");
+                    if (customCliffhouse != null)
+                    {
+                        if (customCliffhouse.Get<ModelComponent>()?.Model?.Materials[2].Descriptor?.Attributes.Diffuse is MaterialDiffuseMapFeature diffuseMapFeature)
+                        {
+                            if (diffuseMapFeature.DiffuseMap is DissolveShader dissolveShader && dissolveShader.DissolveStrength is ComputeScalar strength)
+                            {
+                                strength.Value = 0.8f;
+                            }
+                        }
+                    }
+                    break;
+                case Windows.System.VirtualKey.R:
                     Entity? cliffhouse = SceneSystem.RootScene?.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
@@ -157,6 +179,23 @@ namespace DirectX12Game
                     };
 
                     SceneSystem.RootScene?.Add(newCliffhouse);
+                    break;
+                case Windows.System.VirtualKey.H:
+                    Entity? cliffhouseToClone = SceneSystem.RootScene?.FirstOrDefault(m => m.Name == "Cliffhouse");
+
+                    XmlSerializer serializer = new XmlSerializer(typeof(Entity), new[] { typeof(TransformComponent), typeof(ModelComponent) });
+
+                    using (MemoryStream stream = new MemoryStream())
+                    {
+                        serializer.Serialize(stream, cliffhouseToClone);
+                        stream.Flush();
+                        stream.Seek(0, SeekOrigin.Begin);
+
+                        Entity entityClone = (Entity)serializer.Deserialize(stream);
+                        entityClone.Transform.Position = new Vector3(200.0f, 120.0f, 500.0f);
+
+                        SceneSystem.RootScene?.Add(entityClone);
+                    }
                     break;
                 case Windows.System.VirtualKey.P:
                     Entity? child1 = SceneSystem.FirstOrDefault(m => m.Name == "Child1");

@@ -8,6 +8,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     [ConstantBufferResource]
     public class ComputeColor : IComputeColor
     {
+        private Vector4 color;
         private Texture? colorBuffer;
 
         public ComputeColor()
@@ -27,7 +28,20 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public Vector4 Color { get; set; }
+        [ShaderResource]
+        public Vector4 Color
+        {
+            get => color;
+            set
+            {
+                color = value;
+
+                if (colorBuffer != null)
+                {
+                    MemoryHelper.Copy(color, colorBuffer.MappedResource);
+                }
+            }
+        }
 
         [ShaderMethod]
         public Vector4 Compute()

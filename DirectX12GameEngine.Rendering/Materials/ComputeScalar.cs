@@ -7,6 +7,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     [ConstantBufferResource]
     public class ComputeScalar : IComputeScalar
     {
+        private float scalarValue;
         private Texture? valueBuffer;
 
         public ComputeScalar()
@@ -26,7 +27,20 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public float Value { get; set; }
+        [ShaderResource]
+        public float Value
+        {
+            get => scalarValue;
+            set
+            {
+                scalarValue = value;
+
+                if (valueBuffer != null)
+                {
+                    MemoryHelper.Copy(scalarValue, valueBuffer.MappedResource);
+                }
+            }
+        }
 
         [ShaderMethod]
         public float Compute()
