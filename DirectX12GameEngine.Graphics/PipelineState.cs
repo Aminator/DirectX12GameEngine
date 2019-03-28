@@ -1,5 +1,4 @@
-﻿using System;
-using SharpDX.Direct3D;
+﻿using SharpDX.Direct3D;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
 
@@ -7,12 +6,49 @@ namespace DirectX12GameEngine.Graphics
 {
     public sealed class PipelineState
     {
-        public PipelineState(GraphicsDevice device, InputElement[] inputElements, RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode hullShader = default, ShaderBytecode domainShader = default, ShaderBytecode geometryShader = default, RasterizerStateDescription? rasterizerStateDescription = null)
+        public PipelineState(GraphicsDevice device, ComputePipelineStateDescription pipelineStateDescription)
         {
-            if (device.Presenter is null) throw new InvalidOperationException("The presenter of the graphics device cannot be null.");
+            IsCompute = true;
+            RootSignature = pipelineStateDescription.RootSignaturePointer;
+            NativePipelineState = device.NativeDevice.CreateComputePipelineState(pipelineStateDescription);
+        }
 
-            RootSignature = rootSignature;
+        public PipelineState(GraphicsDevice device, RootSignature rootSignature, ShaderBytecode computeShader)
+            : this(device, CreateComputePipelineStateDescription(rootSignature, computeShader))
+        {
+        }
 
+        public PipelineState(GraphicsDevice device, GraphicsPipelineStateDescription pipelineStateDescription)
+        {
+            IsCompute = false;
+            RootSignature = pipelineStateDescription.RootSignature;
+            NativePipelineState = device.NativeDevice.CreateGraphicsPipelineState(pipelineStateDescription);
+        }
+
+        public PipelineState(GraphicsDevice device, InputElement[] inputElements, RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode hullShader = default, ShaderBytecode domainShader = default, ShaderBytecode geometryShader = default, RasterizerStateDescription? rasterizerStateDescription = null)
+            : this(device, CreateGraphicsPipelineStateDescription(device, inputElements, rootSignature, vertexShader, pixelShader, hullShader, domainShader, geometryShader, rasterizerStateDescription))
+        {
+        }
+
+        public PrimitiveTopology PrimitiveTopology { get; } = PrimitiveTopology.TriangleList;
+
+        public RootSignature RootSignature { get; }
+
+        internal bool IsCompute { get; }
+
+        internal SharpDX.Direct3D12.PipelineState NativePipelineState { get; }
+
+        private static ComputePipelineStateDescription CreateComputePipelineStateDescription(RootSignature rootSignature, ShaderBytecode computeShader)
+        {
+            return new ComputePipelineStateDescription
+            {
+                RootSignaturePointer = rootSignature,
+                ComputeShader = computeShader
+            };
+        }
+
+        private static GraphicsPipelineStateDescription CreateGraphicsPipelineStateDescription(GraphicsDevice device, InputElement[] inputElements, RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode hullShader, ShaderBytecode domainShader, ShaderBytecode geometryShader, RasterizerStateDescription? rasterizerStateDescription)
+        {
             RasterizerStateDescription rasterizerDescription = rasterizerStateDescription ?? RasterizerStateDescription.Default();
             rasterizerDescription.IsFrontCounterClockwise = true;
             rasterizerDescription.CullMode = CullMode.None;
@@ -32,7 +68,7 @@ namespace DirectX12GameEngine.Graphics
             GraphicsPipelineStateDescription pipelineStateDescription = new GraphicsPipelineStateDescription
             {
                 InputLayout = new InputLayoutDescription(inputElements),
-                RootSignature = RootSignature,
+                RootSignature = rootSignature,
                 VertexShader = vertexShader,
                 PixelShader = pixelShader,
                 HullShader = hullShader,
@@ -40,7 +76,6 @@ namespace DirectX12GameEngine.Graphics
                 GeometryShader = geometryShader,
                 RasterizerState = rasterizerDescription,
                 BlendState = blendStateDescription,
-                DepthStencilFormat = device.Presenter.PresentationParameters.DepthStencilFormat,
                 DepthStencilState = depthStencilStateDescription,
                 SampleMask = int.MaxValue,
                 PrimitiveTopologyType = PrimitiveTopologyType.Triangle,
@@ -49,28 +84,19 @@ namespace DirectX12GameEngine.Graphics
                 StreamOutput = new StreamOutputDescription()
             };
 
-            pipelineStateDescription.RenderTargetFormats[0] = device.Presenter.PresentationParameters.BackBufferFormat;
+            Texture? depthStencilBuffer = device.CommandList.DepthStencilBuffer;
 
-            NativePipelineState = device.NativeDevice.CreateGraphicsPipelineState(pipelineStateDescription);
-        }
-
-        public PipelineState(GraphicsDevice device, RootSignature rootSignature, ShaderBytecode computeShader)
-        {
-            RootSignature = rootSignature;
-
-            ComputePipelineStateDescription pipelineStateDescription = new ComputePipelineStateDescription
+            if (depthStencilBuffer != null)
             {
-                RootSignaturePointer = RootSignature,
-                ComputeShader = computeShader
-            };
+                pipelineStateDescription.DepthStencilFormat = depthStencilBuffer.Description.Format;
+            }
 
-            NativePipelineState = device.NativeDevice.CreateComputePipelineState(pipelineStateDescription);
+            for (int i = 0; i < device.CommandList.RenderTargets.Length; i++)
+            {
+                pipelineStateDescription.RenderTargetFormats[i] = device.CommandList.RenderTargets[i].Description.Format;
+            }
+
+            return pipelineStateDescription;
         }
-
-        public PrimitiveTopology PrimitiveTopology { get; } = PrimitiveTopology.TriangleList;
-
-        public RootSignature RootSignature { get; }
-
-        internal SharpDX.Direct3D12.PipelineState NativePipelineState { get; }
     }
 }

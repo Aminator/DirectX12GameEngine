@@ -68,7 +68,9 @@ namespace DirectX12GameEngine.Engine
             for (int batchIndex = 0; batchIndex < batchCount; batchIndex++) /*Parallel.For(0, batchCount, batchIndex =>*/
             {
                 CommandList commandList = commandLists[batchIndex];
+
                 commandList.Reset();
+                commandList.ClearState();
 
                 commandList.SetRenderTargets(depthStencilBuffer, renderTargets);
                 commandList.SetViewports(viewports);
@@ -160,6 +162,7 @@ namespace DirectX12GameEngine.Engine
             GraphicsDevice.ExecuteCommandLists(compiledCommandLists);
 
             GraphicsDevice.CommandList.Reset();
+            GraphicsDevice.CommandList.ClearState();
 
             GraphicsDevice.CommandList.SetRenderTargets(depthStencilBuffer, renderTargets);
             GraphicsDevice.CommandList.SetViewports(viewports);
@@ -216,10 +219,10 @@ namespace DirectX12GameEngine.Engine
 
                 MaterialPass materialPass = material.Passes[passIndex];
 
-                if (mesh.VertexBufferViews is null) throw new ArgumentException("The vertex buffer views of the mesh cannot be null.");
+                if (mesh.MeshDraw.VertexBufferViews is null) throw new ArgumentException("The vertex buffer views of the mesh cannot be null.");
 
-                commandList.SetIndexBuffer(mesh.IndexBufferView);
-                commandList.SetVertexBuffers(mesh.VertexBufferViews);
+                commandList.SetIndexBuffer(mesh.MeshDraw.IndexBufferView);
+                commandList.SetVertexBuffers(mesh.MeshDraw.VertexBufferViews);
 
                 commandList.SetPipelineState(materialPass.PipelineState);
 
@@ -247,13 +250,13 @@ namespace DirectX12GameEngine.Engine
                     commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.NativeTextureGpuDescriptorHandle);
                 }
 
-                if (mesh.IndexBufferView.HasValue)
+                if (mesh.MeshDraw.IndexBufferView.HasValue)
                 {
-                    commandList.DrawIndexedInstanced(mesh.IndexBufferView.Value.SizeInBytes / SharpDX.DXGI.FormatHelper.SizeOfInBytes(mesh.IndexBufferView.Value.Format), instanceCount);
+                    commandList.DrawIndexedInstanced(mesh.MeshDraw.IndexBufferView.Value.SizeInBytes / SharpDX.DXGI.FormatHelper.SizeOfInBytes(mesh.MeshDraw.IndexBufferView.Value.Format), instanceCount);
                 }
                 else
                 {
-                    commandList.DrawInstanced(mesh.VertexBufferViews[0].SizeInBytes / mesh.VertexBufferViews[0].StrideInBytes, instanceCount);
+                    commandList.DrawInstanced(mesh.MeshDraw.VertexBufferViews[0].SizeInBytes / mesh.MeshDraw.VertexBufferViews[0].StrideInBytes, instanceCount);
                 }
             }
         }

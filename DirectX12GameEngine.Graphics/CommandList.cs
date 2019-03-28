@@ -236,6 +236,11 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.SetGraphicsRootDescriptorTable(rootParameterIndex, baseDescriptor);
         }
 
+        public void SetComputeRootSignature(RootSignature rootSignature)
+        {
+            currentCommandList.NativeCommandList.SetComputeRootSignature(rootSignature);
+        }
+
         public void SetGraphicsRootSignature(RootSignature rootSignature)
         {
             currentCommandList.NativeCommandList.SetGraphicsRootSignature(rootSignature);
@@ -248,7 +253,14 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetPipelineState(PipelineState pipelineState)
         {
-            SetGraphicsRootSignature(pipelineState.RootSignature);
+            if (pipelineState.IsCompute)
+            {
+                SetComputeRootSignature(pipelineState.RootSignature);
+            }
+            else
+            {
+                SetGraphicsRootSignature(pipelineState.RootSignature);
+            }
 
             currentCommandList.NativeCommandList.PipelineState = pipelineState.NativePipelineState;
             currentCommandList.NativeCommandList.PrimitiveTopology = pipelineState.PrimitiveTopology;

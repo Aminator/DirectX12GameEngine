@@ -82,7 +82,6 @@ namespace DirectX12GameEngine.Engine
         protected override IServiceCollection ConfigureServices()
         {
             return base.ConfigureServices()
-                .AddSingleton(this)
                 .AddSingleton(GraphicsDevice)
                 .AddSingleton<GltfModelLoader>()
                 .AddSingleton<ContentManager>()

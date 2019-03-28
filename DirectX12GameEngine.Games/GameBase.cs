@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Games
 {
-    public class GameBase : IDisposable
+    public abstract class GameBase : IDisposable
     {
         private readonly object tickLock = new object();
 
@@ -126,6 +126,7 @@ namespace DirectX12GameEngine.Games
         protected virtual IServiceCollection ConfigureServices()
         {
             return new ServiceCollection()
+                .AddSingleton(this)
                 .AddSingleton<List<GameSystemBase>>();
         }
     }

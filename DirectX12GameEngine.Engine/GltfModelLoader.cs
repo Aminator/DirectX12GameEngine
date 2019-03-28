@@ -258,20 +258,20 @@ namespace DirectX12GameEngine.Rendering
             float[] t = node.Translation;
 
             Vector3 scale = new Vector3(s[0], s[1], s[2]);
-            Quaternion quaternion = new Quaternion(r[0], r[1], r[2], r[3]);
+            Quaternion rotation = new Quaternion(r[0], r[1], r[2], r[3]);
             Vector3 translation = new Vector3(t[0], t[1], t[2]);
 
             worldMatrix *= Matrix4x4.CreateScale(scale)
-                * Matrix4x4.CreateFromQuaternion(quaternion)
+                * Matrix4x4.CreateFromQuaternion(rotation)
                 * Matrix4x4.CreateTranslation(translation);
 
-            return Task.FromResult(new Mesh
+            MeshDraw meshDraw = new MeshDraw
             {
-                VertexBufferViews = vertexBufferViews,
-                MaterialIndex = materialIndex,
                 IndexBufferView = indexBufferView,
-                WorldMatrix = worldMatrix
-            });
+                VertexBufferViews = vertexBufferViews
+            };
+
+            return Task.FromResult(new Mesh(meshDraw) { MaterialIndex = materialIndex, WorldMatrix = worldMatrix });
         }
 
         private VertexBufferView[] GetVertexBufferViews(Gltf gltf, IList<byte[]> buffers, GltfLoader.Schema.Mesh mesh, Span<byte> indexBuffer = default, bool is32bitIndex = false)

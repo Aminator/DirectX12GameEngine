@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Reflection;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Games;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -224,7 +225,7 @@ namespace DirectX12GameEngine.Engine
 
                 if (addNewSystem)
                 {
-                    EntitySystem system = (EntitySystem)Activator.CreateInstance(entitySystemAttribute.Type, Services);
+                    EntitySystem system = (EntitySystem)ActivatorUtilities.CreateInstance(Services, entitySystemAttribute.Type);
                     Systems.Add(system);
 
                     Systems.Sort(EntitySystemCollection.EntitySystemComparer.Default);

@@ -70,7 +70,6 @@ namespace DirectX12GameEngine.Graphics
 #if WINDOWS_UWP
                 case AppContextType.CoreWindow:
                     Windows.UI.Core.CoreWindow coreWindow = (Windows.UI.Core.CoreWindow)PresentationParameters.DeviceWindowHandle.NativeWindow;
-                    Windows.Graphics.Display.DisplayInformation displayInformation = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
 
                     using (Factory4 factory = new Factory4())
                     using (ComObject window = new ComObject(coreWindow))

@@ -32,7 +32,7 @@ namespace DirectX12GameEngine.Games
                     coreWindow = CoreWindow.GetForCurrentThread();
                     swapChainPanel = xamlContext.Control;
 
-                    windowHandle = new WindowHandle(AppContextType.CoreWindow, coreWindow, IntPtr.Zero);
+                    windowHandle = new WindowHandle(AppContextType.Xaml, swapChainPanel, IntPtr.Zero);
 
                     swapChainPanel.SizeChanged += SwapChainPanel_SizeChanged;
                     swapChainPanel.CompositionScaleChanged += SwapChainPanel_CompositionScaleChanged;
@@ -89,7 +89,7 @@ namespace DirectX12GameEngine.Games
 
             while (true)
             {
-                coreWindow.Dispatcher.ProcessEvents(Windows.UI.Core.CoreProcessEventsOption.ProcessAllIfPresent);
+                coreWindow.Dispatcher.ProcessEvents(CoreProcessEventsOption.ProcessAllIfPresent);
                 Tick();
             }
         }

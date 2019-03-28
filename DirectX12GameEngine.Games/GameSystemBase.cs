@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Games
 {
@@ -8,7 +9,10 @@ namespace DirectX12GameEngine.Games
         public GameSystemBase(IServiceProvider services)
         {
             Services = services;
+            Game = services.GetRequiredService<GameBase>();
         }
+
+        public GameBase Game { get; }
 
         public IServiceProvider Services { get; }
 

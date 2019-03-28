@@ -15,13 +15,13 @@ namespace DirectX12GameEngine.Engine
             RequiredTypes = requiredAdditionalTypes;
             Services = services;
 
-            Game = services.GetRequiredService<Game>();
+            Game = services.GetRequiredService<GameBase>();
             Content = services.GetRequiredService<ContentManager>();
             GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
             SceneSystem = services.GetRequiredService<SceneSystem>();
         }
 
-        public Game Game { get; }
+        public GameBase Game { get; }
 
         public Type MainType { get; }
 
