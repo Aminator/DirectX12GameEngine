@@ -3,7 +3,7 @@ using SharpDX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
-    internal sealed class DescriptorAllocator : IDisposable
+    public sealed class DescriptorAllocator : IDisposable
     {
         private const int DescriptorsPerHeap = 4096;
 

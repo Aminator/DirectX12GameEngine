@@ -20,7 +20,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             Vector3 diffuseColor = MaterialPixelStream.MaterialDiffuseVisible;
             diffuseColor *= Vector3.One - MaterialPixelStream.MaterialSpecularVisible;
 
-            return diffuseColor / MathF.PI * LightStream.LightColorNDotL;
+            return diffuseColor / (float)Math.PI * LightStream.LightColorNDotL;
         }
 
         [ShaderMethod]

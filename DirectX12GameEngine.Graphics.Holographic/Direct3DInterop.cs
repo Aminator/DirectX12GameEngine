@@ -5,9 +5,9 @@ using System;
 using System.Runtime.InteropServices;
 using Windows.Graphics.DirectX.Direct3D11;
 
-namespace DirectX12GameEngine.Graphics
+namespace DirectX12GameEngine.Graphics.Holographic
 {
-    public sealed partial class GraphicsDevice
+    internal static class Direct3DInterop
     {
         private static readonly Guid ID3D11Resource = new Guid("DC8E63F3-D12B-4952-B47B-5E45026A862D");
 

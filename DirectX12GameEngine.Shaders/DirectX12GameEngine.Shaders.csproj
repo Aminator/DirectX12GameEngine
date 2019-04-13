@@ -21,11 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\Libs\runtimes\win-x86\native\*.*">
+    <!--<Content Include="..\Libs\runtimes\win-x86\native\*.*">
       <PackagePath>runtimes\win-x86\native</PackagePath>
       <Pack>true</Pack>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </Content>-->
     <Content Include="..\Libs\runtimes\win-x64\native\*.*">
       <PackagePath>runtimes\win-x64\native</PackagePath>
       <Pack>true</Pack>

@@ -297,7 +297,7 @@ namespace DirectX12GameEngine.Engine
             if (SceneSystem.CurrentCamera != null && SceneSystem.CurrentCamera.Entity != null)
             {
 #if WINDOWS_UWP
-                if (GraphicsDevice.Presenter is HolographicGraphicsPresenter graphicsPresenter)
+                if (GraphicsDevice.Presenter is Graphics.Holographic.HolographicGraphicsPresenter graphicsPresenter)
                 {
                     var cameraPose = graphicsPresenter.HolographicFrame.CurrentPrediction.CameraPoses[0];
 

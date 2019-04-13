@@ -17,7 +17,7 @@ namespace DirectX12GameEngine.Engine
 #if WINDOWS_UWP
                 case GameContextHolographic context:
                     presentationParameters.Stereo = Windows.Graphics.Holographic.HolographicDisplay.GetDefault().IsStereo;
-                    GraphicsDevice.Presenter = new HolographicGraphicsPresenter(GraphicsDevice, presentationParameters, context.HolographicSpace);
+                    GraphicsDevice.Presenter = new Graphics.Holographic.HolographicGraphicsPresenter(GraphicsDevice, presentationParameters, context.HolographicSpace);
                     break;
 #endif
                 default:

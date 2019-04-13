@@ -67,8 +67,6 @@ namespace DirectX12GameEngine.Games
 
                 return new Rectangle((int)coreWindow.Bounds.X, (int)coreWindow.Bounds.X,
                     (int)(coreWindow.Bounds.Width * resolutionScale), (int)(coreWindow.Bounds.Height * resolutionScale));
-
-                throw new InvalidOperationException();
             }
         }
 

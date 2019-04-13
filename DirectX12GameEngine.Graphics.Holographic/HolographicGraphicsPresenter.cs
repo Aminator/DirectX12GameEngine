@@ -5,7 +5,7 @@ using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Holographic;
 using Windows.Perception.Spatial;
 
-namespace DirectX12GameEngine.Graphics
+namespace DirectX12GameEngine.Graphics.Holographic
 {
     public sealed class HolographicGraphicsPresenter : GraphicsPresenter
     {
@@ -25,7 +25,7 @@ namespace DirectX12GameEngine.Graphics
 
             using (SharpDX.DXGI.Device dxgiDevice = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.DXGI.Device>())
             {
-                IDirect3DDevice direct3DInteropDevice = GraphicsDevice.CreateDirect3DDevice(dxgiDevice);
+                IDirect3DDevice direct3DInteropDevice = Direct3DInterop.CreateDirect3DDevice(dxgiDevice);
 
                 HolographicSpace = holographicSpace;
                 HolographicSpace.SetDirect3D11Device(direct3DInteropDevice);
@@ -79,7 +79,7 @@ namespace DirectX12GameEngine.Graphics
             HolographicFrame.PresentUsingCurrentPrediction();
         }
 
-        protected unsafe override void ResizeBackBuffer(int width, int height)
+        protected override void ResizeBackBuffer(int width, int height)
         {
             using SharpDX.Direct3D11.Device11On12 device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.Direct3D11.Device11On12>();
             device11On12.ReleaseWrappedResources(new[] { direct3D11RenderTarget }, 1);
@@ -93,7 +93,7 @@ namespace DirectX12GameEngine.Graphics
         protected override void ResizeDepthStencilBuffer(int width, int height)
         {
             DepthStencilBuffer.Dispose();
-            DepthStencilBuffer = CreateDepthStencilBuffer(width, height);
+            DepthStencilBuffer = CreateDepthStencilBuffer();
         }
 
         private SharpDX.Direct3D11.Resource CreateDirect3D11RenderTarget()
@@ -127,7 +127,7 @@ namespace DirectX12GameEngine.Graphics
         private SharpDX.Direct3D11.Texture2D GetHolographicBackBuffer()
         {
             HolographicSurface = HolographicFrame.GetRenderingParameters(HolographicFrame.CurrentPrediction.CameraPoses[0]).Direct3D11BackBuffer;
-            SharpDX.Direct3D11.Texture2D d3DBackBuffer = new SharpDX.Direct3D11.Texture2D(GraphicsDevice.CreateDXGISurface(HolographicSurface).NativePointer);
+            SharpDX.Direct3D11.Texture2D d3DBackBuffer = new SharpDX.Direct3D11.Texture2D(Direct3DInterop.CreateDXGISurface(HolographicSurface).NativePointer);
 
             PresentationParameters.BackBufferFormat = d3DBackBuffer.Description.Format;
             PresentationParameters.BackBufferWidth = d3DBackBuffer.Description.Width;

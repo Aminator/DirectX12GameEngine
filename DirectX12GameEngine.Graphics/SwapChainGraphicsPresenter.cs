@@ -67,36 +67,25 @@ namespace DirectX12GameEngine.Graphics
 
             switch (PresentationParameters.DeviceWindowHandle.ContextType)
             {
-#if WINDOWS_UWP
                 case AppContextType.CoreWindow:
-                    Windows.UI.Core.CoreWindow coreWindow = (Windows.UI.Core.CoreWindow)PresentationParameters.DeviceWindowHandle.NativeWindow;
-
                     using (Factory4 factory = new Factory4())
-                    using (ComObject window = new ComObject(coreWindow))
+                    using (ComObject window = new ComObject(PresentationParameters.DeviceWindowHandle.NativeWindow))
                     using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, window, ref swapChainDescription))
                     {
                         swapChain = tempSwapChain.QueryInterface<SwapChain3>();
                     }
                     break;
                 case AppContextType.Xaml:
-                    Windows.UI.Xaml.Controls.SwapChainPanel swapChainPanel = (Windows.UI.Xaml.Controls.SwapChainPanel)PresentationParameters.DeviceWindowHandle.NativeWindow;
                     swapChainDescription.AlphaMode = AlphaMode.Premultiplied;
 
                     using (Factory4 factory = new Factory4())
-                    using (ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(swapChainPanel))
+                    using (ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(PresentationParameters.DeviceWindowHandle.NativeWindow))
                     using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, ref swapChainDescription))
                     {
                         swapChain = tempSwapChain.QueryInterface<SwapChain3>();
                         nativePanel.SwapChain = swapChain;
-
-                        swapChain.MatrixTransform = new SharpDX.Mathematics.Interop.RawMatrix3x2
-                        {
-                            M11 = 1.0f / swapChainPanel.CompositionScaleX,
-                            M22 = 1.0f / swapChainPanel.CompositionScaleY
-                        };
                     }
                     break;
-#elif NETCOREAPP
                 case AppContextType.WinForms:
                     using (Factory4 factory = new Factory4())
                     using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, PresentationParameters.DeviceWindowHandle.Handle, ref swapChainDescription))
@@ -104,7 +93,6 @@ namespace DirectX12GameEngine.Graphics
                         swapChain = tempSwapChain.QueryInterface<SwapChain3>();
                     }
                     break;
-#endif
                 default:
                     throw new NotSupportedException("This app context type is not supported while creating a swap chain.");
             }
@@ -124,17 +112,6 @@ namespace DirectX12GameEngine.Graphics
                 renderTargets[i].Dispose();
             }
 
-#if WINDOWS_UWP
-            if (PresentationParameters.DeviceWindowHandle.NativeWindow is Windows.UI.Xaml.Controls.SwapChainPanel swapChainPanel)
-            {
-                swapChain.MatrixTransform = new SharpDX.Mathematics.Interop.RawMatrix3x2
-                {
-                    M11 = 1.0f / swapChainPanel.CompositionScaleX,
-                    M22 = 1.0f / swapChainPanel.CompositionScaleY
-                };
-            }
-#endif
-
             swapChain.ResizeBuffers(BufferCount, width, height, PresentationParameters.BackBufferFormat, SwapChainFlags.None);
 
             CreateRenderTargets();
@@ -143,7 +120,7 @@ namespace DirectX12GameEngine.Graphics
         protected override void ResizeDepthStencilBuffer(int width, int height)
         {
             DepthStencilBuffer.Dispose();
-            DepthStencilBuffer = CreateDepthStencilBuffer(width, height);
+            DepthStencilBuffer = CreateDepthStencilBuffer();
         }
 
         private void CreateRenderTargets()

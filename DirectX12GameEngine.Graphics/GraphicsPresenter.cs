@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Graphics
             GraphicsDevice = device;
             PresentationParameters = presentationParameters;
 
-            DepthStencilBuffer = CreateDepthStencilBuffer(PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
+            DepthStencilBuffer = CreateDepthStencilBuffer();
         }
 
         public abstract Texture BackBuffer { get; }
@@ -43,9 +43,10 @@ namespace DirectX12GameEngine.Graphics
             ResizeDepthStencilBuffer(width, height);
         }
 
-        protected virtual Texture CreateDepthStencilBuffer(int width, int height)
+        protected virtual Texture CreateDepthStencilBuffer()
         {
-            return Texture.New2D(GraphicsDevice, PresentationParameters.DepthStencilFormat, width, height,
+            return Texture.New2D(GraphicsDevice, PresentationParameters.DepthStencilFormat,
+                PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight,
                 DescriptorHeapType.DepthStencilView, ResourceStates.DepthWrite, ResourceFlags.AllowDepthStencil,
                 HeapType.Default, PresentationParameters.Stereo ? (short)2 : (short)1, 1);
         }

@@ -12,7 +12,7 @@ namespace DirectX12GameEngine.Graphics
 {
     public sealed class Texture : IDisposable
     {
-        public Texture(GraphicsDevice device, Resource resource, DescriptorHeapType? descriptorHeapType = null)
+        internal Texture(GraphicsDevice device, Resource resource, DescriptorHeapType? descriptorHeapType = null)
         {
             GraphicsDevice = device;
             NativeResource = resource;
@@ -41,11 +41,11 @@ namespace DirectX12GameEngine.Graphics
 
         public IntPtr MappedResource { get; private set; }
 
+        public Resource NativeResource { get; }
+
         internal CpuDescriptorHandle NativeCpuDescriptorHandle { get; }
 
         internal GpuDescriptorHandle NativeGpuDescriptorHandle { get; }
-
-        internal Resource NativeResource { get; }
 
         public static Texture New(GraphicsDevice device, HeapProperties heapProperties, ResourceDescription resourceDescription, DescriptorHeapType? descriptorHeapType = null, ResourceStates resourceStates = ResourceStates.GenericRead)
         {

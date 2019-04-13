@@ -8,7 +8,7 @@ using SharpDX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
-    public sealed partial class GraphicsDevice : IDisposable, ICollector
+    public sealed class GraphicsDevice : IDisposable, ICollector
     {
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
 
@@ -54,6 +54,14 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsPresenter? Presenter { get; set; }
 
+        public DescriptorAllocator DepthStencilViewAllocator { get; set; }
+
+        public DescriptorAllocator RenderTargetViewAllocator { get; set; }
+
+        public DescriptorAllocator ShaderResourceViewAllocator { get; set; }
+
+        public SharpDX.Direct3D11.Device NativeDirect3D11Device { get; }
+
         internal CommandAllocatorPool BundleAllocatorPool { get; }
 
         internal CommandAllocatorPool CopyAllocatorPool { get; }
@@ -68,17 +76,9 @@ namespace DirectX12GameEngine.Graphics
 
         internal Device NativeDevice { get; }
 
-        internal SharpDX.Direct3D11.Device NativeDirect3D11Device { get; }
-
         internal Fence NativeCopyFence { get; }
 
         internal Fence NativeFence { get; }
-
-        internal DescriptorAllocator DepthStencilViewAllocator { get; set; }
-
-        internal DescriptorAllocator RenderTargetViewAllocator { get; set; }
-
-        internal DescriptorAllocator ShaderResourceViewAllocator { get; set; }
 
         internal long NextCopyFenceValue { get; private set; } = 1;
 
@@ -99,7 +99,12 @@ namespace DirectX12GameEngine.Graphics
             if (descriptors.Length == 0) return default;
 
             int[] srcDescriptorRangeStarts = new int[descriptors.Length];
-            Array.Fill(srcDescriptorRangeStarts, 1);
+            //Array.Fill(srcDescriptorRangeStarts, 1);
+
+            for (int i = 0; i < srcDescriptorRangeStarts.Length; i++)
+            {
+                srcDescriptorRangeStarts[i] = 1;
+            }
 
             var (cpuDescriptorHandle, gpuDescriptorHandle) = ShaderResourceViewAllocator.Allocate(descriptors.Length);
 

@@ -1,7 +1,7 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.0-preview.21">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;uap10.0.17763</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <NullableContextOptions>enable</NullableContextOptions>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpDX.Direct2D1" Version="4.2.1-beta0-g3060495c2a" />
-    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.1-beta0-g3060495c2a" />
-    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.1-beta0-g3060495c2a" />
+    <PackageReference Include="SharpDX.Direct2D1" Version="4.2.1-beta0-gab36f12303" />
+    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.1-beta0-gab36f12303" />
+    <PackageReference Include="SharpDX.Direct3D12" Version="4.2.1-beta0-gab36f12303" />
   </ItemGroup>
 
   <ItemGroup>

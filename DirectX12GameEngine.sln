@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Renderi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Engine", "DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj", "{693635ED-FC5E-43FF-A869-B37A2D601ED3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectX12GameEngine.Graphics.Holographic", "DirectX12GameEngine.Graphics.Holographic\DirectX12GameEngine.Graphics.Holographic.csproj", "{C4B65186-87B3-4219-8D84-1AC29A81266A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -247,6 +249,26 @@ Global
 		{693635ED-FC5E-43FF-A869-B37A2D601ED3}.Release|x64.Build.0 = Release|Any CPU
 		{693635ED-FC5E-43FF-A869-B37A2D601ED3}.Release|x86.ActiveCfg = Release|Any CPU
 		{693635ED-FC5E-43FF-A869-B37A2D601ED3}.Release|x86.Build.0 = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|ARM.Build.0 = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|x64.Build.0 = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|x86.Build.0 = Debug|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|ARM.ActiveCfg = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|ARM.Build.0 = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|ARM64.Build.0 = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|x64.ActiveCfg = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|x64.Build.0 = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|x86.ActiveCfg = Release|Any CPU
+		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
