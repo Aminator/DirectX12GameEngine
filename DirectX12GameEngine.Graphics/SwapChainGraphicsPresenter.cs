@@ -58,7 +58,7 @@ namespace DirectX12GameEngine.Graphics
                 BufferCount = BufferCount,
                 Scaling = Scaling.Stretch,
                 SwapEffect = SwapEffect.FlipSequential,
-                Format = PresentationParameters.BackBufferFormat,
+                Format = (Format)PresentationParameters.BackBufferFormat,
                 Flags = SwapChainFlags.None,
                 AlphaMode = AlphaMode.Unspecified
             };
@@ -112,7 +112,7 @@ namespace DirectX12GameEngine.Graphics
                 renderTargets[i].Dispose();
             }
 
-            swapChain.ResizeBuffers(BufferCount, width, height, PresentationParameters.BackBufferFormat, SwapChainFlags.None);
+            swapChain.ResizeBuffers(BufferCount, width, height, (Format)PresentationParameters.BackBufferFormat, SwapChainFlags.None);
 
             CreateRenderTargets();
         }
@@ -127,7 +127,7 @@ namespace DirectX12GameEngine.Graphics
         {
             for (int i = 0; i < BufferCount; i++)
             {
-                renderTargets[i] = new Texture(GraphicsDevice, swapChain.GetBackBuffer<Resource>(i), DescriptorHeapType.RenderTargetView);
+                renderTargets[i] = new Texture(GraphicsDevice, swapChain.GetBackBuffer<Resource>(i));
             }
         }
     }

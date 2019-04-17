@@ -12,6 +12,7 @@ using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
 using SharpDX.Direct3D12;
 
+using Buffer = DirectX12GameEngine.Graphics.Buffer;
 using CommandList = DirectX12GameEngine.Graphics.CommandList;
 
 namespace DirectX12GameEngine.Engine
@@ -22,22 +23,22 @@ namespace DirectX12GameEngine.Engine
 
         private readonly List<CommandList> commandLists = new List<CommandList>();
 
-        private readonly Dictionary<Model, (CompiledCommandList[] Bundles, Texture[] WorldMatrixBuffers)> models = new Dictionary<Model, (CompiledCommandList[], Texture[])>();
+        private readonly Dictionary<Model, (CompiledCommandList[] Bundles, Buffer[] WorldMatrixBuffers)> models = new Dictionary<Model, (CompiledCommandList[], Buffer[])>();
 
         public unsafe RenderSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
             Components.CollectionChanged += Components_CollectionChanged;
 
-            DirectionalLightGroupBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
-            GlobalBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(GlobalBuffer));
-            ViewProjectionTransformBuffer = Texture.CreateConstantBufferView(GraphicsDevice, sizeof(StereoViewProjectionTransform));
+            DirectionalLightGroupBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
+            GlobalBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(GlobalBuffer));
+            ViewProjectionTransformBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(StereoViewProjectionTransform));
         }
 
-        public Texture DirectionalLightGroupBuffer { get; }
+        public Buffer DirectionalLightGroupBuffer { get; }
 
-        public Texture GlobalBuffer { get; }
+        public Buffer GlobalBuffer { get; }
 
-        public Texture ViewProjectionTransformBuffer { get; }
+        public Buffer ViewProjectionTransformBuffer { get; }
 
         public override void Draw(GameTime gameTime)
         {
@@ -90,11 +91,11 @@ namespace DirectX12GameEngine.Engine
 
                     if (!models.ContainsKey(model))
                     {
-                        Texture[] newWorldMatrixBuffers = new Texture[meshCount];
+                        Buffer[] newWorldMatrixBuffers = new Buffer[meshCount];
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            newWorldMatrixBuffers[meshIndex] = Texture.CreateConstantBufferView(GraphicsDevice, modelComponents.Count() * 16 * sizeof(float));
+                            newWorldMatrixBuffers[meshIndex] = Buffer.Constant.New(GraphicsDevice, modelComponents.Count() * 16 * sizeof(float));
                         }
 
                         CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];
@@ -121,7 +122,7 @@ namespace DirectX12GameEngine.Engine
                         models.Add(model, (newBundles, newWorldMatrixBuffers));
                     }
 
-                    (CompiledCommandList[] bundles, Texture[] worldMatrixBuffers) = models[model];
+                    (CompiledCommandList[] bundles, Buffer[] worldMatrixBuffers) = models[model];
 
                     int modelComponentIndex = 0;
 
@@ -133,8 +134,10 @@ namespace DirectX12GameEngine.Engine
                             {
                                 unsafe
                                 {
+                                    worldMatrixBuffers[meshIndex].Map(0);
                                     Matrix4x4 worldMatrix = model.Meshes[meshIndex].WorldMatrix * modelComponent.Entity.Transform.WorldMatrix;
                                     MemoryHelper.Copy(worldMatrix, worldMatrixBuffers[meshIndex].MappedResource + modelComponentIndex * sizeof(Matrix4x4));
+                                    worldMatrixBuffers[meshIndex].Unmap(0);
                                 }
                             }
                         }
@@ -180,17 +183,17 @@ namespace DirectX12GameEngine.Engine
 
             foreach (var item in models)
             {
-                (CompiledCommandList[]? bundles, Texture[]? worldMatrixBuffers) = item.Value;
+                (CompiledCommandList[]? bundles, Buffer[]? worldMatrixBuffers) = item.Value;
 
                 DisposeModel(bundles, worldMatrixBuffers);
             }
         }
 
-        private static void DisposeModel(CompiledCommandList[] bundles, Texture[] worldMatrixBuffers)
+        private static void DisposeModel(CompiledCommandList[] bundles, Buffer[] worldMatrixBuffers)
         {
             if (worldMatrixBuffers != null)
             {
-                foreach (Texture constantBuffer in worldMatrixBuffers)
+                foreach (Buffer constantBuffer in worldMatrixBuffers)
                 {
                     constantBuffer.Dispose();
                 }
@@ -205,7 +208,7 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void RecordCommandList(Model model, CommandList commandList, Texture[] worldMatrixBuffers, int instanceCount, int passIndex)
+        private void RecordCommandList(Model model, CommandList commandList, Buffer[] worldMatrixBuffers, int instanceCount, int passIndex)
         {
             int renderTargetCount = GraphicsDevice.Presenter is null ? 1 : GraphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
             instanceCount *= renderTargetCount;
@@ -222,7 +225,7 @@ namespace DirectX12GameEngine.Engine
                 if (mesh.MeshDraw.VertexBufferViews is null) throw new ArgumentException("The vertex buffer views of the mesh cannot be null.");
 
                 commandList.SetIndexBuffer(mesh.MeshDraw.IndexBufferView);
-                commandList.SetVertexBuffers(mesh.MeshDraw.VertexBufferViews);
+                commandList.SetVertexBuffers(0, mesh.MeshDraw.VertexBufferViews);
 
                 commandList.SetPipelineState(materialPass.PipelineState);
 
@@ -269,7 +272,7 @@ namespace DirectX12GameEngine.Engine
                 TotalTime = (float)Game.Time.Total.TotalSeconds
             };
 
-            MemoryHelper.Copy(globalBuffer, GlobalBuffer.MappedResource);
+            GlobalBuffer.SetData(globalBuffer);
         }
 
         private unsafe void UpdateLights()
@@ -288,8 +291,10 @@ namespace DirectX12GameEngine.Engine
                 lightData[i] = new DirectionalLightData { Color = lights[i].Color, Direction = lights[i].Direction };
             }
 
+            DirectionalLightGroupBuffer.Map(0);
             MemoryHelper.Copy(lightCount, DirectionalLightGroupBuffer.MappedResource);
             MemoryHelper.Copy(lightData.AsSpan(), DirectionalLightGroupBuffer.MappedResource + sizeof(Vector4));
+            DirectionalLightGroupBuffer.Unmap(0);
         }
 
         private void UpdateViewProjectionMatrices()
@@ -332,7 +337,7 @@ namespace DirectX12GameEngine.Engine
                     stereoViewProjectionTransform.Left.ViewProjectionMatrix = stereoViewProjectionTransform.Left.ViewMatrix * stereoViewProjectionTransform.Left.ProjectionMatrix;
                     stereoViewProjectionTransform.Right.ViewProjectionMatrix = stereoViewProjectionTransform.Right.ViewMatrix * stereoViewProjectionTransform.Right.ProjectionMatrix;
 
-                    MemoryHelper.Copy(stereoViewProjectionTransform, ViewProjectionTransformBuffer.MappedResource);
+                    ViewProjectionTransformBuffer.SetData(stereoViewProjectionTransform);
                 }
                 else
 #endif
@@ -349,7 +354,7 @@ namespace DirectX12GameEngine.Engine
 
                     StereoViewProjectionTransform stereoViewProjectionTransform = new StereoViewProjectionTransform { Left = viewProjectionTransform, Right = viewProjectionTransform };
 
-                    MemoryHelper.Copy(stereoViewProjectionTransform, ViewProjectionTransformBuffer.MappedResource);
+                    ViewProjectionTransformBuffer.SetData(stereoViewProjectionTransform);
                 }
             }
         }

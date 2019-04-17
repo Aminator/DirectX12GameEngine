@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     public class ComputeScalar : IComputeScalar
     {
         private float scalarValue;
-        private Texture? valueBuffer;
+        private Buffer? valueBuffer;
 
         public ComputeScalar()
         {
@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public void Visit(MaterialGeneratorContext context)
         {
-            valueBuffer ??= Texture.CreateConstantBufferView(context.GraphicsDevice, Value).DisposeBy(context.GraphicsDevice);
+            valueBuffer ??= Buffer.Constant.New(context.GraphicsDevice, Value).DisposeBy(context.GraphicsDevice);
             context.ConstantBuffers.Add(valueBuffer);
         }
 
@@ -34,11 +34,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             set
             {
                 scalarValue = value;
-
-                if (valueBuffer != null)
-                {
-                    MemoryHelper.Copy(scalarValue, valueBuffer.MappedResource);
-                }
+                valueBuffer?.SetData(scalarValue);
             }
         }
 

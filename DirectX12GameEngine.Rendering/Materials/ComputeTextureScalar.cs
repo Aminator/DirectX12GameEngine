@@ -9,7 +9,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     [StaticResource]
     public class ComputeTextureScalar : IComputeScalar
     {
-        private Texture? colorChannelBuffer;
+        private Buffer? colorChannelBuffer;
 
         public ComputeTextureScalar()
         {
@@ -30,7 +30,7 @@ namespace DirectX12GameEngine.Rendering.Materials
                 context.Textures.Add(Texture);
             }
 
-            colorChannelBuffer ??= Texture.CreateConstantBufferView(context.GraphicsDevice, Channel).DisposeBy(context.GraphicsDevice);
+            colorChannelBuffer ??= Buffer.Constant.New(context.GraphicsDevice, Channel).DisposeBy(context.GraphicsDevice);
             context.ConstantBuffers.Add(colorChannelBuffer);
         }
 

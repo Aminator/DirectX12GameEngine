@@ -5,7 +5,7 @@ namespace DirectX12GameEngine.Graphics
 {
     public class PresentationParameters
     {
-        public PresentationParameters(int backBufferWidth, int backBufferHeight, WindowHandle deviceWindowHandle, Format backBufferFomat = Format.B8G8R8A8_UNorm, Format depthStencilFormat = Format.D32_Float, bool stereo = false, int syncInterval = 1, PresentParameters presentParameters = default)
+        public PresentationParameters(int backBufferWidth, int backBufferHeight, WindowHandle deviceWindowHandle, PixelFormat backBufferFomat = PixelFormat.B8G8R8A8_UNorm, PixelFormat depthStencilFormat = PixelFormat.D32_Float, bool stereo = false, int syncInterval = 1, PresentParameters presentParameters = default)
         {
             BackBufferWidth = backBufferWidth;
             BackBufferHeight = backBufferHeight;
@@ -21,9 +21,9 @@ namespace DirectX12GameEngine.Graphics
 
         public int BackBufferHeight { get; set; }
 
-        public Format BackBufferFormat { get; set; }
+        public PixelFormat BackBufferFormat { get; set; }
 
-        public Format DepthStencilFormat { get; set; }
+        public PixelFormat DepthStencilFormat { get; set; }
 
         public WindowHandle DeviceWindowHandle { get; set; }
 

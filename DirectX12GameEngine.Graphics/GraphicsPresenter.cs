@@ -45,10 +45,9 @@ namespace DirectX12GameEngine.Graphics
 
         protected virtual Texture CreateDepthStencilBuffer()
         {
-            return Texture.New2D(GraphicsDevice, PresentationParameters.DepthStencilFormat,
-                PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight,
-                DescriptorHeapType.DepthStencilView, ResourceStates.DepthWrite, ResourceFlags.AllowDepthStencil,
-                HeapType.Default, PresentationParameters.Stereo ? (short)2 : (short)1, 1);
+            return Texture.New2D(GraphicsDevice,
+                PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight, PresentationParameters.DepthStencilFormat,
+                TextureFlags.DepthStencil, 1, PresentationParameters.Stereo ? 2 : 1);
         }
 
         protected abstract void ResizeBackBuffer(int width, int height);

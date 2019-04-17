@@ -54,19 +54,17 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsPresenter? Presenter { get; set; }
 
-        public DescriptorAllocator DepthStencilViewAllocator { get; set; }
-
-        public DescriptorAllocator RenderTargetViewAllocator { get; set; }
-
-        public DescriptorAllocator ShaderResourceViewAllocator { get; set; }
-
-        public SharpDX.Direct3D11.Device NativeDirect3D11Device { get; }
-
         internal CommandAllocatorPool BundleAllocatorPool { get; }
 
         internal CommandAllocatorPool CopyAllocatorPool { get; }
 
         internal CommandAllocatorPool DirectAllocatorPool { get; }
+
+        internal DescriptorAllocator DepthStencilViewAllocator { get; set; }
+
+        internal DescriptorAllocator RenderTargetViewAllocator { get; set; }
+
+        internal DescriptorAllocator ShaderResourceViewAllocator { get; set; }
 
         internal CommandQueue NativeCommandQueue { get; }
 
@@ -75,6 +73,8 @@ namespace DirectX12GameEngine.Graphics
         internal Queue<CommandList> CopyCommandLists { get; } = new Queue<CommandList>();
 
         internal Device NativeDevice { get; }
+
+        internal SharpDX.Direct3D11.Device NativeDirect3D11Device { get; }
 
         internal Fence NativeCopyFence { get; }
 
@@ -89,7 +89,7 @@ namespace DirectX12GameEngine.Graphics
             NativeDevice.CopyDescriptors(numDestDescriptorRanges, destDescriptorRangeStartsRef, destDescriptorRangeSizesRef, numSrcDescriptorRanges, srcDescriptorRangeStartsRef, srcDescriptorRangeSizesRef, descriptorHeapsType);
         }
 
-        public (CpuDescriptorHandle, GpuDescriptorHandle) CopyDescriptorsToOneDescriptorHandle(IEnumerable<Texture> resources)
+        public (CpuDescriptorHandle, GpuDescriptorHandle) CopyDescriptorsToOneDescriptorHandle(IEnumerable<GraphicsResource> resources)
         {
             return CopyDescriptorsToOneDescriptorHandle(resources.Select(t => t.NativeCpuDescriptorHandle).ToArray());
         }

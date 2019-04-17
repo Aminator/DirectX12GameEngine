@@ -115,13 +115,12 @@ namespace DirectX12GameEngine.Graphics.Holographic
         {
             return Texture.New2D(
                 GraphicsDevice,
-                PresentationParameters.BackBufferFormat,
                 PresentationParameters.BackBufferWidth,
                 PresentationParameters.BackBufferHeight,
-                DescriptorHeapType.RenderTargetView,
-                resourceFlags: ResourceFlags.AllowRenderTarget,
-                arraySize: (short)HolographicBufferCount,
-                mipLevels: 1);
+                PresentationParameters.BackBufferFormat,
+                TextureFlags.RenderTarget,
+                1,
+                HolographicBufferCount);
         }
 
         private SharpDX.Direct3D11.Texture2D GetHolographicBackBuffer()
@@ -129,7 +128,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
             HolographicSurface = HolographicFrame.GetRenderingParameters(HolographicFrame.CurrentPrediction.CameraPoses[0]).Direct3D11BackBuffer;
             SharpDX.Direct3D11.Texture2D d3DBackBuffer = new SharpDX.Direct3D11.Texture2D(Direct3DInterop.CreateDXGISurface(HolographicSurface).NativePointer);
 
-            PresentationParameters.BackBufferFormat = d3DBackBuffer.Description.Format;
+            PresentationParameters.BackBufferFormat = (PixelFormat)d3DBackBuffer.Description.Format;
             PresentationParameters.BackBufferWidth = d3DBackBuffer.Description.Width;
             PresentationParameters.BackBufferHeight = d3DBackBuffer.Description.Height;
 

@@ -88,12 +88,12 @@ namespace DirectX12GameEngine.Graphics
 
             if (depthStencilBuffer != null)
             {
-                pipelineStateDescription.DepthStencilFormat = depthStencilBuffer.Description.Format;
+                pipelineStateDescription.DepthStencilFormat = (Format)depthStencilBuffer.Description.Format;
             }
 
             for (int i = 0; i < device.CommandList.RenderTargets.Length; i++)
             {
-                pipelineStateDescription.RenderTargetFormats[i] = device.CommandList.RenderTargets[i].Description.Format;
+                pipelineStateDescription.RenderTargetFormats[i] = (Format)device.CommandList.RenderTargets[i].Description.Format;
             }
 
             return pipelineStateDescription;

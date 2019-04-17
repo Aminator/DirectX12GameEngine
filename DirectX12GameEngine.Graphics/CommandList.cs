@@ -130,22 +130,22 @@ namespace DirectX12GameEngine.Graphics
 
         public CompiledCommandList Close()
         {
-            foreach (var renderTarget in RenderTargets)
-            {
-                ResourceBarrierTransition(renderTarget, ResourceStates.RenderTarget, ResourceStates.Present);
-            }
+            //foreach (var renderTarget in RenderTargets)
+            //{
+            //    ResourceBarrierTransition(renderTarget, ResourceStates.RenderTarget, ResourceStates.Present);
+            //}
 
             currentCommandList.NativeCommandList.Close();
 
             return currentCommandList;
         }
 
-        public void CopyBufferRegion(Texture source, long sourceOffset, Texture destination, long destinationOffset, long? numBytes = null)
+        public void CopyBufferRegion(GraphicsResource source, long sourceOffset, GraphicsResource destination, long destinationOffset, long numBytes)
         {
-            currentCommandList.NativeCommandList.CopyBufferRegion(destination.NativeResource, destinationOffset, source.NativeResource, sourceOffset, numBytes ?? source.Width * source.Height);
+            currentCommandList.NativeCommandList.CopyBufferRegion(destination.NativeResource, destinationOffset, source.NativeResource, sourceOffset, numBytes);
         }
 
-        public void CopyResource(Texture source, Texture destination)
+        public void CopyResource(GraphicsResource source, GraphicsResource destination)
         {
             currentCommandList.NativeCommandList.CopyResource(destination.NativeResource, source.NativeResource);
         }
@@ -208,7 +208,7 @@ namespace DirectX12GameEngine.Graphics
             SetDescriptorHeaps(GraphicsDevice.ShaderResourceViewAllocator.DescriptorHeap);
         }
 
-        public void ResourceBarrierTransition(Texture resource, ResourceStates stateBefore, ResourceStates stateAfter)
+        public void ResourceBarrierTransition(GraphicsResource resource, ResourceStates stateBefore, ResourceStates stateAfter)
         {
             currentCommandList.NativeCommandList.ResourceBarrierTransition(resource.NativeResource, stateBefore, stateAfter);
         }
@@ -226,9 +226,9 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.SetGraphicsRoot32BitConstant(rootParameterIndex, srcData, destOffsetIn32BitValues);
         }
 
-        public void SetGraphicsRootDescriptorTable(int rootParameterIndex, Texture texture)
+        public void SetGraphicsRootDescriptorTable(int rootParameterIndex, GraphicsResource resource)
         {
-            currentCommandList.NativeCommandList.SetGraphicsRootDescriptorTable(rootParameterIndex, texture.NativeGpuDescriptorHandle);
+            currentCommandList.NativeCommandList.SetGraphicsRootDescriptorTable(rootParameterIndex, resource.NativeGpuDescriptorHandle);
         }
 
         public void SetGraphicsRootDescriptorTable(int rootParameterIndex, GpuDescriptorHandle baseDescriptor)
@@ -286,7 +286,7 @@ namespace DirectX12GameEngine.Graphics
 
             for (int i = 0; i < renderTargetViews.Length; i++)
             {
-                ResourceBarrierTransition(renderTargetViews[i], ResourceStates.Present, ResourceStates.RenderTarget);
+                //ResourceBarrierTransition(renderTargetViews[i], ResourceStates.Present, ResourceStates.RenderTarget);
                 renderTargetDescriptors[i] = renderTargetViews[i].NativeCpuDescriptorHandle;
             }
 
@@ -310,9 +310,9 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.SetScissorRectangles(scissorRectangles);
         }
 
-        public void SetVertexBuffers(params VertexBufferView[] vertexBufferViews)
+        public void SetVertexBuffers(int startSlot, params VertexBufferView[] vertexBufferViews)
         {
-            currentCommandList.NativeCommandList.SetVertexBuffers(0, vertexBufferViews);
+            currentCommandList.NativeCommandList.SetVertexBuffers(startSlot, vertexBufferViews);
         }
 
         public void SetViewports(params RawViewportF[] viewports)

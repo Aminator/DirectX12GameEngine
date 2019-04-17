@@ -24,9 +24,9 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public Material Material { get; }
 
-        public IList<Texture> ConstantBuffers { get; } = new List<Texture>();
+        public IList<Graphics.Buffer> ConstantBuffers { get; } = new List<Graphics.Buffer>();
 
-        public IList<Texture> Samplers { get; } = new List<Texture>();
+        public IList<GraphicsResource> Samplers { get; } = new List<GraphicsResource>();
 
         public IList<Texture> Textures { get; } = new List<Texture>();
 
