@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using DirectX12GameEngine.Core;
 using SharpDX;
 using SharpDX.Direct3D12;
@@ -31,6 +32,8 @@ namespace DirectX12GameEngine.Graphics
         }
 
         public override Texture BackBuffer => renderTargets[swapChain.CurrentBackBufferIndex];
+
+        public Matrix3x2 MatrixTransform { get => swapChain.MatrixTransform.ToMatrix3x2(); set => swapChain.MatrixTransform = value.ToMatrix3x2(); }
 
         public override object NativePresenter => swapChain;
 
@@ -76,8 +79,6 @@ namespace DirectX12GameEngine.Graphics
                     }
                     break;
                 case AppContextType.Xaml:
-                    swapChainDescription.AlphaMode = AlphaMode.Premultiplied;
-
                     using (Factory4 factory = new Factory4())
                     using (ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(PresentationParameters.DeviceWindowHandle.NativeWindow))
                     using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, ref swapChainDescription))
@@ -129,6 +130,19 @@ namespace DirectX12GameEngine.Graphics
             {
                 renderTargets[i] = new Texture(GraphicsDevice, swapChain.GetBackBuffer<Resource>(i));
             }
+        }
+    }
+
+    internal static class MatrixExtensions
+    {
+        public static unsafe SharpDX.Mathematics.Interop.RawMatrix3x2 ToMatrix3x2(this Matrix3x2 value)
+        {
+            return *(SharpDX.Mathematics.Interop.RawMatrix3x2*)&value;
+        }
+
+        public static unsafe Matrix3x2 ToMatrix3x2(this SharpDX.Mathematics.Interop.RawMatrix3x2 value)
+        {
+            return *(Matrix3x2*)&value;
         }
     }
 }

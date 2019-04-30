@@ -1,7 +1,7 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.0-preview.21">
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.24">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;uap10.0.17763</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;uap10.0.18362</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <NullableContextOptions>enable</NullableContextOptions>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
 
   <ItemGroup>

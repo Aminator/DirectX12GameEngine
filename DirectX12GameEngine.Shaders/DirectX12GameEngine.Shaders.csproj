@@ -12,7 +12,7 @@
       <ExcludeAssets>native</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="ICSharpCode.Decompiler" Version="5.0.0.4688-preview1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0-beta4-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0" />
     <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.1-beta0-g3060495c2a" />
   </ItemGroup>
   

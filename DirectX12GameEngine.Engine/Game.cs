@@ -48,6 +48,19 @@ namespace DirectX12GameEngine.Engine
         {
             GraphicsDevice.CommandList.Reset();
 
+#if WINDOWS_UWP
+            if (Context is GameContextXaml xamlContext && GraphicsDevice.Presenter is SwapChainGraphicsPresenter swapChainGraphicsPresenter)
+            {
+                var swapChainPanel = xamlContext.Control;
+
+                swapChainGraphicsPresenter.MatrixTransform = new System.Numerics.Matrix3x2
+                {
+                    M11 = 1.0f / swapChainPanel.CompositionScaleX,
+                    M22 = 1.0f / swapChainPanel.CompositionScaleY
+                };
+            }
+#endif
+
             if (GraphicsDevice.Presenter != null)
             {
                 int width = Window.ClientBounds.Width;

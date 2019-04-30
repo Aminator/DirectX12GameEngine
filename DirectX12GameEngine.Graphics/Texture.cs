@@ -90,9 +90,9 @@ namespace DirectX12GameEngine.Graphics
             Resource uploadResource = device.NativeDevice.CreateCommittedResource(new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), HeapFlags.None, texture.NativeResource.Description, ResourceStates.CopyDestination);
             using Texture textureUploadBuffer = new Texture(device, uploadResource);
 
-            fixed (T* ptr = data)
+            fixed (T* pointer = data)
             {
-                textureUploadBuffer.NativeResource.WriteToSubresource(0, null, (IntPtr)ptr, texturePixelSize * width, data.Length * sizeof(T));
+                textureUploadBuffer.NativeResource.WriteToSubresource(0, null, (IntPtr)pointer, texturePixelSize * width, data.Length * sizeof(T));
             }
 
             CommandList copyCommandList = device.GetOrCreateCopyCommandList();

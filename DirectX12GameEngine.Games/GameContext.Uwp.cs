@@ -1,6 +1,5 @@
 ﻿#if WINDOWS_UWP
 using DirectX12GameEngine.Core;
-using Windows.Graphics.Display;
 using Windows.Graphics.Holographic;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;

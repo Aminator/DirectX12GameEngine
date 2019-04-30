@@ -11,8 +11,8 @@
     <AssemblyName>DirectX12CoreWindowApp</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.17763.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -113,21 +113,21 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.12" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DirectX12Game\DirectX12Game.csproj">
-      <Project>{30F0ECD3-E8A8-4790-BBBB-57DCB363FC15}</Project>
-      <Name>DirectX12Game</Name>
-    </ProjectReference>
+    <None Include="DirectX12CoreWindowApp_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj">
-      <Project>{693635ED-FC5E-43FF-A869-B37A2D601ED3}</Project>
+      <Project>{693635ed-fc5e-43ff-a869-b37a2d601ed3}</Project>
       <Name>DirectX12GameEngine.Engine</Name>
     </ProjectReference>
     <ProjectReference Include="..\DirectX12GameEngine.Games\DirectX12GameEngine.Games.csproj">
-      <Project>{6D3387FC-C108-4EC0-AE82-66184570CF6C}</Project>
+      <Project>{6d3387fc-c108-4ec0-ae82-66184570cf6c}</Project>
       <Name>DirectX12GameEngine.Games</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="DirectX12CoreWindowApp_TemporaryKey.pfx" />
+    <ProjectReference Include="..\DirectX12Game\DirectX12Game.csproj">
+      <Project>{30f0ecd3-e8a8-4790-bbbb-57dcb363fc15}</Project>
+      <Name>DirectX12Game</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
