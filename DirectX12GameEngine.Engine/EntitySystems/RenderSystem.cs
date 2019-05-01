@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
+using Microsoft.Extensions.DependencyInjection;
 using SharpDX.Direct3D12;
 
 using Buffer = DirectX12GameEngine.Graphics.Buffer;
@@ -27,7 +27,8 @@ namespace DirectX12GameEngine.Engine
 
         public unsafe RenderSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
-            Components.CollectionChanged += Components_CollectionChanged;
+            GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
+            SceneSystem = services.GetRequiredService<SceneSystem>();
 
             DirectionalLightGroupBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
             GlobalBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(GlobalBuffer));
@@ -40,9 +41,13 @@ namespace DirectX12GameEngine.Engine
 
         public Buffer ViewProjectionTransformBuffer { get; }
 
+        public GraphicsDevice GraphicsDevice { get; }
+
+        public SceneSystem SceneSystem { get; }
+
         public override void Draw(GameTime gameTime)
         {
-            UpdateGlobals();
+            UpdateGlobals(gameTime);
             UpdateLights();
             UpdateViewProjectionMatrices();
 
@@ -189,6 +194,24 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
+        protected override void OnEntityComponentAdded(ModelComponent component)
+        {
+            if (component.Model != null && models.TryGetValue(component.Model, out var tuple))
+            {
+                models.Remove(component.Model);
+                DisposeModel(tuple.Bundles, tuple.WorldMatrixBuffers);
+            }
+        }
+
+        protected override void OnEntityComponentRemoved(ModelComponent component)
+        {
+            if (component.Model != null && models.TryGetValue(component.Model, out var tuple))
+            {
+                models.Remove(component.Model);
+                DisposeModel(tuple.Bundles, tuple.WorldMatrixBuffers);
+            }
+        }
+
         private static void DisposeModel(CompiledCommandList[] bundles, Buffer[] worldMatrixBuffers)
         {
             if (worldMatrixBuffers != null)
@@ -264,12 +287,12 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void UpdateGlobals()
+        private void UpdateGlobals(GameTime gameTime)
         {
             GlobalBuffer globalBuffer = new GlobalBuffer
             {
-                ElapsedTime = (float)Game.Time.Elapsed.TotalSeconds,
-                TotalTime = (float)Game.Time.Total.TotalSeconds
+                ElapsedTime = (float)gameTime.Elapsed.TotalSeconds,
+                TotalTime = (float)gameTime.Total.TotalSeconds
             };
 
             GlobalBuffer.SetData(globalBuffer);
@@ -277,18 +300,20 @@ namespace DirectX12GameEngine.Engine
 
         private unsafe void UpdateLights()
         {
-            LightSystem? lightSystem = SceneSystem.Systems.Get<LightSystem>();
+            LightSystem? lightSystem = EntityManager?.Systems.Get<LightSystem>();
 
             if (lightSystem is null) return;
 
-            var lights = lightSystem.Lights;
-            int lightCount = lights.Count;
+            int lightCount = lightSystem.Lights.Count;
 
-            DirectionalLightData[] lightData = new DirectionalLightData[lights.Count];
+            DirectionalLightData[] lightData = new DirectionalLightData[lightCount];
 
-            for (int i = 0; i < lights.Count; i++)
+            int lightIndex = 0;
+
+            foreach (LightComponent light in lightSystem.Lights)
             {
-                lightData[i] = new DirectionalLightData { Color = lights[i].Color, Direction = lights[i].Direction };
+                lightData[lightIndex] = new DirectionalLightData { Color = light.Color, Direction = light.Direction };
+                lightIndex++;
             }
 
             DirectionalLightGroupBuffer.Map(0);
@@ -356,33 +381,6 @@ namespace DirectX12GameEngine.Engine
 
                     ViewProjectionTransformBuffer.SetData(stereoViewProjectionTransform);
                 }
-            }
-        }
-
-        private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (ModelComponent modelComponent in e.NewItems)
-                    {
-                        if (modelComponent.Model != null && models.TryGetValue(modelComponent.Model, out var tuple))
-                        {
-                            models.Remove(modelComponent.Model);
-                            DisposeModel(tuple.Bundles, tuple.WorldMatrixBuffers);
-                        }
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (ModelComponent modelComponent in e.OldItems)
-                    {
-                        if (modelComponent.Model != null && models.TryGetValue(modelComponent.Model, out var tuple))
-                        {
-                            models.Remove(modelComponent.Model);
-                            DisposeModel(tuple.Bundles, tuple.WorldMatrixBuffers);
-                        }
-                    }
-                    break;
             }
         }
 

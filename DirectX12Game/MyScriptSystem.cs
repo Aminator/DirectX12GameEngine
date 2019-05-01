@@ -6,8 +6,10 @@ using System.Xml.Serialization;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
+using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Materials;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12Game
 {
@@ -19,14 +21,19 @@ namespace DirectX12Game
 
         public MyScriptSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
+            GameBase game = services.GetRequiredService<GameBase>();
+
+            GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
+            SceneSystem = services.GetRequiredService<SceneSystem>();
+
 #if WINDOWS_UWP
-            if (Game.Context is GameContextCoreWindow context)
+            if (game.Context is GameContextCoreWindow context)
             {
                 context.Control.KeyDown += (s, e) => OnKeyDown(e.VirtualKey);
                 context.Control.PointerPressed += (s, e) => OnPointerPressed(e.CurrentPoint);
                 context.Control.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.CurrentPoint);
             }
-            else if (Game.Context is GameContextXaml xamlContext)
+            else if (game.Context is GameContextXaml xamlContext)
             {
                 xamlContext.Control.KeyDown += (s, e) => OnKeyDown(e.Key);
                 xamlContext.Control.PointerPressed += (s, e) => OnPointerPressed(e.GetCurrentPoint(xamlContext.Control));
@@ -35,9 +42,15 @@ namespace DirectX12Game
 #endif
         }
 
+        public GraphicsDevice GraphicsDevice { get; }
+
+        public SceneSystem SceneSystem { get; }
+
         public override void Update(GameTime gameTime)
         {
             //System.Diagnostics.Debug.WriteLine(1.0 / deltaTime.TotalSeconds);
+
+            if (EntityManager is null) return;
 
             foreach (MyScriptComponent component in Components)
             {
@@ -45,7 +58,7 @@ namespace DirectX12Game
 
                 Quaternion timeRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time * 0.2f);
 
-                var scene = SceneSystem.RootScene;
+                Scene? scene = SceneSystem.SceneInstance?.RootScene;
 
                 if (scene != null)
                 {
@@ -57,13 +70,13 @@ namespace DirectX12Game
                         camera.Entity.Transform.Position = new Vector3(camera.Entity.Transform.Position.X, camera.Entity.Transform.Position.Y, 10.0f * scrollAmount * 3);
                     }
 
-                    Entity light = SceneSystem.FirstOrDefault(m => m.Name == "MyLight");
+                    Entity light = EntityManager.FirstOrDefault(m => m.Name == "MyLight");
                     if (light != null)
                     {
                         light.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, -MathF.PI / 4.0f);
                     }
 
-                    var rexes = SceneSystem.Where(m => m.Name == "T-Rex");
+                    var rexes = EntityManager.Where(m => m.Name == "T-Rex");
                     foreach (var item in rexes)
                     {
                         item.Transform.RotationEuler = QuaternionExtensions.ToEuler(timeRotation);
@@ -81,43 +94,43 @@ namespace DirectX12Game
                     //    }
                     //}
 
-                    Entity customCliffhouse = SceneSystem.FirstOrDefault(m => m.Name == "CustomCliffhouse");
+                    Entity customCliffhouse = EntityManager.FirstOrDefault(m => m.Name == "CustomCliffhouse");
                     if (customCliffhouse != null)
                     {
                         customCliffhouse.Transform.Rotation = timeRotation;
                     }
 
-                    Entity cliffhouse = SceneSystem.FirstOrDefault(m => m.Name == "Cliffhouse");
+                    Entity cliffhouse = EntityManager.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
                         cliffhouse.Transform.Rotation = timeRotation;
                     }
 
-                    Entity rightHandModel = SceneSystem.FirstOrDefault(m => m.Name == "RightHandModel");
+                    Entity rightHandModel = EntityManager.FirstOrDefault(m => m.Name == "RightHandModel");
                     if (rightHandModel != null)
                     {
                         rightHandModel.Transform.Rotation = timeRotation;
                     }
 
-                    Entity leftHandModel = SceneSystem.FirstOrDefault(m => m.Name == "HoloTile");
+                    Entity leftHandModel = EntityManager.FirstOrDefault(m => m.Name == "HoloTile");
                     if (leftHandModel != null)
                     {
                         leftHandModel.Transform.Rotation = timeRotation;
                     }
 
-                    Entity icon = SceneSystem.FirstOrDefault(m => m.Name == "Icon_Failure");
+                    Entity icon = EntityManager.FirstOrDefault(m => m.Name == "Icon_Failure");
                     if (icon != null)
                     {
                         icon.Transform.Rotation = timeRotation;
                     }
 
-                    Entity cube = SceneSystem.FirstOrDefault(m => m.Name == "LiveCube");
+                    Entity cube = EntityManager.FirstOrDefault(m => m.Name == "LiveCube");
                     if (cube != null)
                     {
                         cube.Transform.Rotation = timeRotation;
                     }
 
-                    Entity parent1 = SceneSystem.FirstOrDefault(m => m.Name == "Parent1");
+                    Entity parent1 = EntityManager.FirstOrDefault(m => m.Name == "Parent1");
                     if (parent1 != null)
                     {
                         parent1.Transform.Rotation = timeRotation;
@@ -152,7 +165,7 @@ namespace DirectX12Game
                     GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
                     break;
                 case Windows.System.VirtualKey.D:
-                    Entity? customCliffhouse = SceneSystem.FirstOrDefault(m => m.Name == "CustomCliffhouse");
+                    Entity? customCliffhouse = EntityManager.FirstOrDefault(m => m.Name == "CustomCliffhouse");
                     if (customCliffhouse != null)
                     {
                         if (customCliffhouse.Get<ModelComponent>()?.Model?.Materials[2].Descriptor?.Attributes.Diffuse is MaterialDiffuseMapFeature diffuseMapFeature)
@@ -165,23 +178,23 @@ namespace DirectX12Game
                     }
                     break;
                 case Windows.System.VirtualKey.R:
-                    Entity? cliffhouse = SceneSystem.RootScene?.FirstOrDefault(m => m.Name == "Cliffhouse");
+                    Entity? cliffhouse = SceneSystem.SceneInstance?.RootScene?.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
-                        SceneSystem.RootScene?.Remove(cliffhouse);
+                        SceneSystem.SceneInstance?.RootScene?.Remove(cliffhouse);
                     }
                     break;
                 case Windows.System.VirtualKey.A:
                     Entity newCliffhouse = new Entity("Cliffhouse")
                     {
                         new TransformComponent { Position = new Vector3(-200.0f, 120.0f, 500.0f) },
-                        new ModelComponent(await Content.LoadAsync<Model>(@"Assets\Models\Cliffhouse_Model.xml"))
+                        new ModelComponent(await Services.GetRequiredService<ContentManager>().LoadAsync<Model>(@"Assets\Models\Cliffhouse_Model.xml"))
                     };
 
-                    SceneSystem.RootScene?.Add(newCliffhouse);
+                    SceneSystem.SceneInstance?.RootScene?.Add(newCliffhouse);
                     break;
                 case Windows.System.VirtualKey.H:
-                    Entity? cliffhouseToClone = SceneSystem.RootScene?.FirstOrDefault(m => m.Name == "Cliffhouse");
+                    Entity? cliffhouseToClone = SceneSystem.SceneInstance?.RootScene?.FirstOrDefault(m => m.Name == "Cliffhouse");
 
                     XmlSerializer serializer = new XmlSerializer(typeof(Entity), new[] { typeof(TransformComponent), typeof(ModelComponent) });
 
@@ -194,35 +207,36 @@ namespace DirectX12Game
                         Entity entityClone = (Entity)serializer.Deserialize(stream);
                         entityClone.Transform.Position = new Vector3(200.0f, 120.0f, 500.0f);
 
-                        SceneSystem.RootScene?.Add(entityClone);
+                        SceneSystem.SceneInstance?.RootScene?.Add(entityClone);
                     }
                     break;
                 case Windows.System.VirtualKey.P:
-                    Entity? child1 = SceneSystem.FirstOrDefault(m => m.Name == "Child1");
+                    Entity? child1 = EntityManager?.FirstOrDefault(m => m.Name == "Child1");
                     if (child1 != null && child1.Scene is null)
                     {
                         child1.Transform.Parent = null;
-                        SceneSystem.RootScene?.Add(child1);
+                        SceneSystem.SceneInstance?.RootScene?.Add(child1);
                     }
                     break;
                 case Windows.System.VirtualKey.Q:
-                    Entity? child2 = SceneSystem.FirstOrDefault(m => m.Name == "Child1");
+                    Entity? child2 = EntityManager?.FirstOrDefault(m => m.Name == "Child1");
                     if (child2 != null && child2.Scene != null)
                     {
                         child2.Scene.Remove(child2);
-                        child2.Transform.Parent = SceneSystem.FirstOrDefault(m => m.Name == "Parent1").Transform;
+                        child2.Transform.Parent = EntityManager.FirstOrDefault(m => m.Name == "Parent1").Transform;
                     }
                     break;
                 case Windows.System.VirtualKey.S:
-                    Scene? previousRootScene = SceneSystem.RootScene;
+                    SceneInstance? sceneInstance = SceneSystem.SceneInstance;
+                    Scene? previousRootScene = sceneInstance?.RootScene;
 
-                    if (previousRootScene != null && cameraEntity != null)
+                    if (sceneInstance != null && previousRootScene != null && cameraEntity != null)
                     {
                         cameraEntity.Scene?.Remove(cameraEntity);
 
-                        SceneSystem.RootScene = new Scene { Offset = new Vector3(500.0f, 0.0f, 0.0f) };
-                        SceneSystem.RootScene.Add(cameraEntity);
-                        SceneSystem.RootScene.Children.Add(previousRootScene);
+                        sceneInstance.RootScene = new Scene { Offset = new Vector3(500.0f, 0.0f, 0.0f) };
+                        sceneInstance.RootScene.Add(cameraEntity);
+                        sceneInstance.RootScene.Children.Add(previousRootScene);
                     }
                     break;
             }

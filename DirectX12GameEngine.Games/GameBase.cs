@@ -16,7 +16,10 @@ namespace DirectX12GameEngine.Games
         {
             Context = gameContext;
 
-            Services = ConfigureServices().BuildServiceProvider();
+            ServiceCollection services = new ServiceCollection();
+            ConfigureServices(services);
+
+            Services = services.BuildServiceProvider();
 
             Window = GameWindow.Create(this);
 
@@ -123,11 +126,10 @@ namespace DirectX12GameEngine.Games
             }
         }
 
-        protected virtual IServiceCollection ConfigureServices()
+        protected virtual void ConfigureServices(IServiceCollection services)
         {
-            return new ServiceCollection()
-                .AddSingleton(this)
-                .AddSingleton<List<GameSystemBase>>();
+            services.AddSingleton<GameBase>(this);
+            services.AddSingleton<List<GameSystemBase>>();
         }
     }
 }

@@ -92,13 +92,14 @@ namespace DirectX12GameEngine.Engine
             GraphicsDevice.Presenter?.Present();
         }
 
-        protected override IServiceCollection ConfigureServices()
+        protected override void ConfigureServices(IServiceCollection services)
         {
-            return base.ConfigureServices()
-                .AddSingleton(GraphicsDevice)
-                .AddSingleton<GltfModelLoader>()
-                .AddSingleton<ContentManager>()
-                .AddSingleton<SceneSystem>();
+            base.ConfigureServices(services);
+
+            services.AddSingleton(GraphicsDevice);
+            services.AddSingleton<GltfModelLoader>();
+            services.AddSingleton<ContentManager>();
+            services.AddSingleton<SceneSystem>();
         }
     }
 }

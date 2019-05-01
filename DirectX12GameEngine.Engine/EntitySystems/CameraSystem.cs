@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Numerics;
 using DirectX12GameEngine.Games;
+using DirectX12GameEngine.Graphics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -8,29 +9,20 @@ namespace DirectX12GameEngine.Engine
     {
         public CameraSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
+            Order = -10;
+
+            GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
         }
 
-        public override void Update(GameTime gameTime)
+        public GraphicsDevice GraphicsDevice { get; }
+
+        public override void Draw(GameTime gameTime)
         {
             foreach (CameraComponent cameraComponent in Components)
             {
-                if (cameraComponent.Entity is null) continue;
+                float screenAspectRatio = GraphicsDevice.CommandList.Viewports[0].Width / GraphicsDevice.CommandList.Viewports[0].Height;
 
-                Matrix4x4.Decompose(cameraComponent.Entity.Transform.WorldMatrix, out _,
-                    out Quaternion rotation,
-                    out Vector3 translation);
-
-                Vector3 forwardVector = Vector3.Normalize(Vector3.Transform(-Vector3.UnitZ, rotation));
-                Vector3 upVector = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, rotation));
-                cameraComponent.ViewMatrix = Matrix4x4.CreateLookAt(translation, translation + forwardVector, upVector);
-
-                cameraComponent.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(
-                    cameraComponent.FieldOfView * (MathF.PI / 180.0f),
-                    GraphicsDevice.CommandList.Viewports[0].Width / GraphicsDevice.CommandList.Viewports[0].Height,
-                    cameraComponent.NearPlaneDistance,
-                    cameraComponent.FarPlaneDistance);
-
-                cameraComponent.ViewProjectionMatrix = cameraComponent.ViewMatrix * cameraComponent.ProjectionMatrix;
+                cameraComponent.Update(screenAspectRatio);
             }
         }
     }

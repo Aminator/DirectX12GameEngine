@@ -13,18 +13,46 @@ namespace DirectX12GameEngine.Engine
         public TransformSystem(IServiceProvider services) : base(services)
         {
             Order = -200;
-
-            Components.CollectionChanged += Components_CollectionChanged;
         }
 
         public override void Draw(GameTime gameTime)
         {
-            if (SceneSystem.RootScene != null)
+            if (EntityManager is SceneInstance sceneInstance && sceneInstance.RootScene != null)
             {
-                UpdateTransformationsRecursive(SceneSystem.RootScene);
+                UpdateTransformationsRecursive(sceneInstance.RootScene);
             }
 
             UpdateTransformations(TransformationRoots);
+        }
+
+        protected override void OnEntityComponentAdded(TransformComponent component)
+        {
+            if (component.Parent is null)
+            {
+                TransformationRoots.Add(component);
+            }
+
+            foreach (Entity childEntity in component.ChildEntities)
+            {
+                InternalAddEntity(childEntity);
+            }
+
+            component.Children.CollectionChanged += Children_CollectionChanged;
+        }
+
+        protected override void OnEntityComponentRemoved(TransformComponent component)
+        {
+            component.Children.CollectionChanged -= Children_CollectionChanged;
+
+            foreach (Entity childEntity in component.ChildEntities)
+            {
+                InternalRemoveEntity(childEntity, false);
+            }
+
+            if (component.Parent is null)
+            {
+                TransformationRoots.Remove(component);
+            }
         }
 
         private void UpdateTransformations(IEnumerable<TransformComponent> transformationRoots)
@@ -50,45 +78,6 @@ namespace DirectX12GameEngine.Engine
             foreach (Scene childScene in scene.Children)
             {
                 UpdateTransformationsRecursive(childScene);
-            }
-        }
-
-        private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (TransformComponent transformComponent in e.NewItems)
-                    {
-                        if (transformComponent.Parent is null)
-                        {
-                            TransformationRoots.Add(transformComponent);
-                        }
-
-                        foreach (Entity childEntity in transformComponent.ChildEntities)
-                        {
-                            InternalAddEntity(childEntity);
-                        }
-
-                        transformComponent.Children.CollectionChanged += Children_CollectionChanged;
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (TransformComponent transformComponent in e.OldItems)
-                    {
-                        transformComponent.Children.CollectionChanged -= Children_CollectionChanged;
-
-                        foreach (Entity childEntity in transformComponent.ChildEntities)
-                        {
-                            InternalRemoveEntity(childEntity, false);
-                        }
-
-                        if (transformComponent.Parent is null)
-                        {
-                            TransformationRoots.Remove(transformComponent);
-                        }
-                    }
-                    break;
             }
         }
 

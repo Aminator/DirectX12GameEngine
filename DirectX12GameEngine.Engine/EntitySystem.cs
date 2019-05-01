@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using DirectX12GameEngine.Games;
-using DirectX12GameEngine.Graphics;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -14,14 +11,9 @@ namespace DirectX12GameEngine.Engine
             MainType = mainType;
             RequiredTypes = requiredAdditionalTypes;
             Services = services;
-
-            Game = services.GetRequiredService<GameBase>();
-            Content = services.GetRequiredService<ContentManager>();
-            GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
-            SceneSystem = services.GetRequiredService<SceneSystem>();
         }
 
-        public GameBase Game { get; }
+        public EntityManager? EntityManager { get; internal set; }
 
         public Type MainType { get; }
 
@@ -30,12 +22,6 @@ namespace DirectX12GameEngine.Engine
         public IServiceProvider Services { get; }
 
         public int Order { get; protected set; }
-
-        protected ContentManager Content { get; }
-
-        protected GraphicsDevice GraphicsDevice { get; }
-
-        protected SceneSystem SceneSystem { get; }
 
         public virtual void Update(GameTime gameTime)
         {
@@ -53,12 +39,12 @@ namespace DirectX12GameEngine.Engine
 
         protected internal void InternalAddEntity(Entity entity)
         {
-            SceneSystem.AddInternal(entity);
+            EntityManager?.AddInternal(entity);
         }
 
         protected internal void InternalRemoveEntity(Entity entity, bool removeParent)
         {
-            SceneSystem.RemoveInternal(entity, removeParent);
+            EntityManager?.RemoveInternal(entity, removeParent);
         }
 
         internal bool Accept(Type type)
@@ -74,7 +60,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        protected ObservableCollection<TComponent> Components { get; } = new ObservableCollection<TComponent>();
+        protected HashSet<TComponent> Components { get; } = new HashSet<TComponent>();
 
         protected internal override void ProcessEntityComponent(EntityComponent entityComponent, bool forceRemove)
         {
@@ -86,12 +72,22 @@ namespace DirectX12GameEngine.Engine
 
             if (entityMatch && !entityAdded)
             {
+                OnEntityComponentAdded(component);
                 Components.Add(component);
             }
             else if (!entityMatch && entityAdded)
             {
+                OnEntityComponentRemoved(component);
                 Components.Remove(component);
             }
+        }
+
+        protected virtual void OnEntityComponentAdded(TComponent component)
+        {
+        }
+
+        protected virtual void OnEntityComponentRemoved(TComponent component)
+        {
         }
 
         private bool EntityMatch(Entity entity)

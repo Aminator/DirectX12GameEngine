@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        public IReadOnlyList<LightComponent> Lights => Components;
+        public IReadOnlyCollection<LightComponent> Lights => Components;
 
         public override void Draw(GameTime gameTime)
         {

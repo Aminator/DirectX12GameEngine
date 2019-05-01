@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
@@ -12,12 +11,20 @@ namespace DirectX12GameEngine.Engine
         public ScriptSystem(IServiceProvider services) : base(services)
         {
             Order = -100000;
-
-            Components.CollectionChanged += Components_CollectionChanged;
         }
 
         public override void Update(GameTime gameTime)
         {
+        }
+
+        protected override void OnEntityComponentAdded(ScriptComponent component)
+        {
+            Add(component);
+        }
+
+        protected override void OnEntityComponentRemoved(ScriptComponent component)
+        {
+            Remove(component);
         }
 
         private void Add(ScriptComponent script)
@@ -34,25 +41,6 @@ namespace DirectX12GameEngine.Engine
             if (!startWasPending)
             {
                 script.Cancel();
-            }
-        }
-
-        private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (ScriptComponent script in e.NewItems)
-                    {
-                        Add(script);
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (ScriptComponent script in e.OldItems)
-                    {
-                        Remove(script);
-                    }
-                    break;
             }
         }
     }
