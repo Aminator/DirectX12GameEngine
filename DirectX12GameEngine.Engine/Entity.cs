@@ -32,6 +32,8 @@ namespace DirectX12GameEngine.Engine
 
         public string Name { get; set; }
 
+        public EntityManager? EntityManager { get; internal set; }
+
         public Scene? Scene { get; internal set; }
 
         public TransformComponent Transform { get; private set; }

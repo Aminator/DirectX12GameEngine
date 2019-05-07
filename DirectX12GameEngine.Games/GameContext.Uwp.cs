@@ -20,8 +20,6 @@ namespace DirectX12GameEngine.Games
         public GameContextHolographic(HolographicSpace? holographicSpace = null, CoreWindow? control = null, int requestedWidth = 0, int requestedHeight = 0)
             : base(control, requestedWidth, requestedHeight)
         {
-            ContextType = AppContextType.Holographic;
-
             HolographicSpace = holographicSpace ?? HolographicSpace.CreateForCoreWindow(Control);
         }
 

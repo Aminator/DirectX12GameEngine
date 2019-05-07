@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 namespace DirectX12GameEngine.Engine
 {
     [DefaultEntitySystem(typeof(TransformSystem))]
-    public sealed partial class TransformComponent : EntityComponent/*, IEnumerable<TransformComponent>*/
+    public sealed partial class TransformComponent : EntityComponent, IEnumerable<TransformComponent>
     {
         private TransformComponent? parent;
 
@@ -88,7 +88,7 @@ namespace DirectX12GameEngine.Engine
 
         public IEnumerator<TransformComponent> GetEnumerator() => Children.GetEnumerator();
 
-        //IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public void UpdateLocalMatrix()
         {

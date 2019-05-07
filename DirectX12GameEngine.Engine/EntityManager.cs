@@ -68,7 +68,16 @@ namespace DirectX12GameEngine.Engine
 
         internal void AddInternal(Entity entity)
         {
-            if (!entities.Add(entity)) return;
+            if (entities.Contains(entity)) return;
+
+            if (entity.EntityManager != null)
+            {
+                throw new ArgumentException("This entity is already used by another entity manager.", nameof(entity));
+            }
+
+            entity.EntityManager = this;
+
+            entities.Add(entity);
 
             foreach (EntityComponent entityComponent in entity)
             {
@@ -98,6 +107,8 @@ namespace DirectX12GameEngine.Engine
             {
                 Remove(entityComponent);
             }
+
+            entity.EntityManager = null;
         }
 
         private void Add(EntityComponent entityComponent)

@@ -14,14 +14,17 @@ namespace DirectX12GameEngine.Games
             Services = game.Services;
         }
 
-        public static GameWindow Create(GameBase game)
+        public static GameWindow Create(GameBase game) => game.Context.ContextType switch
         {
 #if WINDOWS_UWP
-            return new GameWindowUwp(game);
-#elif NETCOREAPP
-            return new GameWindowWinForms(game);
+            AppContextType.CoreWindow => new GameWindowUwp(game),
+            AppContextType.Xaml => new GameWindowUwp(game),
 #endif
-        }
+#if NETCOREAPP
+            AppContextType.WinForms => new GameWindowWinForms(game),
+#endif
+            _ => throw new PlatformNotSupportedException("This context is not supported on this platform.")
+        };
 
         public event EventHandler SizeChanged;
 

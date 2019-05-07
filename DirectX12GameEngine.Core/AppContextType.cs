@@ -4,7 +4,6 @@
     {
         CoreWindow,
         Xaml,
-        Holographic,
         WinForms
     }
 }

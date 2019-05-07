@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,9 +19,8 @@ namespace DirectX12GameEngine.Engine
 {
     public sealed class ContentManager
     {
-        private readonly Dictionary<Guid, IIdentifiable> identifiableObjects = new Dictionary<Guid, IIdentifiable>();
-
-        private readonly Dictionary<string, Task<object>> pendingTasks = new Dictionary<string, Task<object>>();
+        private readonly AsyncDictionary<Guid, IIdentifiable> identifiableObjects = new AsyncDictionary<Guid, IIdentifiable>();
+        private readonly ConcurrentDictionary<string, Lazy<Task<object>>> loadedAssets = new ConcurrentDictionary<string, Lazy<Task<object>>>();
 
         public ContentManager(IServiceProvider services)
         {
@@ -41,51 +41,35 @@ namespace DirectX12GameEngine.Engine
 
         public GraphicsDevice GraphicsDevice { get; }
 
-        public Dictionary<string, object> LoadedAssets { get; } = new Dictionary<string, object>();
-
         public IEnumerable<Type> LoadedTypes { get; private set; }
 
         internal GltfModelLoader ModelLoader { get; }
 
-        public async Task<T> LoadAsync<T>(string filePath)
+        public async Task<T> LoadAsync<T>(string path)
         {
-            return (T)await LoadAsync(typeof(T), filePath);
+            return (T)await LoadAsync(typeof(T), path);
         }
 
-        public async Task<object> LoadAsync(Type type, string filePath)
+        public async Task<object> LoadAsync(Type type, string path)
         {
-            if (pendingTasks.TryGetValue(filePath, out Task<object> task))
+            if (Path.GetExtension(path) == ".xml")
             {
-                return await task;
+                return await loadedAssets.GetOrAdd(path, p => new Lazy<Task<object>>(() => DeserializeAsync(p))).Value;
             }
-
-            if (!LoadedAssets.TryGetValue(filePath, out object asset))
+            else
             {
-                if (Path.GetExtension(filePath) == ".xml")
-                {
-                    Task<object> assetTask = LoadElementAsync(filePath);
-                    pendingTasks.Add(filePath, assetTask);
-
-                    asset = await assetTask;
-                    LoadedAssets.Add(filePath, asset);
-                }
-                else
-                {
-                    asset = await LoadFileAsync(type, filePath);
-                }
+                return await LoadFileAsync(type, path);
             }
-
-            return asset;
         }
 
-        private static int GetIndex(ref string filePath)
+        private static int GetIndex(ref string path)
         {
-            Match match = Regex.Match(filePath, @"\[\d+\]$");
+            Match match = Regex.Match(path, @"\[\d+\]$");
             int index = 0;
 
             if (match.Success)
             {
-                filePath = filePath.Remove(match.Index);
+                path = path.Remove(match.Index);
                 index = int.Parse(match.Value.Trim('[', ']'));
             }
 
@@ -102,23 +86,23 @@ namespace DirectX12GameEngine.Engine
             return asset;
         }
 
-        private async Task<object> LoadFileAsync(Type type, string filePath)
+        private async Task<object> LoadFileAsync(Type type, string path)
         {
-            int index = GetIndex(ref filePath);
-            string extension = Path.GetExtension(filePath);
+            int index = GetIndex(ref path);
+            string extension = Path.GetExtension(path);
 
             if (type == typeof(Model))
             {
                 if (extension == ".gltf" || extension == ".glb")
                 {
-                    return await ModelLoader.LoadModelAsync(filePath);
+                    return await ModelLoader.LoadModelAsync(path);
                 }
             }
             else if (type == typeof(Material) || type == typeof(MaterialDescriptor) || type == typeof(MaterialAttributes))
             {
                 if (extension == ".gltf" || extension == ".glb")
                 {
-                    MaterialAttributes materialAttributes = await ModelLoader.LoadMaterialAsync(filePath, index);
+                    MaterialAttributes materialAttributes = await ModelLoader.LoadMaterialAsync(path, index);
 
                     if (type == typeof(MaterialAttributes))
                     {
@@ -138,21 +122,21 @@ namespace DirectX12GameEngine.Engine
             {
                 if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
                 {
-                    return await Texture.LoadAsync(GraphicsDevice, filePath);
+                    return await Texture.LoadAsync(GraphicsDevice, path);
                 }
             }
 
             throw new ArgumentException("This type could not be loaded.");
         }
 
-        private async Task<object> LoadElementAsync(string filePath)
+        private async Task<object> DeserializeAsync(string path)
         {
-            using FileStream stream = File.OpenRead(filePath);
+            using FileStream stream = File.OpenRead(path);
             XElement root = await XElement.LoadAsync(stream, LoadOptions.None, default);
-            return await GetParsedElementAsync(root);
+            return await ParseElementAndChildrenAsync(root);
         }
 
-        private async Task<object> GetParsedElementAsync(XElement element, Type? type = null)
+        private async Task<object> ParseElementAndChildrenAsync(XElement element, Type? type = null)
         {
             object parsedElement = await ParseElementAsync(element, type);
 
@@ -173,7 +157,7 @@ namespace DirectX12GameEngine.Engine
 
                         foreach (XElement innerPropertyElement in innerElement.Elements())
                         {
-                            propertyTaskList.Add(GetParsedElementAsync(innerPropertyElement));
+                            propertyTaskList.Add(ParseElementAndChildrenAsync(innerPropertyElement));
                         }
 
                         object[] loadedElements = await Task.WhenAll(propertyTaskList);
@@ -188,7 +172,7 @@ namespace DirectX12GameEngine.Engine
                         XElement propertyElement = innerElement.HasElements ? innerElement.Elements().First() : innerElement;
                         Type? propertyType = innerElement.HasElements ? null : propertyInfo.PropertyType;
 
-                        object parsedObject = await GetParsedElementAsync(propertyElement, propertyType);
+                        object parsedObject = await ParseElementAndChildrenAsync(propertyElement, propertyType);
                         propertyInfo.SetValue(parsedElement, parsedObject);
                     }
                     else
@@ -198,7 +182,7 @@ namespace DirectX12GameEngine.Engine
                 }
                 else if (parsedElement is IList elementList)
                 {
-                    taskList.Add(GetParsedElementAsync(innerElement));
+                    taskList.Add(ParseElementAndChildrenAsync(innerElement));
                 }
                 else
                 {
@@ -223,7 +207,6 @@ namespace DirectX12GameEngine.Engine
                 if (!identifiableObjects.ContainsKey(identifiable.Id))
                 {
                     identifiableObjects.Add(identifiable.Id, identifiable);
-
                 }
             }
 
@@ -389,15 +372,7 @@ namespace DirectX12GameEngine.Engine
             {
                 if (Guid.TryParse(value, out Guid guid))
                 {
-                    while (true)
-                    {
-                        if (identifiableObjects.TryGetValue(guid, out IIdentifiable identifiable))
-                        {
-                            return identifiable;
-                        }
-
-                        await Task.Delay(10);
-                    }
+                    return await identifiableObjects.GetValueAsync(guid);
                 }
             }
 
