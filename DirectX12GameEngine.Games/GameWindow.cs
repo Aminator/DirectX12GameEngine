@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Games
             AppContextType.Xaml => new GameWindowUwp(game),
 #endif
 #if NETCOREAPP
-            AppContextType.WinForms => new GameWindowWinForms(game),
+            AppContextType.WinForms => (GameWindow)new GameWindowWinForms(game),
 #endif
             _ => throw new PlatformNotSupportedException("This context is not supported on this platform.")
         };
@@ -40,9 +40,9 @@ namespace DirectX12GameEngine.Games
 
         internal abstract void Run();
 
-        protected void OnSizeChanged(object sender, EventArgs e)
+        protected virtual void OnSizeChanged(EventArgs e)
         {
-            SizeChanged?.Invoke(sender, e);
+            SizeChanged?.Invoke(this, e);
         }
 
         protected void Tick()

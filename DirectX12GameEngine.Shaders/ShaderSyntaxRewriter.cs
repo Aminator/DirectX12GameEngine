@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,13 +9,15 @@ namespace DirectX12GameEngine.Shaders
     public class ShaderSyntaxRewriter : CSharpSyntaxRewriter
     {
         private readonly int depth;
+        private readonly bool isTopLevel;
         private readonly SemanticModel semanticModel;
         private readonly ShaderGenerator shaderGenerator;
 
-        public ShaderSyntaxRewriter(ShaderGenerator shaderGenerator, SemanticModel semanticModel, int depth = 0)
+        public ShaderSyntaxRewriter(ShaderGenerator shaderGenerator, SemanticModel semanticModel, bool isTopLevel = false, int depth = 0)
         {
             this.shaderGenerator = shaderGenerator;
             this.semanticModel = semanticModel;
+            this.isTopLevel = isTopLevel;
             this.depth = depth;
         }
 
@@ -22,7 +25,7 @@ namespace DirectX12GameEngine.Shaders
         {
             node = (MethodDeclarationSyntax)base.VisitMethodDeclaration(node);
 
-            if (depth > 0)
+            if (isTopLevel && depth > 0)
             {
                 node = node.ReplaceToken(node.Identifier, SyntaxFactory.Identifier($"Base_{depth}_{node.Identifier.ValueText}"));
             }
@@ -91,11 +94,28 @@ namespace DirectX12GameEngine.Shaders
 
             if (node.Expression is BaseExpressionSyntax)
             {
-                return SyntaxFactory.IdentifierName($"Base_{depth + 1}_{node.Name}");
+                if (isTopLevel)
+                {
+                    return SyntaxFactory.IdentifierName($"Base_{depth + 1}_{node.Name}");
+                }
+                else
+                {
+                    SymbolInfo memberSymbolInfo = semanticModel.GetSymbolInfo(node.Name);
+                    ISymbol? memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
+
+                    if (memberSymbol != null)
+                    {
+                        return SyntaxFactory.IdentifierName($"{memberSymbol.ContainingType.Name}::{node.Name}");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
             }
             else
             {
-                return node.ReplaceMethod(semanticModel);
+                return node.ReplaceMember(semanticModel);
             }
         }
     }

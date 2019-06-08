@@ -17,6 +17,19 @@ namespace DirectX12GameEngine.Shaders
             this.semanticModel = semanticModel;
         }
 
+        public override void VisitParameter(ParameterSyntax node)
+        {
+            base.VisitParameter(node);
+
+            TypeInfo typeInfo = semanticModel.GetTypeInfo(node.Type);
+
+            string fullTypeName = typeInfo.Type.ToDisplayString(
+                new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces))
+                + ", " + typeInfo.Type.ContainingAssembly.Identity.ToString();
+
+            shaderGenerator.AddType(Type.GetType(fullTypeName));
+        }
+
         public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
         {
             base.VisitMemberAccessExpression(node);
@@ -36,7 +49,12 @@ namespace DirectX12GameEngine.Shaders
             if (!ShaderGenerator.HlslKnownMethods.Contains(containingMemberSymbol, memberSymbol))
             {
                 ISymbol symbol = containingMemberSymbol.IsStatic ? containingMemberSymbol : memberSymbol.ContainingType;
-                shaderGenerator.AddType(Type.GetType(symbol.ToString() + ", " + symbol.ContainingAssembly.Identity.ToString()));
+
+                string fullTypeName = symbol.ToDisplayString(
+                    new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces))
+                    + ", " + symbol.ContainingAssembly.Identity.ToString();
+
+                shaderGenerator.AddType(Type.GetType(fullTypeName));
             }
         }
     }

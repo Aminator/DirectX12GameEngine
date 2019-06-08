@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        public static SyntaxNode ReplaceMethod(this MemberAccessExpressionSyntax node, SemanticModel semanticModel)
+        public static SyntaxNode ReplaceMember(this MemberAccessExpressionSyntax node, SemanticModel semanticModel)
         {
             SymbolInfo containingMemberSymbolInfo = semanticModel.GetSymbolInfo(node.Expression);
             SymbolInfo memberSymbolInfo = semanticModel.GetSymbolInfo(node.Name);

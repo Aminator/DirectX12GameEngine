@@ -14,7 +14,7 @@ namespace DirectX12GameEngine.Engine
             this.collection = collection;
         }
 
-        public Entity this[int index] { get => collection[index].Entity; set => collection[index] = value.Transform; }
+        public Entity this[int index] { get => collection[index].Entity ?? throw new InvalidOperationException(); set => collection[index] = value.Transform; }
 
         public int Count => collection.Count;
 
@@ -28,7 +28,7 @@ namespace DirectX12GameEngine.Engine
 
         public void CopyTo(Entity[] array, int arrayIndex) => throw new NotImplementedException();
 
-        public IEnumerator<Entity> GetEnumerator() => collection.Select(c => c.Entity).GetEnumerator();
+        public IEnumerator<Entity> GetEnumerator() => collection.Select(c => c.Entity).GetEnumerator()!;
 
         public int IndexOf(Entity item) => collection.IndexOf(item.Transform);
 
@@ -39,7 +39,6 @@ namespace DirectX12GameEngine.Engine
         public void RemoveAt(int index) => collection.RemoveAt(index);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
 
         object IList.this[int index] { get => this[index]; set => this[index] = (Entity)value; }
 

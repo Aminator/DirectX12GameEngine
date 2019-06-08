@@ -132,7 +132,11 @@ namespace DirectX12GameEngine.Engine
         private async Task<object> DeserializeAsync(string path)
         {
             using FileStream stream = File.OpenRead(path);
+#if NETSTANDARD2_0
+            XElement root = await Task.Run(() => XElement.Load(stream));
+#else
             XElement root = await XElement.LoadAsync(stream, LoadOptions.None, default);
+#endif
             return await ParseElementAndChildrenAsync(root);
         }
 
@@ -151,7 +155,7 @@ namespace DirectX12GameEngine.Engine
                     Match match = Regex.Match(innerElement.Name.LocalName, @"[^\.]+$");
                     PropertyInfo propertyInfo = parsedElement.GetType().GetProperty(match.Value);
 
-                    if (propertyInfo.GetValue(parsedElement) is IList propertyList)
+                    if (propertyInfo.GetValue(parsedElement) is IList propertyCollection)
                     {
                         List<Task<object>> propertyTaskList = new List<Task<object>>();
 
@@ -164,7 +168,7 @@ namespace DirectX12GameEngine.Engine
 
                         foreach (object loadedElement in loadedElements)
                         {
-                            propertyList.Add(loadedElement);
+                            propertyCollection.Add(loadedElement);
                         }
                     }
                     else if (propertyInfo.CanWrite)
@@ -180,7 +184,7 @@ namespace DirectX12GameEngine.Engine
                         throw new InvalidOperationException("An inner element must be a writable property or a list element.");
                     }
                 }
-                else if (parsedElement is IList elementList)
+                else if (parsedElement is IList)
                 {
                     taskList.Add(ParseElementAndChildrenAsync(innerElement));
                 }

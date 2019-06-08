@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
 using SharpDX.Direct3D12;

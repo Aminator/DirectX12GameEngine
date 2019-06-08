@@ -73,7 +73,7 @@ namespace DirectX12Game
                     Entity light = EntityManager.FirstOrDefault(m => m.Name == "MyLight");
                     if (light != null)
                     {
-                        light.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, -MathF.PI / 4.0f);
+                        light.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, time) * Quaternion.CreateFromAxisAngle(Vector3.UnitX, (float)(-Math.PI / 4.0f));
                     }
 
                     var rexes = EntityManager.Where(m => m.Name == "T-Rex");
@@ -147,10 +147,10 @@ namespace DirectX12Game
             switch (key)
             {
                 case Windows.System.VirtualKey.Left:
-                    if (cameraEntity != null) cameraEntity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, 10 * MathF.PI / 180.0f);
+                    if (cameraEntity != null) cameraEntity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, (float)(10 * Math.PI / 180.0f));
                     break;
                 case Windows.System.VirtualKey.Right:
-                    if (cameraEntity != null) cameraEntity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, -10 * MathF.PI / 180.0f);
+                    if (cameraEntity != null) cameraEntity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, (float)(-10 * Math.PI / 180.0f));
                     break;
                 case Windows.System.VirtualKey.Up:
                     scrollAmount--;

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.CodeDom.Compiler;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -26,7 +24,7 @@ namespace DirectX12GameEngine.Shaders
 
         private static Compilation compilation;
 
-        private readonly OrderedDictionary collectedTypes = new OrderedDictionary();
+        private readonly List<ShaderTypeDefinition> collectedTypes = new List<ShaderTypeDefinition>();
         private readonly BindingFlags bindingAttr;
         private readonly HlslBindingTracker bindingTracker = new HlslBindingTracker();
         private readonly object shader;
@@ -86,7 +84,7 @@ namespace DirectX12GameEngine.Shaders
 
             Type shaderType = shader.GetType();
 
-            var memberInfos = shaderType.GetMembersInOrder(bindingAttr).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
+            var memberInfos = shaderType.GetMembersInTypeHierarchyInOrder(bindingAttr).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
 
             // Collecting stage
 
@@ -103,15 +101,15 @@ namespace DirectX12GameEngine.Shaders
 
                 if (resourceType is ShaderMethodAttribute && memberInfo is MethodInfo methodInfo)
                 {
-                    CollectMethod(methodInfo);
+                    CollectTopLevelMethod(methodInfo);
                 }
             }
 
             // Writing stage
 
-            foreach (DictionaryEntry pair in collectedTypes)
+            foreach (ShaderTypeDefinition type in collectedTypes)
             {
-                WriteStructure((Type)pair.Key, ((ShaderTypeDefinition)pair.Value).Instance);
+                WriteStructure(type.Type, type.Instance);
             }
 
             foreach (MemberInfo memberInfo in memberInfos)
@@ -121,7 +119,7 @@ namespace DirectX12GameEngine.Shaders
 
                 if (resourceType is ShaderMethodAttribute && memberInfo is MethodInfo methodInfo)
                 {
-                    WriteMethod(methodInfo);
+                    WriteTopLevelMethod(methodInfo);
                 }
                 else if (memberType != null && resourceType != null)
                 {
@@ -149,18 +147,49 @@ namespace DirectX12GameEngine.Shaders
         {
             type = type.GetElementOrDeclaredType();
 
-            if (HlslKnownTypes.ContainsKey(type) || collectedTypes.Contains(type)) return;
+            if (HlslKnownTypes.ContainsKey(type) || collectedTypes.Any(d => d.Type == type)) return;
 
-            var shaderTypeDefinition = new ShaderTypeDefinition(obj);
+            ShaderTypeDefinition shaderTypeDefinition = new ShaderTypeDefinition(type, obj);
 
-            var memberInfos = type.GetMembersInOrder(bindingAttr).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
+            if (type.IsEnum)
+            {
+                collectedTypes.Add(shaderTypeDefinition);
+                return;
+            }
+
+            Type parentType = type.BaseType;
+
+            while (parentType != null)
+            {
+                CollectStructure(parentType, obj);
+                parentType = parentType.BaseType;
+            }
+
+            foreach (Type interfaceType in type.GetInterfaces())
+            {
+                CollectStructure(interfaceType, obj);
+            }
+
+            var memberInfos = type.GetMembersInOrder(bindingAttr);
+
+            if (!type.IsInterface)
+            {
+                memberInfos = memberInfos.Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
+            }
 
             foreach (MemberInfo memberInfo in memberInfos)
             {
                 Type? memberType = memberInfo.GetMemberType(obj);
                 ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
 
-                if (memberType != null && memberType != type)
+                if (memberInfo is MethodInfo methodInfo)
+                {
+                    if (type.IsInterface || resourceType is ShaderMethodAttribute)
+                    {
+                        CollectMethod(methodInfo);
+                    }
+                }
+                else if (memberType != null && memberType != type)
                 {
                     CollectStructure(memberType, memberInfo.GetMemberValue(obj));
 
@@ -169,14 +198,9 @@ namespace DirectX12GameEngine.Shaders
                         shaderTypeDefinition.ResourceDefinitions.Add(new ResourceDefinition(memberType, resourceType));
                     }
                 }
-
-                if (resourceType is ShaderMethodAttribute && memberInfo is MethodInfo methodInfo)
-                {
-                    CollectMethod(methodInfo);
-                }
             }
 
-            collectedTypes.Add(type, shaderTypeDefinition);
+            collectedTypes.Add(shaderTypeDefinition);
         }
 
         private void WriteStructure(Type type, object? obj)
@@ -185,24 +209,54 @@ namespace DirectX12GameEngine.Shaders
             {
                 writer.WriteLine($"enum class {type.Name}");
             }
+            else if (type.IsInterface)
+            {
+                writer.WriteLine($"interface {type.Name}");
+            }
             else
             {
-                writer.WriteLine($"struct {type.Name}");
+                writer.Write($"struct {type.Name}");
+
+                if (type.BaseType != null && type.BaseType != typeof(object) && type.BaseType != typeof(ValueType))
+                {
+                    writer.Write($" : {type.BaseType.Name}, ");
+
+                    // NOTE: Types might no expose every interface method.
+
+                    //foreach (Type interfaceType in type.GetInterfaces())
+                    //{
+                    //    writer.Write(interfaceType.Name + ", ");
+                    //}
+
+                    stringWriter.GetStringBuilder().Length -= 2;
+                }
+
+                writer.WriteLine();
             }
 
             writer.WriteLine("{");
             writer.Indent++;
 
-            var memberInfos = type.GetMembersInOrder(bindingAttr).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
+            var fieldAndPropertyInfos = type.GetMembersInOrder(bindingAttr | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
+            var methodInfos = type.GetMembersInTypeHierarchyInOrder(bindingAttr).Where(m => m is MethodInfo);
+            var memberInfos = fieldAndPropertyInfos.Concat(methodInfos);
+
+            if (!type.IsInterface && !type.IsEnum)
+            {
+                memberInfos = memberInfos.Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
+            }
 
             foreach (MemberInfo memberInfo in memberInfos)
             {
                 Type? memberType = memberInfo.GetMemberType(obj);
                 ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
 
-                if (resourceType is ShaderMethodAttribute && memberInfo is MethodInfo methodInfo)
+                if (memberInfo is MethodInfo methodInfo)
                 {
-                    WriteMethod(methodInfo);
+                    if (type.IsInterface || resourceType is ShaderMethodAttribute)
+                    {
+                        WriteMethod(methodInfo);
+                    }
                 }
                 else if (memberType != null && resourceType != null)
                 {
@@ -218,7 +272,7 @@ namespace DirectX12GameEngine.Shaders
                 }
             }
 
-            (writer.InnerWriter as StringWriter)?.GetStringBuilder().TrimEnd();
+            stringWriter.GetStringBuilder().TrimEnd();
 
             writer.Indent--;
             writer.WriteLine();
@@ -289,7 +343,7 @@ namespace DirectX12GameEngine.Shaders
             int arrayCount = memberType.IsArray ? 2 : 0;
 
             writer.Write($"cbuffer {memberInfo.Name}Buffer");
-            //writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
             writer.WriteLine($" : register(b{binding})");
             writer.WriteLine("{");
             writer.Indent++;
@@ -302,7 +356,7 @@ namespace DirectX12GameEngine.Shaders
         private void WriteSampler(MemberInfo memberInfo, Type memberType, int binding)
         {
             writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
-            //writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
             writer.Write($" : register(s{binding})");
             writer.WriteLine(";");
             writer.WriteLine();
@@ -311,7 +365,7 @@ namespace DirectX12GameEngine.Shaders
         private void WriteTexture2D(MemberInfo memberInfo, Type memberType, int binding)
         {
             writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
-            //writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
             writer.Write($" : register(t{binding})");
             writer.WriteLine(";");
             writer.WriteLine();
@@ -321,7 +375,7 @@ namespace DirectX12GameEngine.Shaders
         {
             List<MemberInfo> generatedMemberInfos = new List<MemberInfo>();
 
-            foreach (ResourceDefinition resourceDefinition in ((ShaderTypeDefinition)collectedTypes[memberType]).ResourceDefinitions)
+            foreach (ResourceDefinition resourceDefinition in collectedTypes.First(d => d.Type == memberType).ResourceDefinitions)
             {
                 MemberInfo generatedMemberInfo = new FakeMemberInfo($"__Generated__{bindingTracker.StaticResource++}__");
                 generatedMemberInfos.Add(generatedMemberInfo);
@@ -330,7 +384,7 @@ namespace DirectX12GameEngine.Shaders
             }
 
             writer.Write($"static {HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
-            //writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
 
             if (generatedMemberInfos.Count != 0)
             {
@@ -366,54 +420,64 @@ namespace DirectX12GameEngine.Shaders
             _ => ""
         };
 
-        private void CollectMethod(MethodInfo methodInfo)
+        private void CollectTopLevelMethod(MethodInfo methodInfo)
         {
             IList<MethodInfo> methodInfos = methodInfo.GetBaseMethods();
 
             for (int depth = methodInfos.Count - 1; depth >= 0; depth--)
             {
                 MethodInfo currentMethodInfo = methodInfos[depth];
-                GetSyntaxTree(currentMethodInfo, out SyntaxNode root, out SemanticModel semanticModel);
-
-                ShaderSyntaxCollector syntaxCollector = new ShaderSyntaxCollector(this, semanticModel);
-                syntaxCollector.Visit(root);
+                CollectMethod(currentMethodInfo);
             }
         }
 
-        private void WriteMethod(MethodInfo methodInfo)
+        private void CollectMethod(MethodInfo methodInfo)
+        {
+            GetSyntaxTree(methodInfo, out SyntaxNode root, out SemanticModel semanticModel);
+
+            ShaderSyntaxCollector syntaxCollector = new ShaderSyntaxCollector(this, semanticModel);
+            syntaxCollector.Visit(root);
+        }
+
+        private void WriteTopLevelMethod(MethodInfo methodInfo)
         {
             IList<MethodInfo> methodInfos = methodInfo.GetBaseMethods();
 
             for (int depth = methodInfos.Count - 1; depth >= 0; depth--)
             {
                 MethodInfo currentMethodInfo = methodInfos[depth];
-                GetSyntaxTree(currentMethodInfo, out SyntaxNode root, out SemanticModel semanticModel);
-
-                ShaderSyntaxRewriter syntaxRewriter = new ShaderSyntaxRewriter(this, semanticModel, depth);
-                root = syntaxRewriter.Visit(root);
-
-                string shaderSource = root.ToFullString();
-
-                // TODO: See why the System namespace in System.Math is not present in UWP projects.
-                shaderSource = shaderSource.Replace("Math.Max", "max");
-                shaderSource = shaderSource.Replace("Math.Pow", "pow");
-                shaderSource = shaderSource.Replace("Math.Sin", "sin");
-
-                shaderSource = shaderSource.Replace("vector", "vec");
-                shaderSource = Regex.Replace(shaderSource, @"\d+[fF]", m => m.Value.Replace("f", ""));
-
-                // Indent every line
-                string indent = "";
-
-                for (int i = 0; i < writer.Indent; i++)
-                {
-                    indent += IndentedTextWriter.DefaultTabString;
-                }
-
-                shaderSource = shaderSource.Replace(Environment.NewLine, Environment.NewLine + indent).TrimEnd(' ');
-
-                writer.WriteLine(shaderSource);
+                WriteMethod(currentMethodInfo, depth);
             }
+        }
+
+        private void WriteMethod(MethodInfo methodInfo, int depth = 0)
+        {
+            GetSyntaxTree(methodInfo, out SyntaxNode root, out SemanticModel semanticModel);
+
+            ShaderSyntaxRewriter syntaxRewriter = new ShaderSyntaxRewriter(this, semanticModel, true, depth);
+            root = syntaxRewriter.Visit(root);
+
+            string shaderSource = root.ToFullString();
+
+            // TODO: See why the System namespace in System.Math is not present in UWP projects.
+            shaderSource = shaderSource.Replace("Math.Max", "max");
+            shaderSource = shaderSource.Replace("Math.Pow", "pow");
+            shaderSource = shaderSource.Replace("Math.Sin", "sin");
+
+            shaderSource = shaderSource.Replace("vector", "vec");
+            shaderSource = Regex.Replace(shaderSource, @"\d+[fF]", m => m.Value.Replace("f", ""));
+
+            // Indent every line
+            string indent = "";
+
+            for (int i = 0; i < writer.Indent; i++)
+            {
+                indent += IndentedTextWriter.DefaultTabString;
+            }
+
+            shaderSource = shaderSource.Replace(Environment.NewLine, Environment.NewLine + indent).TrimEnd(' ');
+
+            writer.WriteLine(shaderSource);
         }
 
         private static void GetSyntaxTree(MethodInfo methodInfo, out SyntaxNode root, out SemanticModel semanticModel)
@@ -644,12 +708,15 @@ namespace DirectX12GameEngine.Shaders
 
         private class ShaderTypeDefinition
         {
-            public ShaderTypeDefinition(object? instance)
+            public ShaderTypeDefinition(Type type, object? instance)
             {
+                Type = type;
                 Instance = instance;
             }
 
             public object? Instance { get; }
+
+            public Type Type { get; }
 
             public List<ResourceDefinition> ResourceDefinitions { get; } = new List<ResourceDefinition>();
         }

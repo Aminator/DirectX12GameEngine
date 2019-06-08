@@ -22,7 +22,7 @@ namespace DirectX12Game
         [Shader("vertex")]
         public override VSOutput VSMain(VSInput input)
         {
-            float wobbleOffset = WobbleStrength.Compute() * MathF.Sin(Globals.TotalTime * 10.0f);
+            float wobbleOffset = WobbleStrength.Compute() * (float)Math.Sin(Globals.TotalTime * 10.0f);
             Vector3 positionWobble = input.Position + input.Normal * new Vector3(wobbleOffset, wobbleOffset, wobbleOffset);
 
             input.Position = positionWobble;

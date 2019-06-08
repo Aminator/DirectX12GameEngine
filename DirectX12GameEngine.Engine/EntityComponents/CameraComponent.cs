@@ -37,7 +37,7 @@ namespace DirectX12GameEngine.Engine
             ViewMatrix = Matrix4x4.CreateLookAt(translation, translation + forwardVector, upVector);
 
             ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(
-                FieldOfView * (MathF.PI / 180.0f),
+                FieldOfView * (float)(Math.PI / 180.0f),
                 aspectRatio,
                 NearPlaneDistance,
                 FarPlaneDistance);

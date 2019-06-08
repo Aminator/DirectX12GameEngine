@@ -99,17 +99,17 @@ namespace DirectX12GameEngine.Games
 
         private void SwapChainPanel_CompositionScaleChanged(SwapChainPanel sender, object args)
         {
-            OnSizeChanged(sender, EventArgs.Empty);
+            OnSizeChanged(EventArgs.Empty);
         }
 
         private void SwapChainPanel_SizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
         {
-            OnSizeChanged(sender, EventArgs.Empty);
+            OnSizeChanged(EventArgs.Empty);
         }
 
         private void CoreWindow_SizeChanged(CoreWindow sender, WindowSizeChangedEventArgs args)
         {
-            OnSizeChanged(sender, EventArgs.Empty);
+            OnSizeChanged(EventArgs.Empty);
         }
     }
 }

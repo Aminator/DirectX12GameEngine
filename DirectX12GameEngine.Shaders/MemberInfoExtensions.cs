@@ -66,12 +66,18 @@ namespace DirectX12GameEngine.Shaders
             return type.GetMembers(bindingAttr).OrderByDescending(prop => lookup[prop.DeclaringType]);
         }
 
-        public static IEnumerable<MemberInfo> GetMembersInOrder(this Type type, BindingFlags bindingAttr)
+        public static IEnumerable<MemberInfo> GetMembersInTypeHierarchyInOrder(this Type type, BindingFlags bindingAttr)
         {
             return type.GetMembersInTypeHierarchy(bindingAttr)
                 .GroupBy(m => m.DeclaringType)
                 .Select(g => g.OrderBy(m => m.GetCustomAttribute<ShaderResourceAttribute>()?.Order))
-                .SelectMany(g => g);
+                .SelectMany(m => m);
+        }
+
+        public static IEnumerable<MemberInfo> GetMembersInOrder(this Type type, BindingFlags bindingAttr)
+        {
+            return type.GetMembers(bindingAttr)
+                .OrderBy(m => m.GetCustomAttribute<ShaderResourceAttribute>()?.Order);
         }
 
         public static object? GetMemberValue(this MemberInfo memberInfo, object? obj) => memberInfo switch
