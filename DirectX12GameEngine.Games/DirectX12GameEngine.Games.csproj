@@ -14,14 +14,14 @@
     <PackageReference Include="System.Runtime.InteropServices.WindowsRuntime" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DirectX12GameEngine.Core\DirectX12GameEngine.Core.csproj" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <PackageReference Include="Microsoft.WindowsDesktop.App">
       <Version>3.0.0-preview5-27626-15</Version>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DirectX12GameEngine.Core.Assets\DirectX12GameEngine.Core.Assets.csproj" />
   </ItemGroup>
 
 </Project>

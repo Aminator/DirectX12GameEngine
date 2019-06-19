@@ -9,26 +9,17 @@ using Resource = SharpDX.Direct3D12.Resource;
 
 namespace DirectX12GameEngine.Graphics
 {
-    public class Texture : GraphicsResource
+    public sealed class Texture : GraphicsResource
     {
-        protected internal Texture(GraphicsDevice device, Resource resource) : this(device, resource, ConvertFromNativeDescription(resource.Description))
+        public Texture()
         {
         }
 
-        protected internal Texture(GraphicsDevice device, Resource resource, TextureDescription description) : base(device, resource)
+        internal Texture(GraphicsDevice device) : base(device)
         {
-            Description = description;
-
-            (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = description.Flags switch
-            {
-                TextureFlags.ShaderResource => CreateShaderResourceView(),
-                TextureFlags.RenderTarget => CreateRenderTargetView(),
-                TextureFlags.DepthStencil => CreateDepthStencilView(),
-                _ => default
-            };
         }
 
-        public TextureDescription Description { get; }
+        public TextureDescription Description { get; private set; }
 
         public int Width => Description.Width;
 
@@ -40,33 +31,15 @@ namespace DirectX12GameEngine.Graphics
             return await LoadAsync(device, stream);
         }
 
-        public static unsafe Task<Texture> LoadAsync(GraphicsDevice device, Stream stream)
+        public static async Task<Texture> LoadAsync(GraphicsDevice device, Stream stream)
         {
-            return Task.Run(() =>
-            {
-                ImagingFactory2 imagingFactory = new ImagingFactory2();
-                BitmapDecoder decoder = new BitmapDecoder(imagingFactory, stream, DecodeOptions.CacheOnDemand);
-
-                FormatConverter bitmapSource = new FormatConverter(imagingFactory);
-                bitmapSource.Initialize(decoder.GetFrame(0), SharpDX.WIC.PixelFormat.Format32bppBGRA);
-
-                PixelFormat pixelFormat = PixelFormat.B8G8R8A8_UNorm;
-                int stride = bitmapSource.Size.Width * FormatHelper.SizeOfInBytes((Format)pixelFormat);
-                byte[] imageBuffer = new byte[stride * bitmapSource.Size.Height];
-
-                bitmapSource.CopyPixels(imageBuffer, stride);
-
-                return New2D(device, imageBuffer.AsSpan(), bitmapSource.Size.Width, bitmapSource.Size.Height, pixelFormat);
-            });
+            using Image image = await Image.LoadAsync(stream);
+            return New2D(device, image.Data.Span, image.Width, image.Height, image.Description.Format); ;
         }
 
         public static Texture New(GraphicsDevice device, TextureDescription description)
         {
-            Resource resource = device.NativeDevice.CreateCommittedResource(
-                new HeapProperties((HeapType)description.Usage), HeapFlags.None,
-                ConvertToNativeDescription(description), ResourceStates.GenericRead);
-
-            return new Texture(device, resource, description);
+            return new Texture(device).InitializeFrom(description);
         }
 
         public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsResourceUsage usage = GraphicsResourceUsage.Default)
@@ -74,9 +47,36 @@ namespace DirectX12GameEngine.Graphics
             return New(device, TextureDescription.New2D(width, height, format, textureFlags, mipCount, arraySize, multisampleCount, usage));
         }
 
-        public static unsafe Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format) where T : unmanaged
+        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format) where T : unmanaged
         {
-            int texturePixelSize = format switch
+            Texture texture = New2D(device, width, height, format);
+            texture.Recreate(data);
+
+            return texture;
+        }
+
+        public Texture InitializeFrom(TextureDescription description)
+        {
+            NativeResource ??= GraphicsDevice.NativeDevice.CreateCommittedResource(
+                new HeapProperties((HeapType)description.Usage), HeapFlags.None,
+                ConvertToNativeDescription(description), ResourceStates.GenericRead);
+
+            Description = description;
+
+            (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = description.Flags switch
+            {
+                TextureFlags.ShaderResource => CreateShaderResourceView(),
+                TextureFlags.RenderTarget => CreateRenderTargetView(),
+                TextureFlags.DepthStencil => CreateDepthStencilView(),
+                _ => default
+            };
+
+            return this;
+        }
+
+        public unsafe void Recreate<T>(Span<T> data) where T : unmanaged
+        {
+            int texturePixelSize = Description.Format switch
             {
                 PixelFormat.R8G8B8A8_UNorm => 4,
                 PixelFormat.B8G8R8A8_UNorm => 4,
@@ -85,24 +85,29 @@ namespace DirectX12GameEngine.Graphics
                 _ => throw new NotSupportedException("This format is not supported.")
             };
 
-            Texture texture = New2D(device, width, height, format);
-
-            Resource uploadResource = device.NativeDevice.CreateCommittedResource(new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), HeapFlags.None, texture.NativeResource.Description, ResourceStates.CopyDestination);
-            using Texture textureUploadBuffer = new Texture(device, uploadResource);
+            Resource uploadResource = GraphicsDevice.NativeDevice.CreateCommittedResource(new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), HeapFlags.None, NativeResource.Description, ResourceStates.CopyDestination);
+            using Texture textureUploadBuffer = new Texture(GraphicsDevice).InitializeFrom(uploadResource);
 
             fixed (T* pointer = data)
             {
-                textureUploadBuffer.NativeResource.WriteToSubresource(0, null, (IntPtr)pointer, texturePixelSize * width, data.Length * sizeof(T));
+                textureUploadBuffer.NativeResource.WriteToSubresource(0, null, (IntPtr)pointer, texturePixelSize * Width, data.Length * sizeof(T));
             }
 
-            CommandList copyCommandList = device.GetOrCreateCopyCommandList();
+            CommandList copyCommandList = GraphicsDevice.GetOrCreateCopyCommandList();
 
-            copyCommandList.CopyResource(textureUploadBuffer, texture);
+            copyCommandList.CopyResource(textureUploadBuffer, this);
             copyCommandList.Flush(true);
 
-            device.CopyCommandLists.Enqueue(copyCommandList);
+            GraphicsDevice.EnqueueCopyCommandList(copyCommandList);
+        }
 
-            return texture;
+        internal Texture InitializeFrom(Resource resource)
+        {
+            NativeResource = resource;
+
+            TextureDescription description = ConvertFromNativeDescription(resource.Description);
+
+            return InitializeFrom(description);
         }
 
         internal static ResourceFlags GetBindFlagsFromTextureFlags(TextureFlags flags)

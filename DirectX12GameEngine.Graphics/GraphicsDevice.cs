@@ -235,6 +235,14 @@ namespace DirectX12GameEngine.Graphics
             return commandList;
         }
 
+        internal void EnqueueCopyCommandList(CommandList commandList)
+        {
+            lock (CopyCommandLists)
+            {
+                CopyCommandLists.Enqueue(commandList);
+            }
+        }
+
         internal bool IsFenceComplete(Fence fence, long fenceValue)
         {
             return fenceValue <= fence.CompletedValue;

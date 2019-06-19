@@ -9,7 +9,6 @@ using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering.Materials;
 using GltfLoader;
 using GltfLoader.Schema;
-using Microsoft.Extensions.DependencyInjection;
 using SharpDX.Direct3D12;
 
 using Texture = DirectX12GameEngine.Graphics.Texture;
@@ -18,9 +17,9 @@ namespace DirectX12GameEngine.Rendering
 {
     internal class GltfModelLoader
     {
-        public GltfModelLoader(IServiceProvider services)
+        public GltfModelLoader(GraphicsDevice device)
         {
-            GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
+            GraphicsDevice = device;
         }
 
         public GraphicsDevice GraphicsDevice { get; }
@@ -30,21 +29,9 @@ namespace DirectX12GameEngine.Rendering
             return await Task.Run(() => Interface.LoadModel(filePath));
         }
 
-        public async Task<Model> LoadModelAsync(string filePath)
+        public static async Task<Gltf> LoadGltfModelAsync(Stream stream)
         {
-            Gltf gltf = await LoadGltfModelAsync(filePath);
-            IList<byte[]> buffers = GetGltfModelBuffers(gltf, filePath);
-
-            Model model = new Model();
-
-            IList<Mesh> meshes = await GetMeshesAsync(gltf, buffers);
-
-            foreach (Mesh mesh in meshes)
-            {
-                model.Meshes.Add(mesh);
-            }
-
-            return model;
+            return await Task.Run(() => Interface.LoadModel(stream));
         }
 
         public async Task<MaterialAttributes> LoadMaterialAsync(string filePath, int materialIndex)
@@ -195,7 +182,7 @@ namespace DirectX12GameEngine.Rendering
         private async Task<Texture> GetTextureAsync(Gltf gltf, IList<byte[]> buffers, int textureIndex)
         {
             int imageIndex = gltf.Textures[textureIndex].Source ?? throw new Exception();
-            Image image = gltf.Images[imageIndex];
+            GltfLoader.Schema.Image image = gltf.Images[imageIndex];
 
             int bufferViewIndex = image.BufferView ?? throw new Exception();
             BufferView bufferView = gltf.BufferViews[bufferViewIndex];

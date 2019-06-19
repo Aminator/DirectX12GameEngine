@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 namespace DirectX12GameEngine.Engine
 {
     [DefaultEntitySystem(typeof(TransformSystem))]
-    public sealed partial class TransformComponent : EntityComponent, IEnumerable<TransformComponent>
+    public sealed class TransformComponent : EntityComponent, IEnumerable<TransformComponent>
     {
         private TransformComponent? parent;
 
@@ -24,9 +24,9 @@ namespace DirectX12GameEngine.Engine
             Children.CollectionChanged += Children_CollectionChanged;
         }
 
+        [XmlIgnore]
         public ObservableCollection<TransformComponent> Children { get; } = new ObservableCollection<TransformComponent>();
 
-        [XmlIgnore]
         public IList<Entity> ChildEntities { get; }
 
         [XmlIgnore]

@@ -9,11 +9,8 @@ namespace DirectX12GameEngine.Engine
     {
         public GameSystem(IServiceProvider services) : base(services)
         {
-            Content = services.GetRequiredService<ContentManager>();
             GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
         }
-
-        protected ContentManager Content { get; }
 
         protected GraphicsDevice GraphicsDevice { get; }
     }

@@ -1,36 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Material xmlns="DirectX12GameEngine.Rendering">
-  <Material.Descriptor>
-    <MaterialDescriptor xmlns="DirectX12GameEngine.Rendering.Materials">
-      <MaterialDescriptor.Attributes>
-        <MaterialAttributes>
-          
-          <MaterialAttributes.Diffuse>
-            <MaterialDiffuseMapFeature>
-              <MaterialDiffuseMapFeature.DiffuseMap>
-                <ComputeColor Color="1,0,0,1" />
-              </MaterialDiffuseMapFeature.DiffuseMap>
-            </MaterialDiffuseMapFeature>
-          </MaterialAttributes.Diffuse>
+<MaterialAsset xmlns="DirectX12GameEngine.Assets">
+  <MaterialAsset.Attributes>
+    <MaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
 
-          <MaterialAttributes.MicroSurface>
-            <MaterialRoughnessMapFeature>
-              <MaterialRoughnessMapFeature.RoughnessMap>
-                <ComputeScalar Value="0.5" />
-              </MaterialRoughnessMapFeature.RoughnessMap>
-            </MaterialRoughnessMapFeature>
-          </MaterialAttributes.MicroSurface>
+      <MaterialAttributes.Diffuse>
+        <MaterialDiffuseMapFeature>
+          <MaterialDiffuseMapFeature.DiffuseMap>
+            <ComputeColor Color="1,0,0,1" />
+          </MaterialDiffuseMapFeature.DiffuseMap>
+        </MaterialDiffuseMapFeature>
+      </MaterialAttributes.Diffuse>
 
-          <MaterialAttributes.Specular>
-            <MaterialMetalnessMapFeature>
-              <MaterialMetalnessMapFeature.MetalnessMap>
-                <ComputeScalar Value="1.0" />
-              </MaterialMetalnessMapFeature.MetalnessMap>
-            </MaterialMetalnessMapFeature>
-          </MaterialAttributes.Specular>
-          
-        </MaterialAttributes>
-      </MaterialDescriptor.Attributes>
-    </MaterialDescriptor>
-  </Material.Descriptor>
-</Material>
+      <MaterialAttributes.MicroSurface>
+        <MaterialRoughnessMapFeature>
+          <MaterialRoughnessMapFeature.RoughnessMap>
+            <ComputeScalar Value="0.5" />
+          </MaterialRoughnessMapFeature.RoughnessMap>
+        </MaterialRoughnessMapFeature>
+      </MaterialAttributes.MicroSurface>
+
+      <MaterialAttributes.Specular>
+        <MaterialMetalnessMapFeature>
+          <MaterialMetalnessMapFeature.MetalnessMap>
+            <ComputeScalar Value="1.0" />
+          </MaterialMetalnessMapFeature.MetalnessMap>
+        </MaterialMetalnessMapFeature>
+      </MaterialAttributes.Specular>
+
+    </MaterialAttributes>
+  </MaterialAsset.Attributes>
+</MaterialAsset>

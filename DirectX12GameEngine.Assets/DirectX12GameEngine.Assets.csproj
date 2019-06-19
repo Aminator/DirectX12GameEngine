@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <NullableContextOptions>enable</NullableContextOptions>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DirectX12GameEngine.Core.Assets\DirectX12GameEngine.Core.Assets.csproj" />
+    <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="GltfLoader">
+      <HintPath>..\Libs\GltfLoader.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

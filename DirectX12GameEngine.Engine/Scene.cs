@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Numerics;
+using System.Xml.Serialization;
 using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
@@ -16,6 +17,7 @@ namespace DirectX12GameEngine.Engine
             Children.CollectionChanged += Children_CollectionChanged;
         }
 
+        [XmlIgnore]
         public ObservableCollection<Entity> Entities => this;
 
         public ObservableCollection<Scene> Children { get; } = new ObservableCollection<Scene>();
@@ -24,8 +26,10 @@ namespace DirectX12GameEngine.Engine
 
         public Vector3 Offset { get; set; }
 
-        public Matrix4x4 WorldMatrix { get; set; }
+        [XmlIgnore]
+        public Matrix4x4 WorldMatrix { get; private set; }
 
+        [XmlIgnore]
         public Scene? Parent
         {
             get => parent;

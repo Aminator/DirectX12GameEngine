@@ -1,60 +1,56 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Material xmlns="DirectX12GameEngine.Rendering" xmlns:local="DirectX12Game">
-  <Material.Descriptor>
-    <MaterialDescriptor xmlns="DirectX12GameEngine.Rendering.Materials">
-      <MaterialDescriptor.Attributes>
-        <local:WobbleMaterialAttributes>
+<MaterialAsset xmlns="DirectX12GameEngine.Assets" xmlns:local="DirectX12Game">
+  <MaterialAsset.Attributes>
+    <local:WobbleMaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
 
-          <local:WobbleMaterialAttributes.Diffuse>
-            <MaterialDiffuseMapFeature>
-              <MaterialDiffuseMapFeature.DiffuseMap>
-                <local:DissolveShader DissolveStrength="0.5">
-                  <local:DissolveShader.MainTexture>
-                    <ComputeTextureColor Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img4.png" />
-                  </local:DissolveShader.MainTexture>
-                  <local:DissolveShader.DissolveTexture>
-                    <ComputeTextureScalar Texture="Assets\Resources\Tiling_Perlin_Noise.png" Channel="R" />
-                  </local:DissolveShader.DissolveTexture>
-                </local:DissolveShader>
-              </MaterialDiffuseMapFeature.DiffuseMap>
-            </MaterialDiffuseMapFeature>
-          </local:WobbleMaterialAttributes.Diffuse>
+      <local:WobbleMaterialAttributes.Diffuse>
+        <MaterialDiffuseMapFeature>
+          <MaterialDiffuseMapFeature.DiffuseMap>
+            <local:DissolveShader DissolveStrength="0.5">
+              <local:DissolveShader.MainTexture>
+                <ComputeTextureColor Texture="Assets\Textures\Cliffhouse_img4.xml" />
+              </local:DissolveShader.MainTexture>
+              <local:DissolveShader.DissolveTexture>
+                <ComputeTextureScalar Texture="Assets\Textures\Tiling_Perlin_Noise.xml" Channel="R" />
+              </local:DissolveShader.DissolveTexture>
+            </local:DissolveShader>
+          </MaterialDiffuseMapFeature.DiffuseMap>
+        </MaterialDiffuseMapFeature>
+      </local:WobbleMaterialAttributes.Diffuse>
 
-          <local:WobbleMaterialAttributes.DiffuseModel>
-            <MaterialDiffuseCelShadingModelFeature xmlns="DirectX12GameEngine.Rendering.Materials.CelShading">
-              <MaterialDiffuseCelShadingModelFeature.RampFunction>
-                <MaterialCelShadingLightDefault IsBlackAndWhite ="False" />
-              </MaterialDiffuseCelShadingModelFeature.RampFunction>
-            </MaterialDiffuseCelShadingModelFeature>
-          </local:WobbleMaterialAttributes.DiffuseModel>
+      <local:WobbleMaterialAttributes.DiffuseModel>
+        <MaterialDiffuseCelShadingModelFeature xmlns="DirectX12GameEngine.Rendering.Materials.CelShading">
+          <MaterialDiffuseCelShadingModelFeature.RampFunction>
+            <MaterialCelShadingLightDefault IsBlackAndWhite ="False" />
+          </MaterialDiffuseCelShadingModelFeature.RampFunction>
+        </MaterialDiffuseCelShadingModelFeature>
+      </local:WobbleMaterialAttributes.DiffuseModel>
 
-          <local:WobbleMaterialAttributes.Surface>
-            <MaterialNormalMapFeature>
-              <MaterialNormalMapFeature.NormalMap>
-                <ComputeColorWave xmlns="DirectX12Game" />
-              </MaterialNormalMapFeature.NormalMap>
-            </MaterialNormalMapFeature>
-          </local:WobbleMaterialAttributes.Surface>
+      <local:WobbleMaterialAttributes.Surface>
+        <MaterialNormalMapFeature>
+          <MaterialNormalMapFeature.NormalMap>
+            <ComputeColorWave xmlns="DirectX12Game" />
+          </MaterialNormalMapFeature.NormalMap>
+        </MaterialNormalMapFeature>
+      </local:WobbleMaterialAttributes.Surface>
 
-          <local:WobbleMaterialAttributes.MicroSurface>
-            <MaterialRoughnessMapFeature>
-              <MaterialRoughnessMapFeature.RoughnessMap>
-                <ComputeTextureScalar Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img3.png" Channel="G" />
-              </MaterialRoughnessMapFeature.RoughnessMap>
-            </MaterialRoughnessMapFeature>
-          </local:WobbleMaterialAttributes.MicroSurface>
+      <local:WobbleMaterialAttributes.MicroSurface>
+        <MaterialRoughnessMapFeature>
+          <MaterialRoughnessMapFeature.RoughnessMap>
+            <ComputeTextureScalar Texture="Assets\Textures\Cliffhouse_img3.xml" Channel="G" />
+          </MaterialRoughnessMapFeature.RoughnessMap>
+        </MaterialRoughnessMapFeature>
+      </local:WobbleMaterialAttributes.MicroSurface>
 
-          <local:WobbleMaterialAttributes.Specular>
-            <MaterialMetalnessMapFeature>
-              <MaterialMetalnessMapFeature.MetalnessMap>
-                <!--<ComputeTextureScalar Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img3.png" Channel="B" />-->
-                <ComputeScalar Value="0.0" />
-              </MaterialMetalnessMapFeature.MetalnessMap>
-            </MaterialMetalnessMapFeature>
-          </local:WobbleMaterialAttributes.Specular>
+      <local:WobbleMaterialAttributes.Specular>
+        <MaterialMetalnessMapFeature>
+          <MaterialMetalnessMapFeature.MetalnessMap>
+            <!--<ComputeTextureScalar Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img3.xml" Channel="B" />-->
+            <ComputeScalar Value="0.0" />
+          </MaterialMetalnessMapFeature.MetalnessMap>
+        </MaterialMetalnessMapFeature>
+      </local:WobbleMaterialAttributes.Specular>
 
-        </local:WobbleMaterialAttributes>   
-    </MaterialDescriptor.Attributes>
-    </MaterialDescriptor>
-  </Material.Descriptor>
-</Material>
+    </local:WobbleMaterialAttributes>
+  </MaterialAsset.Attributes>
+</MaterialAsset>

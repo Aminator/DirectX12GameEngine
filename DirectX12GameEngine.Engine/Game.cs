@@ -1,6 +1,5 @@
 ﻿using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
-using DirectX12GameEngine.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
@@ -25,13 +24,10 @@ namespace DirectX12GameEngine.Engine
                     break;
             }
 
-            Content = Services.GetRequiredService<ContentManager>();
             SceneSystem = Services.GetRequiredService<SceneSystem>();
 
             GameSystems.Add(SceneSystem);
         }
-
-        public ContentManager Content { get; }
 
         public GraphicsDevice GraphicsDevice { get; } = new GraphicsDevice();
 
@@ -97,8 +93,6 @@ namespace DirectX12GameEngine.Engine
             base.ConfigureServices(services);
 
             services.AddSingleton(GraphicsDevice);
-            services.AddSingleton<GltfModelLoader>();
-            services.AddSingleton<ContentManager>();
             services.AddSingleton<SceneSystem>();
         }
     }

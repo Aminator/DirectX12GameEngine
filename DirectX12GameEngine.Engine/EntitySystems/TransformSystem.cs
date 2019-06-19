@@ -32,9 +32,12 @@ namespace DirectX12GameEngine.Engine
                 TransformationRoots.Add(component);
             }
 
-            foreach (Entity childEntity in component.ChildEntities)
+            foreach (TransformComponent childTransform in component)
             {
-                InternalAddEntity(childEntity);
+                if (childTransform.Entity != null)
+                {
+                    InternalAddEntity(childTransform.Entity);
+                }
             }
 
             component.Children.CollectionChanged += Children_CollectionChanged;
@@ -44,9 +47,12 @@ namespace DirectX12GameEngine.Engine
         {
             component.Children.CollectionChanged -= Children_CollectionChanged;
 
-            foreach (Entity childEntity in component.ChildEntities)
+            foreach (TransformComponent childTransform in component)
             {
-                InternalRemoveEntity(childEntity, false);
+                if (childTransform.Entity != null)
+                {
+                    InternalRemoveEntity(childTransform.Entity, false);
+                }
             }
 
             if (component.Parent is null)
@@ -97,7 +103,10 @@ namespace DirectX12GameEngine.Engine
                         }
                         else
                         {
-                            InternalAddEntity(transformComponent.Entity);
+                            if (transformComponent.Entity != null)
+                            {
+                                InternalAddEntity(transformComponent.Entity);
+                            }
                         }
                     }
                     break;
@@ -113,7 +122,10 @@ namespace DirectX12GameEngine.Engine
                         }
                         else
                         {
-                            InternalRemoveEntity(transformComponent.Entity, false);
+                            if (transformComponent.Entity != null)
+                            {
+                                InternalRemoveEntity(transformComponent.Entity, false);
+                            }
                         }
                     }
                     break;

@@ -128,7 +128,7 @@ namespace DirectX12GameEngine.Graphics
         {
             for (int i = 0; i < BufferCount; i++)
             {
-                renderTargets[i] = new Texture(GraphicsDevice, swapChain.GetBackBuffer<Resource>(i));
+                renderTargets[i] = new Texture(GraphicsDevice).InitializeFrom(swapChain.GetBackBuffer<Resource>(i));
             }
         }
     }

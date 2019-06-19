@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Core.Assets;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Games
@@ -10,11 +11,14 @@ namespace DirectX12GameEngine.Games
         {
             Services = services;
             Game = services.GetRequiredService<GameBase>();
+            Content = services.GetRequiredService<ContentManager>();
         }
 
         public GameBase Game { get; }
 
         public IServiceProvider Services { get; }
+
+        protected ContentManager Content { get; }
 
         public virtual void Dispose()
         {

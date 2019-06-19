@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Xml.Serialization;
 using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
@@ -26,16 +28,26 @@ namespace DirectX12GameEngine.Engine
             Add(Transform);
         }
 
+        [XmlIgnore]
+        public IList<Entity> Children => Transform.ChildEntities;
+
+        [XmlIgnore]
         public ObservableCollection<EntityComponent> Components => this;
 
         public Guid Id { get; set; } = Guid.NewGuid();
 
         public string Name { get; set; }
 
+        [XmlIgnore]
+        public Entity? Parent { get => Transform.Parent?.Entity; set => Transform.Parent = value?.Transform; }
+
+        [XmlIgnore]
         public EntityManager? EntityManager { get; internal set; }
 
+        [XmlIgnore]
         public Scene? Scene { get; internal set; }
 
+        [XmlIgnore]
         public TransformComponent Transform { get; private set; }
 
         public T? Get<T>() where T : EntityComponent

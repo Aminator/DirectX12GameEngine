@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<MaterialAsset xmlns="DirectX12GameEngine.Assets" Source="Assets\Resources\Models\SwimmingShark.glb[0]">
+  <MaterialAsset.Attributes>
+    <MaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
+
+      <!--<MaterialAttributes.MicroSurface>
+                <MaterialRoughnessMapFeature>
+                  <MaterialRoughnessMapFeature.RoughnessMap>
+                    <ComputeScalar Value="1.0" />
+                  </MaterialRoughnessMapFeature.RoughnessMap>
+                </MaterialRoughnessMapFeature>
+              </MaterialAttributes.MicroSurface>-->
+
+      <!--<MaterialAttributes.Surface>
+                <MaterialNormalMapFeature>
+                  <MaterialNormalMapFeature.NormalMap>
+                    <ComputeTextureColor Texture="Assets\Resources\Models\Swimming_Shark_img2.png" />
+                  </MaterialNormalMapFeature.NormalMap>
+                </MaterialNormalMapFeature>
+              </MaterialAttributes.Surface>-->
+
+    </MaterialAttributes>
+  </MaterialAsset.Attributes>
+</MaterialAsset>

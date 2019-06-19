@@ -1,4 +1,5 @@
 ﻿using System;
+using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Graphics;
 using Microsoft.Extensions.DependencyInjection;
 

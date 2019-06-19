@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿using DirectX12GameEngine.Assets;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
 
@@ -13,7 +13,11 @@ namespace DirectX12Game
                 GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
             }
 
-            SceneSystem.InitialScenePath = Path.Combine("Assets", "Scenes", "Scene1.xml");
+            SceneSystem.InitialScenePath = @"Assets\Scenes\Scene1.xml";
+
+            // TODO: DirectX12GameEngine.Assets.dll does not get copied to the output directory if it is never used.
+            MaterialAsset materialAsset = new MaterialAsset(Content, GraphicsDevice);
+            materialAsset.ToString();
         }
 
         protected override void BeginDraw()

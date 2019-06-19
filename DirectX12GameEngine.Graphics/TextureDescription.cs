@@ -38,5 +38,36 @@
                 Usage = usage,
             };
         }
+
+        public static implicit operator TextureDescription(ImageDescription description)
+        {
+            return new TextureDescription()
+            {
+                Dimension = description.Dimension,
+                Width = description.Width,
+                Height = description.Height,
+                Depth = description.Depth,
+                ArraySize = description.ArraySize,
+                MipLevels = description.MipLevels,
+                Format = description.Format,
+                Flags = TextureFlags.ShaderResource,
+                MultisampleCount = 1,
+                Usage = GraphicsResourceUsage.Default
+            };
+        }
+
+        public static implicit operator ImageDescription(TextureDescription description)
+        {
+            return new ImageDescription()
+            {
+                Dimension = description.Dimension,
+                Width = description.Width,
+                Height = description.Height,
+                Depth = description.Depth,
+                ArraySize = description.ArraySize,
+                MipLevels = description.MipLevels,
+                Format = description.Format,
+            };
+        }
     }
 }

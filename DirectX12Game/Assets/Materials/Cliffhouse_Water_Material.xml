@@ -1,44 +1,40 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Material xmlns="DirectX12GameEngine.Rendering">
-  <Material.Descriptor>
-    <MaterialDescriptor xmlns="DirectX12GameEngine.Rendering.Materials">
-      <MaterialDescriptor.Attributes>
-        <MaterialAttributes>
-          
-          <MaterialAttributes.Diffuse>
-            <MaterialDiffuseMapFeature>
-              <MaterialDiffuseMapFeature.DiffuseMap>
-                <ComputeTextureColor Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img1.png" />
-              </MaterialDiffuseMapFeature.DiffuseMap>
-            </MaterialDiffuseMapFeature>
-          </MaterialAttributes.Diffuse>
+<MaterialAsset xmlns="DirectX12GameEngine.Assets">
+  <MaterialAsset.Attributes>
+    <MaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
 
-          <MaterialAttributes.Surface>
-            <MaterialNormalMapFeature>
-              <MaterialNormalMapFeature.NormalMap>
-                <ComputeTextureColor Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img2.png" />
-              </MaterialNormalMapFeature.NormalMap>
-            </MaterialNormalMapFeature>
-          </MaterialAttributes.Surface>
+      <MaterialAttributes.Diffuse>
+        <MaterialDiffuseMapFeature>
+          <MaterialDiffuseMapFeature.DiffuseMap>
+            <ComputeTextureColor Texture="Assets\Textures\Cliffhouse_img1.xml" />
+          </MaterialDiffuseMapFeature.DiffuseMap>
+        </MaterialDiffuseMapFeature>
+      </MaterialAttributes.Diffuse>
 
-          <MaterialAttributes.MicroSurface>
-            <MaterialRoughnessMapFeature>
-              <MaterialRoughnessMapFeature.RoughnessMap>
-                <ComputeTextureScalar Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img0.png" Channel="G" />
-              </MaterialRoughnessMapFeature.RoughnessMap>
-            </MaterialRoughnessMapFeature>
-          </MaterialAttributes.MicroSurface>
+      <MaterialAttributes.Surface>
+        <MaterialNormalMapFeature>
+          <MaterialNormalMapFeature.NormalMap>
+            <ComputeTextureColor Texture="Assets\Textures\Cliffhouse_img2.xml" />
+          </MaterialNormalMapFeature.NormalMap>
+        </MaterialNormalMapFeature>
+      </MaterialAttributes.Surface>
 
-          <MaterialAttributes.Specular>
-            <MaterialMetalnessMapFeature>
-              <MaterialMetalnessMapFeature.MetalnessMap>
-                <ComputeTextureScalar Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img0.png" Channel="B" />
-              </MaterialMetalnessMapFeature.MetalnessMap>
-            </MaterialMetalnessMapFeature>
-          </MaterialAttributes.Specular>
-        
-        </MaterialAttributes>
-      </MaterialDescriptor.Attributes>
-    </MaterialDescriptor>
-  </Material.Descriptor>
-</Material>
+      <MaterialAttributes.MicroSurface>
+        <MaterialRoughnessMapFeature>
+          <MaterialRoughnessMapFeature.RoughnessMap>
+            <ComputeTextureScalar Texture="Assets\Textures\Cliffhouse_img0.xml" Channel="G" />
+          </MaterialRoughnessMapFeature.RoughnessMap>
+        </MaterialRoughnessMapFeature>
+      </MaterialAttributes.MicroSurface>
+
+      <MaterialAttributes.Specular>
+        <MaterialMetalnessMapFeature>
+          <MaterialMetalnessMapFeature.MetalnessMap>
+            <ComputeTextureScalar Texture="Assets\Textures\Cliffhouse_img0.xml" Channel="B" />
+          </MaterialMetalnessMapFeature.MetalnessMap>
+        </MaterialMetalnessMapFeature>
+      </MaterialAttributes.Specular>
+
+    </MaterialAttributes>
+  </MaterialAsset.Attributes>
+</MaterialAsset>

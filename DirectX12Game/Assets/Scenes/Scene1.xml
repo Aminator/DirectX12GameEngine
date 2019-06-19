@@ -11,7 +11,7 @@
     <TransformComponent Scale="0.2,0.2,0.2" Position="0,120,0" />
     <ModelComponent>
       <ModelComponent.Model>
-        <Model>Assets\Models\SwimmingShark_Model.xml</Model>
+        <Model xmlns="DirectX12GameEngine.Rendering">Assets\Models\SwimmingShark_Model.xml</Model>
       </ModelComponent.Model>
     </ModelComponent>
   </Entity>

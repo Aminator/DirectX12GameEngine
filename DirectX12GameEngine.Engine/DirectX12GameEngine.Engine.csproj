@@ -19,10 +19,4 @@
     <ProjectReference Include="..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="GltfLoader">
-      <HintPath>..\Libs\GltfLoader.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

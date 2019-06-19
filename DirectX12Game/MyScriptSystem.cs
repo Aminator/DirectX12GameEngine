@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Xml.Serialization;
 using DirectX12GameEngine.Core;
+using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
@@ -23,6 +25,7 @@ namespace DirectX12Game
         {
             GameBase game = services.GetRequiredService<GameBase>();
 
+            Content = services.GetRequiredService<ContentManager>();
             GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
             SceneSystem = services.GetRequiredService<SceneSystem>();
 
@@ -40,7 +43,42 @@ namespace DirectX12Game
                 xamlContext.Control.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.GetCurrentPoint(xamlContext.Control));
             }
 #endif
+#if NETCOREAPP
+            if (game.Context is GameContextWinForms winFormsContext)
+            {
+                winFormsContext.Control.KeyDown += async (s, e) =>
+                {
+                    if (e.KeyCode == System.Windows.Forms.Keys.O)
+                    {
+                        Entity customCliffhouse = EntityManager.FirstOrDefault(m => m.Name == "CustomCliffhouse");
+                        if (customCliffhouse != null)
+                        {
+                            await Content.SaveAsync(@"Assets\CustomCliffhouse.xml", customCliffhouse);
+                        }
+                    }
+                    else if (e.KeyCode == System.Windows.Forms.Keys.I)
+                    {
+                        Scene? scene = SceneSystem.SceneInstance?.RootScene;
+                        if (scene != null)
+                        {
+                            Scene copy = new Scene();
+                            List<Entity> entities = new List<Entity>(scene);
+
+                            foreach (var entity in entities)
+                            {
+                                scene.Remove(entity);
+                                copy.Add(entity);
+                            }
+
+                            await Content.SaveAsync(@"Assets\CustomScene.xml", copy);
+                        }
+                    }
+                };
+            }
+#endif
         }
+
+        public ContentManager Content { get; }
 
         public GraphicsDevice GraphicsDevice { get; }
 
@@ -188,7 +226,7 @@ namespace DirectX12Game
                     Entity newCliffhouse = new Entity("Cliffhouse")
                     {
                         new TransformComponent { Position = new Vector3(-200.0f, 120.0f, 500.0f) },
-                        new ModelComponent(await Services.GetRequiredService<ContentManager>().LoadAsync<Model>(@"Assets\Models\Cliffhouse_Model.xml"))
+                        new ModelComponent(await Services.GetRequiredService<ContentManager>().LoadAsync<Model>("Assets/Models/Cliffhouse_Model.xml"))
                     };
 
                     SceneSystem.SceneInstance?.RootScene?.Add(newCliffhouse);
@@ -237,6 +275,13 @@ namespace DirectX12Game
                         sceneInstance.RootScene = new Scene { Offset = new Vector3(500.0f, 0.0f, 0.0f) };
                         sceneInstance.RootScene.Add(cameraEntity);
                         sceneInstance.RootScene.Children.Add(previousRootScene);
+                    }
+                    break;
+                case Windows.System.VirtualKey.O:
+                    Entity entity = EntityManager.FirstOrDefault(m => m.Name == "CustomCliffhouse");
+                    if (entity != null)
+                    {
+                        await Content.SaveAsync(@"Assets\CustomCliffhouse.xml", entity);
                     }
                     break;
             }

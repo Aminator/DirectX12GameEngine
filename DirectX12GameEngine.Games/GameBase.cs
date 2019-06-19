@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Core.Assets;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Games
@@ -23,8 +24,11 @@ namespace DirectX12GameEngine.Games
 
             Window = GameWindow.Create(this);
 
+            Content = Services.GetRequiredService<ContentManager>();
             GameSystems = Services.GetRequiredService<List<GameSystemBase>>();
         }
+
+        public ContentManager Content { get; }
 
         public GameContext Context { get; }
 
@@ -129,6 +133,7 @@ namespace DirectX12GameEngine.Games
         protected virtual void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<GameBase>(this);
+            services.AddSingleton<ContentManager>();
             services.AddSingleton<List<GameSystemBase>>();
         }
     }

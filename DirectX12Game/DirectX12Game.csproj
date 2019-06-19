@@ -16,6 +16,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Materials\SwimmingShark_Material.xml" />
+    <None Remove="Assets\Textures\Cliffhouse_img0.xml" />
+    <None Remove="Assets\Textures\Cliffhouse_img1.xml" />
+    <None Remove="Assets\Textures\Cliffhouse_img2.xml" />
+    <None Remove="Assets\Textures\Cliffhouse_img3.xml" />
+    <None Remove="Assets\Textures\Cliffhouse_img4.xml" />
+    <None Remove="Assets\Textures\Cliffhouse_img5.xml" />
+    <None Remove="Assets\Textures\Tiling_Perlin_Noise.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DirectX12GameEngine.Assets\DirectX12GameEngine.Assets.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
   </ItemGroup>
 

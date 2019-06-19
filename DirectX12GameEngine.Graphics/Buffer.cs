@@ -2,24 +2,19 @@
 using DirectX12GameEngine.Core;
 using SharpDX.Direct3D12;
 
-using Resource = SharpDX.Direct3D12.Resource;
-
 namespace DirectX12GameEngine.Graphics
 {
     public partial class Buffer : GraphicsResource
     {
-        protected internal Buffer(GraphicsDevice device, Resource resource, BufferDescription description) : base(device, resource)
+        public Buffer()
         {
-            Description = description;
-
-            (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = description.Flags switch
-            {
-                BufferFlags.ConstantBuffer => CreateConstantBufferView(),
-                _ => default
-            };
         }
 
-        public BufferDescription Description { get; }
+        protected Buffer(GraphicsDevice device) : base(device)
+        {
+        }
+
+        public BufferDescription Description { get; private set; }
 
         public int SizeInBytes => Description.SizeInBytes;
 
@@ -47,11 +42,7 @@ namespace DirectX12GameEngine.Graphics
 
         public static Buffer New(GraphicsDevice device, BufferDescription description)
         {
-            Resource resource = device.NativeDevice.CreateCommittedResource(
-                new HeapProperties((HeapType)description.Usage), HeapFlags.None,
-                ConvertToNativeDescription(description), ResourceStates.GenericRead);
-
-            return new Buffer(device, resource, description);
+            return new Buffer(device).InitializeFrom(description);
         }
 
         public static Buffer New(GraphicsDevice device, int size, BufferFlags bufferFlags, GraphicsResourceUsage usage = GraphicsResourceUsage.Default)
@@ -71,24 +62,45 @@ namespace DirectX12GameEngine.Graphics
         {
             int bufferSize = data.Length * sizeof(T);
             Buffer buffer = New(device, bufferSize, bufferFlags, usage);
+            buffer.Recreate(data);
 
-            if (usage == GraphicsResourceUsage.Upload)
+            return buffer;
+        }
+
+        protected internal Buffer InitializeFrom(BufferDescription description)
+        {
+            NativeResource ??= GraphicsDevice.NativeDevice.CreateCommittedResource(
+                new HeapProperties((HeapType)description.Usage), HeapFlags.None,
+                ConvertToNativeDescription(description), ResourceStates.GenericRead);
+
+            Description = description;
+
+            (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = description.Flags switch
             {
-                buffer.SetData(data);
+                BufferFlags.ConstantBuffer => CreateConstantBufferView(),
+                _ => default
+            };
+
+            return this;
+        }
+
+        protected internal void Recreate<T>(Span<T> data) where T : unmanaged
+        {
+            if (Description.Usage == GraphicsResourceUsage.Upload)
+            {
+                SetData(data);
             }
             else
             {
-                using Buffer uploadBuffer = New(device, data, BufferFlags.None, GraphicsResourceUsage.Upload);
+                using Buffer uploadBuffer = New(GraphicsDevice, data, BufferFlags.None, GraphicsResourceUsage.Upload);
 
-                CommandList copyCommandList = device.GetOrCreateCopyCommandList();
+                CommandList copyCommandList = GraphicsDevice.GetOrCreateCopyCommandList();
 
-                copyCommandList.CopyResource(uploadBuffer, buffer);
+                copyCommandList.CopyResource(uploadBuffer, this);
                 copyCommandList.Flush(true);
 
-                device.CopyCommandLists.Enqueue(copyCommandList);
+                GraphicsDevice.EnqueueCopyCommandList(copyCommandList);
             }
-
-            return buffer;
         }
 
         private static ResourceDescription ConvertToNativeDescription(BufferDescription description)
