@@ -71,6 +71,8 @@ namespace DirectX12GameEngine.Shaders
             writer = new IndentedTextWriter(stringWriter);
         }
 
+        public bool IsGenerated => result != null;
+
         public void AddType(Type type)
         {
             CollectStructure(type, null);
@@ -80,9 +82,8 @@ namespace DirectX12GameEngine.Shaders
         {
             if (result != null) return result;
 
-            result = new ShaderGenerationResult();
-
             Type shaderType = shader.GetType();
+            result = GetEntryPoints(shaderType, bindingAttr);
 
             var memberInfos = shaderType.GetMembersInTypeHierarchyInOrder(bindingAttr).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
 
@@ -127,18 +128,23 @@ namespace DirectX12GameEngine.Shaders
                 }
             }
 
-            // Set shader entry points
+            stringWriter.GetStringBuilder().TrimEnd();
+            writer.WriteLine();
+
+            result.ShaderSource = stringWriter.ToString();
+
+            return result;
+        }
+
+        public static ShaderGenerationResult GetEntryPoints(Type shaderType, BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+        {
+            ShaderGenerationResult result = new ShaderGenerationResult();
 
             foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingAttr).Where(m => m.IsDefined(typeof(ShaderAttribute))))
             {
                 ShaderAttribute shaderAttribute = shaderMethodInfo.GetCustomAttribute<ShaderAttribute>();
                 result.SetShader(shaderAttribute.Name, shaderMethodInfo);
             }
-
-            stringWriter.GetStringBuilder().TrimEnd();
-            writer.WriteLine();
-
-            result.ShaderSource = stringWriter.ToString();
 
             return result;
         }

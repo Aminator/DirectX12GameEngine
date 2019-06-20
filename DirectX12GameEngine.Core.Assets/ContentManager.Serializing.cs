@@ -15,9 +15,10 @@ namespace DirectX12GameEngine.Core.Assets
         {
             XElement root = SerializeObject(asset, storageType);
 
-            using Stream stream = await RootFolder.OpenStreamForWriteAsync(path, Windows.Storage.CreationCollisionOption.ReplaceExisting);
-
-            root.Save(stream);
+            using (Stream stream = await RootFolder.OpenStreamForWriteAsync(path, Windows.Storage.CreationCollisionOption.ReplaceExisting))
+            {
+                root.Save(stream);
+            }
 
             Reference reference = new Reference(path, asset, true);
             SetAssetObject(reference);
@@ -40,10 +41,11 @@ namespace DirectX12GameEngine.Core.Assets
             {
                 if (propertyInfo.IsDefined(typeof(XmlIgnoreAttribute)) || propertyInfo.IsSpecialName || propertyInfo.GetIndexParameters().Length > 0) continue;
 
-                object propertyValue = propertyInfo.GetValue(asset);
-                Type propertyType = propertyValue.GetType();
+                object? propertyValue = propertyInfo.GetValue(asset);
 
                 if (propertyValue is null) continue;
+
+                Type propertyType = propertyValue.GetType();
 
                 // TODO: Put this logic into seperate serializers for each type.
                 if (propertyType.IsPrimitive || propertyType == typeof(string) || propertyType == typeof(Vector3) || propertyType == typeof(Quaternion) || propertyType == typeof(Matrix4x4) || propertyType == typeof(Guid))

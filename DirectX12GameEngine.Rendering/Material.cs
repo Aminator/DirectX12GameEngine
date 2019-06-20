@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering.Materials;
 
@@ -10,12 +12,12 @@ namespace DirectX12GameEngine.Rendering
 
         public IList<MaterialPass> Passes { get; } = new List<MaterialPass>();
 
-        public static Material Create(GraphicsDevice device, MaterialDescriptor descriptor)
+        public static Task<Material> CreateAsync(GraphicsDevice device, MaterialDescriptor descriptor, ContentManager contentManager)
         {
             Material material = new Material { Descriptor = descriptor };
 
-            MaterialGeneratorContext context = new MaterialGeneratorContext(device, material);
-            return MaterialGenerator.Generate(descriptor, context);
+            MaterialGeneratorContext context = new MaterialGeneratorContext(device, material, contentManager);
+            return MaterialGenerator.GenerateAsync(descriptor, context);
         }
     }
 }

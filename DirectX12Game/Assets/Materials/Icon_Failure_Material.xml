@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<MaterialAsset xmlns="DirectX12GameEngine.Assets">
+<MaterialAsset Id="c91a471f-36a9-40f7-beab-777dbf1a85ed" xmlns="DirectX12GameEngine.Assets">
   <MaterialAsset.Attributes>
     <MaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
 

@@ -8,6 +8,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\DirectX12GameEngine.Core.Assets\DirectX12GameEngine.Core.Assets.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Graphics\DirectX12GameEngine.Graphics.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Shaders\DirectX12GameEngine.Shaders.csproj" />
   </ItemGroup>

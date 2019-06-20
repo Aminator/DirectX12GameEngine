@@ -7,7 +7,7 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="fa488169-81c4-4501-8c6c-7e72e83b8988"
+    Name="DirectX12XamlApp"
     Publisher="CN=Amin"
     Version="1.0.0.0" />
 

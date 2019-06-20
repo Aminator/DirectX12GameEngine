@@ -7,29 +7,29 @@ namespace DirectX12GameEngine.Shaders
     {
         public string? ShaderSource { get; set; }
 
-        public MethodInfo? ComputeShader { get; set; }
+        public string? ComputeShader { get; set; }
 
-        public MethodInfo? VertexShader { get; set; }
+        public string? VertexShader { get; set; }
 
-        public MethodInfo? PixelShader { get; set; }
+        public string? PixelShader { get; set; }
 
-        public MethodInfo? HullShader { get; set; }
+        public string? HullShader { get; set; }
 
-        public MethodInfo? DomainShader { get; set; }
+        public string? DomainShader { get; set; }
 
-        public MethodInfo? GeometryShader { get; set; }
+        public string? GeometryShader { get; set; }
 
-        public MethodInfo? RayGenerationShader { get; set; }
+        public string? RayGenerationShader { get; set; }
 
-        public MethodInfo? IntersectionShader { get; set; }
+        public string? IntersectionShader { get; set; }
 
-        public MethodInfo? AnyHitShader { get; set; }
+        public string? AnyHitShader { get; set; }
 
-        public MethodInfo? ClosestHitShader { get; set; }
+        public string? ClosestHitShader { get; set; }
 
-        public MethodInfo? MissShader { get; set; }
+        public string? MissShader { get; set; }
 
-        public MethodInfo? CallableShader { get; set; }
+        public string? CallableShader { get; set; }
 
         internal void SetShader(string name, MethodInfo methodInfo)
         {
@@ -37,7 +37,7 @@ namespace DirectX12GameEngine.Shaders
             {
                 if (name == propertyInfo.Name.Replace("Shader", "").ToLower())
                 {
-                    propertyInfo.SetValue(this, methodInfo);
+                    propertyInfo.SetValue(this, methodInfo.Name);
                     return;
                 }
             }

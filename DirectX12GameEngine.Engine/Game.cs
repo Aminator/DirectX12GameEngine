@@ -1,5 +1,6 @@
 ﻿using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Rendering.Materials;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
@@ -94,6 +95,7 @@ namespace DirectX12GameEngine.Engine
 
             services.AddSingleton(GraphicsDevice);
             services.AddSingleton<SceneSystem>();
+            services.AddSingleton<ShaderContentManager>();
         }
     }
 }

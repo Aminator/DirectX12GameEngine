@@ -152,6 +152,18 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.12" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DirectX12GameEngine.Assets\DirectX12GameEngine.Assets.csproj">
+      <Project>{1e0e861d-2635-4b57-afc1-73aeecd56018}</Project>
+      <Name>DirectX12GameEngine.Assets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Core.Assets\DirectX12GameEngine.Core.Assets.csproj">
+      <Project>{83caaffe-6c8e-4b1e-a595-d7b3b0cf1ae5}</Project>
+      <Name>DirectX12GameEngine.Core.Assets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Core\DirectX12GameEngine.Core.csproj">
+      <Project>{b0756b81-8c65-478c-aed4-e3ebdecf30a5}</Project>
+      <Name>DirectX12GameEngine.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj">
       <Project>{693635ed-fc5e-43ff-a869-b37a2d601ed3}</Project>
       <Name>DirectX12GameEngine.Engine</Name>
@@ -159,6 +171,14 @@
     <ProjectReference Include="..\DirectX12GameEngine.Games\DirectX12GameEngine.Games.csproj">
       <Project>{6d3387fc-c108-4ec0-ae82-66184570cf6c}</Project>
       <Name>DirectX12GameEngine.Games</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Graphics.Holographic\DirectX12GameEngine.Graphics.Holographic.csproj">
+      <Project>{c4b65186-87b3-4219-8d84-1ac29a81266a}</Project>
+      <Name>DirectX12GameEngine.Graphics.Holographic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Graphics\DirectX12GameEngine.Graphics.csproj">
+      <Project>{107a527c-2d40-44b5-805f-092b9b614947}</Project>
+      <Name>DirectX12GameEngine.Graphics</Name>
     </ProjectReference>
     <ProjectReference Include="..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj">
       <Project>{1b6c6198-f2fb-4abb-88ad-0078fa42ac48}</Project>

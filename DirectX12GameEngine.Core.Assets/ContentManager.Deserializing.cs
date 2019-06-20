@@ -71,13 +71,16 @@ namespace DirectX12GameEngine.Core.Assets
                 throw new FileNotFoundException();
             }
 
-            using Stream stream = await RootFolder.OpenStreamForReadAsync(path);
+            XElement root;
 
+            using (Stream stream = await RootFolder.OpenStreamForReadAsync(path))
+            {
 #if NETSTANDARD2_0
-            XElement root = await Task.Run(() => XElement.Load(stream));
+                root = await Task.Run(() => XElement.Load(stream));
 #else
-            XElement root = await XElement.LoadAsync(stream, LoadOptions.None, default);
+                root = await XElement.LoadAsync(stream, LoadOptions.None, default);
 #endif
+            }
 
             object result;
             Asset? asset = null;

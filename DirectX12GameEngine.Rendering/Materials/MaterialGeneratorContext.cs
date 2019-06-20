@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
+using Microsoft.Extensions.DependencyInjection;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
 
@@ -13,15 +16,18 @@ namespace DirectX12GameEngine.Rendering.Materials
     {
         private readonly Stack<IMaterialDescriptor> materialDescriptorStack = new Stack<IMaterialDescriptor>();
 
-        public MaterialGeneratorContext(GraphicsDevice device, Material material)
+        public MaterialGeneratorContext(GraphicsDevice device, Material material, ContentManager contentManager)
         {
             GraphicsDevice = device;
             Material = material;
+            Content = contentManager;
         }
 
         public GraphicsDevice GraphicsDevice { get; }
 
         public Material Material { get; }
+
+        public ContentManager Content { get; }
 
         public IList<Graphics.Buffer> ConstantBuffers { get; } = new List<Graphics.Buffer>();
 
@@ -69,7 +75,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             return materialPass;
         }
 
-        public PipelineState CreateGraphicsPipelineState()
+        public async Task<PipelineState> CreateGraphicsPipelineStateAsync()
         {
             if (MaterialDescriptor is null) throw new InvalidOperationException("The current material descriptor cannot be null when creating a pipeline state.");
 
@@ -81,18 +87,31 @@ namespace DirectX12GameEngine.Rendering.Materials
                 new InputElement("TexCoord", 0, Format.R32G32_Float, 3)
             };
 
-            ShaderGenerator shaderGenerator = new ShaderGenerator(MaterialDescriptor.Attributes);
-            ShaderGenerationResult result = shaderGenerator.GenerateShaderSource();
-
-            if (result.ShaderSource is null) throw new Exception("Shader source cannot be null.");
-
             (ShaderBytecode VertexShader, ShaderBytecode PixelShader, ShaderBytecode HullShader, ShaderBytecode DomainShader, ShaderBytecode GeometryShader) shaders = default;
 
-            shaders.VertexShader = result.VertexShader is null ? throw new Exception("Vertex shader must be present.") : ShaderCompiler.CompileShader(result.ShaderSource, SharpDX.D3DCompiler.ShaderVersion.VertexShader, result.VertexShader.Name);
-            shaders.PixelShader = result.PixelShader is null ? throw new Exception("Pixel shader must be present.") : ShaderCompiler.CompileShader(result.ShaderSource, SharpDX.D3DCompiler.ShaderVersion.PixelShader, result.PixelShader.Name);
-            shaders.HullShader = result.HullShader is null ? default : ShaderCompiler.CompileShader(result.ShaderSource, SharpDX.D3DCompiler.ShaderVersion.HullShader, result.HullShader.Name);
-            shaders.DomainShader = result.DomainShader is null ? default : ShaderCompiler.CompileShader(result.ShaderSource, SharpDX.D3DCompiler.ShaderVersion.DomainShader, result.DomainShader.Name);
-            shaders.GeometryShader = result.GeometryShader is null ? default : ShaderCompiler.CompileShader(result.ShaderSource, SharpDX.D3DCompiler.ShaderVersion.GeometryShader, result.GeometryShader.Name);
+            string fileName = $"Shader_{MaterialDescriptor.MaterialId}.xml";
+
+            ShaderGenerationResult result;
+
+            if (!await Content.ExistsAsync(fileName))
+            {
+                ShaderGenerator shaderGenerator = new ShaderGenerator(MaterialDescriptor.Attributes);
+                result = shaderGenerator.GenerateShaderSource();
+
+                await Content.SaveAsync(fileName, result);
+            }
+            else
+            {
+                result = await Content.LoadAsync<ShaderGenerationResult>(fileName);
+            }
+
+            string shaderSource = result.ShaderSource ?? throw new Exception();
+
+            shaders.VertexShader = result.VertexShader is null ? throw new Exception("Vertex shader must be present.") : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.VertexShader, result.VertexShader);
+            shaders.PixelShader = result.PixelShader is null ? throw new Exception("Pixel shader must be present.") : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.PixelShader, result.PixelShader);
+            shaders.HullShader = result.HullShader is null ? default : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.HullShader, result.HullShader);
+            shaders.DomainShader = result.DomainShader is null ? default : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.DomainShader, result.DomainShader);
+            shaders.GeometryShader = result.GeometryShader is null ? default : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.GeometryShader, result.GeometryShader);
 
             RootSignature rootSignature = CreateRootSignature();
 

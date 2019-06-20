@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using Windows.Storage;
 
 namespace DirectX12GameEngine.Core.Assets
 {
-    public sealed partial class ContentManager : IContentManager
+    public partial class ContentManager : IContentManager
     {
+        private readonly AsyncLock asyncLock = new AsyncLock();
         private readonly AsyncDictionary<Guid, IIdentifiable> identifiableObjects = new AsyncDictionary<Guid, IIdentifiable>();
         private readonly Dictionary<string, Reference> loadedAssetPaths = new Dictionary<string, Reference>();
         private readonly Dictionary<object, Reference> loadedAssetReferences = new Dictionary<object, Reference>();
@@ -46,14 +48,6 @@ namespace DirectX12GameEngine.Core.Assets
         public ContentManager(IServiceProvider services)
         {
             Services = services;
-
-            try
-            {
-                RootFolder = Windows.ApplicationModel.Package.Current.InstalledLocation;
-            }
-            catch
-            {
-            }
         }
 
         public ContentManager(IServiceProvider services, StorageFolder rootFolder)
@@ -99,51 +93,66 @@ namespace DirectX12GameEngine.Core.Assets
 
         public async Task<object> LoadAsync(Type type, string path)
         {
-            return await DeserializeObjectAsync(path, path, type, null);
+            using (await asyncLock.LockAsync())
+            {
+                return await DeserializeObjectAsync(path, path, type, null);
+            }
         }
 
         public async Task<bool> ReloadAsync(object asset, string? newPath = null)
         {
-            if (!loadedAssetReferences.TryGetValue(asset, out Reference reference))
+            using (await asyncLock.LockAsync())
             {
-                return false;
+                if (!loadedAssetReferences.TryGetValue(asset, out Reference reference))
+                {
+                    return false;
+                }
+
+                string path = newPath ?? reference.Path;
+
+                await DeserializeObjectAsync(reference.Path, path, asset.GetType(), asset);
+
+                if (path != reference.Path)
+                {
+                    loadedAssetPaths.Remove(reference.Path);
+                }
+
+                return true;
             }
-
-            string path = newPath ?? reference.Path;
-
-            await DeserializeObjectAsync(reference.Path, path, asset.GetType(), asset);
-
-            if (path != reference.Path)
-            {
-                loadedAssetPaths.Remove(reference.Path);
-            }
-
-            return true;
         }
 
         public async Task SaveAsync(string path, object asset, Type? storageType = null)
         {
-            await SerializeObjectAsync(path, asset, storageType);
+            using (await asyncLock.LockAsync())
+            {
+                await SerializeObjectAsync(path, asset, storageType);
+            }
         }
 
         public void Unload(object asset)
         {
-            if (!loadedAssetReferences.TryGetValue(asset, out Reference reference))
+            using (asyncLock.Lock())
             {
-                throw new InvalidOperationException("Content is not loaded.");
-            }
+                if (!loadedAssetReferences.TryGetValue(asset, out Reference reference))
+                {
+                    throw new InvalidOperationException("Content is not loaded.");
+                }
 
-            DecrementReference(reference, true);
+                DecrementReference(reference, true);
+            }
         }
 
         public void Unload(string path)
         {
-            if (!loadedAssetPaths.TryGetValue(path, out Reference reference))
+            using (asyncLock.Lock())
             {
-                throw new InvalidOperationException("Content is not loaded.");
-            }
+                if (!loadedAssetPaths.TryGetValue(path, out Reference reference))
+                {
+                    throw new InvalidOperationException("Content is not loaded.");
+                }
 
-            DecrementReference(reference, true);
+                DecrementReference(reference, true);
+            }
         }
 
         private Reference? FindDeserializedObject(string path, Type type)

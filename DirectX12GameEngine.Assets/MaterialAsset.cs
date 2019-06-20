@@ -13,11 +13,13 @@ namespace DirectX12GameEngine.Assets
     public class MaterialAsset : AssetWithSource<Material>
     {
         private readonly ContentManager contentManager;
+        private readonly ShaderContentManager shaderContentManager;
         private readonly GraphicsDevice device;
 
-        public MaterialAsset(ContentManager contentManager, GraphicsDevice device)
+        public MaterialAsset(ContentManager contentManager, ShaderContentManager shaderContentManager, GraphicsDevice device)
         {
             this.contentManager = contentManager;
+            this.shaderContentManager = shaderContentManager;
             this.device = device;
         }
 
@@ -29,7 +31,7 @@ namespace DirectX12GameEngine.Assets
 
             if (string.IsNullOrEmpty(Source))
             {
-                descriptor = new MaterialDescriptor { Attributes = Attributes };
+                descriptor = new MaterialDescriptor { MaterialId = Id, Attributes = Attributes };
             }
             else
             {
@@ -43,7 +45,7 @@ namespace DirectX12GameEngine.Assets
 
                     // TODO: Combine material attributes.
 
-                    descriptor = new MaterialDescriptor { Attributes = materialAttributes };
+                    descriptor = new MaterialDescriptor { MaterialId = Id, Attributes = materialAttributes };
                 }
                 else
                 {
@@ -53,8 +55,8 @@ namespace DirectX12GameEngine.Assets
 
             material.Descriptor = descriptor;
 
-            MaterialGeneratorContext context = new MaterialGeneratorContext(device, material);
-            await Task.Run(() => MaterialGenerator.Generate(descriptor, context));
+            MaterialGeneratorContext context = new MaterialGeneratorContext(device, material, shaderContentManager);
+            await MaterialGenerator.GenerateAsync(descriptor, context);
         }
 
         private static int GetIndex(ref string path)

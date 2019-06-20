@@ -1,8 +1,10 @@
-﻿namespace DirectX12GameEngine.Rendering.Materials
+﻿using System.Threading.Tasks;
+
+namespace DirectX12GameEngine.Rendering.Materials
 {
     public static class MaterialGenerator
     {
-        public static Material Generate(MaterialDescriptor descriptor, MaterialGeneratorContext context)
+        public static async Task<Material> GenerateAsync(MaterialDescriptor descriptor, MaterialGeneratorContext context)
         {
             context.PushMaterialDescriptor(descriptor);
 
@@ -12,7 +14,7 @@
 
                 descriptor.Visit(context);
 
-                materialPass.PipelineState = context.CreateGraphicsPipelineState();
+                materialPass.PipelineState = await context.CreateGraphicsPipelineStateAsync();
                 (materialPass.NativeConstantBufferCpuDescriptorHandle, materialPass.NativeConstantBufferGpuDescriptorHandle) = context.GraphicsDevice.CopyDescriptorsToOneDescriptorHandle(context.ConstantBuffers);
                 (materialPass.NativeSamplerCpuDescriptorHandle, materialPass.NativeSamplerGpuDescriptorHandle) = context.GraphicsDevice.CopyDescriptorsToOneDescriptorHandle(context.Samplers);
                 (materialPass.NativeTextureCpuDescriptorHandle, materialPass.NativeTextureGpuDescriptorHandle) = context.GraphicsDevice.CopyDescriptorsToOneDescriptorHandle(context.Textures);

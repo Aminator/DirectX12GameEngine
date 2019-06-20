@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<MaterialAsset xmlns="DirectX12GameEngine.Assets" xmlns:local="DirectX12Game">
+<MaterialAsset Id="fe2d05c2-2112-4e19-b08d-6f57c5194037" xmlns="DirectX12GameEngine.Assets" xmlns:local="DirectX12Game">
   <MaterialAsset.Attributes>
     <local:WobbleMaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
 
