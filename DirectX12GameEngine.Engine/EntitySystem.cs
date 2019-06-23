@@ -35,7 +35,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        protected internal abstract void ProcessEntityComponent(EntityComponent entityComponent, bool forceRemove);
+        protected internal abstract void ProcessEntityComponent(EntityComponent entityComponent, Entity entity, bool forceRemove);
 
         protected internal void InternalAddEntity(Entity entity)
         {
@@ -62,12 +62,11 @@ namespace DirectX12GameEngine.Engine
 
         protected HashSet<TComponent> Components { get; } = new HashSet<TComponent>();
 
-        protected internal override void ProcessEntityComponent(EntityComponent entityComponent, bool forceRemove)
+        protected internal override void ProcessEntityComponent(EntityComponent entityComponent, Entity entity, bool forceRemove)
         {
-            if (entityComponent.Entity is null) throw new ArgumentException("The entity component must be attached to an entity.", nameof(entityComponent));
             if (!(entityComponent is TComponent component)) throw new ArgumentException("The entity component must be assignable to TComponent", nameof(entityComponent));
 
-            bool entityMatch = !forceRemove && EntityMatch(entityComponent.Entity);
+            bool entityMatch = !forceRemove && EntityMatch(entity);
             bool entityAdded = Components.Contains(component);
 
             if (entityMatch && !entityAdded)

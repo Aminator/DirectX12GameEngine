@@ -78,7 +78,7 @@ namespace DirectX12GameEngine.Shaders
             CollectStructure(type, null);
         }
 
-        public ShaderGenerationResult GenerateShaderSource()
+        public ShaderGenerationResult GenerateShader()
         {
             if (result != null) return result;
 
@@ -143,7 +143,7 @@ namespace DirectX12GameEngine.Shaders
             foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingAttr).Where(m => m.IsDefined(typeof(ShaderAttribute))))
             {
                 ShaderAttribute shaderAttribute = shaderMethodInfo.GetCustomAttribute<ShaderAttribute>();
-                result.SetShader(shaderAttribute.Name, shaderMethodInfo);
+                result.SetShader(shaderAttribute.Name, shaderMethodInfo.Name);
             }
 
             return result;

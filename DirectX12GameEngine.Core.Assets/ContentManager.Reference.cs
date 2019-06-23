@@ -5,6 +5,19 @@ namespace DirectX12GameEngine.Core.Assets
 {
     public partial class ContentManager
     {
+        private Reference? FindDeserializedObject(string path, Type type)
+        {
+            if (loadedAssetPaths.TryGetValue(path, out Reference? reference))
+            {
+                while (reference != null && !type.IsAssignableFrom(reference.Object.GetType()))
+                {
+                    reference = reference.Next;
+                }
+            }
+
+            return reference;
+        }
+
         private void IncrementReference(Reference reference, bool isPublicReference)
         {
             if (isPublicReference)
@@ -51,6 +64,28 @@ namespace DirectX12GameEngine.Core.Assets
             }
         }
 
+        private void SetAsset(Reference reference)
+        {
+            if (loadedAssetPaths.TryGetValue(reference.Path, out Reference previousReference))
+            {
+                reference.Next = previousReference.Next;
+                reference.Previous = previousReference;
+
+                if (previousReference.Next != null)
+                {
+                    previousReference.Next.Previous = reference;
+                }
+
+                previousReference.Next = reference;
+            }
+            else
+            {
+                loadedAssetPaths[reference.Path] = reference;
+            }
+
+            loadedAssetReferences[reference.Object] = reference;
+        }
+
         private void ReleaseAsset(Reference reference)
         {
             if (reference.Object is IDisposable disposable)
@@ -58,7 +93,31 @@ namespace DirectX12GameEngine.Core.Assets
                 disposable.Dispose();
             }
 
-            loadedAssetPaths.Remove(reference.Path);
+            Reference? previous = reference.Previous;
+            Reference? next = reference.Next;
+
+            if (previous != null)
+            {
+                previous.Next = next;
+            }
+
+            if (next != null)
+            {
+                next.Previous = previous;
+            }
+
+            if (previous is null)
+            {
+                if (next is null)
+                {
+                    loadedAssetPaths.Remove(reference.Path);
+                }
+                else
+                {
+                    loadedAssetPaths[reference.Path] = next;
+                }
+            }
+
             loadedAssetReferences.Remove(reference.Object);
         }
 
@@ -83,6 +142,10 @@ namespace DirectX12GameEngine.Core.Assets
             public int PrivateReferenceCount { get; set; }
 
             public HashSet<Reference> References { get; set; } = new HashSet<Reference>();
+
+            public Reference? Next { get; set; }
+
+            public Reference? Previous { get; set; }
         }
     }
 }

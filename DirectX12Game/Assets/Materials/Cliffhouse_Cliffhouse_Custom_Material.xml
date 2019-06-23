@@ -8,10 +8,10 @@
           <MaterialDiffuseMapFeature.DiffuseMap>
             <local:DissolveShader DissolveStrength="0.5">
               <local:DissolveShader.MainTexture>
-                <ComputeTextureColor Texture="Assets\Textures\Cliffhouse_img4.xml" />
+                <ComputeTextureColor Texture="Assets\Textures\Cliffhouse_img4" />
               </local:DissolveShader.MainTexture>
               <local:DissolveShader.DissolveTexture>
-                <ComputeTextureScalar Texture="Assets\Textures\Tiling_Perlin_Noise.xml" Channel="R" />
+                <ComputeTextureScalar Texture="Assets\Textures\Tiling_Perlin_Noise" Channel="R" />
               </local:DissolveShader.DissolveTexture>
             </local:DissolveShader>
           </MaterialDiffuseMapFeature.DiffuseMap>
@@ -37,7 +37,7 @@
       <local:WobbleMaterialAttributes.MicroSurface>
         <MaterialRoughnessMapFeature>
           <MaterialRoughnessMapFeature.RoughnessMap>
-            <ComputeTextureScalar Texture="Assets\Textures\Cliffhouse_img3.xml" Channel="G" />
+            <ComputeTextureScalar Texture="Assets\Textures\Cliffhouse_img3" Channel="G" />
           </MaterialRoughnessMapFeature.RoughnessMap>
         </MaterialRoughnessMapFeature>
       </local:WobbleMaterialAttributes.MicroSurface>
@@ -45,7 +45,7 @@
       <local:WobbleMaterialAttributes.Specular>
         <MaterialMetalnessMapFeature>
           <MaterialMetalnessMapFeature.MetalnessMap>
-            <!--<ComputeTextureScalar Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img3.xml" Channel="B" />-->
+            <!--<ComputeTextureScalar Texture="Assets\Resources\Models\Cliffhouse\Cliffhouse_img3" Channel="B" />-->
             <ComputeScalar Value="0.0" />
           </MaterialMetalnessMapFeature.MetalnessMap>
         </MaterialMetalnessMapFeature>

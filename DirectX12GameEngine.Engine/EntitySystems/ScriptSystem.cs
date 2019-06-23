@@ -1,46 +1,82 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
-    public class ScriptSystem : EntitySystem<ScriptComponent>
+    public class ScriptSystem : GameSystemBase
     {
+        private readonly HashSet<ScriptComponent> registeredScripts = new HashSet<ScriptComponent>();
         private readonly HashSet<ScriptComponent> scriptsToStart = new HashSet<ScriptComponent>();
+        private readonly HashSet<SyncScript> syncScripts = new HashSet<SyncScript>();
+        private readonly List<ScriptComponent> scriptsToStartCopy = new List<ScriptComponent>();
+        private readonly List<SyncScript> syncScriptsCopy = new List<SyncScript>();
 
         public ScriptSystem(IServiceProvider services) : base(services)
         {
-            Order = -100000;
         }
 
         public override void Update(GameTime gameTime)
         {
+            scriptsToStartCopy.AddRange(scriptsToStart);
+            scriptsToStart.Clear();
+
+            syncScriptsCopy.AddRange(syncScripts);
+
+            foreach (ScriptComponent script in scriptsToStartCopy)
+            {
+                if (script is StartupScript startupScript)
+                {
+                    startupScript.Start();
+                }
+                else if (script is AsyncScript asyncScript)
+                {
+                    asyncScript.CancellationTokenSource = new CancellationTokenSource();
+                    asyncScript.ExecuteAsync();
+                }
+            }
+
+            foreach (SyncScript syncScript in syncScriptsCopy)
+            {
+                syncScript.Update();
+            }
+
+            scriptsToStartCopy.Clear();
+            syncScriptsCopy.Clear();
         }
 
-        protected override void OnEntityComponentAdded(ScriptComponent component)
-        {
-            Add(component);
-        }
-
-        protected override void OnEntityComponentRemoved(ScriptComponent component)
-        {
-            Remove(component);
-        }
-
-        private void Add(ScriptComponent script)
+        public void Add(ScriptComponent script)
         {
             script.Initialize(Services);
+            registeredScripts.Add(script);
 
             scriptsToStart.Add(script);
+
+            if (script is SyncScript syncScript)
+            {
+                syncScripts.Add(syncScript);
+            }
         }
 
-        private void Remove(ScriptComponent script)
+        public void Remove(ScriptComponent script)
         {
             bool startWasPending = scriptsToStart.Remove(script);
+            bool wasRegistered = registeredScripts.Remove(script);
 
-            if (!startWasPending)
+            if (!startWasPending && wasRegistered)
             {
                 script.Cancel();
+
+                if (script is AsyncScript asyncScript)
+                {
+                    asyncScript.CancellationTokenSource?.Cancel();
+                }
+            }
+
+            if (script is SyncScript syncScript)
+            {
+                syncScripts.Remove(syncScript);
             }
         }
     }

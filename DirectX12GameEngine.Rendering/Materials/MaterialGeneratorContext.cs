@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
-using Microsoft.Extensions.DependencyInjection;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
 
@@ -89,14 +88,14 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             (ShaderBytecode VertexShader, ShaderBytecode PixelShader, ShaderBytecode HullShader, ShaderBytecode DomainShader, ShaderBytecode GeometryShader) shaders = default;
 
-            string fileName = $"Shader_{MaterialDescriptor.MaterialId}.xml";
+            string fileName = $"Shader_{MaterialDescriptor.MaterialId}";
 
             ShaderGenerationResult result;
 
             if (!await Content.ExistsAsync(fileName))
             {
                 ShaderGenerator shaderGenerator = new ShaderGenerator(MaterialDescriptor.Attributes);
-                result = shaderGenerator.GenerateShaderSource();
+                result = await Task.Run(() => shaderGenerator.GenerateShader());
 
                 await Content.SaveAsync(fileName, result);
             }

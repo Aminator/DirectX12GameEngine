@@ -10,7 +10,6 @@ namespace DirectX12GameEngine.Core.Assets
     public partial class ContentManager : IContentManager
     {
         private readonly AsyncLock asyncLock = new AsyncLock();
-        private readonly AsyncDictionary<Guid, IIdentifiable> identifiableObjects = new AsyncDictionary<Guid, IIdentifiable>();
         private readonly Dictionary<string, Reference> loadedAssetPaths = new Dictionary<string, Reference>();
         private readonly Dictionary<object, Reference> loadedAssetReferences = new Dictionary<object, Reference>();
 
@@ -56,6 +55,8 @@ namespace DirectX12GameEngine.Core.Assets
             RootFolder = rootFolder;
         }
 
+        public string FileExtension = ".xml";
+
         public static Dictionary<string, Type> LoadedTypes { get; } = new Dictionary<string, Type>();
 
         public string RootPath => RootFolder.Path;
@@ -66,7 +67,7 @@ namespace DirectX12GameEngine.Core.Assets
 
         public async Task<bool> ExistsAsync(string path)
         {
-            return await RootFolder.TryGetItemAsync(path) != null;
+            return await RootFolder.TryGetItemAsync(path + FileExtension) != null;
         }
 
         public T Get<T>(string path) where T : class?
@@ -153,29 +154,6 @@ namespace DirectX12GameEngine.Core.Assets
 
                 DecrementReference(reference, true);
             }
-        }
-
-        private Reference? FindDeserializedObject(string path, Type type)
-        {
-            if (loadedAssetPaths.TryGetValue(path, out Reference reference))
-            {
-                if (type.IsAssignableFrom(reference.Object?.GetType()))
-                {
-                    return reference;
-                }
-                else
-                {
-                    throw new ArgumentException($"The specified type {type} does not correspond to the type in the asset file.", nameof(type));
-                }
-            }
-
-            return null;
-        }
-
-        private void SetAssetObject(Reference reference)
-        {
-            loadedAssetPaths[reference.Path] = reference;
-            loadedAssetReferences[reference.Object] = reference;
         }
     }
 }

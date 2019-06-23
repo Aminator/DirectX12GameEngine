@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Xml.Serialization;
+using System.Runtime.Serialization;
 using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
 {
     public abstract class EntityComponent : IIdentifiable
     {
-        [XmlIgnore]
+        [IgnoreDataMember]
         public Entity? Entity { get; internal set; }
 
         public Guid Id { get; set; } = Guid.NewGuid();

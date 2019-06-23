@@ -3,17 +3,19 @@
   <Entity Name="CustomCliffhouse">
     <TransformComponent Scale="5,5,5" Position="-400,0,0" />
     <ModelComponent>
-      <ModelComponent.Model>Assets\Models\Cliffhouse_Custom_Model.xml</ModelComponent.Model>
+      <ModelComponent.Model>Assets\Models\Cliffhouse_Custom_Model</ModelComponent.Model>
     </ModelComponent>
+    <local:RotatorScript />
   </Entity>
 
   <Entity Name="T-Rex">
     <TransformComponent Scale="0.2,0.2,0.2" Position="0,120,0" />
     <ModelComponent>
       <ModelComponent.Model>
-        <Model xmlns="DirectX12GameEngine.Rendering">Assets\Models\SwimmingShark_Model.xml</Model>
+        <Model xmlns="DirectX12GameEngine.Rendering">Assets\Models\SwimmingShark_Model</Model>
       </ModelComponent.Model>
     </ModelComponent>
+    <local:RotatorScript />
   </Entity>
 
   <Entity Name="Parent1">
@@ -22,31 +24,34 @@
         
         <Entity Name="Child1">
           <TransformComponent Position="0,-100,0" Scale="25,25,25" />
-          <ModelComponent Model="Assets\Models\Icon_Failure_Model.xml" />
+          <ModelComponent Model="Assets\Models\Icon_Failure_Model" />
         </Entity>
 
         <Entity Name="Child2">
           <TransformComponent Position="0,100,0" Scale="15,15,15" RotationEuler="0,1.57,0" />
-          <ModelComponent Model="Assets\Models\Icon_Failure_Model.xml" />
+          <ModelComponent Model="Assets\Models\Icon_Failure_Model" />
         </Entity>
         
       </TransformComponent.ChildEntities>
     </TransformComponent>
-    <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
+    <ModelComponent Model="Assets\Models\Cliffhouse_Model" />
+    <local:RotatorScript />
   </Entity>
 
   <Entity Name="T-Rex">
     <TransformComponent Scale="2,2,2" Position="700,0,0" />
-    <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
+    <ModelComponent Model="Assets\Models\Cliffhouse_Model" />
+    <local:RotatorScript />
   </Entity>
 
   <Entity Name="Icon_Failure">
     <TransformComponent Position="-800,0,0" Scale="50,50,50" />
-    <ModelComponent Model="Assets\Models\Icon_Failure_Model.xml" />
+    <ModelComponent Model="Assets\Models\Icon_Failure_Model" />
+    <local:RotatorScript />
   </Entity>
 
   <!--<Entity Name="MyVideo">
-    <VideoComponent SourceUri="{MyVideo1.xml}">
+    <VideoComponent SourceUri="{MyVideo1}">
       <VideoComponent.AutoPlay>True</VideoComponent.AutoPlay>
     </VideoComponent>
   </Entity>
@@ -65,10 +70,11 @@
     <ModelComponent Model="Assets\Models\RightHandModel.glb" />
   </Entity>-->
 
-  <!--<Entity Name="MyScript">Assets\Scenes\MyScriptEntity1.xml</Entity>-->
+  <!--<Entity Name="MyScript">Assets\Scenes\MyScriptEntity1</Entity>-->
   
-  <Entity Name="MyScript">
-    <local:MyScriptComponent Camera="9eb4f8c5-4909-4ce6-a8bb-9569bb5fd3d7" />
+  <Entity Name="CameraController">
+    <TransformComponent />
+    <local:CameraController Camera="9eb4f8c5-4909-4ce6-a8bb-9569bb5fd3d7" />
   </Entity>
 
   <Entity>
@@ -92,10 +98,17 @@
         <DirectionalLight xmlns="DirectX12GameEngine.Rendering.Lights" Color="1,1,1" />
       </LightComponent.Light>
     </LightComponent>
+    <local:RotatorScript />
   </Entity>
 
   <Entity Name="Cliffhouse">
     <TransformComponent Position="0,120,500" />
-    <ModelComponent Model="Assets\Models\Cliffhouse_Model.xml" />
+    <ModelComponent Model="Assets\Models\Cliffhouse_Model" />
+    <local:RotatorScript />
+  </Entity>
+
+  <Entity Name="TestEntity">
+    <TransformComponent />
+    <local:TestScript />
   </Entity>
 </Scene>

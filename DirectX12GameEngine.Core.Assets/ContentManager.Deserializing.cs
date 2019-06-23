@@ -14,6 +14,18 @@ namespace DirectX12GameEngine.Core.Assets
 {
     public partial class ContentManager
     {
+        private class DeserializeOperation
+        {
+            public DeserializeOperation(Reference parentReference)
+            {
+                ParentReference = parentReference;
+            }
+
+            public Reference ParentReference { get; }
+
+            public AsyncDictionary<Guid, IIdentifiable> IdentifiableObjects { get; } = new AsyncDictionary<Guid, IIdentifiable>();
+        }
+
         private async Task<object> DeserializeObjectAsync(string initialPath, string newPath, Type type, object? obj)
         {
             Reference? reference = null;
@@ -73,7 +85,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             XElement root;
 
-            using (Stream stream = await RootFolder.OpenStreamForReadAsync(path))
+            using (Stream stream = await RootFolder.OpenStreamForReadAsync(path + FileExtension))
             {
 #if NETSTANDARD2_0
                 root = await Task.Run(() => XElement.Load(stream));
@@ -123,7 +135,7 @@ namespace DirectX12GameEngine.Core.Assets
                 }
 
                 reference = new Reference(path, result, isRoot);
-                SetAssetObject(reference);
+                SetAsset(reference);
             }
             else
             {
@@ -132,14 +144,16 @@ namespace DirectX12GameEngine.Core.Assets
 
             reference.IsDeserialized = true;
 
+            DeserializeOperation operation = new DeserializeOperation(reference);
+
             if (asset != null)
             {
-                await DeserializeAsync(root, reference, asset);
+                await DeserializeAsync(root, operation, asset);
                 await asset.CreateAssetAsync(result);
             }
             else
             {
-                await DeserializeAsync(root, reference, result);
+                await DeserializeAsync(root, operation, result);
             }
 
             parentReference?.References.Add(reference);
@@ -147,28 +161,28 @@ namespace DirectX12GameEngine.Core.Assets
             return result;
         }
 
-        private async Task<object> DeserializeAsync(XElement element, Reference parentReference, object? obj = null)
+        private async Task<object> DeserializeAsync(XElement element, DeserializeOperation operation, object? obj = null)
         {
             string typeName = element.Name.NamespaceName + Type.Delimiter + element.Name.LocalName;
             Type loadedType = LoadedTypes[typeName];
 
-            object parsedElement = obj ?? await ParseElementAsync(element, loadedType, parentReference);
+            object parsedElement = obj ?? await ParseElementAsync(element, loadedType, operation);
 
-            await SetPropertiesFromAttributesAsync(element, loadedType, parentReference, parsedElement);
-            await SetPropertiesFromElementsAsync(element, parentReference, parsedElement);
+            await SetPropertiesFromAttributesAsync(element, loadedType, operation, parsedElement);
+            await SetPropertiesFromElementsAsync(element, operation, parsedElement);
 
             if (parsedElement is IIdentifiable identifiable)
             {
-                if (!identifiableObjects.ContainsKey(identifiable.Id))
+                if (!operation.IdentifiableObjects.ContainsKey(identifiable.Id))
                 {
-                    identifiableObjects.Add(identifiable.Id, identifiable);
+                    operation.IdentifiableObjects.Add(identifiable.Id, identifiable);
                 }
             }
 
             return parsedElement;
         }
 
-        private async Task SetPropertiesFromElementsAsync(XElement element, Reference parentReference, object parsedElement)
+        private async Task SetPropertiesFromElementsAsync(XElement element, DeserializeOperation operation, object parsedElement)
         {
             List<Task<object>> taskList = new List<Task<object>>();
 
@@ -187,10 +201,15 @@ namespace DirectX12GameEngine.Core.Assets
 
                         foreach (XElement innerPropertyElement in innerElement.Elements())
                         {
-                            propertyTaskList.Add(DeserializeAsync(innerPropertyElement, parentReference));
+                            propertyTaskList.Add(DeserializeAsync(innerPropertyElement, operation));
                         }
 
                         object[] loadedElements = await Task.WhenAll(propertyTaskList);
+
+                        while (propertyCollection.Count > 0)
+                        {
+                            propertyCollection.RemoveAt(propertyCollection.Count - 1);
+                        }
 
                         foreach (object loadedElement in loadedElements)
                         {
@@ -204,11 +223,11 @@ namespace DirectX12GameEngine.Core.Assets
                         if (innerElement.HasElements)
                         {
                             XElement propertyElement = innerElement.Elements().First();
-                            parsedObject = await DeserializeAsync(propertyElement, parentReference);
+                            parsedObject = await DeserializeAsync(propertyElement, operation);
                         }
                         else
                         {
-                            parsedObject = await ParseAsync(propertyInfo.PropertyType, innerElement.Value, parentReference);
+                            parsedObject = await ParseAsync(propertyInfo.PropertyType, innerElement.Value, operation);
                         }
 
                         propertyInfo.SetValue(parsedElement, parsedObject);
@@ -220,7 +239,7 @@ namespace DirectX12GameEngine.Core.Assets
                 }
                 else if (parsedElement is IList)
                 {
-                    taskList.Add(DeserializeAsync(innerElement, parentReference));
+                    taskList.Add(DeserializeAsync(innerElement, operation));
                 }
                 else
                 {
@@ -232,6 +251,11 @@ namespace DirectX12GameEngine.Core.Assets
             {
                 object[] loadedElements = await Task.WhenAll(taskList);
 
+                while (list.Count > 0)
+                {
+                    list.RemoveAt(list.Count - 1);
+                }
+
                 foreach (object loadedElement in loadedElements)
                 {
                     list.Add(loadedElement);
@@ -239,43 +263,41 @@ namespace DirectX12GameEngine.Core.Assets
             }
         }
 
-        private async Task<object> ParseElementAsync(XElement element, Type type, Reference parentReference)
+        private async Task<object> ParseElementAsync(XElement element, Type type, DeserializeOperation operation)
         {
             string? content = element.Nodes().OfType<XText>().FirstOrDefault()?.Value;
 
             object parsedElement = string.IsNullOrWhiteSpace(content)
                 ? ActivatorUtilities.CreateInstance(Services, type)
-                : await ParseAsync(type, content, parentReference);
+                : await ParseAsync(type, content, operation);
 
             return parsedElement;
         }
 
-        private async Task SetPropertiesFromAttributesAsync(XElement element, Type type, Reference parentReference, object parsedElement)
+        private async Task SetPropertiesFromAttributesAsync(XElement element, Type type, DeserializeOperation operation, object parsedElement)
         {
-            IEnumerable<XAttribute> attributes = element.Attributes();
-
-            foreach (XAttribute attribute in attributes)
+            foreach (XAttribute attribute in element.Attributes())
             {
-                if (!attribute.IsNamespaceDeclaration && attribute.Name.LocalName != "Content")
+                if (!attribute.IsNamespaceDeclaration)
                 {
                     PropertyInfo propertyInfo = type.GetProperty(attribute.Name.LocalName);
-                    object parsedObject = await ParseAttributeAsync(propertyInfo.PropertyType, attribute.Value, parentReference);
+                    object parsedObject = await ParseAttributeAsync(propertyInfo.PropertyType, attribute.Value, operation);
                     propertyInfo.SetValue(parsedElement, parsedObject);
                 }
             }
         }
 
-        private async Task<object> ParseAttributeAsync(Type type, string value, Reference parentReference)
+        private async Task<object> ParseAttributeAsync(Type type, string value, DeserializeOperation operation)
         {
             string trimmedValue = value.Trim();
             Match match = Regex.Match(trimmedValue, @"\{.+\}");
 
             return match.Success && match.Index == 0
-                ? await DeserializeObjectAsync(trimmedValue.Trim('{', '}'), type, parentReference, null)
-                : await ParseAsync(type, value, parentReference);
+                ? await DeserializeObjectAsync(trimmedValue.Trim('{', '}'), type, operation.ParentReference, null)
+                : await ParseAsync(type, value, operation);
         }
 
-        private async Task<object> ParseAsync(Type type, string value, Reference parentReference)
+        private async Task<object> ParseAsync(Type type, string value, DeserializeOperation operation)
         {
             if (type == typeof(string))
             {
@@ -382,11 +404,11 @@ namespace DirectX12GameEngine.Core.Assets
             {
                 if (Guid.TryParse(value, out Guid guid))
                 {
-                    return await identifiableObjects.GetValueAsync(guid);
+                    return await operation.IdentifiableObjects.GetValueAsync(guid);
                 }
             }
 
-            return await DeserializeObjectAsync(value, type, parentReference, null);
+            return await DeserializeObjectAsync(value, type, operation.ParentReference, null);
         }
     }
 }

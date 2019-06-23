@@ -31,13 +31,13 @@ namespace DirectX12GameEngine.Shaders
 
         public string? CallableShader { get; set; }
 
-        internal void SetShader(string name, MethodInfo methodInfo)
+        internal void SetShader(string shaderName, string methodName)
         {
             foreach (PropertyInfo propertyInfo in GetType().GetProperties())
             {
-                if (name == propertyInfo.Name.Replace("Shader", "").ToLower())
+                if (shaderName == propertyInfo.Name.Replace("Shader", "").ToLower())
                 {
-                    propertyInfo.SetValue(this, methodInfo.Name);
+                    propertyInfo.SetValue(this, methodName);
                     return;
                 }
             }

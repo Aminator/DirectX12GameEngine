@@ -19,7 +19,7 @@ namespace DirectX12Game
                 GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
             }
 
-            SceneSystem.InitialScenePath = @"Assets\Scenes\Scene1.xml";
+            SceneSystem.InitialScenePath = @"Assets\Scenes\Scene1";
         }
 
         protected override void BeginDraw()

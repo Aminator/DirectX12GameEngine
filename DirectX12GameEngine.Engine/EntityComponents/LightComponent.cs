@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Engine
     {
         public float Intensity { get; set; } = 1.0f;
 
-        public ILight? Light { get; set; } = new DirectionalLight();
+        public ILight Light { get; set; } = new DirectionalLight();
 
         internal Vector3 Position { get; set; }
 

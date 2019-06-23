@@ -24,7 +24,6 @@ namespace DirectX12GameEngine.Assets
 
             if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
             {
-                // TODO: Recreate Texture
                 using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source);
                 using Image image = await Image.LoadAsync(stream);
 

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace DirectX12GameEngine.Core.Assets
 {
@@ -15,20 +16,23 @@ namespace DirectX12GameEngine.Core.Assets
         {
             XElement root = SerializeObject(asset, storageType);
 
-            using (Stream stream = await RootFolder.OpenStreamForWriteAsync(path, Windows.Storage.CreationCollisionOption.ReplaceExisting))
+            using (Stream stream = await RootFolder.OpenStreamForWriteAsync(path + FileExtension, Windows.Storage.CreationCollisionOption.ReplaceExisting))
             {
                 root.Save(stream);
             }
 
             Reference reference = new Reference(path, asset, true);
-            SetAssetObject(reference);
+            SetAsset(reference);
         }
 
         private XElement SerializeObject(object asset, Type? storageType = null)
         {
             storageType ??= asset.GetType();
 
-            XName elementName = GetElementName(storageType);
+            DataContractAttribute? dataContract = storageType.GetCustomAttribute<DataContractAttribute>();
+            bool isDataContractPresent = dataContract != null;
+
+            XName elementName = dataContract?.Namespace ?? storageType.Namespace + dataContract?.Name ?? storageType.Name;
             XElement root = new XElement(elementName);
 
             if (loadedAssetReferences.TryGetValue(asset, out Reference reference))
@@ -37,9 +41,17 @@ namespace DirectX12GameEngine.Core.Assets
                 return root;
             }
 
-            foreach (PropertyInfo propertyInfo in storageType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            var properties = isDataContractPresent
+                ? storageType.GetProperties(BindingFlags.Public | BindingFlags.Instance).AsEnumerable()
+                : storageType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Where(p => p.IsDefined(typeof(DataMemberAttribute))).OrderBy(p => p.GetCustomAttribute<DataMemberAttribute>().Order);
+
+            foreach (PropertyInfo propertyInfo in properties)
             {
-                if (propertyInfo.IsDefined(typeof(XmlIgnoreAttribute)) || propertyInfo.IsSpecialName || propertyInfo.GetIndexParameters().Length > 0) continue;
+                if (propertyInfo.IsDefined(typeof(IgnoreDataMemberAttribute)) || propertyInfo.IsSpecialName || propertyInfo.GetIndexParameters().Length > 0) continue;
+
+                DataMemberAttribute? dataMember = propertyInfo.GetCustomAttribute<DataMemberAttribute>();
+                XName propertyName = dataMember?.Name ?? propertyInfo.Name;
 
                 object? propertyValue = propertyInfo.GetValue(asset);
 
@@ -59,13 +71,13 @@ namespace DirectX12GameEngine.Core.Assets
                             _ => propertyValue
                         };
 
-                        XAttribute propertyAttribute = new XAttribute(propertyInfo.Name, serializedValue);
+                        XAttribute propertyAttribute = new XAttribute(propertyName, serializedValue);
                         root.Add(propertyAttribute);
                     }
                 }
                 else
                 {
-                    XName propertySyntaxName = elementName + Type.Delimiter.ToString() + propertyInfo.Name;
+                    XName propertySyntaxName = elementName + Type.Delimiter.ToString() + propertyName;
                     XElement propertySyntax = new XElement(propertySyntaxName);
 
                     if (propertyValue is IList propertyCollection)
@@ -101,12 +113,6 @@ namespace DirectX12GameEngine.Core.Assets
             }
 
             return root;
-        }
-
-        private static XName GetElementName(Type type)
-        {
-            XNamespace elementNamespace = type.Namespace;
-            return elementNamespace + type.Name;
         }
     }
 }

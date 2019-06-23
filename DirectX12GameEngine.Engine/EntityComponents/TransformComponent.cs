@@ -1,11 +1,11 @@
-﻿using DirectX12GameEngine.Core;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Numerics;
-using System.Xml.Serialization;
+using System.Runtime.Serialization;
+using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -24,15 +24,15 @@ namespace DirectX12GameEngine.Engine
             Children.CollectionChanged += Children_CollectionChanged;
         }
 
-        [XmlIgnore]
+        [IgnoreDataMember]
         public ObservableCollection<TransformComponent> Children { get; } = new ObservableCollection<TransformComponent>();
 
         public IList<Entity> ChildEntities { get; }
 
-        [XmlIgnore]
+        [IgnoreDataMember]
         public Matrix4x4 LocalMatrix { get; set; } = Matrix4x4.Identity;
 
-        [XmlIgnore]
+        [IgnoreDataMember]
         public Matrix4x4 WorldMatrix { get; set; } = Matrix4x4.Identity;
 
         public Vector3 Position { get => position; set => position = value; }
@@ -41,12 +41,12 @@ namespace DirectX12GameEngine.Engine
 
         public Vector3 Scale { get => scale; set => scale = value; }
 
-        [XmlIgnore]
+        [IgnoreDataMember]
         public Vector3 RotationEuler { get => QuaternionExtensions.ToEuler(Rotation); set => Rotation = QuaternionExtensions.ToQuaternion(value); }
 
         internal bool IsMovingInsideRootScene { get; private set; }
 
-        [XmlIgnore]
+        [IgnoreDataMember]
         public TransformComponent? Parent
         {
             get => parent;
