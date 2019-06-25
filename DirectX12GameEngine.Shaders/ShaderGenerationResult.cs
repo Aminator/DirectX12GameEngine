@@ -5,8 +5,6 @@ namespace DirectX12GameEngine.Shaders
 {
     public class ShaderGenerationResult
     {
-        public string? ShaderSource { get; set; }
-
         public string? ComputeShader { get; set; }
 
         public string? VertexShader { get; set; }
@@ -30,6 +28,8 @@ namespace DirectX12GameEngine.Shaders
         public string? MissShader { get; set; }
 
         public string? CallableShader { get; set; }
+
+        public string? ShaderSource { get; set; }
 
         internal void SetShader(string shaderName, string methodName)
         {
