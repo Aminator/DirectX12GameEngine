@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<MaterialAsset Id="13404da5-5566-4710-9f65-69b35563d655" xmlns="DirectX12GameEngine.Assets" Source="Assets\Resources\Models\SwimmingShark.glb[0]">
+<MaterialAsset Id="13404da5-5566-4710-9f65-69b35563d655" xmlns="http://schemas.directx12gameengine.com/xaml" Source="Assets\Resources\Models\SwimmingShark.glb[0]">
   <MaterialAsset.Attributes>
-    <MaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
+    <MaterialAttributes>
 
       <!--<MaterialAttributes.MicroSurface>
                 <MaterialRoughnessMapFeature>

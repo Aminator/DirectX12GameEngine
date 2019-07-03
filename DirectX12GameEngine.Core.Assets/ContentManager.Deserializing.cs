@@ -97,8 +97,7 @@ namespace DirectX12GameEngine.Core.Assets
             object result;
             Asset? asset = null;
 
-            string typeName = root.Name.NamespaceName + Type.Delimiter + root.Name.LocalName;
-            Type loadedType = LoadedTypes[typeName];
+            Type loadedType = LoadedTypes[root.Name.NamespaceName][root.Name.LocalName];
 
             if (!type.IsAssignableFrom(loadedType))
             {
@@ -163,8 +162,7 @@ namespace DirectX12GameEngine.Core.Assets
 
         private async Task<object> DeserializeAsync(XElement element, DeserializeOperation operation, object? obj = null)
         {
-            string typeName = element.Name.NamespaceName + Type.Delimiter + element.Name.LocalName;
-            Type loadedType = LoadedTypes[typeName];
+            Type loadedType = LoadedTypes[element.Name.NamespaceName][element.Name.LocalName];
 
             object parsedElement = obj ?? await ParseElementAsync(element, loadedType, operation);
 
@@ -383,20 +381,20 @@ namespace DirectX12GameEngine.Core.Assets
                 }
             }
 
-            if (LoadedTypes["DirectX12GameEngine.Rendering.Materials.IComputeScalar"].IsAssignableFrom(type))
+            if (LoadedTypes["http://schemas.directx12gameengine.com/xaml"]["IComputeScalar"].IsAssignableFrom(type))
             {
                 float scalar = float.Parse(value);
-                return Activator.CreateInstance(LoadedTypes["DirectX12GameEngine.Rendering.Materials.ComputeScalar"], scalar);
+                return Activator.CreateInstance(LoadedTypes["http://schemas.directx12gameengine.com/xaml"]["ComputeScalar"], scalar);
             }
 
-            if (LoadedTypes["DirectX12GameEngine.Rendering.Materials.IComputeColor"].IsAssignableFrom(type))
+            if (LoadedTypes["http://schemas.directx12gameengine.com/xaml"]["IComputeColor"].IsAssignableFrom(type))
             {
                 float[] vector = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
 
                 if (vector.Length == 4)
                 {
                     Vector4 color = new Vector4(vector[0], vector[1], vector[2], vector[3]);
-                    return Activator.CreateInstance(LoadedTypes["DirectX12GameEngine.Rendering.Materials.ComputeColor"], color);
+                    return Activator.CreateInstance(LoadedTypes["http://schemas.directx12gameengine.com/xaml"]["ComputeColor"], color);
                 }
             }
 

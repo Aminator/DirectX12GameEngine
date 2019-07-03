@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Scene xmlns="DirectX12GameEngine.Engine" xmlns:local="DirectX12Game" Offset="500,0,0">
+<Scene xmlns="http://schemas.directx12gameengine.com/xaml" xmlns:local="using:DirectX12Game" Offset="500,0,0">
   <Entity Name="CustomCliffhouse">
     <TransformComponent Scale="5,5,5" Position="-400,0,0" />
     <ModelComponent>
@@ -12,7 +12,7 @@
     <TransformComponent Scale="0.2,0.2,0.2" Position="0,120,0" />
     <ModelComponent>
       <ModelComponent.Model>
-        <Model xmlns="DirectX12GameEngine.Rendering">Assets\Models\SwimmingShark_Model</Model>
+        <Model>Assets\Models\SwimmingShark_Model</Model>
       </ModelComponent.Model>
     </ModelComponent>
     <local:RotatorScript />
@@ -49,28 +49,6 @@
     <ModelComponent Model="Assets\Models\Icon_Failure_Model" />
     <local:RotatorScript />
   </Entity>
-
-  <!--<Entity Name="MyVideo">
-    <VideoComponent SourceUri="{MyVideo1}">
-      <VideoComponent.AutoPlay>True</VideoComponent.AutoPlay>
-    </VideoComponent>
-  </Entity>
-
-  <Entity Name="HoloTile">
-    <Entity.Components>
-      <ModelComponent Model="Assets\Models\HoloTile.glb" />
-    </Entity.Components>
-  </Entity>
-
-  <Entity Name="LiveCube">
-    <ModelComponent Model="Assets\Models\LiveCube.glb" />
-  </Entity>
-
-  <Entity Name="RightHandModel">
-    <ModelComponent Model="Assets\Models\RightHandModel.glb" />
-  </Entity>-->
-
-  <!--<Entity Name="MyScript">Assets\Scenes\MyScriptEntity1</Entity>-->
   
   <Entity Name="CameraController">
     <TransformComponent />
@@ -86,7 +64,7 @@
     <TransformComponent Position="0,300,1500" />
     <LightComponent Intensity="1">
       <LightComponent.Light>
-        <DirectionalLight xmlns="DirectX12GameEngine.Rendering.Lights" Color="1,1,1" />
+        <DirectionalLight Color="1,1,1" />
       </LightComponent.Light>
     </LightComponent>
   </Entity>
@@ -95,7 +73,7 @@
     <TransformComponent Position="0,300,1500" />
     <LightComponent Intensity="1">
       <LightComponent.Light>
-        <DirectionalLight xmlns="DirectX12GameEngine.Rendering.Lights" Color="1,1,1" />
+        <DirectionalLight Color="1,1,1" />
       </LightComponent.Light>
     </LightComponent>
     <local:RotatorScript />

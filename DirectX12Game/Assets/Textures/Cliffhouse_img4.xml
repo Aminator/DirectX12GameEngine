@@ -1,2 +1,2 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TextureAsset xmlns="DirectX12GameEngine.Assets" Source="Assets\Resources\Models\Cliffhouse\Cliffhouse_img4.png" />
+<TextureAsset xmlns="http://schemas.directx12gameengine.com/xaml" Source="Assets\Resources\Models\Cliffhouse\Cliffhouse_img4.png" />

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<MaterialAsset Id="fe2d05c2-2112-4e19-b08d-6f57c5194037" xmlns="DirectX12GameEngine.Assets" xmlns:local="DirectX12Game">
+<MaterialAsset Id="fe2d05c2-2112-4e19-b08d-6f57c5194037" xmlns="http://schemas.directx12gameengine.com/xaml" xmlns:local="using:DirectX12Game">
   <MaterialAsset.Attributes>
-    <local:WobbleMaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
+    <local:WobbleMaterialAttributes>
 
       <local:WobbleMaterialAttributes.Diffuse>
         <MaterialDiffuseMapFeature>
@@ -19,7 +19,7 @@
       </local:WobbleMaterialAttributes.Diffuse>
 
       <local:WobbleMaterialAttributes.DiffuseModel>
-        <MaterialDiffuseCelShadingModelFeature xmlns="DirectX12GameEngine.Rendering.Materials.CelShading">
+        <MaterialDiffuseCelShadingModelFeature>
           <MaterialDiffuseCelShadingModelFeature.RampFunction>
             <MaterialCelShadingLightDefault IsBlackAndWhite ="False" />
           </MaterialDiffuseCelShadingModelFeature.RampFunction>
@@ -29,7 +29,7 @@
       <local:WobbleMaterialAttributes.Surface>
         <MaterialNormalMapFeature>
           <MaterialNormalMapFeature.NormalMap>
-            <ComputeColorWave xmlns="DirectX12Game" />
+            <local:ComputeColorWave />
           </MaterialNormalMapFeature.NormalMap>
         </MaterialNormalMapFeature>
       </local:WobbleMaterialAttributes.Surface>

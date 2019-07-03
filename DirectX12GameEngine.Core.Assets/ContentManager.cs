@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using Windows.Storage;
@@ -21,26 +23,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             foreach (Type type in types)
             {
-                if (!LoadedTypes.ContainsKey(type.FullName))
-                {
-                    LoadedTypes.Add(type.FullName, type);
-                }
-            }
-        }
-
-        private static void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs args)
-        {
-            if (!args.LoadedAssembly.IsDynamic)
-            {
-                var types = args.LoadedAssembly.GetExportedTypes().Where(t => !(t.IsAbstract && t.IsSealed));
-
-                foreach (Type type in types)
-                {
-                    if (!LoadedTypes.ContainsKey(type.FullName))
-                    {
-                        LoadedTypes.Add(type.FullName, type);
-                    }
-                }
+                AddType(type);
             }
         }
 
@@ -57,13 +40,13 @@ namespace DirectX12GameEngine.Core.Assets
 
         public string FileExtension = ".xml";
 
-        public static Dictionary<string, Type> LoadedTypes { get; } = new Dictionary<string, Type>();
-
         public string RootPath => RootFolder.Path;
 
         public StorageFolder RootFolder { get; set; }
 
         public IServiceProvider Services { get; }
+
+        internal static Dictionary<string, Dictionary<string, Type>> LoadedTypes { get; } = new Dictionary<string, Dictionary<string, Type>>();
 
         public async Task<bool> ExistsAsync(string path)
         {
@@ -154,6 +137,44 @@ namespace DirectX12GameEngine.Core.Assets
 
                 DecrementReference(reference, true);
             }
+        }
+
+        private static void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs args)
+        {
+            if (!args.LoadedAssembly.IsDynamic)
+            {
+                var types = args.LoadedAssembly.GetExportedTypes().Where(t => !(t.IsAbstract && t.IsSealed));
+
+                foreach (Type type in types)
+                {
+                    AddType(type);
+                }
+            }
+        }
+
+        private static void AddType(Type type)
+        {
+            GetDataContractName(type, out string dataContractNamespace, out string dataContractName);
+
+            if (!LoadedTypes.TryGetValue(dataContractNamespace, out Dictionary<string, Type> types))
+            {
+                types = new Dictionary<string, Type>();
+                LoadedTypes.Add(dataContractNamespace, types);
+            }
+
+            if (!types.ContainsKey(dataContractName))
+            {
+                types.Add(dataContractName, type);
+            }
+        }
+
+        private static void GetDataContractName(Type type, out string dataContractNamespace, out string dataContractName)
+        {
+            DataContractAttribute? dataContract = type.GetCustomAttribute<DataContractAttribute>();
+            ContractNamespaceAttribute? contractNamespace = type.Assembly.GetCustomAttribute<ContractNamespaceAttribute>();
+
+            dataContractNamespace = dataContract?.Namespace ?? contractNamespace?.ContractNamespace ?? "using:" + type.Namespace;
+            dataContractName = dataContract?.Name ?? type.Name;
         }
     }
 }

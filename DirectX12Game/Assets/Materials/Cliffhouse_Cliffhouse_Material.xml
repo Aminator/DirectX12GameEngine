@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<MaterialAsset Id="bcff8c18-1596-4f13-8e0d-9212bc7c0dbb" xmlns="DirectX12GameEngine.Assets">
+<MaterialAsset Id="bcff8c18-1596-4f13-8e0d-9212bc7c0dbb" xmlns="http://schemas.directx12gameengine.com/xaml">
   <MaterialAsset.Attributes>
-    <MaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
+    <MaterialAttributes>
 
       <MaterialAttributes.Diffuse>
         <MaterialDiffuseMapFeature>
@@ -12,7 +12,7 @@
       </MaterialAttributes.Diffuse>
 
       <!--<MaterialAttributes.DiffuseModel>
-            <MaterialDiffuseCelShadingModelFeature xmlns="DirectX12GameEngine.Rendering.Materials.CelShading">
+            <MaterialDiffuseCelShadingModelFeature>
               <MaterialDiffuseCelShadingModelFeature.RampFunction>
                 <MaterialCelShadingLightDefault IsBlackAndWhite ="False" />
               </MaterialDiffuseCelShadingModelFeature.RampFunction>

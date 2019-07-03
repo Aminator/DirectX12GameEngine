@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<MaterialAsset Id="0251d700-42a2-4cfd-af43-c69b14538620" xmlns="DirectX12GameEngine.Assets">
+<MaterialAsset Id="0251d700-42a2-4cfd-af43-c69b14538620" xmlns="http://schemas.directx12gameengine.com/xaml">
   <MaterialAsset.Attributes>
-    <MaterialAttributes xmlns="DirectX12GameEngine.Rendering.Materials">
+    <MaterialAttributes>
 
       <MaterialAttributes.Diffuse>
         <MaterialDiffuseMapFeature>

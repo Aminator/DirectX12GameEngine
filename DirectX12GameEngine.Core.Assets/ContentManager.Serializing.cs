@@ -29,10 +29,9 @@ namespace DirectX12GameEngine.Core.Assets
         {
             storageType ??= asset.GetType();
 
-            DataContractAttribute? dataContract = storageType.GetCustomAttribute<DataContractAttribute>();
-            bool isDataContractPresent = dataContract != null;
+            GetDataContractName(storageType, out string dataContractNamespace, out string dataContractName);
 
-            XName elementName = (XNamespace)(dataContract?.Namespace ?? storageType.Namespace) + (dataContract?.Name ?? storageType.Name);
+            XName elementName = (XNamespace)dataContractNamespace + dataContractName;
             XElement root = new XElement(elementName);
 
             if (loadedAssetReferences.TryGetValue(asset, out Reference reference))
@@ -40,6 +39,8 @@ namespace DirectX12GameEngine.Core.Assets
                 root.Value = reference.Path.ToString();
                 return root;
             }
+
+            bool isDataContractPresent = storageType.IsDefined(typeof(DataContractAttribute));
 
             var properties = !isDataContractPresent
                 ? storageType.GetProperties(BindingFlags.Public | BindingFlags.Instance).AsEnumerable()
