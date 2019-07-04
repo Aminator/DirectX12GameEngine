@@ -12,33 +12,37 @@ namespace DirectX12GameEngine.Core.Assets
 {
     public partial class ContentManager
     {
-        private async Task SerializeObjectAsync(string path, object asset, Type? storageType = null)
+        internal async Task SerializeAsync(string path, object obj, Type? storageType = null)
         {
-            XElement root = SerializeObject(asset, storageType);
+            XElement root = Serialize(obj, storageType);
 
             using (Stream stream = await RootFolder.OpenStreamForWriteAsync(path + FileExtension, Windows.Storage.CreationCollisionOption.ReplaceExisting))
             {
                 root.Save(stream);
             }
 
-            Reference reference = new Reference(path, asset, true);
+            Reference reference = new Reference(path, obj, true);
             SetAsset(reference);
         }
 
-        private XElement SerializeObject(object asset, Type? storageType = null)
+        public XElement Serialize(object obj, Type? storageType = null)
         {
-            storageType ??= asset.GetType();
+            storageType ??= obj.GetType();
 
             GetDataContractName(storageType, out string dataContractNamespace, out string dataContractName);
 
+            XName typeExtension = (XNamespace)"http://schemas.directx12gameengine.com/xaml/extensions" + "Type";
+            XName assetReferenceExtension = (XNamespace)"http://schemas.directx12gameengine.com/xaml/extensions" + "AssetReference";
+
+            if (loadedAssetReferences.TryGetValue(obj, out Reference reference))
+            {
+                return new XElement(assetReferenceExtension,
+                    new XAttribute("Path", reference.Path),
+                    new XAttribute("Type", $"{{{typeExtension} {storageType.Name}}}"));
+            }
+
             XName elementName = (XNamespace)dataContractNamespace + dataContractName;
             XElement root = new XElement(elementName);
-
-            if (loadedAssetReferences.TryGetValue(asset, out Reference reference))
-            {
-                root.Value = reference.Path.ToString();
-                return root;
-            }
 
             bool isDataContractPresent = storageType.IsDefined(typeof(DataContractAttribute));
 
@@ -54,14 +58,19 @@ namespace DirectX12GameEngine.Core.Assets
                 DataMemberAttribute? dataMember = propertyInfo.GetCustomAttribute<DataMemberAttribute>();
                 XName propertyName = dataMember?.Name ?? propertyInfo.Name;
 
-                object? propertyValue = propertyInfo.GetValue(asset);
+                object? propertyValue = propertyInfo.GetValue(obj);
 
                 if (propertyValue is null) continue;
 
                 Type propertyType = propertyValue.GetType();
 
+                if (loadedAssetReferences.TryGetValue(propertyValue, out Reference propertyReference))
+                {
+                    XAttribute propertyAttribute = new XAttribute(propertyName, $"{{{assetReferenceExtension} {propertyReference.Path}}}");
+                    root.Add(propertyAttribute);
+                }
                 // TODO: Put this logic into seperate serializers for each type.
-                if (propertyType.IsPrimitive || propertyType == typeof(string) || propertyType == typeof(Vector3) || propertyType == typeof(Quaternion) || propertyType == typeof(Matrix4x4) || propertyType == typeof(Guid))
+                else if (propertyType.IsPrimitive || propertyType == typeof(string) || propertyType == typeof(Vector3) || propertyType == typeof(Quaternion) || propertyType == typeof(Matrix4x4) || propertyType == typeof(Guid))
                 {
                     if (propertyInfo.CanWrite)
                     {
@@ -87,7 +96,7 @@ namespace DirectX12GameEngine.Core.Assets
                         {
                             foreach (object childObject in propertyCollection)
                             {
-                                XElement childElement = SerializeObject(childObject);
+                                XElement childElement = Serialize(childObject);
                                 propertySyntax.Add(childElement);
                             }
 
@@ -96,7 +105,7 @@ namespace DirectX12GameEngine.Core.Assets
                     }
                     else if (propertyInfo.CanWrite)
                     {
-                        XElement childElement = SerializeObject(propertyValue);
+                        XElement childElement = Serialize(propertyValue);
                         propertySyntax.Add(childElement);
 
                         root.Add(propertySyntax);
@@ -104,11 +113,11 @@ namespace DirectX12GameEngine.Core.Assets
                 }
             }
 
-            if (asset is IList list)
+            if (obj is IList list)
             {
                 foreach (object childObject in list)
                 {
-                    XElement childElement = SerializeObject(childObject);
+                    XElement childElement = Serialize(childObject);
                     root.Add(childElement);
                 }
             }

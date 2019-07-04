@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Nito.AsyncEx;
 using Windows.Storage;
 
@@ -79,7 +80,7 @@ namespace DirectX12GameEngine.Core.Assets
         {
             using (await asyncLock.LockAsync())
             {
-                return await DeserializeObjectAsync(path, path, type, null);
+                return await DeserializeAsync(path, path, type, null);
             }
         }
 
@@ -94,7 +95,7 @@ namespace DirectX12GameEngine.Core.Assets
 
                 string path = newPath ?? reference.Path;
 
-                await DeserializeObjectAsync(reference.Path, path, asset.GetType(), asset);
+                await DeserializeAsync(reference.Path, path, asset.GetType(), asset);
 
                 if (path != reference.Path)
                 {
@@ -109,7 +110,7 @@ namespace DirectX12GameEngine.Core.Assets
         {
             using (await asyncLock.LockAsync())
             {
-                await SerializeObjectAsync(path, asset, storageType);
+                await SerializeAsync(path, asset, storageType);
             }
         }
 
