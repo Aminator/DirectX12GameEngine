@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -20,7 +21,7 @@ namespace DirectX12GameEngine.Core.Assets
         {
             AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
 
-            var types = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).SelectMany(a => a.GetExportedTypes().Where(t => !(t.IsAbstract && t.IsSealed)));
+            var types = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).SelectMany(a => a.ExportedTypes.Where(t => !(t.IsAbstract && t.IsSealed)));
 
             foreach (Type type in types)
             {
@@ -71,7 +72,7 @@ namespace DirectX12GameEngine.Core.Assets
             return FindDeserializedObject(path, type)?.Object;
         }
 
-        public async Task<T> LoadAsync<T>(string path)
+        public async Task<T> LoadAsync<T>(string path) where T : class
         {
             return (T)await LoadAsync(typeof(T), path);
         }
@@ -144,7 +145,7 @@ namespace DirectX12GameEngine.Core.Assets
         {
             if (!args.LoadedAssembly.IsDynamic)
             {
-                var types = args.LoadedAssembly.GetExportedTypes().Where(t => !(t.IsAbstract && t.IsSealed));
+                var types = args.LoadedAssembly.ExportedTypes.Where(t => !(t.IsAbstract && t.IsSealed));
 
                 foreach (Type type in types)
                 {
@@ -166,6 +167,13 @@ namespace DirectX12GameEngine.Core.Assets
             if (!types.ContainsKey(dataContractName))
             {
                 types.Add(dataContractName, type);
+
+                GlobalTypeConverterAttribute? converterAttribute = type.GetCustomAttribute<GlobalTypeConverterAttribute>();
+
+                if (converterAttribute != null)
+                {
+                    TypeDescriptor.AddAttributes(converterAttribute.Type, new TypeConverterAttribute(type));
+                }
             }
         }
 

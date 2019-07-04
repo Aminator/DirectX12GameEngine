@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -258,7 +259,7 @@ namespace DirectX12GameEngine.Core.Assets
                         }
                         else
                         {
-                            parsedObject = Parse(propertyInfo.PropertyType, innerElement.Value);
+                            parsedObject = TypeDescriptor.GetConverter(propertyInfo.PropertyType).ConvertFromString(innerElement.Value);
                         }
 
                         propertyInfo.SetValue(parsedElement, parsedObject);
@@ -314,7 +315,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             return string.IsNullOrWhiteSpace(content)
                 ? ActivatorUtilities.CreateInstance(Services, type)
-                : Parse(type, content);
+                : TypeDescriptor.GetConverter(type).ConvertFromString(content);
         }
 
         private async Task<object> ParseAttributeValueAsync(Type type, string value, XElement element, DeserializeOperation operation)
@@ -329,7 +330,8 @@ namespace DirectX12GameEngine.Core.Assets
             }
             else
             {
-                return Parse(type, value);
+                TypeConverter converter = TypeDescriptor.GetConverter(type);
+                return converter.ConvertFromString(value);
             }
         }
 
@@ -339,7 +341,7 @@ namespace DirectX12GameEngine.Core.Assets
             string[] markupExtensionClassWithParameters = markupExtensionString[0].Split(' ');
             string markupExtensionClass = markupExtensionClassWithParameters[0];
 
-            GetNamespaceAndTypeName(element, markupExtensionClass, out string markupExtensionNamespace, out string markupExtensionName);
+            GetNamespaceAndTypeName(markupExtensionClass, element, out string markupExtensionNamespace, out string markupExtensionName);
 
             if (!LoadedTypes[markupExtensionNamespace].TryGetValue(markupExtensionName, out Type markupExtensionType))
             {
@@ -359,7 +361,7 @@ namespace DirectX12GameEngine.Core.Assets
 
                 for (int i = 0; i < parameterCount; i++)
                 {
-                    parsedParameters[i] = Parse(constructorParameters[i].ParameterType, markupExtensionParameters[i]);
+                    parsedParameters[i] = TypeDescriptor.GetConverter(constructorParameters[i].ParameterType).ConvertFromString(markupExtensionParameters[i]);
                 }
 
                 markupExtension = (MarkupExtension)ActivatorUtilities.CreateInstance(Services, markupExtensionType, parsedParameters);
@@ -397,7 +399,7 @@ namespace DirectX12GameEngine.Core.Assets
             return await markupExtension.ProvideValueAsync(services);
         }
 
-        public static void GetNamespaceAndTypeName(XElement element, string xmlName, out string namespaceName, out string typeName)
+        public static void GetNamespaceAndTypeName(string xmlName, XElement element, out string namespaceName, out string typeName)
         {
             string[] namespaceAndType = xmlName.Split(new[] { ':' }, 2);
 
@@ -413,112 +415,6 @@ namespace DirectX12GameEngine.Core.Assets
                 namespaceName = element.GetDefaultNamespace().NamespaceName;
                 typeName = xmlName;
             }
-        }
-
-        private object Parse(Type type, string value)
-        {
-            if (type == typeof(string))
-            {
-                return value;
-            }
-
-            if (typeof(Enum).IsAssignableFrom(type))
-            {
-                return Enum.Parse(type, value);
-            }
-
-            if (type == typeof(Guid))
-            {
-                return Guid.Parse(value);
-            }
-
-            if (type == typeof(Uri))
-            {
-                return new Uri(value);
-            }
-
-            if (type == typeof(bool))
-            {
-                return bool.Parse(value);
-            }
-
-            if (type == typeof(int))
-            {
-                return int.Parse(value);
-            }
-
-            if (type == typeof(double))
-            {
-                return double.Parse(value);
-            }
-
-            if (type == typeof(float))
-            {
-                return float.Parse(value);
-            }
-
-            if (type == typeof(Vector3))
-            {
-                float[] vector = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
-
-                if (vector.Length == 3)
-                {
-                    return new Vector3(vector[0], vector[1], vector[2]);
-                }
-            }
-
-            if (type == typeof(Vector4))
-            {
-                float[] vector = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
-
-                if (vector.Length == 4)
-                {
-                    return new Vector4(vector[0], vector[1], vector[2], vector[3]);
-                }
-            }
-
-            if (type == typeof(Quaternion))
-            {
-                float[] quaternion = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
-
-                if (quaternion.Length == 4)
-                {
-                    return new Quaternion(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
-                }
-            }
-
-            if (type == typeof(Matrix4x4))
-            {
-                float[] matrix = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
-
-                if (matrix.Length == 16)
-                {
-                    return new Matrix4x4(
-                        matrix[0], matrix[1], matrix[2], matrix[3],
-                        matrix[4], matrix[5], matrix[6], matrix[7],
-                        matrix[8], matrix[9], matrix[10], matrix[11],
-                        matrix[12], matrix[13], matrix[14], matrix[15]);
-                }
-            }
-
-            if (LoadedTypes["http://schemas.directx12gameengine.com/xaml"]["IComputeScalar"].IsAssignableFrom(type))
-            {
-                float scalar = float.Parse(value);
-                return Activator.CreateInstance(LoadedTypes["http://schemas.directx12gameengine.com/xaml"]["ComputeScalar"], scalar);
-            }
-
-            if (LoadedTypes["http://schemas.directx12gameengine.com/xaml"]["IComputeColor"].IsAssignableFrom(type))
-            {
-                float[] vector = Regex.Replace(value, @"\s+", "").Split(',').Select(n => float.Parse(n)).ToArray();
-
-                if (vector.Length == 4)
-                {
-                    Vector4 color = new Vector4(vector[0], vector[1], vector[2], vector[3]);
-                    return Activator.CreateInstance(LoadedTypes["http://schemas.directx12gameengine.com/xaml"]["ComputeColor"], color);
-                }
-            }
-
-            throw new NotSupportedException();
         }
     }
 }

@@ -25,7 +25,7 @@ namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
         {
             XElement element = services.GetRequiredService<XElement>();
 
-            ContentManager.GetNamespaceAndTypeName(element, TypeName, out string namespaceName, out string typeName);
+            ContentManager.GetNamespaceAndTypeName(TypeName, element, out string namespaceName, out string typeName);
             Type type = ContentManager.LoadedTypes[namespaceName][typeName];
 
             return Task.FromResult<object>(type);

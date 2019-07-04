@@ -6,7 +6,7 @@ namespace DirectX12GameEngine.Core.Assets
     {
         Task<bool> ExistsAsync(string path);
 
-        Task<T> LoadAsync<T>(string path);
+        Task<T> LoadAsync<T>(string path) where T : class;
 
         void Unload(object asset);
     }

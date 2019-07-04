@@ -14,8 +14,8 @@ namespace DirectX12GameEngine.Core.Assets
 
     public abstract class Asset<T> : Asset
     {
-        public override Task CreateAssetAsync(object obj) => CreateAssetAsync((T)obj);
-
         public abstract Task CreateAssetAsync(T obj);
+
+        public override Task CreateAssetAsync(object obj) => CreateAssetAsync((T)obj);
     }
 }

@@ -6,7 +6,10 @@
       <local:WobbleMaterialAttributes.Diffuse>
         <MaterialDiffuseMapFeature>
           <MaterialDiffuseMapFeature.DiffuseMap>
-            <local:DissolveShader DissolveStrength="0.5">
+            <local:DissolveShader>
+              <local:DissolveShader.DissolveStrength>
+                <ComputeScalar Value="0.5" />
+              </local:DissolveShader.DissolveStrength>
               <local:DissolveShader.MainTexture>
                 <ComputeTextureColor Texture="{x:AssetReference Assets\Textures\Cliffhouse_img4}" />
               </local:DissolveShader.MainTexture>

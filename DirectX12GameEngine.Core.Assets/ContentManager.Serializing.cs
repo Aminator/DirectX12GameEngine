@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -64,22 +65,18 @@ namespace DirectX12GameEngine.Core.Assets
 
                 Type propertyType = propertyValue.GetType();
 
+                TypeConverter typeConverter = TypeDescriptor.GetConverter(propertyType);
+
                 if (loadedAssetReferences.TryGetValue(propertyValue, out Reference propertyReference))
                 {
                     XAttribute propertyAttribute = new XAttribute(propertyName, $"{{{assetReferenceExtension} {propertyReference.Path}}}");
                     root.Add(propertyAttribute);
                 }
-                // TODO: Put this logic into seperate serializers for each type.
-                else if (propertyType.IsPrimitive || propertyType == typeof(string) || propertyType == typeof(Vector3) || propertyType == typeof(Quaternion) || propertyType == typeof(Matrix4x4) || propertyType == typeof(Guid))
+                else if (typeConverter.CanConvertTo(typeof(string)))
                 {
                     if (propertyInfo.CanWrite)
                     {
-                        object serializedValue = propertyValue switch
-                        {
-                            Vector3 vector => $"{vector.X},{vector.Y},{vector.Z}",
-                            Quaternion quaternion => $"{quaternion.X},{quaternion.Y},{quaternion.Z},{quaternion.W}",
-                            _ => propertyValue
-                        };
+                        object serializedValue = typeConverter.ConvertToString(propertyValue);
 
                         XAttribute propertyAttribute = new XAttribute(propertyName, serializedValue);
                         root.Add(propertyAttribute);
