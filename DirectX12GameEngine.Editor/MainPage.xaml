@@ -1,0 +1,125 @@
+<Page
+    x:Class="DirectX12GameEngine.Editor.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DirectX12GameEngine.Editor"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    extensions:ApplicationViewExtensions.ExtendViewIntoTitleBar="True"
+    extensions:TitleBarExtensions.ButtonBackgroundColor="Transparent"
+    extensions:TitleBarExtensions.ButtonInactiveBackgroundColor="Transparent">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="200" />
+            <ColumnDefinition MinWidth="100" />
+        </Grid.ColumnDefinitions>
+        
+        <MenuBar Grid.ColumnSpan="2">
+            <MenuBarItem Title="File">
+                <MenuFlyoutItem Text="New" Icon="Add">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="N" Modifiers="Control" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Open" Icon="Folder" Click="{x:Bind OpenFolder}">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="O" Modifiers="Control" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutSubItem Text="Open Recent" Icon="Folder">
+                    <MenuFlyoutItem Text="Placeholder 1" />
+                    <MenuFlyoutItem Text="Placeholder 2" />
+                    <MenuFlyoutItem Text="Placeholder 3" />
+                </MenuFlyoutSubItem>
+                <MenuFlyoutItem Text="Save" Icon="Save">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="S" Modifiers="Control" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Text="Exit" Icon="Cancel" />
+            </MenuBarItem>
+
+            <MenuBarItem Title="Edit">
+                <MenuFlyoutItem Text="Undo" Icon="Undo">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Z" Modifiers="Control" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Redo" Icon="Redo">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Y" Modifiers="Control" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Text="Cut" Icon="Cut">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="X" Modifiers="Control" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Copy" Icon="Copy">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="C" Modifiers="Control" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Paste" Icon="Paste">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="V" Modifiers="Control" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Delete" Icon="Delete">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Delete" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Text="Settings" Icon="Setting" />
+            </MenuBarItem>
+
+            <MenuBarItem Title="View">
+                <MenuFlyoutItem Text="Some View" />
+            </MenuBarItem>
+
+            <MenuBarItem Title="Project">
+                <MenuFlyoutItem Text="Add New Item" />
+            </MenuBarItem>
+
+            <MenuBarItem Title="Help">
+                <MenuFlyoutItem Text="View Help" />
+                <MenuFlyoutItem Text="Feedback" />
+                <MenuFlyoutItem Text="About" />
+            </MenuBarItem>
+        </MenuBar>
+
+        <winui:TreeView Grid.Row="1">
+            <winui:TreeView.RootNodes>
+                <winui:TreeViewNode Content="Flavors" IsExpanded="True">
+                    <winui:TreeViewNode.Children>
+                        <winui:TreeViewNode Content="Vanilla" />
+                        <winui:TreeViewNode Content="Strawberry" />
+                        <winui:TreeViewNode Content="Chocolate" />
+                    </winui:TreeViewNode.Children>
+                </winui:TreeViewNode>
+            </winui:TreeView.RootNodes>
+        </winui:TreeView>
+
+        <SwapChainPanel x:Name="swapChainPanel" Grid.Row="1" Grid.Column="1" />
+
+        <controls:GridSplitter Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">
+            <controls:GridSplitter.RenderTransform>
+                <TranslateTransform X="-8" />
+            </controls:GridSplitter.RenderTransform>
+        </controls:GridSplitter>
+    </Grid>
+</Page>

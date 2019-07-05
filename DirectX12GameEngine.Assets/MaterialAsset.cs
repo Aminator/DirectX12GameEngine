@@ -35,13 +35,14 @@ namespace DirectX12GameEngine.Assets
             }
             else
             {
-                string path = Path.Combine(contentManager.RootPath, Source);
+                string path = Source;
                 int index = GetIndex(ref path);
                 string extension = Path.GetExtension(path);
 
-                if (extension == ".gltf" || extension == ".glb")
+                if (extension == ".glb")
                 {
-                    MaterialAttributes materialAttributes = await new GltfModelLoader(device).LoadMaterialAsync(path, index);
+                    using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(path);
+                    MaterialAttributes materialAttributes = await new GltfModelLoader(device).LoadMaterialAsync(stream, index);
 
                     // TODO: Combine material attributes.
 

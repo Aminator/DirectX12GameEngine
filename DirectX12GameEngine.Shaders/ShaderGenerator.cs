@@ -61,6 +61,17 @@ namespace DirectX12GameEngine.Shaders
             peFiles = assemblyPaths.Select(p => new PEFile(p));
 
             compilation = CSharpCompilation.Create("ShaderAssembly").WithReferences(metadataReferences);
+
+            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
+        }
+
+        private static void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs args)
+        {
+            if (!args.LoadedAssembly.IsDynamic)
+            {
+                PortableExecutableReference metadataReference = MetadataReference.CreateFromFile(args.LoadedAssembly.Location);
+                compilation = compilation.AddReferences(metadataReference);
+            }
         }
 
         public ShaderGenerator(object shader, BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)

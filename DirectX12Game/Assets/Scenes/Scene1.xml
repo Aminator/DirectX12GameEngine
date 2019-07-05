@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Scene xmlns="http://schemas.directx12gameengine.com/xaml" xmlns:x="http://schemas.directx12gameengine.com/xaml/extensions" xmlns:local="using:DirectX12Game" Offset="500,0,0">
-  <Entity Name="CustomCliffhouse">
+  <!--<Entity Name="CustomCliffhouse">
     <TransformComponent Scale="5,5,5" Position="-400,0,0" />
     <ModelComponent>
       <ModelComponent.Model>
@@ -8,7 +8,7 @@
       </ModelComponent.Model>
     </ModelComponent>
     <local:RotatorScript />
-  </Entity>
+  </Entity>-->
 
   <Entity Name="T-Rex">
     <TransformComponent Scale="0.2,0.2,0.2" Position="0,120,0" />

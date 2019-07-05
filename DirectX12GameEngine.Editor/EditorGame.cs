@@ -1,25 +1,22 @@
 ﻿using System;
-using System.IO;
 using System.Numerics;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Assets;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
+using Windows.ApplicationModel;
 using Windows.Storage;
 
-namespace DirectX12Game
+namespace DirectX12GameEngine.Editor
 {
-    public sealed class MyGame : Game
+    public class EditorGame : Game
     {
-        public MyGame(GameContext gameContext) : base(gameContext)
+        public EditorGame(GameContext gameContext) : base(gameContext)
         {
             if (GraphicsDevice.Presenter != null)
             {
                 GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
             }
-
-            SceneSystem.InitialScenePath = @"Assets\Scenes\Scene1";
         }
 
         protected override void BeginDraw()
@@ -35,24 +32,13 @@ namespace DirectX12Game
 
         protected override async Task LoadContentAsync()
         {
-            Content.RootFolder = await StorageFolder.GetFolderFromPathAsync(Directory.GetCurrentDirectory());
+            Content.RootFolder = Package.Current.InstalledLocation;
 
-            StorageFolder temporaryFolder;
-
-            try
-            {
-                temporaryFolder = ApplicationData.Current.TemporaryFolder;
-            }
-            catch
-            {
-                temporaryFolder = await Content.RootFolder.CreateFolderAsync("TempState", CreationCollisionOption.OpenIfExists);
-            }
+            StorageFolder temporaryFolder = ApplicationData.Current.TemporaryFolder;
 
             ShaderContent.RootFolder = await temporaryFolder.CreateFolderAsync("ShaderCache", CreationCollisionOption.OpenIfExists);
 
-            // TODO: DirectX12GameEngine.Assets.dll does not get copied to the output directory if it is never used.
-            MaterialAsset materialAsset = new MaterialAsset(Content, ShaderContent, GraphicsDevice);
-            materialAsset.ToString();
+            SceneSystem.SceneInstance = new SceneInstance(Services);
 
             await base.LoadContentAsync();
         }

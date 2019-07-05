@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using SharpDX.Direct3D12;
 using SharpDX.Mathematics.Interop;
 
@@ -94,12 +95,12 @@ namespace DirectX12GameEngine.Graphics
 
         public void Clear(Texture depthStencilBuffer, ClearFlags clearFlags, float depth = 1, byte stencil = 0)
         {
-            currentCommandList.NativeCommandList.ClearDepthStencilView(depthStencilBuffer.NativeCpuDescriptorHandle, clearFlags, depth, stencil);
+            currentCommandList.NativeCommandList.ClearDepthStencilView(depthStencilBuffer.NativeCpuDescriptorHandle, (SharpDX.Direct3D12.ClearFlags)clearFlags, depth, stencil);
         }
 
-        public void Clear(Texture renderTarget, RawColor4 color)
+        public unsafe void Clear(Texture renderTarget, Vector4 color)
         {
-            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeCpuDescriptorHandle, color);
+            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeCpuDescriptorHandle, *(RawColor4*)&color);
         }
 
         public void ClearState()

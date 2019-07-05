@@ -19,14 +19,14 @@ namespace DirectX12GameEngine.Core.Assets
 
         static ContentManager()
         {
-            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
-
             var types = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).SelectMany(a => a.ExportedTypes.Where(t => !(t.IsAbstract && t.IsSealed)));
 
             foreach (Type type in types)
             {
                 AddType(type);
             }
+
+            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
         }
 
         public ContentManager(IServiceProvider services)

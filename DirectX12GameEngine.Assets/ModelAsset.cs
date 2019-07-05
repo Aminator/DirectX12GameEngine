@@ -26,13 +26,16 @@ namespace DirectX12GameEngine.Assets
         {
             string extension = Path.GetExtension(Source);
 
-            if (extension == ".gltf" || extension == ".glb")
+            if (extension == ".glb")
             {
-                var meshes = await new GltfModelLoader(device).LoadMeshesAsync(Path.Combine(contentManager.RootPath, Source));
-
-                foreach (Mesh mesh in meshes)
+                using (Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source))
                 {
-                    model.Meshes.Add(mesh);
+                    var meshes = await new GltfModelLoader(device).LoadMeshesAsync(stream);
+
+                    foreach (Mesh mesh in meshes)
+                    {
+                        model.Meshes.Add(mesh);
+                    }
                 }
 
                 foreach (Material material in Materials)

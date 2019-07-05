@@ -24,14 +24,15 @@ namespace DirectX12GameEngine.Rendering
 
         public GraphicsDevice GraphicsDevice { get; }
 
-        public static async Task<Gltf> LoadGltfModelAsync(string filePath)
+        public static Task<Gltf> LoadGltfModelAsync(string filePath)
         {
-            return await Task.Run(() => Interface.LoadModel(filePath));
+            return Task.Run(() => Interface.LoadModel(filePath));
         }
 
         public static async Task<Gltf> LoadGltfModelAsync(Stream stream)
         {
-            return await Task.Run(() => Interface.LoadModel(stream));
+            Gltf gltf = await Task.Run(() => Interface.LoadModel(stream));
+            return gltf;
         }
 
         public async Task<MaterialAttributes> LoadMaterialAsync(string filePath, int materialIndex)
@@ -66,6 +67,34 @@ namespace DirectX12GameEngine.Rendering
             return await GetMeshesAsync(gltf, buffers);
         }
 
+        public async Task<MaterialAttributes> LoadMaterialAsync(Stream stream, int materialIndex)
+        {
+            var (gltf, buffers) = await GetGltfModelAndBuffersAsync(stream);
+
+            return await GetMaterialAsync(gltf, buffers, materialIndex);
+        }
+
+        public async Task<IList<MaterialAttributes>> LoadMaterialsAsync(Stream stream)
+        {
+            var (gltf, buffers) = await GetGltfModelAndBuffersAsync(stream);
+
+            return await GetMaterialsAsync(gltf, buffers);
+        }
+
+        public async Task<Mesh> LoadMeshAsync(Stream stream, int meshIndex)
+        {
+            var (gltf, buffers) = await GetGltfModelAndBuffersAsync(stream);
+
+            return await GetMeshAsync(gltf, buffers, meshIndex);
+        }
+
+        public async Task<IList<Mesh>> LoadMeshesAsync(Stream stream)
+        {
+            var (gltf, buffers) = await GetGltfModelAndBuffersAsync(stream);
+
+            return await GetMeshesAsync(gltf, buffers);
+        }
+
         private static int GetCountOfAccessorType(Accessor.TypeEnum type) => type switch
         {
             Accessor.TypeEnum.Scalar => 1,
@@ -78,6 +107,20 @@ namespace DirectX12GameEngine.Rendering
             _ => throw new NotSupportedException("This type is not supported.")
         };
 
+        private static async Task<(Gltf, IList<byte[]>)> GetGltfModelAndBuffersAsync(Stream stream)
+        {
+            byte[] buffer = new byte[stream.Length];
+            await stream.ReadAsync(buffer, 0, buffer.Length);
+
+            using MemoryStream memoryStream1 = new MemoryStream(buffer);
+            using MemoryStream memoryStream2 = new MemoryStream(buffer);
+
+            Gltf gltf = await LoadGltfModelAsync(memoryStream1);
+            IList<byte[]> buffers = GetGltfModelBuffers(gltf, memoryStream2);
+
+            return (gltf, buffers);
+        }
+
         private static IList<byte[]> GetGltfModelBuffers(Gltf gltf, string filePath)
         {
             byte[][] buffers = new byte[gltf.Buffers.Length][];
@@ -85,6 +128,18 @@ namespace DirectX12GameEngine.Rendering
             for (int i = 0; i < gltf.Buffers.Length; i++)
             {
                 buffers[i] = gltf.LoadBinaryBuffer(i, Path.Combine(Path.GetDirectoryName(filePath), gltf.Buffers[i].Uri ?? Path.GetFileName(filePath)));
+            }
+
+            return buffers;
+        }
+
+        private static IList<byte[]> GetGltfModelBuffers(Gltf gltf, Stream stream)
+        {
+            byte[][] buffers = new byte[gltf.Buffers.Length][];
+
+            for (int i = 0; i < gltf.Buffers.Length; i++)
+            {
+                buffers[i] = Interface.LoadBinaryBuffer(stream);
             }
 
             return buffers;

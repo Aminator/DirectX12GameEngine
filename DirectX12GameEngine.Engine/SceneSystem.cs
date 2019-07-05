@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Games;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -22,7 +21,7 @@ namespace DirectX12GameEngine.Engine
             if (InitialScenePath != null)
             {
                 Scene rootScene = await Content.LoadAsync<Scene>(InitialScenePath);
-                SceneInstance = ActivatorUtilities.CreateInstance<SceneInstance>(Services, rootScene);
+                SceneInstance = new SceneInstance(Services, rootScene);
             }
         }
 

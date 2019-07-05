@@ -27,6 +27,7 @@ namespace DirectX12GameEngine.Engine
 
             SceneSystem = Services.GetRequiredService<SceneSystem>();
             Script = Services.GetRequiredService<ScriptSystem>();
+            ShaderContent = Services.GetRequiredService<ShaderContentManager>();
 
             GameSystems.Add(SceneSystem);
             GameSystems.Add(Script);
@@ -37,6 +38,8 @@ namespace DirectX12GameEngine.Engine
         public SceneSystem SceneSystem { get; }
 
         public ScriptSystem Script { get; }
+
+        public ShaderContentManager ShaderContent { get; }
 
         public override void Dispose()
         {
@@ -99,8 +102,8 @@ namespace DirectX12GameEngine.Engine
 
             services.AddSingleton(GraphicsDevice);
             services.AddSingleton<SceneSystem>();
-            services.AddSingleton<ShaderContentManager>();
             services.AddSingleton<ScriptSystem>();
+            services.AddSingleton<ShaderContentManager>();
         }
     }
 }
