@@ -17,11 +17,6 @@ namespace DirectX12GameEngine.Engine
 
         public override void Draw(GameTime gameTime)
         {
-            if (EntityManager is SceneInstance sceneInstance && sceneInstance.RootScene != null)
-            {
-                UpdateTransformationsRecursive(sceneInstance.RootScene);
-            }
-
             UpdateTransformations(TransformationRoots);
         }
 
@@ -77,16 +72,6 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private static void UpdateTransformationsRecursive(Scene scene)
-        {
-            scene.UpdateWorldMatrixInternal(false);
-
-            foreach (Scene childScene in scene.Children)
-            {
-                UpdateTransformationsRecursive(childScene);
-            }
-        }
-
         private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
@@ -94,38 +79,18 @@ namespace DirectX12GameEngine.Engine
                 case NotifyCollectionChangedAction.Add:
                     foreach (TransformComponent transformComponent in e.NewItems)
                     {
-                        if (transformComponent.IsMovingInsideRootScene)
+                        if (transformComponent.Entity != null)
                         {
-                            if (transformComponent.Parent is null)
-                            {
-                                TransformationRoots.Add(transformComponent);
-                            }
-                        }
-                        else
-                        {
-                            if (transformComponent.Entity != null)
-                            {
-                                InternalAddEntity(transformComponent.Entity);
-                            }
+                            InternalAddEntity(transformComponent.Entity);
                         }
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach (TransformComponent transformComponent in e.OldItems)
                     {
-                        if (transformComponent.IsMovingInsideRootScene)
+                        if (transformComponent.Entity != null)
                         {
-                            if (transformComponent.Parent is null)
-                            {
-                                TransformationRoots.Remove(transformComponent);
-                            }
-                        }
-                        else
-                        {
-                            if (transformComponent.Entity != null)
-                            {
-                                InternalRemoveEntity(transformComponent.Entity, false);
-                            }
+                            InternalRemoveEntity(transformComponent.Entity, false);
                         }
                     }
                     break;

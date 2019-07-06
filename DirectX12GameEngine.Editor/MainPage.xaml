@@ -8,6 +8,7 @@
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
+    xmlns:engine="using:DirectX12GameEngine.Engine"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     extensions:ApplicationViewExtensions.ExtendViewIntoTitleBar="True"
@@ -102,16 +103,18 @@
             </MenuBarItem>
         </MenuBar>
 
-        <winui:TreeView Grid.Row="1">
-            <winui:TreeView.RootNodes>
-                <winui:TreeViewNode Content="Flavors" IsExpanded="True">
-                    <winui:TreeViewNode.Children>
-                        <winui:TreeViewNode Content="Vanilla" />
-                        <winui:TreeViewNode Content="Strawberry" />
-                        <winui:TreeViewNode Content="Chocolate" />
-                    </winui:TreeViewNode.Children>
-                </winui:TreeViewNode>
-            </winui:TreeView.RootNodes>
+        <winui:TreeView x:Name="treeView" Grid.Row="1" ItemsSource="{x:Bind rootEntity.Children}">
+            <winui:TreeView.ItemTemplate>
+                <DataTemplate x:DataType="engine:Entity">
+                    <winui:TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}" AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
+                            <TextBlock Margin="0,0,10,0"/>
+                            <TextBlock Text="{x:Bind Transform.Position, Mode=OneWay}" />
+                        </StackPanel>
+                    </winui:TreeViewItem>
+                </DataTemplate>
+            </winui:TreeView.ItemTemplate>
         </winui:TreeView>
 
         <SwapChainPanel x:Name="swapChainPanel" Grid.Row="1" Grid.Column="1" />

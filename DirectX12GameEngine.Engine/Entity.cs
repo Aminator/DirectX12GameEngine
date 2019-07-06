@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using DirectX12GameEngine.Core;
 
@@ -10,6 +12,10 @@ namespace DirectX12GameEngine.Engine
 {
     public sealed class Entity : ObservableCollection<EntityComponent>, IIdentifiable
     {
+        private Guid id = Guid.NewGuid();
+        private string name;
+        private TransformComponent transform;
+
         public Entity() : this(null)
         {
         }
@@ -34,9 +40,9 @@ namespace DirectX12GameEngine.Engine
         [IgnoreDataMember]
         public ObservableCollection<EntityComponent> Components => this;
 
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get => id; set => Set(ref id, value); }
 
-        public string Name { get; set; }
+        public string Name { get => name; set => Set(ref name, value); }
 
         [IgnoreDataMember]
         public Entity? Parent { get => Transform.Parent?.Entity; set => Transform.Parent = value?.Transform; }
@@ -45,10 +51,7 @@ namespace DirectX12GameEngine.Engine
         public EntityManager? EntityManager { get; internal set; }
 
         [IgnoreDataMember]
-        public Scene? Scene { get; internal set; }
-
-        [IgnoreDataMember]
-        public TransformComponent Transform { get; private set; }
+        public TransformComponent Transform { get => transform; private set => Set(ref transform, value); }
 
         public T? Get<T>() where T : EntityComponent
         {
@@ -125,6 +128,23 @@ namespace DirectX12GameEngine.Engine
                     }
                     break;
             }
+        }
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+        }
+
+        private bool Set<T>(ref T field, T value, [CallerMemberName] string name = "")
+        {
+            if (!EqualityComparer<T>.Default.Equals(field, value))
+            {
+                field = value;
+                NotifyPropertyChanged(name);
+                return true;
+            }
+
+            return false;
         }
     }
 }

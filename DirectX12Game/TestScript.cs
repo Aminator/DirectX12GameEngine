@@ -74,7 +74,7 @@ namespace DirectX12Game
         private async void OnKeyDown(Windows.System.VirtualKey key)
         {
             Entity? cameraEntity = SceneSystem.CurrentCamera?.Entity;
-            Scene scene = SceneSystem.SceneInstance?.RootScene ?? throw new InvalidOperationException();
+            Entity scene = SceneSystem.SceneInstance?.RootEntity ?? throw new InvalidOperationException();
 
             switch (key)
             {
@@ -98,14 +98,14 @@ namespace DirectX12Game
                     }
                     break;
                 case Windows.System.VirtualKey.R:
-                    Entity? cliffhouse = SceneSystem.SceneInstance?.RootScene?.FirstOrDefault(m => m.Name == "Cliffhouse");
+                    Entity? cliffhouse = SceneSystem.SceneInstance?.RootEntity?.Children.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
-                        SceneSystem.SceneInstance?.RootScene?.Remove(cliffhouse);
+                        SceneSystem.SceneInstance?.RootEntity?.Children.Remove(cliffhouse);
                     }
                     break;
                 case Windows.System.VirtualKey.T:
-                    Entity? cliffhouse1 = SceneSystem.SceneInstance?.RootScene?.FirstOrDefault(m => m.Name == "Cliffhouse");
+                    Entity? cliffhouse1 = SceneSystem.SceneInstance?.RootEntity?.Children.FirstOrDefault(m => m.Name == "Cliffhouse");
                     cliffhouse1?.Remove<ModelComponent>();
                     break;
                 case Windows.System.VirtualKey.A:
@@ -115,35 +115,35 @@ namespace DirectX12Game
                         new ModelComponent(await Services.GetRequiredService<ContentManager>().LoadAsync<Model>("Assets\\Models\\Cliffhouse_Model"))
                     };
 
-                    SceneSystem.SceneInstance?.RootScene?.Add(newCliffhouse);
+                    SceneSystem.SceneInstance?.RootEntity?.Children.Add(newCliffhouse);
                     break;
                 case Windows.System.VirtualKey.P:
                     Entity? child1 = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Child1");
-                    if (child1 != null && child1.Scene is null)
+                    if (child1 != null && child1.Parent is null)
                     {
                         child1.Transform.Parent = null;
-                        SceneSystem.SceneInstance?.RootScene?.Add(child1);
+                        SceneSystem.SceneInstance?.RootEntity?.Children.Add(child1);
                     }
                     break;
                 case Windows.System.VirtualKey.Q:
                     Entity? child2 = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Child1");
-                    if (child2 != null && child2.Scene != null)
+                    if (child2 != null && child2.Parent != null)
                     {
-                        child2.Scene.Remove(child2);
+                        child2.Parent = null;
                         child2.Transform.Parent = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Parent1").Transform;
                     }
                     break;
                 case Windows.System.VirtualKey.S:
                     SceneInstance? sceneInstance = SceneSystem.SceneInstance;
-                    Scene? previousRootScene = sceneInstance?.RootScene;
+                    Entity? previousRootScene = sceneInstance?.RootEntity;
 
                     if (sceneInstance != null && previousRootScene != null && cameraEntity != null)
                     {
-                        cameraEntity.Scene?.Remove(cameraEntity);
+                        cameraEntity.Parent = null;
 
-                        sceneInstance.RootScene = new Scene { Offset = new Vector3(500.0f, 0.0f, 0.0f) };
-                        sceneInstance.RootScene.Add(cameraEntity);
-                        sceneInstance.RootScene.Children.Add(previousRootScene);
+                        sceneInstance.RootEntity = new Entity { new TransformComponent { Position = new Vector3(500.0f, 0.0f, 0.0f) } };
+                        sceneInstance.RootEntity.Children.Add(cameraEntity);
+                        sceneInstance.RootEntity.Children.Add(previousRootScene);
                     }
                     break;
                 case Windows.System.VirtualKey.O:
@@ -157,13 +157,13 @@ namespace DirectX12Game
                     {
                         if (scene != null)
                         {
-                            Scene copy = new Scene();
-                            List<Entity> entities = new List<Entity>(scene);
+                            Entity copy = new Entity();
+                            List<Entity> entities = new List<Entity>(scene.Children);
 
                             foreach (var entity2 in entities)
                             {
-                                scene.Remove(entity2);
-                                copy.Add(entity2);
+                                scene.Children.Remove(entity2);
+                                copy.Children.Add(entity2);
                             }
 
                             await Content.SaveAsync(@"Assets\CustomScene", copy);

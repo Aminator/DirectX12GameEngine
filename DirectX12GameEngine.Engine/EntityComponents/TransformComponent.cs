@@ -3,14 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
 {
     [DefaultEntitySystem(typeof(TransformSystem))]
-    public sealed class TransformComponent : EntityComponent, IEnumerable<TransformComponent>
+    public sealed class TransformComponent : EntityComponent, IEnumerable<TransformComponent>, INotifyPropertyChanged
     {
         private TransformComponent? parent;
 
@@ -24,6 +26,8 @@ namespace DirectX12GameEngine.Engine
             Children.CollectionChanged += Children_CollectionChanged;
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         [IgnoreDataMember]
         public ObservableCollection<TransformComponent> Children { get; } = new ObservableCollection<TransformComponent>();
 
@@ -35,16 +39,14 @@ namespace DirectX12GameEngine.Engine
         [IgnoreDataMember]
         public Matrix4x4 WorldMatrix { get; set; } = Matrix4x4.Identity;
 
-        public Vector3 Position { get => position; set => position = value; }
+        public Vector3 Position { get => position; set => Set(ref position, value); }
 
-        public Quaternion Rotation { get => rotation; set => rotation = value; }
+        public Quaternion Rotation { get => rotation; set => Set(ref rotation, value); }
 
-        public Vector3 Scale { get => scale; set => scale = value; }
+        public Vector3 Scale { get => scale; set => Set(ref scale, value); }
 
         [IgnoreDataMember]
-        public Vector3 RotationEuler { get => QuaternionExtensions.ToEuler(Rotation); set => Rotation = QuaternionExtensions.ToQuaternion(value); }
-
-        internal bool IsMovingInsideRootScene { get; private set; }
+        public Vector3 RotationEuler { get => QuaternionExtensions.ToEuler(Rotation); set { if (Set(ref rotation, QuaternionExtensions.ToQuaternion(value), nameof(Rotation))) NotifyPropertyChanged(); } }
 
         [IgnoreDataMember]
         public TransformComponent? Parent
@@ -56,35 +58,12 @@ namespace DirectX12GameEngine.Engine
 
                 if (oldParent == value) return;
 
-                Scene? previousScene = oldParent?.Entity?.Scene;
-                Scene? newScene = value?.Entity?.Scene;
-
-                while (previousScene?.Parent != null)
-                {
-                    previousScene = previousScene.Parent;
-                }
-
-                while (newScene?.Parent != null)
-                {
-                    newScene = newScene.Parent;
-                }
-
-                bool isMoving = newScene != null && newScene == previousScene;
-
-                if (isMoving)
-                {
-                    IsMovingInsideRootScene = true;
-                }
-
                 oldParent?.Children.Remove(this);
                 value?.Children.Add(this);
-
-                if (isMoving)
-                {
-                    IsMovingInsideRootScene = false;
-                }
             }
         }
+
+        public override string ToString() => $"Position: {Position}, Rotation: {RotationEuler}, Scale: {Scale}";
 
         public IEnumerator<TransformComponent> GetEnumerator() => Children.GetEnumerator();
 
@@ -105,7 +84,11 @@ namespace DirectX12GameEngine.Engine
 
         internal void UpdateWorldMatrixInternal(bool recursive)
         {
-            if (Parent != null)
+            if (Parent is null)
+            {
+                WorldMatrix = LocalMatrix;
+            }
+            else
             {
                 if (recursive)
                 {
@@ -113,22 +96,6 @@ namespace DirectX12GameEngine.Engine
                 }
 
                 WorldMatrix = LocalMatrix * Parent.WorldMatrix;
-            }
-            else
-            {
-                WorldMatrix = LocalMatrix;
-
-                Scene? scene = Entity?.Scene;
-
-                if (scene != null)
-                {
-                    if (recursive)
-                    {
-                        scene.UpdateWorldMatrix();
-                    }
-
-                    WorldMatrix *= scene.WorldMatrix;
-                }
             }
         }
 
@@ -169,6 +136,23 @@ namespace DirectX12GameEngine.Engine
                     }
                     break;
             }
+        }
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private bool Set<T>(ref T field, T value, [CallerMemberName] string name = "")
+        {
+            if (!EqualityComparer<T>.Default.Equals(field, value))
+            {
+                field = value;
+                NotifyPropertyChanged(name);
+                return true;
+            }
+
+            return false;
         }
     }
 }

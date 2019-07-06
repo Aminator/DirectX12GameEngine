@@ -87,11 +87,6 @@ namespace DirectX12GameEngine.Engine
             entity.CollectionChanged += Components_CollectionChanged;
         }
 
-        public static Entity FirstOrDefault(Func<object, bool> p)
-        {
-            throw new NotImplementedException();
-        }
-
         internal void Remove(Entity entity)
         {
             RemoveInternal(entity, true);
@@ -153,11 +148,15 @@ namespace DirectX12GameEngine.Engine
                         if (system.Accept(componentType))
                         {
                             systemsForComponent.Add(system);
-                            system.ProcessEntityComponent(entityComponent, entity, forceRemove);
                         }
                     }
 
                     systemsPerComponentType.Add(componentType, systemsForComponent);
+
+                    foreach (EntitySystem system in systemsForComponent)
+                    {
+                        system.ProcessEntityComponent(entityComponent, entity, forceRemove);
+                    }
                 }
             }
         }

@@ -1,24 +1,32 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace DirectX12GameEngine.Engine
 {
-    internal sealed class TransformCollectionWrapper : IList<Entity>, IList
+    internal sealed class TransformCollectionWrapper : IList<Entity>, IList, INotifyCollectionChanged
     {
-        private readonly IList<TransformComponent> collection;
+        private readonly ObservableCollection<TransformComponent> collection;
 
-        public TransformCollectionWrapper(IList<TransformComponent> collection)
+        public TransformCollectionWrapper(ObservableCollection<TransformComponent> collection)
         {
             this.collection = collection;
+        }
+
+        public event NotifyCollectionChangedEventHandler CollectionChanged
+        {
+            add => collection.CollectionChanged += value;
+            remove => collection.CollectionChanged -= value;
         }
 
         public Entity this[int index] { get => collection[index].Entity ?? throw new InvalidOperationException(); set => collection[index] = value.Transform; }
 
         public int Count => collection.Count;
 
-        public bool IsReadOnly => collection.IsReadOnly;
+        public bool IsReadOnly => ((IList<Entity>)collection).IsReadOnly;
 
         public void Add(Entity item) => collection.Add(item.Transform);
 

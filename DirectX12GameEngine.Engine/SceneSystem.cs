@@ -20,8 +20,8 @@ namespace DirectX12GameEngine.Engine
         {
             if (InitialScenePath != null)
             {
-                Scene rootScene = await Content.LoadAsync<Scene>(InitialScenePath);
-                SceneInstance = new SceneInstance(Services, rootScene);
+                Entity rootEntity = await Content.LoadAsync<Entity>(InitialScenePath);
+                SceneInstance = new SceneInstance(Services, rootEntity);
             }
         }
 

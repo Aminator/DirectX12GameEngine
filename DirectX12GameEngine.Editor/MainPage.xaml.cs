@@ -21,7 +21,8 @@ namespace DirectX12GameEngine.Editor
     {
         private EditorGame game;
         private bool isLoaded;
-        private AsyncLock isLoadedLock = new AsyncLock();
+        private readonly AsyncLock isLoadedLock = new AsyncLock();
+        private readonly Entity rootEntity = new Entity("Root");
 
         public MainPage()
         {
@@ -55,8 +56,9 @@ namespace DirectX12GameEngine.Editor
 
                 Assembly.LoadFrom(assemblyFileCopy.Path);
 
-                Scene rootScene = await game.Content.LoadAsync<Scene>(@"Assets\Scenes\Scene1");
-                game.SceneSystem.SceneInstance.RootScene = rootScene;
+                Entity scene = await game.Content.LoadAsync<Entity>(@"Assets\Scenes\Scene1");
+                rootEntity.Children.Add(scene);
+                game.SceneSystem.SceneInstance.RootEntity = rootEntity;
 
                 isLoaded = true;
             }
