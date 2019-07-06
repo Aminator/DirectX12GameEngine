@@ -112,11 +112,11 @@ namespace DirectX12GameEngine.Rendering.Materials
                     GeometryShaderSource = result.GeometryShader is null ? null : $"GeometryShader_{MaterialDescriptor.MaterialId}.cso",
                 };
 
-                await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.VertexShaderSource), compiledShader.VertexShader);
-                await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.PixelShaderSource), compiledShader.PixelShader);
-                if (shaderAsset.HullShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.HullShaderSource), compiledShader.HullShader);
-                if (shaderAsset.DomainShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.DomainShaderSource), compiledShader.DomainShader);
-                if (shaderAsset.GeometryShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.GeometryShaderSource), compiledShader.GeometryShader);
+                await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.VertexShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.VertexShader);
+                await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.PixelShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.PixelShader);
+                if (shaderAsset.HullShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.HullShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.HullShader);
+                if (shaderAsset.DomainShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.DomainShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.DomainShader);
+                if (shaderAsset.GeometryShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.GeometryShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.GeometryShader);
 
                 await Content.SaveAsync(fileName, shaderAsset);
             }

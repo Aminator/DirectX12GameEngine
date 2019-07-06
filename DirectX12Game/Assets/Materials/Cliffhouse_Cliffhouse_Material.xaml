@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<MaterialAsset Id="bcff8c18-1596-4f13-8e0d-9212bc7c0dbb" xmlns="http://schemas.directx12gameengine.com/xaml" xmlns:x="http://schemas.directx12gameengine.com/xaml/extensions">
+    <MaterialAsset.Attributes>
+        <MaterialAttributes>
+
+            <MaterialAttributes.Diffuse>
+                <MaterialDiffuseMapFeature>
+                    <MaterialDiffuseMapFeature.DiffuseMap>
+                        <ComputeTextureColor Texture="{x:AssetReference Assets\Textures\Cliffhouse_img4}" />
+                    </MaterialDiffuseMapFeature.DiffuseMap>
+                </MaterialDiffuseMapFeature>
+            </MaterialAttributes.Diffuse>
+
+            <!--<MaterialAttributes.DiffuseModel>
+            <MaterialDiffuseCelShadingModelFeature>
+              <MaterialDiffuseCelShadingModelFeature.RampFunction>
+                <MaterialCelShadingLightDefault IsBlackAndWhite ="False" />
+              </MaterialDiffuseCelShadingModelFeature.RampFunction>
+            </MaterialDiffuseCelShadingModelFeature>
+          </MaterialAttributes.DiffuseModel>-->
+
+            <MaterialAttributes.Surface>
+                <MaterialNormalMapFeature>
+                    <MaterialNormalMapFeature.NormalMap>
+                        <ComputeTextureColor Texture="{x:AssetReference Assets\Textures\Cliffhouse_img5}" />
+                    </MaterialNormalMapFeature.NormalMap>
+                </MaterialNormalMapFeature>
+            </MaterialAttributes.Surface>
+
+            <MaterialAttributes.MicroSurface>
+                <MaterialRoughnessMapFeature>
+                    <MaterialRoughnessMapFeature.RoughnessMap>
+                        <ComputeTextureScalar Texture="{x:AssetReference Assets\Textures\Cliffhouse_img3}" Channel="G" />
+                    </MaterialRoughnessMapFeature.RoughnessMap>
+                </MaterialRoughnessMapFeature>
+            </MaterialAttributes.MicroSurface>
+
+            <MaterialAttributes.Specular>
+                <MaterialMetalnessMapFeature>
+                    <MaterialMetalnessMapFeature.MetalnessMap>
+                        <ComputeTextureScalar Texture="{x:AssetReference Assets\Textures\Cliffhouse_img3}" Channel="B" />
+                        <!--<ComputeScalar Value="0.0" />-->
+                    </MaterialMetalnessMapFeature.MetalnessMap>
+                </MaterialMetalnessMapFeature>
+            </MaterialAttributes.Specular>
+
+        </MaterialAttributes>
+    </MaterialAsset.Attributes>
+</MaterialAsset>

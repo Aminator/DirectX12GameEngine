@@ -40,13 +40,13 @@ namespace DirectX12GameEngine.Core.Assets
             RootFolder = rootFolder;
         }
 
-        public string FileExtension = ".xml";
+        public IServiceProvider Services { get; }
 
-        public string RootPath => RootFolder.Path;
+        public string FileExtension { get; set; } = ".xaml";
 
         public StorageFolder RootFolder { get; set; }
 
-        public IServiceProvider Services { get; }
+        public string RootPath => RootFolder.Path;
 
         internal static Dictionary<string, Dictionary<string, Type>> LoadedTypes { get; } = new Dictionary<string, Dictionary<string, Type>>();
 

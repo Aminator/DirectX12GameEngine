@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModelAsset xmlns="http://schemas.directx12gameengine.com/xaml" xmlns:x="http://schemas.directx12gameengine.com/xaml/extensions" Source="Assets\Resources\Models\Cliffhouse\Cliffhouse.glb">
+    <ModelAsset.Materials>
+        <x:AssetReference Path="Assets\Materials\Cliffhouse_Water_Material" Type="{x:Type Material}" />
+        <x:AssetReference Path="Assets\Materials\Cliffhouse_Bird_Material" Type="{x:Type Material}" />
+        <x:AssetReference Path="Assets\Materials\Cliffhouse_Cliffhouse_Material" Type="{x:Type Material}" />
+        <!--<Material Source="Assets\Resources\Models\Cliffhouse\Cliffhouse.glb[0]" />
+    <Material Source="Assets\Resources\Models\Cliffhouse\Cliffhouse.glb[1]" />
+    <Material Source="Assets\Resources\Models\Cliffhouse\Cliffhouse.glb[2]" />-->
+    </ModelAsset.Materials>
+</ModelAsset>

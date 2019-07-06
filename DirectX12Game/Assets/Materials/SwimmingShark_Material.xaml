@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <MaterialAsset Id="13404da5-5566-4710-9f65-69b35563d655" xmlns="http://schemas.directx12gameengine.com/xaml" Source="Assets\Resources\Models\SwimmingShark.glb[0]">
-  <MaterialAsset.Attributes>
-    <MaterialAttributes>
+    <MaterialAsset.Attributes>
+        <MaterialAttributes>
 
-      <!--<MaterialAttributes.MicroSurface>
+            <!--<MaterialAttributes.MicroSurface>
                 <MaterialRoughnessMapFeature>
                   <MaterialRoughnessMapFeature.RoughnessMap>
                     <ComputeScalar Value="1.0" />
@@ -11,7 +11,7 @@
                 </MaterialRoughnessMapFeature>
               </MaterialAttributes.MicroSurface>-->
 
-      <!--<MaterialAttributes.Surface>
+            <!--<MaterialAttributes.Surface>
                 <MaterialNormalMapFeature>
                   <MaterialNormalMapFeature.NormalMap>
                     <ComputeTextureColor Texture="Assets\Resources\Models\Swimming_Shark_img2.png" />
@@ -19,6 +19,6 @@
                 </MaterialNormalMapFeature>
               </MaterialAttributes.Surface>-->
 
-    </MaterialAttributes>
-  </MaterialAsset.Attributes>
+        </MaterialAttributes>
+    </MaterialAsset.Attributes>
 </MaterialAsset>
