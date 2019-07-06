@@ -26,7 +26,7 @@ namespace DirectX12GameEngine.Engine
 
         public int Count => collection.Count;
 
-        public bool IsReadOnly => ((IList<Entity>)collection).IsReadOnly;
+        public bool IsReadOnly => ((IList)collection).IsReadOnly;
 
         public void Add(Entity item) => collection.Add(item.Transform);
 

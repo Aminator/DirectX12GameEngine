@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -10,8 +11,10 @@ using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
 {
-    public sealed class Entity : ObservableCollection<EntityComponent>, IIdentifiable
+    public sealed class Entity : IEnumerable<EntityComponent>, IIdentifiable, INotifyPropertyChanged
     {
+        private Entity? parent;
+
         private Guid id = Guid.NewGuid();
         private string name;
         private TransformComponent transform;
@@ -26,32 +29,56 @@ namespace DirectX12GameEngine.Engine
 
         public Entity(string? name, TransformComponent? transform)
         {
-            CollectionChanged += Components_CollectionChanged;
+            Children.CollectionChanged += Children_CollectionChanged;
+            Components.CollectionChanged += Components_CollectionChanged;
 
             Name = name ?? GetType().Name;
 
             Transform = transform ?? new TransformComponent();
-            Add(Transform);
+            Components.Add(Transform);
         }
 
-        [IgnoreDataMember]
-        public IList<Entity> Children => Transform.ChildEntities;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         [IgnoreDataMember]
-        public ObservableCollection<EntityComponent> Components => this;
+        public ObservableCollection<Entity> Children { get; } = new ObservableCollection<Entity>();
+
+        [IgnoreDataMember]
+        public ObservableCollection<EntityComponent> Components { get; } = new ObservableCollection<EntityComponent>();
 
         public Guid Id { get => id; set => Set(ref id, value); }
 
         public string Name { get => name; set => Set(ref name, value); }
 
         [IgnoreDataMember]
-        public Entity? Parent { get => Transform.Parent?.Entity; set => Transform.Parent = value?.Transform; }
+        public Entity? Parent
+        {
+            get => parent;
+            set
+            {
+                Entity? oldParent = parent;
+
+                if (oldParent == value) return;
+
+                oldParent?.Children.Remove(this);
+                value?.Children.Add(this);
+            }
+        }
 
         [IgnoreDataMember]
         public EntityManager? EntityManager { get; internal set; }
 
         [IgnoreDataMember]
         public TransformComponent Transform { get => transform; private set => Set(ref transform, value); }
+
+        public IEnumerator<EntityComponent> GetEnumerator() => Components.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Add(EntityComponent component)
+        {
+            Components.Add(component);
+        }
 
         public T? Get<T>() where T : EntityComponent
         {
@@ -60,24 +87,24 @@ namespace DirectX12GameEngine.Engine
 
         public T GetOrCreate<T>() where T : EntityComponent, new()
         {
-            T? entityComponent = Get<T>();
+            T? component = Get<T>();
 
-            if (entityComponent is null)
+            if (component is null)
             {
-                entityComponent = new T();
-                Add(entityComponent);
+                component = new T();
+                Components.Add(component);
             }
 
-            return entityComponent;
+            return component;
         }
 
         public bool Remove<T>() where T : EntityComponent
         {
-            T? entityComponent = Get<T>();
+            T? component = Get<T>();
 
-            if (entityComponent != null)
+            if (component != null)
             {
-                return Remove(entityComponent);
+                return Components.Remove(component);
             }
 
             return false;
@@ -85,30 +112,69 @@ namespace DirectX12GameEngine.Engine
 
         public override string ToString() => $"Entity {Name}";
 
-        private void AddInternal(EntityComponent entityComponent)
+        private void AddInternal(Entity entity)
         {
-            if (entityComponent.Entity != null)
+            if (entity.Parent != null)
+            {
+                throw new InvalidOperationException("This entity already has parent.");
+            }
+
+            entity.parent = this;
+        }
+
+        private void RemoveInternal(Entity entity)
+        {
+            if (entity.Parent != this)
+            {
+                throw new InvalidOperationException("This entity is not a child of the expected parent.");
+            }
+
+            entity.parent = null;
+        }
+
+        private void AddInternal(EntityComponent component)
+        {
+            if (component.Entity != null)
             {
                 throw new InvalidOperationException("An entity component cannot be set on more than one entity.");
             }
 
-            if (entityComponent is TransformComponent transformComponent && Transform != transformComponent)
+            if (component is TransformComponent transformComponent && Transform != transformComponent)
             {
-                Remove(Transform);
+                Components.Remove(Transform);
                 Transform = transformComponent;
             }
 
-            entityComponent.Entity = this;
+            component.Entity = this;
         }
 
-        private void RemoveInternal(EntityComponent entityComponent)
+        private void RemoveInternal(EntityComponent component)
         {
-            if (entityComponent.Entity != this)
+            if (component.Entity != this)
             {
                 throw new InvalidOperationException("This entity component is not set on this entity.");
             }
 
-            entityComponent.Entity = null;
+            component.Entity = null;
+        }
+
+        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (Entity entity in e.NewItems)
+                    {
+                        AddInternal(entity);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (Entity entity in e.OldItems)
+                    {
+                        RemoveInternal(entity);
+                    }
+                    break;
+            }
         }
 
         private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -116,15 +182,15 @@ namespace DirectX12GameEngine.Engine
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (EntityComponent entityComponent in e.NewItems)
+                    foreach (EntityComponent component in e.NewItems)
                     {
-                        AddInternal(entityComponent);
+                        AddInternal(component);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (EntityComponent entityComponent in e.OldItems)
+                    foreach (EntityComponent component in e.OldItems)
                     {
-                        RemoveInternal(entityComponent);
+                        RemoveInternal(component);
                     }
                     break;
             }
@@ -132,7 +198,7 @@ namespace DirectX12GameEngine.Engine
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private bool Set<T>(ref T field, T value, [CallerMemberName] string name = "")

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
@@ -7,6 +8,7 @@ using Nito.AsyncEx;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Search;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -45,13 +47,12 @@ namespace DirectX12GameEngine.Editor
 
                 FolderPicker folderPicker = new FolderPicker();
                 folderPicker.FileTypeFilter.Add("*");
-                StorageFolder folder = await folderPicker.PickSingleFolderAsync();
+                StorageFolder projectFolder = await folderPicker.PickSingleFolderAsync();
 
-                game.Content.RootFolder = folder;
+                game.Content.RootFolder = projectFolder;
 
-                FileOpenPicker assemblyPicker = new FileOpenPicker();
-                assemblyPicker.FileTypeFilter.Add(".dll");
-                StorageFile assemblyFile = await assemblyPicker.PickSingleFileAsync();
+                StorageFolder assemblyFolder = await projectFolder.GetFolderAsync(@"bin\Debug\netstandard2.0");
+                StorageFile assemblyFile = await assemblyFolder.GetFileAsync(projectFolder.Name + ".dll");
                 StorageFile assemblyFileCopy = await assemblyFile.CopyAsync(ApplicationData.Current.TemporaryFolder, assemblyFile.Name, NameCollisionOption.ReplaceExisting);
 
                 Assembly.LoadFrom(assemblyFileCopy.Path);

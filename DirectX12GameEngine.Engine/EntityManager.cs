@@ -56,17 +56,17 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        internal void Add(Entity entity)
+        internal void AddRoot(Entity entity)
         {
-            if (entity.Transform.Parent != null)
+            if (entity.Parent != null)
             {
                 throw new ArgumentException("This entity should not have a parent.", nameof(entity));
             }
 
-            AddInternal(entity);
+            Add(entity);
         }
 
-        internal void AddInternal(Entity entity)
+        internal void Add(Entity entity)
         {
             if (entities.Contains(entity)) return;
 
@@ -79,59 +79,66 @@ namespace DirectX12GameEngine.Engine
 
             entities.Add(entity);
 
-            foreach (EntityComponent entityComponent in entity)
+            foreach (EntityComponent component in entity)
             {
-                Add(entityComponent, entity);
+                Add(component, entity);
             }
 
-            entity.CollectionChanged += Components_CollectionChanged;
+            foreach (Entity child in entity.Children)
+            {
+                Add(child);
+            }
+
+            entity.Children.CollectionChanged += Children_CollectionChanged;
+            entity.Components.CollectionChanged += Components_CollectionChanged;
+        }
+
+        internal void RemoveRoot(Entity entity)
+        {
+            Remove(entity);
         }
 
         internal void Remove(Entity entity)
         {
-            RemoveInternal(entity, true);
-        }
-
-        internal void RemoveInternal(Entity entity, bool removeParent)
-        {
             if (!entities.Remove(entity)) return;
 
-            entity.CollectionChanged -= Components_CollectionChanged;
+            entity.Components.CollectionChanged -= Components_CollectionChanged;
+            entity.Children.CollectionChanged -= Children_CollectionChanged;
 
-            if (removeParent)
+            foreach (EntityComponent component in entity)
             {
-                entity.Transform.Parent = null;
+                Remove(component, entity);
             }
 
-            foreach (EntityComponent entityComponent in entity)
+            foreach (Entity child in entity.Children)
             {
-                Remove(entityComponent, entity);
+                Remove(child);
             }
 
             entity.EntityManager = null;
         }
 
-        private void Add(EntityComponent entityComponent, Entity entity)
+        private void Add(EntityComponent component, Entity entity)
         {
-            CheckEntityComponentWithSystems(entityComponent, entity, false);
+            CheckEntityComponentWithSystems(component, entity, false);
         }
 
-        private void Remove(EntityComponent entityComponent, Entity entity)
+        private void Remove(EntityComponent component, Entity entity)
         {
-            CheckEntityComponentWithSystems(entityComponent, entity, true);
+            CheckEntityComponentWithSystems(component, entity, true);
         }
 
-        private void CheckEntityComponentWithSystems(EntityComponent entityComponent, Entity entity, bool forceRemove)
+        private void CheckEntityComponentWithSystems(EntityComponent component, Entity entity, bool forceRemove)
         {
             lock (Systems)
             {
-                Type componentType = entityComponent.GetType();
+                Type componentType = component.GetType();
 
                 if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))
                 {
                     foreach (EntitySystem system in systemsForComponent)
                     {
-                        system.ProcessEntityComponent(entityComponent, entity, forceRemove);
+                        system.ProcessEntityComponent(component, entity, forceRemove);
                     }
                 }
                 else
@@ -155,7 +162,7 @@ namespace DirectX12GameEngine.Engine
 
                     foreach (EntitySystem system in systemsForComponent)
                     {
-                        system.ProcessEntityComponent(entityComponent, entity, forceRemove);
+                        system.ProcessEntityComponent(component, entity, forceRemove);
                     }
                 }
             }
@@ -182,19 +189,38 @@ namespace DirectX12GameEngine.Engine
 
         private void UpdateDependentSystems(Entity entity, EntityComponent skipComponent)
         {
-            foreach (EntityComponent entityComponent in entity.Components)
+            foreach (EntityComponent component in entity.Components)
             {
-                if (entityComponent == skipComponent) continue;
+                if (component == skipComponent) continue;
 
-                Type componentType = entityComponent.GetType();
+                Type componentType = component.GetType();
 
                 if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))
                 {
                     foreach (EntitySystem system in systemsForComponent)
                     {
-                        system.ProcessEntityComponent(entityComponent, entity, false);
+                        system.ProcessEntityComponent(component, entity, false);
                     }
                 }
+            }
+        }
+
+        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (Entity entity in e.NewItems)
+                    {
+                        Add(entity);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (Entity entity in e.OldItems)
+                    {
+                        Remove(entity);
+                    }
+                    break;
             }
         }
 
@@ -205,17 +231,17 @@ namespace DirectX12GameEngine.Engine
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (EntityComponent entityComponent in e.NewItems)
+                    foreach (EntityComponent component in e.NewItems)
                     {
-                        Add(entityComponent, entity);
-                        UpdateDependentSystems(entity, entityComponent);
+                        Add(component, entity);
+                        UpdateDependentSystems(entity, component);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (EntityComponent entityComponent in e.OldItems)
+                    foreach (EntityComponent component in e.OldItems)
                     {
-                        Remove(entityComponent, entity);
-                        UpdateDependentSystems(entity, entityComponent);
+                        Remove(component, entity);
+                        UpdateDependentSystems(entity, component);
                     }
                     break;
             }

@@ -24,12 +24,12 @@ namespace DirectX12GameEngine.Engine
 
                 if (rootEntity != null)
                 {
-                    Remove(rootEntity);
+                    RemoveRoot(rootEntity);
                 }
 
                 if (value != null)
                 {
-                    Add(value);
+                    AddRoot(value);
                 }
 
                 rootEntity = value;

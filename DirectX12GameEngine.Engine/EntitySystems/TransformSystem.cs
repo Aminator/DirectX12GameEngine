@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Games;
 
@@ -26,34 +25,11 @@ namespace DirectX12GameEngine.Engine
             {
                 TransformationRoots.Add(component);
             }
-
-            foreach (TransformComponent childTransform in component)
-            {
-                if (childTransform.Entity != null)
-                {
-                    InternalAddEntity(childTransform.Entity);
-                }
-            }
-
-            component.Children.CollectionChanged += Children_CollectionChanged;
         }
 
         protected override void OnEntityComponentRemoved(TransformComponent component)
         {
-            component.Children.CollectionChanged -= Children_CollectionChanged;
-
-            foreach (TransformComponent childTransform in component)
-            {
-                if (childTransform.Entity != null)
-                {
-                    InternalRemoveEntity(childTransform.Entity, false);
-                }
-            }
-
-            if (component.Parent is null)
-            {
-                TransformationRoots.Remove(component);
-            }
+            TransformationRoots.Remove(component);
         }
 
         private void UpdateTransformations(IEnumerable<TransformComponent> transformationRoots)
@@ -66,34 +42,9 @@ namespace DirectX12GameEngine.Engine
             transformComponent.UpdateLocalMatrix();
             transformComponent.UpdateWorldMatrixInternal(false);
 
-            foreach (TransformComponent child in transformComponent.Children)
+            foreach (TransformComponent child in transformComponent)
             {
                 UpdateTransformationsRecursive(child);
-            }
-        }
-
-        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (TransformComponent transformComponent in e.NewItems)
-                    {
-                        if (transformComponent.Entity != null)
-                        {
-                            InternalAddEntity(transformComponent.Entity);
-                        }
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (TransformComponent transformComponent in e.OldItems)
-                    {
-                        if (transformComponent.Entity != null)
-                        {
-                            InternalRemoveEntity(transformComponent.Entity, false);
-                        }
-                    }
-                    break;
             }
         }
     }

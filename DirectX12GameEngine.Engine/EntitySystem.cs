@@ -35,17 +35,7 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        protected internal abstract void ProcessEntityComponent(EntityComponent entityComponent, Entity entity, bool forceRemove);
-
-        protected internal void InternalAddEntity(Entity entity)
-        {
-            EntityManager?.AddInternal(entity);
-        }
-
-        protected internal void InternalRemoveEntity(Entity entity, bool removeParent)
-        {
-            EntityManager?.RemoveInternal(entity, removeParent);
-        }
+        protected internal abstract void ProcessEntityComponent(EntityComponent component, Entity entity, bool forceRemove);
 
         internal bool Accept(Type type)
         {
@@ -62,22 +52,22 @@ namespace DirectX12GameEngine.Engine
 
         protected HashSet<TComponent> Components { get; } = new HashSet<TComponent>();
 
-        protected internal override void ProcessEntityComponent(EntityComponent entityComponent, Entity entity, bool forceRemove)
+        protected internal override void ProcessEntityComponent(EntityComponent component, Entity entity, bool forceRemove)
         {
-            if (!(entityComponent is TComponent component)) throw new ArgumentException("The entity component must be assignable to TComponent", nameof(entityComponent));
+            if (!(component is TComponent entityComponent)) throw new ArgumentException("The entity component must be assignable to TComponent", nameof(component));
 
             bool entityMatch = !forceRemove && EntityMatch(entity);
-            bool entityAdded = Components.Contains(component);
+            bool entityAdded = Components.Contains(entityComponent);
 
             if (entityMatch && !entityAdded)
             {
-                OnEntityComponentAdded(component);
-                Components.Add(component);
+                OnEntityComponentAdded(entityComponent);
+                Components.Add(entityComponent);
             }
             else if (!entityMatch && entityAdded)
             {
-                OnEntityComponentRemoved(component);
-                Components.Remove(component);
+                OnEntityComponentRemoved(entityComponent);
+                Components.Remove(entityComponent);
             }
         }
 
