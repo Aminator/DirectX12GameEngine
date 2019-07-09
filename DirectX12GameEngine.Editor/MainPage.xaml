@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:engine="using:DirectX12GameEngine.Engine"
     xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     xmlns:local="using:DirectX12GameEngine.Editor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -52,19 +51,21 @@
                     </MenuFlyoutItem.KeyboardAccelerators>
                 </MenuFlyoutItem>
                 <MenuFlyoutItem
-                    Click="{x:Bind OpenFolder}"
+                    Click="MenuFlyoutItem_Click_1"
                     Icon="Folder"
                     Text="Open">
                     <MenuFlyoutItem.KeyboardAccelerators>
                         <KeyboardAccelerator Key="O" Modifiers="Control" />
                     </MenuFlyoutItem.KeyboardAccelerators>
                 </MenuFlyoutItem>
-                <MenuFlyoutSubItem Icon="Folder" Text="Open Recent">
-                    <MenuFlyoutItem Text="Placeholder 1" />
-                    <MenuFlyoutItem Text="Placeholder 2" />
-                    <MenuFlyoutItem Text="Placeholder 3" />
-                </MenuFlyoutSubItem>
-                <MenuFlyoutItem Icon="Save" Text="Save">
+                <MenuFlyoutSubItem
+                    x:Name="openRecentMenuFlyoutItem"
+                    Icon="Folder"
+                    Text="Open Recent" />
+                <MenuFlyoutItem
+                    Click="MenuFlyoutItem_Click"
+                    Icon="Save"
+                    Text="Save">
                     <MenuFlyoutItem.KeyboardAccelerators>
                         <KeyboardAccelerator Key="S" Modifiers="Control" />
                     </MenuFlyoutItem.KeyboardAccelerators>
@@ -124,21 +125,18 @@
             </MenuBarItem>
         </MenuBar>
 
-        <controls:TabView
-            Grid.Row="2"
-            AllowDrop="True"
-            CanCloseTabs="True"
-            CanDragItems="True"
-            CanReorderItems="True">
+        <local:ExtendedTabView Grid.Row="2">
             <controls:TabViewItem Header="Scene">
-                <winui:TreeView x:Name="treeView" ItemsSource="{x:Bind rootEntity.Children}">
+                <winui:TreeView
+                    x:Name="treeView"
+                    ItemInvoked="TreeView_ItemInvoked"
+                    ItemsSource="{x:Bind RootEntity.Children}">
                     <winui:TreeView.ItemTemplate>
-                        <DataTemplate x:DataType="engine:Entity">
+                        <DataTemplate x:DataType="local:EntityViewModel">
                             <winui:TreeViewItem AutomationProperties.Name="{x:Bind Name, Mode=OneWay}" ItemsSource="{x:Bind Children, Mode=OneWay}">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
                                     <TextBlock Margin="0,0,10,0" />
-                                    <TextBlock Text="{x:Bind Transform.Position, Mode=OneWay}" />
                                 </StackPanel>
                             </winui:TreeViewItem>
                         </DataTemplate>
@@ -148,26 +146,24 @@
             <controls:TabViewItem Header="AnotherScene">
                 <TextBlock Text="Test" />
             </controls:TabViewItem>
-        </controls:TabView>
+        </local:ExtendedTabView>
 
-        <controls:TabView
-            Grid.Row="2"
-            Grid.Column="1"
-            AllowDrop="True"
-            CanCloseTabs="True"
-            CanDragItems="True"
-            CanReorderItems="True">
-            <controls:TabViewItem Header="Scene">
-                <SwapChainPanel x:Name="swapChainPanel" />
+        <local:ExtendedTabView Grid.Row="2" Grid.Column="1">
+            <controls:TabViewItem Header="Scene 1">
+                <SwapChainPanel
+                    x:Name="swapChainPanel"
+                    Grid.Row="2"
+                    Grid.Column="1" />
             </controls:TabViewItem>
-        </controls:TabView>
+        </local:ExtendedTabView>
 
-        <controls:BladeView
-            Grid.Row="2"
-            Grid.Column="2"
-            BladeMode="Fullscreen">
-            <controls:BladeItem />
-        </controls:BladeView>
+        <local:ExtendedTabView Grid.Row="2" Grid.Column="2">
+            <controls:TabViewItem x:Name="componentsTab" Header="Components">
+                <Grid>
+                    <ListView x:Name="componentsListView" />
+                </Grid>
+            </controls:TabViewItem>
+        </local:ExtendedTabView>
 
         <controls:GridSplitter
             Grid.Row="2"

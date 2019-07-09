@@ -88,10 +88,10 @@ namespace DirectX12GameEngine.Core.Assets
 
         private void ReleaseAsset(Reference reference)
         {
-            if (reference.Object is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            //if (reference.Object is IDisposable disposable)
+            //{
+            //    disposable.Dispose();
+            //}
 
             Reference? previous = reference.Previous;
             Reference? next = reference.Next;

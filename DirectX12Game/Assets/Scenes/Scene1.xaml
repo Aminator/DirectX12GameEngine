@@ -1,108 +1,104 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Entity xmlns="http://schemas.directx12gameengine.com/xaml" xmlns:x="http://schemas.directx12gameengine.com/xaml/extensions" xmlns:local="using:DirectX12Game">
-    <Entity.Children>
-        <Entity Name="T-Rex">
-            <Entity.Components>
-                <TransformComponent Scale="0.2,0.2,0.2" Position="0,120,0" />
-                <ModelComponent>
-                    <ModelComponent.Model>
-                        <x:AssetReference Path="Assets\Models\SwimmingShark_Model" />
-                    </ModelComponent.Model>
-                </ModelComponent>
-                <local:RotatorScript />
-            </Entity.Components>
+<Entity xmlns:x="http://schemas.directx12gameengine.com/xaml/extensions" Id="34080d11-423c-4679-8128-1f46a5c4bbdf" Name="Entity" xmlns="http://schemas.directx12gameengine.com/xaml">
+  <Entity.Children>
+    <Entity Id="1d2d8890-5b64-400e-864a-550e574c409b" Name="T-Rex">
+      <Entity.Components>
+        <TransformComponent Position="0,120,0" Rotation="0,0.8726599,0,0.4883272" Scale="0.2,0.2,0.2" Id="4423152d-3c0d-45de-90b6-4fde4b3c181f" />
+        <ModelComponent Model="{x:AssetReference Assets\Models\SwimmingShark_Model}" Id="30df8132-adb6-4853-98b7-e6d919d33ae9" />
+        <RotatorScript Id="1e5bc973-14d7-43de-8266-5ff90ca23a0e" xmlns="clr-namespace:DirectX12Game;assembly=DirectX12Game" />
+      </Entity.Components>
+    </Entity>
+    <Entity Id="8be89a8a-1b41-4351-b085-ec9a998cb8dd" Name="Parent1">
+      <Entity.Children>
+        <Entity Id="714b7d76-cc03-41c7-95c2-58756e1d9b4f" Name="Child1">
+          <Entity.Components>
+            <TransformComponent Position="0,-100,0" Rotation="0,0,0,1" Scale="25,25,25" Id="51cda651-66ff-46e4-86a7-6059bedf8e87" />
+            <ModelComponent Model="{x:AssetReference Assets\Models\Icon_Failure_Model}" Id="3feacbd4-791a-477a-b174-823cdb9e2c39" />
+          </Entity.Components>
         </Entity>
-
-        <Entity Name="Parent1">
-            <Entity.Components>
-                <TransformComponent Scale="2,2,2" Position="500,0,0" />
-                <ModelComponent Model="{x:AssetReference Assets\Models\Cliffhouse_Model}" />
-                <local:RotatorScript />
-            </Entity.Components>
-
-            <Entity.Children>
-                <Entity Name="Child1">
-                    <Entity.Components>
-                        <TransformComponent Position="0,-100,0" Scale="25,25,25" />
-                        <ModelComponent Model="{x:AssetReference Assets\Models\Icon_Failure_Model}" />
-                    </Entity.Components>
-                </Entity>
-
-                <Entity Name="Child2">
-                    <Entity.Components>
-                        <TransformComponent Position="0,100,0" Scale="15,15,15" RotationEuler="0,1.57,0" />
-                        <ModelComponent Model="{x:AssetReference Assets\Models\Icon_Failure_Model}" />
-                    </Entity.Components>
-                </Entity>
-            </Entity.Children>
+        <Entity Id="c31a1e93-0a42-45e9-9ab7-3f7000cf64ae" Name="Child2">
+          <Entity.Components>
+            <TransformComponent Position="0,100,0" Rotation="0,0.7068252,0,0.7073882" Scale="15,15,15" Id="2c667c45-3afe-4c1c-9dfb-2ade083ef266" />
+            <ModelComponent Model="{x:AssetReference Assets\Models\Icon_Failure_Model}" Id="f6808e3f-d516-41d3-84a5-2dd65420df69" />
+          </Entity.Components>
         </Entity>
-
-        <Entity Name="T-Rex">
-            <Entity.Components>
-                <TransformComponent Scale="2,2,2" Position="700,0,0" />
-                <ModelComponent Model="{x:AssetReference Assets\Models\Cliffhouse_Model}" />
-                <local:RotatorScript />
-            </Entity.Components>
-        </Entity>
-
-        <Entity Name="Icon_Failure">
-            <Entity.Components>
-                <TransformComponent Position="-800,0,0" Scale="50,50,50" />
-                <ModelComponent Model="{x:AssetReference Assets\Models\Icon_Failure_Model}" />
-                <local:RotatorScript />
-            </Entity.Components>
-        </Entity>
-
-        <Entity Name="CameraController">
-            <Entity.Components>
-                <TransformComponent />
-                <local:CameraController Camera="{x:Reference 9eb4f8c5-4909-4ce6-a8bb-9569bb5fd3d7}" />
-            </Entity.Components>
-        </Entity>
-
-        <Entity Name="MainCamera">
-            <Entity.Components>
-                <TransformComponent Position="0,150,1500" />
-                <CameraComponent Id="9eb4f8c5-4909-4ce6-a8bb-9569bb5fd3d7" />
-            </Entity.Components>
-        </Entity>
-
-        <Entity Name="MyLight">
-            <Entity.Components>
-                <TransformComponent Position="0,300,1500" />
-                <LightComponent Intensity="1">
-                    <LightComponent.Light>
-                        <DirectionalLight Color="1,1,1" />
-                    </LightComponent.Light>
-                </LightComponent>
-            </Entity.Components>
-        </Entity>
-
-        <Entity Name="MyLight2">
-            <Entity.Components>
-                <TransformComponent Position="0,300,1500" />
-                <LightComponent Intensity="1">
-                    <LightComponent.Light>
-                        <DirectionalLight Color="1,1,1" />
-                    </LightComponent.Light>
-                </LightComponent>
-                <local:RotatorScript />
-            </Entity.Components>
-        </Entity>
-
-        <Entity Name="Cliffhouse">
-            <Entity.Components>
-                <TransformComponent Position="0,120,500" />
-                <ModelComponent Model="{x:AssetReference Assets\Models\Cliffhouse_Model}" />
-                <local:RotatorScript />
-            </Entity.Components>
-        </Entity>
-
-        <Entity Name="TestEntity">
-            <Entity.Components>
-                <TransformComponent />
-                <local:TestScript />
-            </Entity.Components>
-        </Entity>
-    </Entity.Children>
+      </Entity.Children>
+      <Entity.Components>
+        <TransformComponent Position="500,0,0" Rotation="0,0.8726599,0,0.4883272" Scale="2,2,2" Id="b9004d88-be3e-4a69-82f3-b4bcab265348" />
+        <ModelComponent Model="{x:AssetReference Assets\Models\Cliffhouse_Model}" Id="ea4117e5-f0be-4b58-979b-67b27f8c1d9f" />
+        <RotatorScript Id="24d66eeb-02f0-4c73-956d-0569d78c2236" xmlns="clr-namespace:DirectX12Game;assembly=DirectX12Game" />
+      </Entity.Components>
+    </Entity>
+    <Entity Id="7a81ae9e-02e4-4246-b202-908f326e1e84" Name="T-Rex">
+      <Entity.Components>
+        <TransformComponent Position="700,0,0" Rotation="0,0.8726599,0,0.4883272" Scale="2,2,2" Id="6d4e8e0e-83c1-427d-adf2-547ac8eb7fa0" />
+        <ModelComponent Model="{x:AssetReference Assets\Models\Cliffhouse_Model}" Id="61a018bd-a251-40c8-97d9-183e13b577de" />
+        <RotatorScript Id="04b54d60-6bd8-4f4c-b73f-70a00e2940ec" xmlns="clr-namespace:DirectX12Game;assembly=DirectX12Game" />
+      </Entity.Components>
+    </Entity>
+    <Entity Id="b8550fe2-7f49-4f14-bac0-8fe9bec359d1" Name="Icon_Failure">
+      <Entity.Components>
+        <TransformComponent Position="-800,0,0" Rotation="0,0.8726599,0,0.4883272" Scale="50,50,50" Id="514c916c-5e73-4211-a520-fcfea2608626" />
+        <ModelComponent Model="{x:AssetReference Assets\Models\Icon_Failure_Model}" Id="7ed34b3b-13a4-4895-82df-acb3fae8474e" />
+        <RotatorScript Id="8abaca8d-b630-4fc6-8aee-963e90032053" xmlns="clr-namespace:DirectX12Game;assembly=DirectX12Game" />
+      </Entity.Components>
+    </Entity>
+    <Entity Id="b57814ae-3b5e-4b7d-9714-0345adf7ca84" Name="CameraController">
+      <Entity.Components>
+        <TransformComponent Position="0,0,0" Rotation="0,0,0,1" Scale="1,1,1" Id="4dbb8efe-c0ee-4f06-a6bb-21b8b650e379" />
+        <CameraController Camera="{x:Reference 9eb4f8c5-4909-4ce6-a8bb-9569bb5fd3d7}" Id="31d44c7e-2bd5-4217-8fbc-fcebd131786a" xmlns="clr-namespace:DirectX12Game;assembly=DirectX12Game" />
+      </Entity.Components>
+    </Entity>
+    <Entity Id="68bb76e2-2477-4028-8489-740a064fc553" Name="MainCamera">
+      <Entity.Components>
+        <TransformComponent Position="0,150,1500" Rotation="0,0,0,1" Scale="1,1,1" Id="7736dd9e-ccb3-4c19-8950-94d69e2f76e2" />
+        <CameraComponent AspectRatio="1.77777779" FieldOfView="60" FarPlaneDistance="100000" NearPlaneDistance="0.1" UseCustomAspectRatio="False" Id="9eb4f8c5-4909-4ce6-a8bb-9569bb5fd3d7" />
+      </Entity.Components>
+    </Entity>
+    <Entity Id="810cfb49-0c1e-405a-a565-2564f191945b" Name="MyLight">
+      <Entity.Components>
+        <TransformComponent Position="0,300,1500" Rotation="0,0,0,1" Scale="1,1,1" Id="d673cd4c-6408-4169-83e2-c96e23ad259e" />
+        <LightComponent Intensity="1" Id="319e9595-9a2e-4161-9672-2615674fc164">
+          <LightComponent.Light>
+            <DirectionalLight Color="1,1,1">
+              <DirectionalLight.Shadow>
+                <DirectionalLightShadowMap Enabled="False" />
+              </DirectionalLight.Shadow>
+            </DirectionalLight>
+          </LightComponent.Light>
+        </LightComponent>
+      </Entity.Components>
+    </Entity>
+    <Entity Id="dc482182-d5a8-4370-945e-47a9723b11ee" Name="MyLight2">
+      <Entity.Components>
+        <TransformComponent Position="0,300,1500" Rotation="0,0.8726599,0,0.4883272" Scale="1,1,1" Id="42d8ecaf-d1b2-491c-96da-32fa5c2529ba" />
+        <LightComponent Intensity="1" Id="0220d164-20e2-45d8-93a5-cc4062b99e41">
+          <LightComponent.Light>
+            <DirectionalLight Color="1,1,1">
+              <DirectionalLight.Shadow>
+                <DirectionalLightShadowMap Enabled="False" />
+              </DirectionalLight.Shadow>
+            </DirectionalLight>
+          </LightComponent.Light>
+        </LightComponent>
+        <RotatorScript Id="dee7e9d3-8e3b-44ad-921c-d1e1edeff757" xmlns="clr-namespace:DirectX12Game;assembly=DirectX12Game" />
+      </Entity.Components>
+    </Entity>
+    <Entity Id="17f633ba-6e98-4cf0-8423-45ec016bf801" Name="Cliffhouse">
+      <Entity.Components>
+        <TransformComponent Position="0,120,500" Rotation="0,0.8726599,0,0.4883272" Scale="1,1,1" Id="a71f5a6f-d818-48e7-a67a-66557b033719" />
+        <ModelComponent Model="{x:AssetReference Assets\Models\Cliffhouse_Model}" Id="d97489a7-a9f5-4278-af34-3a79f9a94063" />
+        <RotatorScript Id="b4131bc3-4986-4f75-aff9-2acafa5a0ae6" xmlns="clr-namespace:DirectX12Game;assembly=DirectX12Game" />
+      </Entity.Components>
+    </Entity>
+    <Entity Id="f0a6e499-942d-408d-92db-a7351ac1a496" Name="TestEntity">
+      <Entity.Components>
+        <TransformComponent Position="0,0,0" Rotation="0,0,0,1" Scale="1,1,1" Id="fddaa5c6-2e96-4937-ac98-3baa55c2975f" />
+        <TestScript Id="410a8cea-487a-49dd-83ae-7c45251a4275" xmlns="clr-namespace:DirectX12Game;assembly=DirectX12Game" />
+      </Entity.Components>
+    </Entity>
+  </Entity.Children>
+  <Entity.Components>
+    <TransformComponent Position="0,0,0" Rotation="0,0,0,1" Scale="1,1,1" Id="2cbdafd1-b16c-46ea-98b6-4e9a164f7b18" />
+  </Entity.Components>
 </Entity>

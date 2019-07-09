@@ -8,20 +8,20 @@ namespace DirectX12GameEngine.Engine
     {
         public SceneSystem(IServiceProvider services) : base(services)
         {
+            SceneInstance = new SceneInstance(services);
         }
 
         public CameraComponent? CurrentCamera { get; set; }
 
         public string? InitialScenePath { get; set; }
 
-        public SceneInstance? SceneInstance { get; set; }
+        public SceneInstance SceneInstance { get; set; }
 
         public override async Task LoadContentAsync()
         {
             if (InitialScenePath != null)
             {
-                Entity rootEntity = await Content.LoadAsync<Entity>(InitialScenePath);
-                SceneInstance = new SceneInstance(Services, rootEntity);
+                SceneInstance.RootEntity = await Content.LoadAsync<Entity>(InitialScenePath);
             }
         }
 

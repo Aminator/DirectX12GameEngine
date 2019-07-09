@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DirectX12GameEngine.Core.Assets
+namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
 {
-    [DataContract(Namespace = "http://schemas.directx12gameengine.com/xaml/extensions")]
     public class ReferenceExtension : MarkupExtension
     {
         public ReferenceExtension()
@@ -17,7 +15,6 @@ namespace DirectX12GameEngine.Core.Assets
             Id = id;
         }
 
-        [DataMember]
         public string Id { get; set; }
 
         public override async Task<object> ProvideValueAsync(IServiceProvider services)

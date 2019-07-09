@@ -11,9 +11,11 @@ using GltfLoader;
 using GltfLoader.Schema;
 using SharpDX.Direct3D12;
 
+using Mesh = DirectX12GameEngine.Rendering.Mesh;
+using MeshDraw = DirectX12GameEngine.Rendering.MeshDraw;
 using Texture = DirectX12GameEngine.Graphics.Texture;
 
-namespace DirectX12GameEngine.Rendering
+namespace DirectX12GameEngine.Assets
 {
     internal class GltfModelLoader
     {

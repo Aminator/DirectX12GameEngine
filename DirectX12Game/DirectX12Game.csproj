@@ -20,4 +20,13 @@
     <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Assets\Scenes\Scene1.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Assets\Scenes\Scene1Saved.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
 {
-    [DataContract(Namespace = "http://schemas.directx12gameengine.com/xaml/extensions")]
     public class TypeExtension : MarkupExtension
     {
         public TypeExtension()
@@ -18,7 +16,6 @@ namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
             TypeName = typeName;
         }
 
-        [DataMember]
         public string TypeName { get; set; }
 
         public override Task<object> ProvideValueAsync(IServiceProvider services)
@@ -26,7 +23,7 @@ namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
             XElement element = services.GetRequiredService<XElement>();
 
             ContentManager.GetNamespaceAndTypeName(TypeName, element, out string namespaceName, out string typeName);
-            Type type = ContentManager.LoadedTypes[namespaceName][typeName];
+            Type type = ContentManager.GetTypeFromXmlName(namespaceName, typeName);
 
             return Task.FromResult<object>(type);
         }

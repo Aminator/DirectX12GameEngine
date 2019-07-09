@@ -38,8 +38,6 @@ namespace DirectX12GameEngine.Editor
 
             ShaderContent.RootFolder = await temporaryFolder.CreateFolderAsync("ShaderCache", CreationCollisionOption.OpenIfExists);
 
-            SceneSystem.SceneInstance = new SceneInstance(Services);
-
             await base.LoadContentAsync();
         }
     }

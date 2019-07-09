@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -116,7 +115,7 @@ namespace DirectX12GameEngine.Core.Assets
             object result;
             Asset? asset = null;
 
-            Type loadedType = LoadedTypes[root.Name.NamespaceName][root.Name.LocalName];
+            Type loadedType = GetTypeFromXmlName(root.Name.NamespaceName, root.Name.LocalName);
 
             if (!type.IsAssignableFrom(loadedType))
             {
@@ -181,10 +180,7 @@ namespace DirectX12GameEngine.Core.Assets
 
         private async Task<object> DeserializeAsync(XElement element, DeserializeOperation operation, object? obj = null)
         {
-            if (!LoadedTypes[element.Name.NamespaceName].TryGetValue(element.Name.LocalName, out Type loadedType))
-            {
-                loadedType = LoadedTypes[element.Name.NamespaceName][element.Name.LocalName + "Extension"];
-            }
+            Type loadedType = GetTypeFromXmlName(element.Name.NamespaceName, element.Name.LocalName);
 
             object parsedElement = obj ?? ParseElement(element, loadedType);
 
@@ -343,10 +339,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             GetNamespaceAndTypeName(markupExtensionClass, element, out string markupExtensionNamespace, out string markupExtensionName);
 
-            if (!LoadedTypes[markupExtensionNamespace].TryGetValue(markupExtensionName, out Type markupExtensionType))
-            {
-                markupExtensionType = LoadedTypes[markupExtensionNamespace][markupExtensionName + "Extension"];
-            }
+            Type markupExtensionType = GetTypeFromXmlName(markupExtensionNamespace, markupExtensionName);
 
             MarkupExtension markupExtension;
 
@@ -397,24 +390,6 @@ namespace DirectX12GameEngine.Core.Assets
                 .BuildServiceProvider();
 
             return await markupExtension.ProvideValueAsync(services);
-        }
-
-        public static void GetNamespaceAndTypeName(string xmlName, XElement element, out string namespaceName, out string typeName)
-        {
-            string[] namespaceAndType = xmlName.Split(new[] { ':' }, 2);
-
-            if (namespaceAndType.Length == 2)
-            {
-                string namespacePrefix = namespaceAndType[0];
-                namespaceName = element.GetNamespaceOfPrefix(namespacePrefix).NamespaceName;
-
-                typeName = namespaceAndType[1];
-            }
-            else
-            {
-                namespaceName = element.GetDefaultNamespace().NamespaceName;
-                typeName = xmlName;
-            }
         }
     }
 }

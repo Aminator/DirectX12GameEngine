@@ -3,7 +3,6 @@ using System.Collections;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -15,7 +14,7 @@ namespace DirectX12GameEngine.Core.Assets
     {
         internal async Task SerializeAsync(string path, object obj, Type? storageType = null)
         {
-            XElement root = Serialize(obj, storageType);
+            XElement root = Serialize(obj, storageType, true);
 
             using (Stream stream = await RootFolder.OpenStreamForWriteAsync(path + FileExtension, Windows.Storage.CreationCollisionOption.ReplaceExisting))
             {
@@ -26,36 +25,34 @@ namespace DirectX12GameEngine.Core.Assets
             SetAsset(reference);
         }
 
-        public XElement Serialize(object obj, Type? storageType = null)
+        public XElement Serialize(object obj, Type? storageType = null, bool isRoot = false)
         {
             storageType ??= obj.GetType();
 
-            GetDataContractName(storageType, out string dataContractNamespace, out string dataContractName);
+            ContractNamespaceAttribute contractNamespaceAttribute = storageType.Assembly.GetCustomAttributes<ContractNamespaceAttribute>().FirstOrDefault(c => c.ClrNamespace == storageType.Namespace);
+            string assemblyName = storageType.Assembly.GetName().Name;
 
-            XName typeExtension = (XNamespace)"http://schemas.directx12gameengine.com/xaml/extensions" + "Type";
-            XName assetReferenceExtension = (XNamespace)"http://schemas.directx12gameengine.com/xaml/extensions" + "AssetReference";
+            string contractNamespace = contractNamespaceAttribute?.ContractNamespace ?? $"clr-namespace:{storageType.Namespace};assembly={assemblyName}";
 
-            if (loadedAssetReferences.TryGetValue(obj, out Reference reference))
+            XNamespace x = "http://schemas.directx12gameengine.com/xaml/extensions";
+
+            if (!isRoot && loadedAssetReferences.TryGetValue(obj, out Reference reference))
             {
-                return new XElement(assetReferenceExtension,
-                    new XAttribute("Path", reference.Path),
-                    new XAttribute("Type", $"{{{typeExtension} {storageType.Name}}}"));
+                return new XElement(x + "AssetReference",
+                    new XAttribute(x + "Path", reference.Path),
+                    new XAttribute(x + "Type", $"{{x:Type {storageType.Name}}}"));
             }
 
-            XName elementName = (XNamespace)dataContractNamespace + dataContractName;
+            XName elementName = (XNamespace)contractNamespace + storageType.Name;
             XElement root = new XElement(elementName);
 
-            bool isDataContractPresent = storageType.IsDefined(typeof(DataContractAttribute));
-
-            var properties = !isDataContractPresent
-                ? storageType.GetProperties(BindingFlags.Public | BindingFlags.Instance).AsEnumerable()
-                : storageType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Where(p => p.IsDefined(typeof(DataMemberAttribute))).OrderBy(p => p.GetCustomAttribute<DataMemberAttribute>().Order);
-
-            foreach (PropertyInfo propertyInfo in properties)
+            if (isRoot)
             {
-                if (propertyInfo.IsDefined(typeof(IgnoreDataMemberAttribute)) || propertyInfo.IsSpecialName || propertyInfo.GetIndexParameters().Length > 0) continue;
+                root.Add(new XAttribute(XNamespace.Xmlns + "x", x.NamespaceName));
+            }
 
+            foreach (PropertyInfo propertyInfo in GetDataContractProperties(storageType))
+            {
                 DataMemberAttribute? dataMember = propertyInfo.GetCustomAttribute<DataMemberAttribute>();
                 XName propertyName = dataMember?.Name ?? propertyInfo.Name;
 
@@ -63,16 +60,20 @@ namespace DirectX12GameEngine.Core.Assets
 
                 if (propertyValue is null) continue;
 
-                Type propertyType = propertyValue.GetType();
-
-                TypeConverter typeConverter = TypeDescriptor.GetConverter(propertyType);
+                TypeConverter typeConverter = TypeDescriptor.GetConverter(propertyValue.GetType());
 
                 if (loadedAssetReferences.TryGetValue(propertyValue, out Reference propertyReference))
                 {
-                    XAttribute propertyAttribute = new XAttribute(propertyName, $"{{{assetReferenceExtension} {propertyReference.Path}}}");
+                    XAttribute propertyAttribute = new XAttribute(propertyName, $"{{x:AssetReference {propertyReference.Path}}}");
                     root.Add(propertyAttribute);
                 }
-                else if (typeConverter.CanConvertTo(typeof(string)))
+                // TODO: Handle references better.
+                else if (!(propertyValue is IList) && propertyValue is IIdentifiable identifiable && propertyInfo.CanWrite)
+                {
+                    XAttribute propertyAttribute = new XAttribute(propertyName, $"{{x:Reference {identifiable.Id}}}");
+                    root.Add(propertyAttribute);
+                }
+                else if (!(propertyValue is IList) && typeConverter.GetType() != typeof(TypeConverter) && typeConverter.CanConvertTo(typeof(string)))
                 {
                     if (propertyInfo.CanWrite)
                     {

@@ -19,14 +19,28 @@ namespace DirectX12GameEngine.Core.Assets
 
         static ContentManager()
         {
-            var types = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).SelectMany(a => a.ExportedTypes.Where(t => !(t.IsAbstract && t.IsSealed)));
+            AddTypeConverters(typeof(Vector3Converter), typeof(Vector4Converter), typeof(QuaternionConverter), typeof(Matrix4x4Converter));
 
-            foreach (Type type in types)
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                AddType(type);
+                AddAssembly(assembly);
             }
 
-            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
+            AppDomain.CurrentDomain.AssemblyLoad += (s, e) => AddAssembly(e.LoadedAssembly);
+        }
+
+        private static void AddAssembly(Assembly assembly)
+        {
+            foreach (ContractNamespaceAttribute attribute in assembly.GetCustomAttributes<ContractNamespaceAttribute>())
+            {
+                if (!XmlnsDefinitions.TryGetValue(attribute.ContractNamespace, out var namespaces))
+                {
+                    namespaces = new List<(string, Assembly)>();
+                    XmlnsDefinitions.Add(attribute.ContractNamespace, namespaces);
+                }
+
+                namespaces.Add((attribute.ClrNamespace, assembly));
+            }
         }
 
         public ContentManager(IServiceProvider services)
@@ -40,6 +54,8 @@ namespace DirectX12GameEngine.Core.Assets
             RootFolder = rootFolder;
         }
 
+        public static Dictionary<string, List<(string ClrNamespace, Assembly Assembly)>> XmlnsDefinitions { get; } = new Dictionary<string, List<(string, Assembly)>>();
+
         public IServiceProvider Services { get; }
 
         public string FileExtension { get; set; } = ".xaml";
@@ -47,8 +63,6 @@ namespace DirectX12GameEngine.Core.Assets
         public StorageFolder RootFolder { get; set; }
 
         public string RootPath => RootFolder.Path;
-
-        internal static Dictionary<string, Dictionary<string, Type>> LoadedTypes { get; } = new Dictionary<string, Dictionary<string, Type>>();
 
         public async Task<bool> ExistsAsync(string path)
         {
@@ -141,49 +155,92 @@ namespace DirectX12GameEngine.Core.Assets
             }
         }
 
-        private static void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs args)
+        public static void AddTypeConverters(params Type[] typeConverters)
         {
-            if (!args.LoadedAssembly.IsDynamic)
+            foreach (Type typeConverter in typeConverters)
             {
-                var types = args.LoadedAssembly.ExportedTypes.Where(t => !(t.IsAbstract && t.IsSealed));
-
-                foreach (Type type in types)
-                {
-                    AddType(type);
-                }
+                GlobalTypeConverterAttribute converterAttribute = typeConverter.GetCustomAttribute<GlobalTypeConverterAttribute>();
+                TypeDescriptor.AddAttributes(converterAttribute.Type, new TypeConverterAttribute(typeConverter));
             }
         }
 
-        private static void AddType(Type type)
+        public static IEnumerable<PropertyInfo> GetDataContractProperties(Type type)
         {
-            GetDataContractName(type, out string dataContractNamespace, out string dataContractName);
+            bool isDataContractPresent = type.IsDefined(typeof(DataContractAttribute));
 
-            if (!LoadedTypes.TryGetValue(dataContractNamespace, out Dictionary<string, Type> types))
+            var properties = !isDataContractPresent
+                ? type.GetProperties(BindingFlags.Public | BindingFlags.Instance).AsEnumerable()
+                : type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Where(p => p.IsDefined(typeof(DataMemberAttribute))).OrderBy(p => p.GetCustomAttribute<DataMemberAttribute>().Order);
+
+            return properties.Where(p => !p.IsDefined(typeof(IgnoreDataMemberAttribute)) && !p.IsSpecialName && !(p.GetIndexParameters().Length > 0));
+        }
+
+        public static void GetNamespaceAndTypeName(string xmlName, XElement element, out string namespaceName, out string typeName)
+        {
+            string[] namespaceAndType = xmlName.Split(new[] { ':' }, 2);
+
+            if (namespaceAndType.Length == 2)
             {
-                types = new Dictionary<string, Type>();
-                LoadedTypes.Add(dataContractNamespace, types);
+                string namespacePrefix = namespaceAndType[0];
+                namespaceName = element.GetNamespaceOfPrefix(namespacePrefix).NamespaceName;
+
+                typeName = namespaceAndType[1];
             }
-
-            if (!types.ContainsKey(dataContractName))
+            else
             {
-                types.Add(dataContractName, type);
-
-                GlobalTypeConverterAttribute? converterAttribute = type.GetCustomAttribute<GlobalTypeConverterAttribute>();
-
-                if (converterAttribute != null)
-                {
-                    TypeDescriptor.AddAttributes(converterAttribute.Type, new TypeConverterAttribute(type));
-                }
+                namespaceName = element.GetDefaultNamespace().NamespaceName;
+                typeName = xmlName;
             }
         }
 
-        private static void GetDataContractName(Type type, out string dataContractNamespace, out string dataContractName)
+        public static Type GetTypeFromXmlName(string xmlNamespace, string typeName)
         {
-            DataContractAttribute? dataContract = type.GetCustomAttribute<DataContractAttribute>();
-            ContractNamespaceAttribute? contractNamespace = type.Assembly.GetCustomAttribute<ContractNamespaceAttribute>();
+            const string clrNamespaceString = "clr-namespace:";
+            const string assemblyString = "assembly=";
+            const string extensionString = "Extension";
 
-            dataContractNamespace = dataContract?.Namespace ?? contractNamespace?.ContractNamespace ?? "using:" + type.Namespace;
-            dataContractName = dataContract?.Name ?? type.Name;
+            int indexOfSemicolon = xmlNamespace.IndexOf(';');
+
+            if (xmlNamespace.StartsWith(clrNamespaceString))
+            {
+                string namespaceName = indexOfSemicolon >= 0
+                    ? xmlNamespace.Substring(clrNamespaceString.Length, indexOfSemicolon - clrNamespaceString.Length)
+                    : xmlNamespace.Substring(clrNamespaceString.Length);
+
+                Assembly assembly;
+
+                if (indexOfSemicolon >= 0)
+                {
+                    string assemblyName = xmlNamespace.Substring(indexOfSemicolon + assemblyString.Length + 1);
+                    assembly = Assembly.Load(assemblyName);
+                }
+                else
+                {
+                    assembly = Assembly.GetExecutingAssembly();
+                }
+
+                Type? type = assembly.GetType(namespaceName + Type.Delimiter + typeName, false);
+
+                return type ?? assembly.GetType(namespaceName + Type.Delimiter + typeName + extensionString, true);
+            }
+            else
+            {
+                var namespaces = XmlnsDefinitions[xmlNamespace];
+
+                foreach ((string clrNamespace, Assembly assembly) in namespaces)
+                {
+                    Type? type = assembly.GetType(clrNamespace + Type.Delimiter + typeName, false);
+                    type ??= assembly.GetType(clrNamespace + Type.Delimiter + typeName + extensionString, false);
+
+                    if (type != null)
+                    {
+                        return type;
+                    }
+                }
+
+                throw new InvalidOperationException();
+            }
         }
     }
 }

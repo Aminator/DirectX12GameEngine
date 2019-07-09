@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DirectX12GameEngine.Core.Assets
+namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
 {
-    [DataContract(Namespace = "http://schemas.directx12gameengine.com/xaml/extensions")]
     public class AssetReferenceExtension : MarkupExtension
     {
         public AssetReferenceExtension()
@@ -22,10 +20,8 @@ namespace DirectX12GameEngine.Core.Assets
             Type = type;
         }
 
-        [DataMember]
         public string Path { get; set; }
 
-        [DataMember]
         public Type? Type { get; set; }
 
         public override async Task<object> ProvideValueAsync(IServiceProvider services)

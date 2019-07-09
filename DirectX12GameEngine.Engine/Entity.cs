@@ -40,10 +40,8 @@ namespace DirectX12GameEngine.Engine
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        [IgnoreDataMember]
         public ObservableCollection<Entity> Children { get; } = new ObservableCollection<Entity>();
 
-        [IgnoreDataMember]
         public ObservableCollection<EntityComponent> Components { get; } = new ObservableCollection<EntityComponent>();
 
         public Guid Id { get => id; set => Set(ref id, value); }
