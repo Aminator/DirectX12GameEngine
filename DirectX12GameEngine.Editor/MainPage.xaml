@@ -135,6 +135,7 @@
                             <DataTemplate x:DataType="local:StorageItemViewModel">
                                 <winui:TreeViewItem
                                     Content="{x:Bind Name}"
+                                    DoubleTapped="{x:Bind OpenAsync}"
                                     HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=OneWay}"
                                     ItemsSource="{x:Bind Children, Mode=OneWay}" />
                             </DataTemplate>

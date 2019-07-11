@@ -129,7 +129,7 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SolutionExplorerViewModel.cs" />
+    <Compile Include="SolutionExplorer.cs" />
     <Compile Include="StorageItemViewModel.cs" />
     <Compile Include="ViewModelBase.cs" />
     <Compile Include="ObservableViewModelCollection.cs" />

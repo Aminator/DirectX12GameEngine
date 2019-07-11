@@ -42,11 +42,6 @@ namespace DirectX12GameEngine.Editor
 
         public ObservableCollection<AccessListEntry> RecentProjects { get; } = new ObservableCollection<AccessListEntry>();
 
-        public async Task OpenAssetAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task OpenRecentProjectAsync(string token)
         {
             StorageFolder folder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(token);

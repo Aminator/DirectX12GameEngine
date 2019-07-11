@@ -1,12 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
-using DirectX12GameEngine.Games;
-using Windows.Storage;
-using Windows.Storage.AccessCache;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
@@ -46,7 +38,7 @@ namespace DirectX12GameEngine.Editor
         {
             if (args.Item is StorageItemViewModel item)
             {
-                SolutionExplorer.Collapse(item);
+                item.Collapse();
             }
         }
 
@@ -54,7 +46,7 @@ namespace DirectX12GameEngine.Editor
         {
             if (args.Item is StorageItemViewModel item)
             {
-                await SolutionExplorer.ExpandAsync(item);
+                await item.ExpandAsync();
             }
         }
 
