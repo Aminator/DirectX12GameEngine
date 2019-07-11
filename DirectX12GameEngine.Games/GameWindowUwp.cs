@@ -13,7 +13,7 @@ namespace DirectX12GameEngine.Games
     internal class GameWindowUwp : GameWindow
     {
         private readonly ApplicationView applicationView;
-        private readonly CoreWindow coreWindow;
+        private readonly CoreWindow? coreWindow;
         private readonly SwapChainPanel? swapChainPanel;
         private readonly WindowHandle windowHandle;
 
@@ -27,9 +27,10 @@ namespace DirectX12GameEngine.Games
                     coreWindow = coreWindowContext.Control;
 
                     windowHandle = new WindowHandle(AppContextType.CoreWindow, coreWindow, IntPtr.Zero);
+
+                    coreWindow.SizeChanged += CoreWindow_SizeChanged;
                     break;
                 case GameContextXaml xamlContext:
-                    coreWindow = CoreWindow.GetForCurrentThread();
                     swapChainPanel = xamlContext.Control;
 
                     windowHandle = new WindowHandle(AppContextType.Xaml, swapChainPanel, IntPtr.Zero);
@@ -40,8 +41,6 @@ namespace DirectX12GameEngine.Games
                 default:
                     throw new ArgumentException();
             }
-
-            coreWindow.SizeChanged += CoreWindow_SizeChanged;
 
             applicationView = ApplicationView.GetForCurrentView();
 
@@ -62,11 +61,17 @@ namespace DirectX12GameEngine.Games
                         Math.Max(1, (int)(swapChainPanel.ActualWidth * swapChainPanel.CompositionScaleX + 0.5f)),
                         Math.Max(1, (int)(swapChainPanel.ActualHeight * swapChainPanel.CompositionScaleY + 0.5f)));
                 }
+                else if (coreWindow != null)
+                {
+                    double resolutionScale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
-                double resolutionScale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
-
-                return new Rectangle((int)coreWindow.Bounds.X, (int)coreWindow.Bounds.X,
-                    Math.Max(1, (int)(coreWindow.Bounds.Width * resolutionScale)), Math.Max(1, (int)(coreWindow.Bounds.Height * resolutionScale)));
+                    return new Rectangle((int)coreWindow.Bounds.X, (int)coreWindow.Bounds.X,
+                        Math.Max(1, (int)(coreWindow.Bounds.Width * resolutionScale)), Math.Max(1, (int)(coreWindow.Bounds.Height * resolutionScale)));
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
             }
         }
 
@@ -84,11 +89,17 @@ namespace DirectX12GameEngine.Games
                 CompositionTarget.Rendering += CompositionTarget_Rendering;
                 return;
             }
-
-            while (true)
+            else if (coreWindow != null)
             {
-                coreWindow.Dispatcher.ProcessEvents(CoreProcessEventsOption.ProcessAllIfPresent);
-                Tick();
+                while (true)
+                {
+                    coreWindow.Dispatcher.ProcessEvents(CoreProcessEventsOption.ProcessAllIfPresent);
+                    Tick();
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
         }
 

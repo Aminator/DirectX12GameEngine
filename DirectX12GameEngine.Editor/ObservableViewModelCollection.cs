@@ -96,11 +96,6 @@ namespace DirectX12GameEngine.Editor
                     goto case NotifyCollectionChangedAction.Add;
                 case NotifyCollectionChangedAction.Reset:
                     source.Clear();
-
-                    for (int i = 0; i < e.NewItems.Count; i++)
-                    {
-                        source.Add(CreateModel((TViewModel)e.NewItems[i]));
-                    }
                     break;
             }
 
@@ -155,11 +150,6 @@ namespace DirectX12GameEngine.Editor
                     goto case NotifyCollectionChangedAction.Add;
                 case NotifyCollectionChangedAction.Reset:
                     Clear();
-
-                    for (int i = 0; i < e.NewItems.Count; i++)
-                    {
-                        Add(CreateViewModel((TModel)e.NewItems[i]));
-                    }
                     break;
             }
         }

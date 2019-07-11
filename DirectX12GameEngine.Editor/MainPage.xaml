@@ -18,169 +18,139 @@
         <SolidColorBrush x:Key="SystemControlSplitterPointerOver" Color="Transparent" />
         <SolidColorBrush x:Key="SystemControlSplitterPressed" Color="Transparent" />
 
-        <Style TargetType="controls:GridSplitter">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="GripperForeground" Value="Transparent" />
+        <Style TargetType="local:ExtendedTabView">
+            <Setter Property="Background" Value="#44444444" />
         </Style>
     </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300" MinWidth="200" />
-            <ColumnDefinition MinWidth="100" />
-            <ColumnDefinition Width="300" MinWidth="100" />
-        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
 
-        <TextBlock
-            Grid.ColumnSpan="2"
-            Margin="12,8"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="DirectX12GameEngine" />
+            <MenuBar>
+                <MenuBarItem Title="File">
+                    <MenuFlyoutItem Icon="Add" Text="New">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="N" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem
+                        Click="{x:Bind ProjectLoader.OpenProjectWithPickerAsync}"
+                        Icon="Folder"
+                        Text="Open">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="O" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSubItem Icon="Folder" Text="Open Recent">
+                        <MenuFlyoutItem Text="Placeholder" />
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutItem
+                        Click="{x:Bind ProjectLoader.SaveProjectAsync}"
+                        Icon="Save"
+                        Text="Save">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="S" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Icon="Cancel" Text="Exit" />
+                </MenuBarItem>
 
-        <MenuBar Grid.Row="1" Grid.ColumnSpan="2">
-            <MenuBarItem Title="File">
-                <MenuFlyoutItem Icon="Add" Text="New">
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="N" Modifiers="Control" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutItem
-                    Click="MenuFlyoutItem_Click_1"
-                    Icon="Folder"
-                    Text="Open">
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="O" Modifiers="Control" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutSubItem
-                    x:Name="openRecentMenuFlyoutItem"
-                    Icon="Folder"
-                    Text="Open Recent" />
-                <MenuFlyoutItem
-                    Click="MenuFlyoutItem_Click"
-                    Icon="Save"
-                    Text="Save">
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="S" Modifiers="Control" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutSeparator />
-                <MenuFlyoutItem Icon="Cancel" Text="Exit" />
-            </MenuBarItem>
+                <MenuBarItem Title="Edit">
+                    <MenuFlyoutItem Icon="Undo" Text="Undo">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="Z" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Icon="Redo" Text="Redo">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="Y" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Icon="Cut" Text="Cut">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="X" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Icon="Copy" Text="Copy">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="C" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Icon="Paste" Text="Paste">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="V" Modifiers="Control" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Icon="Delete" Text="Delete">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="Delete" />
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Icon="Setting" Text="Settings" />
+                </MenuBarItem>
 
-            <MenuBarItem Title="Edit">
-                <MenuFlyoutItem Icon="Undo" Text="Undo">
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="Z" Modifiers="Control" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutItem Icon="Redo" Text="Redo">
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="Y" Modifiers="Control" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutSeparator />
-                <MenuFlyoutItem Icon="Cut" Text="Cut">
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="X" Modifiers="Control" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutItem Icon="Copy" Text="Copy">
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="C" Modifiers="Control" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutItem Icon="Paste" Text="Paste">
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="V" Modifiers="Control" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutItem Icon="Delete" Text="Delete">
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="Delete" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutSeparator />
-                <MenuFlyoutItem Icon="Setting" Text="Settings" />
-            </MenuBarItem>
+                <MenuBarItem Title="View">
+                    <MenuFlyoutItem Text="Some View" />
+                </MenuBarItem>
 
-            <MenuBarItem Title="View">
-                <MenuFlyoutItem Text="Some View" />
-            </MenuBarItem>
+                <MenuBarItem Title="Project">
+                    <MenuFlyoutItem Text="Add New Item" />
+                </MenuBarItem>
 
-            <MenuBarItem Title="Project">
-                <MenuFlyoutItem Text="Add New Item" />
-            </MenuBarItem>
+                <MenuBarItem Title="Help">
+                    <MenuFlyoutItem Text="View Help" />
+                    <MenuFlyoutItem Text="Feedback" />
+                    <MenuFlyoutItem Text="About" />
+                </MenuBarItem>
+            </MenuBar>
 
-            <MenuBarItem Title="Help">
-                <MenuFlyoutItem Text="View Help" />
-                <MenuFlyoutItem Text="Feedback" />
-                <MenuFlyoutItem Text="About" />
-            </MenuBarItem>
-        </MenuBar>
+            <Grid
+                x:Name="titleBar"
+                Grid.Column="1"
+                Background="Transparent" />
+        </Grid>
 
-        <local:ExtendedTabView Grid.Row="2">
-            <controls:TabViewItem Header="Scene">
-                <winui:TreeView
-                    x:Name="treeView"
-                    ItemInvoked="TreeView_ItemInvoked"
-                    ItemsSource="{x:Bind RootEntity.Children}">
-                    <winui:TreeView.ItemTemplate>
-                        <DataTemplate x:DataType="local:EntityViewModel">
-                            <winui:TreeViewItem AutomationProperties.Name="{x:Bind Name, Mode=OneWay}" ItemsSource="{x:Bind Children, Mode=OneWay}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
-                                    <TextBlock Margin="0,0,10,0" />
-                                </StackPanel>
-                            </winui:TreeViewItem>
-                        </DataTemplate>
-                    </winui:TreeView.ItemTemplate>
-                </winui:TreeView>
-            </controls:TabViewItem>
-            <controls:TabViewItem Header="AnotherScene">
-                <TextBlock Text="Test" />
-            </controls:TabViewItem>
-        </local:ExtendedTabView>
+        <Grid Grid.Row="1">
+            <local:ExtendedTabView>
+                <controls:TabViewItem Header="Solution Explorer">
+                    <winui:TreeView
+                        x:Name="solutionExplorer"
+                        Collapsed="SolutionExplorer_Collapsed"
+                        Expanding="SolutionExplorer_Expanding"
+                        ItemInvoked="SolutionExplorer_ItemInvoked"
+                        ItemsSource="{x:Bind ProjectLoader.SolutionExplorer.RootFolder.Children, Mode=OneWay}">
+                        <winui:TreeView.ItemTemplate>
+                            <DataTemplate x:DataType="local:StorageItemViewModel">
+                                <winui:TreeViewItem
+                                    Content="{x:Bind Name}"
+                                    HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=OneWay}"
+                                    ItemsSource="{x:Bind Children, Mode=OneWay}" />
+                            </DataTemplate>
+                        </winui:TreeView.ItemTemplate>
+                    </winui:TreeView>
+                </controls:TabViewItem>
 
-        <local:ExtendedTabView Grid.Row="2" Grid.Column="1">
-            <controls:TabViewItem Header="Scene 1">
-                <SwapChainPanel
-                    x:Name="swapChainPanel"
-                    Grid.Row="2"
-                    Grid.Column="1" />
-            </controls:TabViewItem>
-        </local:ExtendedTabView>
+                <controls:TabViewItem x:Name="propertyView" Header="Properties">
+                    <ListView x:Name="propertyListView" />
+                </controls:TabViewItem>
+            </local:ExtendedTabView>
 
-        <local:ExtendedTabView Grid.Row="2" Grid.Column="2">
-            <controls:TabViewItem x:Name="componentsTab" Header="Components">
-                <Grid>
-                    <ListView x:Name="componentsListView" />
-                </Grid>
-            </controls:TabViewItem>
-        </local:ExtendedTabView>
-
-        <controls:GridSplitter
-            Grid.Row="2"
-            Grid.Column="1"
-            HorizontalAlignment="Left">
-            <controls:GridSplitter.RenderTransform>
-                <TranslateTransform X="-8" />
-            </controls:GridSplitter.RenderTransform>
-        </controls:GridSplitter>
-
-        <controls:GridSplitter
-            Grid.Row="2"
-            Grid.Column="2"
-            HorizontalAlignment="Left">
-            <controls:GridSplitter.RenderTransform>
-                <TranslateTransform X="-8" />
-            </controls:GridSplitter.RenderTransform>
-        </controls:GridSplitter>
+            <ProgressRing
+                Width="72"
+                Height="72"
+                IsActive="{x:Bind ProjectLoader.IsLoading, Mode=OneWay}" />
+        </Grid>
     </Grid>
 </Page>

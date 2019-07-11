@@ -79,6 +79,8 @@ namespace DirectX12GameEngine.Graphics
                     }
                     break;
                 case AppContextType.Xaml:
+                    swapChainDescription.AlphaMode = AlphaMode.Premultiplied;
+
                     using (Factory4 factory = new Factory4())
                     using (ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(PresentationParameters.DeviceWindowHandle.NativeWindow))
                     using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, ref swapChainDescription))

@@ -120,6 +120,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="AssetPreview.cs" />
+    <Compile Include="ProjectLoader.cs" />
     <Compile Include="EditorGame.cs" />
     <Compile Include="EntityComponentViewModel.cs" />
     <Compile Include="EntityViewModel.cs" />
@@ -127,6 +129,8 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SolutionExplorerViewModel.cs" />
+    <Compile Include="StorageItemViewModel.cs" />
     <Compile Include="ViewModelBase.cs" />
     <Compile Include="ObservableViewModelCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

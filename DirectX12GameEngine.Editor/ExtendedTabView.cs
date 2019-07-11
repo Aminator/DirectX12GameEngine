@@ -5,13 +5,14 @@ using Microsoft.Toolkit.Uwp.UI.Controls;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.UI.WindowManagement.Preview;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Markup;
+using Windows.UI.Xaml.Media;
 
 #nullable enable
 
@@ -24,6 +25,9 @@ namespace DirectX12GameEngine.Editor
 
         private const string TabKey = "Tab";
 
+        private bool isDragging;
+        private bool isCreatingNewAppWindow;
+
         public ExtendedTabView()
         {
             AllowDrop = true;
@@ -32,6 +36,7 @@ namespace DirectX12GameEngine.Editor
             CanReorderItems = true;
 
             DragItemsStarting += TabView_DragItemsStarting;
+            DragItemsCompleted += ExtendedTabView_DragItemsCompleted;
             TabDraggedOutside += TabView_TabDraggedOutside;
         }
 
@@ -41,10 +46,7 @@ namespace DirectX12GameEngine.Editor
         {
             base.OnItemsChanged(e);
 
-            if (AppWindow != null && Items.Count == 0)
-            {
-                await AppWindow.CloseAsync();
-            }
+            await CloseAsync();
         }
 
         protected override void OnDragOver(DragEventArgs e)
@@ -58,17 +60,21 @@ namespace DirectX12GameEngine.Editor
         {
             base.OnDrop(e);
 
-            if (e.Data.Properties.TryGetValue(TabKey, out object item) && item is TabViewItem tab)
+            if (!isDragging && e.Data.Properties.TryGetValue(TabKey, out object item) && item is TabViewItem tab)
             {
-                TabView source = (TabView)tab.Parent;
+                ExtendedTabView source = (ExtendedTabView)tab.Parent;
                 source.Items.Remove(tab);
 
+                int selectedIndex = SelectedIndex;
                 Items.Add(tab);
+                SelectedIndex = selectedIndex;
             }
         }
 
         private void TabView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
+            isDragging = true;
+
             TabView tabView = (TabView)sender;
 
             object item = e.Items.FirstOrDefault();
@@ -96,35 +102,66 @@ namespace DirectX12GameEngine.Editor
             e.Data.Properties.Add(TabKey, tab);
         }
 
-        private async void TabView_TabDraggedOutside(object sender, TabDraggedOutsideEventArgs e)
+        private void ExtendedTabView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
-            Items.Remove(e.Tab);
-
-            await TryCreateNewAppWindowAsync(e.Tab, new Size(ActualWidth, ActualHeight));
+            isDragging = false;
         }
 
-        private static async Task<bool> TryCreateNewAppWindowAsync(TabViewItem tab, Size size)
+        private async void TabView_TabDraggedOutside(object sender, TabDraggedOutsideEventArgs e)
+        {
+            isCreatingNewAppWindow = true;
+            Items.Remove(e.Tab);
+
+            double scaling = XamlRoot.RasterizationScale;
+            await TryCreateNewAppWindowAsync(e.Tab, new Size(ActualWidth * scaling, ActualHeight * scaling));
+
+            isCreatingNewAppWindow = false;
+            await CloseAsync();
+        }
+
+        private async Task<bool> TryCreateNewAppWindowAsync(TabViewItem tab, Size size)
         {
             AppWindow appWindow = await AppWindow.TryCreateAsync();
 
-            //appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
-            //appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-            //appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
-            appWindow.RequestSize(size);
+            appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 
             WindowManagementPreview.SetPreferredMinSize(appWindow, new Size(MinWindowWidth, MinWindowHeight));
 
-            Grid grid = new Grid();
+            appWindow.RequestSize(size);
+
+            Grid grid = new Grid { Background = (Brush)Resources["SystemControlAcrylicWindowBrush"] };
+
+            Grid titleBar = new Grid { Height = 40, VerticalAlignment = VerticalAlignment.Top, Background = new SolidColorBrush(Colors.Transparent) };
+            grid.Children.Add(titleBar);
 
             ExtendedTabView tabView = new ExtendedTabView { AppWindow = appWindow };
-
             tabView.Items.Add(tab);
             grid.Children.Add(tabView);
 
+            appWindow.Frame.DragRegionVisuals.Add(titleBar);
+
             ElementCompositionPreview.SetAppWindowContent(appWindow, grid);
 
-            return await appWindow.TryShowAsync();
+            bool success = await appWindow.TryShowAsync();
+
+            return success;
+        }
+
+        private async Task CloseAsync()
+        {
+            if (Items.Count == 0 && !isCreatingNewAppWindow)
+            {
+                DragItemsStarting -= TabView_DragItemsStarting;
+                DragItemsCompleted -= ExtendedTabView_DragItemsCompleted;
+                TabDraggedOutside -= TabView_TabDraggedOutside;
+
+                if (AppWindow != null)
+                {
+                    await AppWindow.CloseAsync();
+                }
+            }
         }
     }
 }
