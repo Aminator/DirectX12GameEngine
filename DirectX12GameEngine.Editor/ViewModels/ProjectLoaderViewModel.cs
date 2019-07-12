@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Editor.Messages;
+using DirectX12GameEngine.Editor.Messaging;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -11,27 +13,20 @@ using Windows.Storage.Pickers;
 
 #nullable enable
 
-namespace DirectX12GameEngine.Editor
+namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class ProjectLoader : ViewModelBase
+    public class ProjectLoaderViewModel : ViewModelBase
     {
-        private bool isLoading;
         private bool isProjectLoaded;
 
-        public ProjectLoader()
+        public ProjectLoaderViewModel()
         {
             foreach (AccessListEntry accessListEntry in StorageApplicationPermissions.MostRecentlyUsedList.Entries)
             {
                 RecentProjects.Add(accessListEntry);
             }
-        }
 
-        public SolutionExplorer SolutionExplorer { get; } = new SolutionExplorer();
-
-        public bool IsLoading
-        {
-            get => isLoading;
-            set => Set(ref isLoading, value);
+            Messenger.Default.Register<OpenRecentProjectMessage>(this, async m => await OpenRecentProjectAsync(m.Token));
         }
 
         public bool IsProjectLoaded
@@ -44,7 +39,7 @@ namespace DirectX12GameEngine.Editor
 
         public async Task OpenRecentProjectAsync(string token)
         {
-            StorageFolder folder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(token);
+            StorageFolder folder = await StorageApplicationPermissions.MostRecentlyUsedList.GetFolderAsync(token);
 
             await OpenProjectAsync(folder);
         }
@@ -53,9 +48,12 @@ namespace DirectX12GameEngine.Editor
         {
             FolderPicker folderPicker = new FolderPicker();
             folderPicker.FileTypeFilter.Add("*");
-            StorageFolder folder = await folderPicker.PickSingleFolderAsync();
+            StorageFolder? folder = await folderPicker.PickSingleFolderAsync();
 
-            await OpenProjectAsync(folder);
+            if (folder != null)
+            {
+                await OpenProjectAsync(folder);
+            }
         }
 
         public async Task OpenProjectAsync(StorageFolder folder)
@@ -74,14 +72,12 @@ namespace DirectX12GameEngine.Editor
             }
             else
             {
-                IsLoading = true;
                 IsProjectLoaded = true;
 
                 StorageItemViewModel item = new StorageItemViewModel(folder);
-                await SolutionExplorer.SetRootFolderAsync(item);
+                Messenger.Default.Send<ProjectLoadedMessage>(new ProjectLoadedMessage(item));
 
                 await LoadAssemblyAsync(folder);
-                IsLoading = false;
             }
         }
 

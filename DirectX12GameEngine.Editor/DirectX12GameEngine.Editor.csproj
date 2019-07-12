@@ -120,20 +120,51 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="AssetPreview.cs" />
-    <Compile Include="ProjectLoader.cs" />
+    <Compile Include="Factories\AssetViewFactory.cs" />
+    <Compile Include="Factories\EngineAssetViewFactory.cs" />
+    <Compile Include="Factories\IAssetViewFactory.cs" />
+    <Compile Include="Factories\SceneViewFactory.cs" />
+    <Compile Include="Messages\LaunchStorageItemMessage.cs" />
+    <Compile Include="Messaging\IMessenger.cs" />
+    <Compile Include="ViewModels\EditorViewModel.cs" />
+    <Compile Include="ViewModels\EditorViewsViewModel.cs" />
+    <Compile Include="Views\MenuBarItems\EditMenuBarItem.xaml.cs">
+      <DependentUpon>EditMenuBarItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MenuBarItems\FileMenuBarItem.xaml.cs">
+      <DependentUpon>FileMenuBarItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EditorMenuBar.xaml.cs">
+      <DependentUpon>EditorMenuBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Messaging\Messenger.cs" />
+    <Compile Include="Messages\OpenRecentProjectMessage.cs" />
+    <Compile Include="Messages\ProjectLoadedMessage.cs" />
+    <Compile Include="ViewModels\ProjectLoaderViewModel.cs" />
     <Compile Include="EditorGame.cs" />
-    <Compile Include="EntityComponentViewModel.cs" />
-    <Compile Include="EntityViewModel.cs" />
-    <Compile Include="ExtendedTabView.cs" />
+    <Compile Include="ViewModels\EntityComponentViewModel.cs" />
+    <Compile Include="ViewModels\EntityViewModel.cs" />
+    <Compile Include="Views\ExtendedTabView.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SolutionExplorer.cs" />
-    <Compile Include="StorageItemViewModel.cs" />
-    <Compile Include="ViewModelBase.cs" />
-    <Compile Include="ObservableViewModelCollection.cs" />
+    <Compile Include="Views\SceneView.xaml.cs">
+      <DependentUpon>SceneView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Shell.xaml.cs">
+      <DependentUpon>Shell.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\SolutionExplorerViewModel.cs" />
+    <Compile Include="Views\SolutionExplorerView.xaml.cs">
+      <DependentUpon>SolutionExplorerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\StorageItemViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="ViewModels\ObservableViewModelCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Views\MenuBarItems\ViewMenuBarItem.xaml.cs">
+      <DependentUpon>ViewMenuBarItem.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -159,6 +190,34 @@
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\MenuBarItems\EditMenuBarItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MenuBarItems\FileMenuBarItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\EditorMenuBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SceneView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Shell.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SolutionExplorerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MenuBarItems\ViewMenuBarItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -210,6 +269,7 @@
       <Name>DirectX12GameEngine.Shaders</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

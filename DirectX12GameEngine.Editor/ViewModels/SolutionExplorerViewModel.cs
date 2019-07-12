@@ -1,13 +1,19 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using DirectX12GameEngine.Editor.Messages;
+using DirectX12GameEngine.Editor.Messaging;
 
 #nullable enable
 
-namespace DirectX12GameEngine.Editor
+namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class SolutionExplorer : ViewModelBase
+    public class SolutionExplorerViewModel : ViewModelBase
     {
         private StorageItemViewModel? rootFolder;
+
+        public SolutionExplorerViewModel()
+        {
+            Messenger.Default.Register<ProjectLoadedMessage>(this, async m => await SetRootFolderAsync(m.RootFolder));
+        }
 
         public StorageItemViewModel? RootFolder
         {

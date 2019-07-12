@@ -4,7 +4,7 @@ using System.Reflection;
 using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Engine;
 
-namespace DirectX12GameEngine.Editor
+namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class EntityComponentViewModel : ViewModelBase<EntityComponent>
     {

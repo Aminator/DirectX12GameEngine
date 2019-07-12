@@ -3,14 +3,14 @@ using DirectX12GameEngine.Engine;
 
 #nullable enable
 
-namespace DirectX12GameEngine.Editor
+namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class EntityViewModel : ViewModelBase<Entity>
     {
         public EntityViewModel(Entity model) : base(model)
         {
-            Children = new ObservableViewModelCollection<EntityViewModel, Entity>(Model.Children, vm => vm, m => new EntityViewModel(m));
-            Components = new ObservableViewModelCollection<EntityComponentViewModel, EntityComponent>(Model.Components, vm => vm, m => new EntityComponentViewModel(m));
+            Children = new ObservableViewModelCollection<EntityViewModel, Entity>(Model.Children, vm => vm.Model, m => new EntityViewModel(m));
+            Components = new ObservableViewModelCollection<EntityComponentViewModel, EntityComponent>(Model.Components, vm => vm.Model, m => new EntityComponentViewModel(m));
         }
 
         public string Name

@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.UI.WindowManagement.Preview;
@@ -13,10 +17,11 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 
 #nullable enable
 
-namespace DirectX12GameEngine.Editor
+namespace DirectX12GameEngine.Editor.Views
 {
     public class ExtendedTabView : TabView
     {
@@ -71,7 +76,7 @@ namespace DirectX12GameEngine.Editor
             }
         }
 
-        private void TabView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        private async void TabView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             isDragging = true;
 
@@ -100,6 +105,19 @@ namespace DirectX12GameEngine.Editor
             }
 
             e.Data.Properties.Add(TabKey, tab);
+
+            //StorageFile file = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("TabViewItem.png", CreationCollisionOption.ReplaceExisting);
+
+            //RenderTargetBitmap bitmap = new RenderTargetBitmap();
+            //await bitmap.RenderAsync(tab);
+            //IBuffer pixels = await bitmap.GetPixelsAsync();
+
+            //BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, await file.OpenAsync(FileAccessMode.ReadWrite));
+            //SoftwareBitmap softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(pixels, BitmapPixelFormat.Bgra8, bitmap.PixelWidth, bitmap.PixelHeight);
+            //encoder.SetSoftwareBitmap(softwareBitmap);
+            //await encoder.FlushAsync();
+
+            //e.Data.SetStorageItems(new[] { file });
         }
 
         private void ExtendedTabView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)

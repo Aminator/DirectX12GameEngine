@@ -1,0 +1,29 @@
+﻿<winui:MenuBar
+    x:Class="DirectX12GameEngine.Editor.Views.EditorMenuBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:DirectX12GameEngine.Editor.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:DirectX12GameEngine.Editor.ViewModels"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    d:DesignHeight="40"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+    
+    <local:FileMenuBarItem />
+
+    <local:EditMenuBarItem />
+
+    <local:ViewMenuBarItem DataContext="{x:Bind ViewModel.EditorViews}" />
+
+    <winui:MenuBarItem Title="Project">
+        <MenuFlyoutItem Text="Add New Item" />
+    </winui:MenuBarItem>
+
+    <winui:MenuBarItem Title="Help">
+        <MenuFlyoutItem Text="View Help" />
+        <MenuFlyoutItem Text="Feedback" />
+        <MenuFlyoutItem Text="About" />
+    </winui:MenuBarItem>
+</winui:MenuBar>

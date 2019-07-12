@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
-namespace DirectX12GameEngine.Editor
+namespace DirectX12GameEngine.Editor.ViewModels
 {
     public abstract class ViewModelBase : INotifyPropertyChanged
     {
@@ -53,8 +53,6 @@ namespace DirectX12GameEngine.Editor
             Model = model;
         }
 
-        protected TModel Model { get; }
-
-        public static implicit operator TModel(ViewModelBase<TModel> viewModel) => viewModel.Model;
+        public TModel Model { get; }
     }
 }
