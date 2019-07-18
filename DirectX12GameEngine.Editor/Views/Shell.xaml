@@ -22,7 +22,7 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <local:EditorMenuBar DataContext="{x:Bind ViewModel}" />
+            <local:EditorMenuBar />
 
             <Grid
                 x:Name="titleBar"
@@ -34,7 +34,7 @@
             <controls:DockPanel x:Name="dockPanel">
                 <local:ExtendedTabView>
                     <controls:TabViewItem Header="Solution Explorer" Visibility="{x:Bind ViewModel.EditorViews.IsSolutionExplorerOpen, Mode=OneWay}">
-                        <local:SolutionExplorerView DataContext="{x:Bind ViewModel}" />
+                        <local:SolutionExplorerView />
                     </controls:TabViewItem>
                 </local:ExtendedTabView>
             </controls:DockPanel>

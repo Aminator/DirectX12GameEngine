@@ -11,6 +11,7 @@ namespace DirectX12GameEngine.Graphics
     public sealed class GraphicsDevice : IDisposable, ICollector
     {
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
+        private SharpDX.Direct3D11.Device? nativeDirect3D11Device;
 
         public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level_11_0)
         {
@@ -23,13 +24,6 @@ namespace DirectX12GameEngine.Graphics
 
             NativeCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(CommandListType.Direct));
             NativeCopyCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(CommandListType.Copy));
-
-            NativeDirect3D11Device = SharpDX.Direct3D11.Device.CreateFromDirect3D12(
-                NativeDevice,
-                SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport,
-                null,
-                null,
-                NativeCommandQueue);
 
             BundleAllocatorPool = new CommandAllocatorPool(this, CommandListType.Bundle);
             CopyAllocatorPool = new CommandAllocatorPool(this, CommandListType.Copy);
@@ -74,7 +68,8 @@ namespace DirectX12GameEngine.Graphics
 
         internal Device NativeDevice { get; }
 
-        internal SharpDX.Direct3D11.Device NativeDirect3D11Device { get; }
+        internal SharpDX.Direct3D11.Device NativeDirect3D11Device => NativeDirect3D11Device ?? (nativeDirect3D11Device = SharpDX.Direct3D11.Device.CreateFromDirect3D12(
+                NativeDevice, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport, null, null, NativeCommandQueue));
 
         internal Fence NativeCopyFence { get; }
 

@@ -1,5 +1,7 @@
 ﻿using DirectX12GameEngine.Editor.Messages;
 using DirectX12GameEngine.Editor.Messaging;
+using DirectX12GameEngine.Editor.ViewModels;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
@@ -17,6 +19,8 @@ namespace DirectX12GameEngine.Editor
         public MainPage()
         {
             InitializeComponent();
+
+            DataContext = ((ViewModelLocator)Application.Current.Resources["ViewModelLocator"]).Main;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

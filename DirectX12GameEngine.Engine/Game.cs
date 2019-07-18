@@ -34,7 +34,6 @@ namespace DirectX12GameEngine.Engine
         {
             base.Dispose();
 
-
             if (graphicsDeviceManager is IDisposable disposableGraphicsDeviceManager)
             {
                 disposableGraphicsDeviceManager.Dispose();

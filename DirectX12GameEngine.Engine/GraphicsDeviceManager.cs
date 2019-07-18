@@ -5,6 +5,8 @@ namespace DirectX12GameEngine.Engine
 {
     public class GraphicsDeviceManager : IGraphicsDeviceManager, IDisposable
     {
+        private readonly object deviceCeationLock = new object();
+
         private bool isDrawing;
 
         public GraphicsDevice? GraphicsDevice { get; private set; }
@@ -24,7 +26,13 @@ namespace DirectX12GameEngine.Engine
 
         public void CreateDevice()
         {
-            GraphicsDevice = new GraphicsDevice();
+            lock (deviceCeationLock)
+            {
+                if (GraphicsDevice is null)
+                {
+                    GraphicsDevice = new GraphicsDevice();
+                }
+            }
         }
 
         public void Dispose()

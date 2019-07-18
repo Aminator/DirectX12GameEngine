@@ -1,4 +1,5 @@
 ﻿using DirectX12GameEngine.Editor.ViewModels;
+using Windows.UI.Xaml.Input;
 using WinUI = Microsoft.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236

@@ -81,7 +81,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             }
         }
 
-        public async Task SaveProjectAsync()
+        public Task SaveProjectAsync()
         {
             throw new NotImplementedException();
         }

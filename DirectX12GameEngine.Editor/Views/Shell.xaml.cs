@@ -22,6 +22,11 @@ namespace DirectX12GameEngine.Editor.Views
         {
             InitializeComponent();
 
+            DataContextChanged += (s, e) =>
+            {
+                Bindings.Update();
+            };
+
             Window.Current.SetTitleBar(titleBar);
 
             EngineAssetViewFactory factory = new EngineAssetViewFactory();
@@ -61,6 +66,6 @@ namespace DirectX12GameEngine.Editor.Views
             });
         }
 
-        public MainViewModel ViewModel { get; } = new MainViewModel();
+        public MainViewModel ViewModel => (MainViewModel)DataContext;
     }
 }

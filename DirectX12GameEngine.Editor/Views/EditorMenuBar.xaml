@@ -10,67 +10,45 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <winui:MenuBarItem Title="File">
-        <MenuFlyoutItem Icon="Add" Text="New">
-            <MenuFlyoutItem.KeyboardAccelerators>
+    <winui:MenuBar.Resources>
+        <XamlUICommand x:Key="NewCommand" Description="Create a new project" Label="New">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Add" />
+            </XamlUICommand.IconSource>
+            <XamlUICommand.KeyboardAccelerators>
                 <KeyboardAccelerator Key="N" Modifiers="Control" />
-            </MenuFlyoutItem.KeyboardAccelerators>
-        </MenuFlyoutItem>
-        <MenuFlyoutItem
-            Click="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerAsync}"
-            Icon="Folder"
-            Text="Open">
-            <MenuFlyoutItem.KeyboardAccelerators>
-                <KeyboardAccelerator Key="O" Modifiers="Control" />
-            </MenuFlyoutItem.KeyboardAccelerators>
-        </MenuFlyoutItem>
+            </XamlUICommand.KeyboardAccelerators>
+        </XamlUICommand>
+        <StandardUICommand x:Key="OpenCommand" Kind="Open" ExecuteRequested="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerAsync}" />
+        <StandardUICommand x:Key="SaveCommand" Kind="Save" ExecuteRequested="{x:Bind ViewModel.ProjectLoader.SaveProjectAsync}" />
+        <StandardUICommand x:Key="CloseCommand" Kind="Close" />
+
+        <StandardUICommand x:Key="UndoCommand" Kind="Undo" />
+        <StandardUICommand x:Key="RedoCommand" Kind="Redo" />
+        <StandardUICommand x:Key="CutCommand" Kind="Cut" />
+        <StandardUICommand x:Key="CopyCommand" Kind="Copy" />
+        <StandardUICommand x:Key="PasteCommand" Kind="Paste" />
+        <StandardUICommand x:Key="DeleteCommand" Kind="Delete" />
+    </winui:MenuBar.Resources>
+
+    <winui:MenuBarItem Title="File">
+        <MenuFlyoutItem Command="{StaticResource NewCommand}" />
+        <MenuFlyoutItem Command="{StaticResource OpenCommand}" />
         <MenuFlyoutSubItem Icon="Folder" Text="Open Recent">
             <MenuFlyoutItem Text="Placeholder" />
         </MenuFlyoutSubItem>
-        <MenuFlyoutItem
-            Click="{x:Bind ViewModel.ProjectLoader.SaveProjectAsync}"
-            Icon="Save"
-            Text="Save">
-            <MenuFlyoutItem.KeyboardAccelerators>
-                <KeyboardAccelerator Key="S" Modifiers="Control" />
-            </MenuFlyoutItem.KeyboardAccelerators>
-        </MenuFlyoutItem>
+        <MenuFlyoutItem Command="{StaticResource SaveCommand}" />
         <MenuFlyoutSeparator />
-        <MenuFlyoutItem Icon="Cancel" Text="Exit" />
+        <MenuFlyoutItem Command="{StaticResource CloseCommand}" />
     </winui:MenuBarItem>
 
     <winui:MenuBarItem Title="Edit">
-        <MenuFlyoutItem Icon="Undo" Text="Undo">
-            <MenuFlyoutItem.KeyboardAccelerators>
-                <KeyboardAccelerator Key="Z" Modifiers="Control" />
-            </MenuFlyoutItem.KeyboardAccelerators>
-        </MenuFlyoutItem>
-        <MenuFlyoutItem Icon="Redo" Text="Redo">
-            <MenuFlyoutItem.KeyboardAccelerators>
-                <KeyboardAccelerator Key="Y" Modifiers="Control" />
-            </MenuFlyoutItem.KeyboardAccelerators>
-        </MenuFlyoutItem>
-        <MenuFlyoutSeparator />
-        <MenuFlyoutItem Icon="Cut" Text="Cut">
-            <MenuFlyoutItem.KeyboardAccelerators>
-                <KeyboardAccelerator Key="X" Modifiers="Control" />
-            </MenuFlyoutItem.KeyboardAccelerators>
-        </MenuFlyoutItem>
-        <MenuFlyoutItem Icon="Copy" Text="Copy">
-            <MenuFlyoutItem.KeyboardAccelerators>
-                <KeyboardAccelerator Key="C" Modifiers="Control" />
-            </MenuFlyoutItem.KeyboardAccelerators>
-        </MenuFlyoutItem>
-        <MenuFlyoutItem Icon="Paste" Text="Paste">
-            <MenuFlyoutItem.KeyboardAccelerators>
-                <KeyboardAccelerator Key="V" Modifiers="Control" />
-            </MenuFlyoutItem.KeyboardAccelerators>
-        </MenuFlyoutItem>
-        <MenuFlyoutItem Icon="Delete" Text="Delete">
-            <MenuFlyoutItem.KeyboardAccelerators>
-                <KeyboardAccelerator Key="Delete" />
-            </MenuFlyoutItem.KeyboardAccelerators>
-        </MenuFlyoutItem>
+        <MenuFlyoutItem Command="{StaticResource UndoCommand}" />
+        <MenuFlyoutItem Command="{StaticResource RedoCommand}" />
+        <MenuFlyoutItem Command="{StaticResource CutCommand}" />
+        <MenuFlyoutItem Command="{StaticResource CopyCommand}" />
+        <MenuFlyoutItem Command="{StaticResource PasteCommand}" />
+        <MenuFlyoutItem Command="{StaticResource DeleteCommand}" />
         <MenuFlyoutSeparator />
         <MenuFlyoutItem Icon="Setting" Text="Settings" />
     </winui:MenuBarItem>

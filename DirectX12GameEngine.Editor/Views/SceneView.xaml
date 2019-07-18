@@ -30,5 +30,11 @@
         </winui:TreeView>
 
         <SwapChainPanel x:Name="swapChainPanel" Grid.Column="1" />
+
+        <ProgressRing
+            Grid.ColumnSpan="2"
+            Width="72"
+            Height="72"
+            IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
     </Grid>
 </UserControl>
