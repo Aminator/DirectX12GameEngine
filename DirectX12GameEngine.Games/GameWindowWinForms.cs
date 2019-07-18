@@ -12,10 +12,9 @@ namespace DirectX12GameEngine.Games
         private readonly Control control;
         private readonly WindowHandle windowHandle;
 
-        public GameWindowWinForms(GameBase game) : base(game)
+        public GameWindowWinForms(GameBase game, GameContextWinForms context) : base(game)
         {
-            GameContextWinForms gameContext = (GameContextWinForms)game.Context;
-            control = gameContext.Control;
+            control = context.Control;
 
             windowHandle = new WindowHandle(AppContextType.WinForms, control, control.Handle);
 

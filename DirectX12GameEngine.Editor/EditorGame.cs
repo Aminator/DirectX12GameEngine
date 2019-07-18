@@ -2,19 +2,25 @@
 using System.Numerics;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Engine;
-using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using Windows.Storage;
+
+#nullable enable
 
 namespace DirectX12GameEngine.Editor
 {
     public class EditorGame : Game
     {
-        public EditorGame(GameContext gameContext, StorageFolder rootFolder) : base(gameContext)
+        public EditorGame(StorageFolder rootFolder)
         {
             Content.RootFolder = rootFolder;
+        }
 
-            if (GraphicsDevice.Presenter != null)
+        protected override void Initialize()
+        {
+            base.Initialize();
+
+            if (GraphicsDevice?.Presenter != null)
             {
                 GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
             }
@@ -24,7 +30,7 @@ namespace DirectX12GameEngine.Editor
         {
             base.BeginDraw();
 
-            if (GraphicsDevice.Presenter != null)
+            if (GraphicsDevice?.Presenter != null)
             {
                 GraphicsDevice.CommandList.Clear(GraphicsDevice.Presenter.BackBuffer, new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
                 GraphicsDevice.CommandList.Clear(GraphicsDevice.Presenter.DepthStencilBuffer, ClearFlags.FlagsDepth);

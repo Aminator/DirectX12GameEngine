@@ -10,19 +10,16 @@ namespace DirectX12GameEngine.Games
     {
         private readonly object tickLock = new object();
 
+        private bool isExiting;
         private DateTime previousTime;
         private TimeSpan totalTime;
 
-        public GameBase(GameContext gameContext)
+        public GameBase()
         {
-            Context = gameContext;
-
             ServiceCollection services = new ServiceCollection();
             ConfigureServices(services);
 
             Services = services.BuildServiceProvider();
-
-            Window = GameWindow.Create(this);
 
             Content = Services.GetRequiredService<ContentManager>();
             GameSystems = Services.GetRequiredService<List<GameSystemBase>>();
@@ -30,15 +27,17 @@ namespace DirectX12GameEngine.Games
 
         public ContentManager Content { get; }
 
-        public GameContext Context { get; }
-
         public IList<GameSystemBase> GameSystems { get; }
 
-        public GameWindow Window { get; }
+        public GameContext? Context { get; private set; }
+
+        public GameWindow? Window { get; private set; }
 
         public IServiceProvider Services { get; }
 
         public GameTime Time { get; } = new GameTime();
+
+        public bool IsRunning { get; private set; }
 
         public virtual void Dispose()
         {
@@ -46,39 +45,77 @@ namespace DirectX12GameEngine.Games
             {
                 gameSystem.Dispose();
             }
+
+            Window?.Exit();
+            Window = null;
         }
 
-        public void Run()
+        public void Run(GameContext? context = null)
         {
+            if (IsRunning)
+            {
+                throw new InvalidOperationException("This game is already running.");
+            }
+
+            IsRunning = true;
+
+            Context = context;
+            Window = Context?.CreateWindow(this);
+
             Initialize();
             LoadContentAsync();
 
             previousTime = DateTime.Now;
 
-            Window.Run();
+            BeginRun();
+
+            Window?.Run();
+        }
+
+        public void Exit()
+        {
+            if (IsRunning)
+            {
+                isExiting = true;
+                Window?.Exit();
+            }
         }
 
         public void Tick()
         {
-            lock (tickLock)
+            try
             {
-                DateTime currentTime = DateTime.Now;
-                TimeSpan elapsedTime = currentTime - previousTime;
+                lock (tickLock)
+                {
+                    if (isExiting)
+                    {
+                        CheckEndRun();
+                        return;
+                    }
 
-                previousTime = currentTime;
-                totalTime += elapsedTime;
+                    DateTime currentTime = DateTime.Now;
+                    TimeSpan elapsedTime = currentTime - previousTime;
 
-                Time.Update(totalTime, elapsedTime);
+                    previousTime = currentTime;
+                    totalTime += elapsedTime;
 
-                Update(Time);
+                    Time.Update(totalTime, elapsedTime);
 
-                BeginDraw();
-                Draw(Time);
+                    Update(Time);
+
+                    BeginDraw();
+                    Draw(Time);
+                }
+            }
+            finally
+            {
                 EndDraw();
+
+                CheckEndRun();
             }
         }
 
-        protected void Initialize()
+        protected virtual void Initialize()
         {
             foreach (GameSystemBase gameSystem in GameSystems)
             {
@@ -96,6 +133,10 @@ namespace DirectX12GameEngine.Games
             }
 
             return Task.WhenAll(loadingTasks);
+        }
+
+        protected virtual void BeginRun()
+        {
         }
 
         protected virtual void Update(GameTime gameTime)
@@ -130,11 +171,24 @@ namespace DirectX12GameEngine.Games
             }
         }
 
+        protected virtual void EndRun()
+        {
+        }
+
         protected virtual void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<GameBase>(this);
             services.AddSingleton<ContentManager>();
             services.AddSingleton<List<GameSystemBase>>();
+        }
+
+        private void CheckEndRun()
+        {
+            if (isExiting && IsRunning)
+            {
+                EndRun();
+                IsRunning = false;
+            }
         }
     }
 }

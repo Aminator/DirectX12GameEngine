@@ -11,10 +11,6 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <UserControl.DataContext>
-        <viewmodels:SolutionExplorerViewModel x:Name="ViewModel" />
-    </UserControl.DataContext>
-
     <Grid>
         <winui:TreeView
             x:Name="solutionExplorer"

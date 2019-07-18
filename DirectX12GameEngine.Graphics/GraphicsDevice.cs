@@ -137,7 +137,6 @@ namespace DirectX12GameEngine.Graphics
             NativeCopyCommandQueue.Dispose();
             NativeCommandQueue.Dispose();
             NativeFence.Dispose();
-            Presenter?.Dispose();
             DepthStencilViewAllocator.Dispose();
             ShaderResourceViewAllocator.Dispose();
             RenderTargetViewAllocator.Dispose();

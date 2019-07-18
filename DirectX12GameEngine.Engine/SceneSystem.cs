@@ -4,7 +4,7 @@ using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
-    public sealed class SceneSystem : GameSystem
+    public sealed class SceneSystem : GameSystemBase
     {
         public SceneSystem(IServiceProvider services) : base(services)
         {

@@ -21,8 +21,8 @@ namespace DirectX12XamlApp
 
         private void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            MyGame game = new MyGame(new GameContextXaml(swapChainPanel));
-            game.Run();
+            MyGame game = new MyGame();
+            game.Run(new GameContextXaml(swapChainPanel));
         }
     }
 }

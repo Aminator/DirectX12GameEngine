@@ -11,6 +11,8 @@ namespace DirectX12GameEngine.Games
         {
             ContextType = AppContextType.WinForms;
         }
+
+        public override GameWindow CreateWindow(GameBase game) => new GameWindowWinForms(game, this);
     }
 }
 #endif

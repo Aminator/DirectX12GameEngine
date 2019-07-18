@@ -56,8 +56,8 @@ namespace DirectX12CoreWindowApp
         {
             if (gameContext is null) throw new InvalidOperationException();
 
-            game = new MyGame(gameContext);
-            game.Run();
+            game = new MyGame();
+            game.Run(gameContext);
         }
 
         public void Uninitialize()

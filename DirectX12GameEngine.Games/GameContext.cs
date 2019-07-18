@@ -9,6 +9,8 @@ namespace DirectX12GameEngine.Games
         public int RequestedHeight { get; private protected set; }
 
         public int RequestedWidth { get; private protected set; }
+
+        public abstract GameWindow CreateWindow(GameBase game);
     }
 
     public abstract class GameContext<TControl> : GameContext

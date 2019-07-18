@@ -19,6 +19,8 @@ namespace DirectX12GameEngine.Engine
 {
     public sealed class RenderSystem : EntitySystem<ModelComponent>
     {
+        private IGraphicsDeviceManager? graphicsDeviceManager;
+
         private const int MaxLights = 512;
 
         private readonly List<CommandList> commandLists = new List<CommandList>();
@@ -27,8 +29,10 @@ namespace DirectX12GameEngine.Engine
 
         public unsafe RenderSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
         {
-            GraphicsDevice = services.GetRequiredService<GraphicsDevice>();
+            graphicsDeviceManager = Services.GetRequiredService<IGraphicsDeviceManager>();
             SceneSystem = services.GetRequiredService<SceneSystem>();
+
+            if (GraphicsDevice is null) throw new InvalidOperationException();
 
             DirectionalLightGroupBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
             GlobalBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(GlobalBuffer));
@@ -41,12 +45,14 @@ namespace DirectX12GameEngine.Engine
 
         public Buffer ViewProjectionTransformBuffer { get; }
 
-        public GraphicsDevice GraphicsDevice { get; }
+        public GraphicsDevice? GraphicsDevice => graphicsDeviceManager?.GraphicsDevice;
 
         public SceneSystem SceneSystem { get; }
 
         public override void Draw(GameTime gameTime)
         {
+            if (GraphicsDevice is null) return;
+
             UpdateGlobals(gameTime);
             UpdateLights();
             UpdateViewProjectionMatrices();
@@ -233,7 +239,7 @@ namespace DirectX12GameEngine.Engine
 
         private void RecordCommandList(Model model, CommandList commandList, Buffer[] worldMatrixBuffers, int instanceCount, int passIndex)
         {
-            int renderTargetCount = GraphicsDevice.Presenter is null ? 1 : GraphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
+            int renderTargetCount = GraphicsDevice?.Presenter is null ? 1 : GraphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
             instanceCount *= renderTargetCount;
 
             for (int i = 0; i < model.Meshes.Count; i++)
@@ -327,7 +333,7 @@ namespace DirectX12GameEngine.Engine
             if (SceneSystem.CurrentCamera != null && SceneSystem.CurrentCamera.Entity != null)
             {
 #if WINDOWS_UWP
-                if (GraphicsDevice.Presenter is Graphics.Holographic.HolographicGraphicsPresenter graphicsPresenter)
+                if (GraphicsDevice?.Presenter is Graphics.Holographic.HolographicGraphicsPresenter graphicsPresenter)
                 {
                     var cameraPose = graphicsPresenter.HolographicFrame.CurrentPrediction.CameraPoses[0];
 

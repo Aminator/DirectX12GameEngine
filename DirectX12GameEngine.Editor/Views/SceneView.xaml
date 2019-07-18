@@ -17,9 +17,7 @@
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
 
-        <winui:TreeView
-            x:Name="treeView"
-            ItemsSource="{x:Bind ViewModel.Children}">
+        <winui:TreeView x:Name="treeView" ItemsSource="{x:Bind ViewModel.RootEntity.Children}">
             <winui:TreeView.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:EntityViewModel">
                     <winui:TreeViewItem AutomationProperties.Name="{x:Bind Name, Mode=OneWay}" ItemsSource="{x:Bind Children, Mode=OneWay}">

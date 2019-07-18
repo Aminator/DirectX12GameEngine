@@ -166,7 +166,7 @@ namespace DirectX12GameEngine.Core.Assets
             if (asset != null)
             {
                 await DeserializeAsync(root, operation, asset);
-                await asset.CreateAssetAsync(result);
+                await asset.CreateAssetAsync(result, Services);
             }
             else
             {

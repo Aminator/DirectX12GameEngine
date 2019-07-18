@@ -2,24 +2,23 @@
 using System.IO;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Graphics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Assets
 {
     [AssetContentType(typeof(Texture))]
     public class TextureAsset : AssetWithSource<Texture>
     {
-        private readonly ContentManager contentManager;
-        private readonly GraphicsDevice device;
-
-        public TextureAsset(ContentManager contentManager, GraphicsDevice device)
+        public async override Task CreateAssetAsync(Texture texture, IServiceProvider services)
         {
-            this.contentManager = contentManager;
-            this.device = device;
-        }
+            ContentManager contentManager = services.GetRequiredService<ContentManager>();
+            IGraphicsDeviceManager graphicsDeviceManager = services.GetRequiredService<IGraphicsDeviceManager>();
+            GraphicsDevice? device = graphicsDeviceManager.GraphicsDevice;
 
-        public async override Task CreateAssetAsync(Texture texture)
-        {
+            if (device is null) throw new InvalidOperationException();
+
             string extension = Path.GetExtension(Source);
 
             if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")

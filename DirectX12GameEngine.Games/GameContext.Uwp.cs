@@ -13,6 +13,8 @@ namespace DirectX12GameEngine.Games
         {
             ContextType = AppContextType.CoreWindow;
         }
+
+        public override GameWindow CreateWindow(GameBase game) => new GameWindowCoreWindow(game, this);
     }
 
     public class GameContextHolographic : GameContextCoreWindow
@@ -33,6 +35,8 @@ namespace DirectX12GameEngine.Games
         {
             ContextType = AppContextType.Xaml;
         }
+
+        public override GameWindow CreateWindow(GameBase game) => new GameWindowXaml(game, this);
     }
 }
 #endif

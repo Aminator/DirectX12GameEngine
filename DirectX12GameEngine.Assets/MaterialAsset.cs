@@ -3,30 +3,28 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Materials;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Assets
 {
     [AssetContentType(typeof(Material))]
     public class MaterialAsset : AssetWithSource<Material>
     {
-        private readonly ContentManager contentManager;
-        private readonly ShaderContentManager shaderContentManager;
-        private readonly GraphicsDevice device;
-
-        public MaterialAsset(ContentManager contentManager, ShaderContentManager shaderContentManager, GraphicsDevice device)
-        {
-            this.contentManager = contentManager;
-            this.shaderContentManager = shaderContentManager;
-            this.device = device;
-        }
-
         public MaterialAttributes Attributes { get; set; } = new MaterialAttributes();
 
-        public async override Task CreateAssetAsync(Material material)
+        public async override Task CreateAssetAsync(Material material, IServiceProvider services)
         {
+            ContentManager contentManager = services.GetRequiredService<ContentManager>();
+            ShaderContentManager shaderContentManager = services.GetRequiredService<ShaderContentManager>();
+            IGraphicsDeviceManager graphicsDeviceManager = services.GetRequiredService<IGraphicsDeviceManager>();
+            GraphicsDevice? device = graphicsDeviceManager.GraphicsDevice;
+
+            if (device is null) throw new InvalidOperationException();
+
             MaterialDescriptor descriptor;
 
             if (string.IsNullOrEmpty(Source))

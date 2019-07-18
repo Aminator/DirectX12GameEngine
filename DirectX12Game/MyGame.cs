@@ -4,7 +4,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Assets;
 using DirectX12GameEngine.Engine;
-using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using Windows.Storage;
 
@@ -12,14 +11,19 @@ namespace DirectX12Game
 {
     public sealed class MyGame : Game
     {
-        public MyGame(GameContext gameContext) : base(gameContext)
+        public MyGame()
         {
-            if (GraphicsDevice.Presenter != null)
+            SceneSystem.InitialScenePath = @"Assets\Scenes\Scene1";
+        }
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+
+            if (GraphicsDevice?.Presenter != null)
             {
                 GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
             }
-
-            SceneSystem.InitialScenePath = @"Assets\Scenes\Scene1";
         }
 
         protected override void BeginDraw()
@@ -51,7 +55,7 @@ namespace DirectX12Game
             ShaderContent.RootFolder = await temporaryFolder.CreateFolderAsync("ShaderCache", CreationCollisionOption.OpenIfExists);
 
             // TODO: DirectX12GameEngine.Assets.dll does not get copied to the output directory if it is never used.
-            MaterialAsset materialAsset = new MaterialAsset(Content, ShaderContent, GraphicsDevice);
+            MaterialAsset materialAsset = new MaterialAsset();
             materialAsset.ToString();
 
             await base.LoadContentAsync();

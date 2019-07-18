@@ -12,7 +12,14 @@ namespace DirectX12GameEngine.Editor.Views
         public SolutionExplorerView()
         {
             InitializeComponent();
+
+            DataContextChanged += (s, e) =>
+            {
+                Bindings.Update();
+            };
         }
+
+        public MainViewModel ViewModel => (MainViewModel)DataContext;
 
         private void SolutionExplorer_Collapsed(WinUI.TreeView sender, WinUI.TreeViewCollapsedEventArgs args)
         {

@@ -27,7 +27,7 @@ namespace DirectX12GameEngine.Editor.Factories
             if (rootItem.Model is StorageFolder rootFolder)
             {
                 SceneView sceneView = new SceneView(rootFolder);
-                await sceneView.LoadAsync(path);
+                Task sceneTask = sceneView.ViewModel.LoadAsync(path);
 
                 return sceneView;
             }

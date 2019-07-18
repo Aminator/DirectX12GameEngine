@@ -103,7 +103,7 @@ namespace DirectX12GameEngine.Rendering.Materials
                 compiledShader.DomainShader = result.DomainShader is null ? default : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.DomainShader, result.DomainShader);
                 compiledShader.GeometryShader = result.GeometryShader is null ? default : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.GeometryShader, result.GeometryShader);
 
-                CompiledShaderAsset shaderAsset = new CompiledShaderAsset(Content)
+                CompiledShaderAsset shaderAsset = new CompiledShaderAsset
                 {
                     VertexShaderSource = $"VertexShader_{MaterialDescriptor.MaterialId}.cso",
                     PixelShaderSource = $"PixelShader_{MaterialDescriptor.MaterialId}.cso",

@@ -3,27 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Assets
 {
     [AssetContentType(typeof(Model))]
     public class ModelAsset : AssetWithSource<Model>
     {
-        private readonly ContentManager contentManager;
-        private readonly GraphicsDevice device;
-
-        public ModelAsset(ContentManager contentManager, GraphicsDevice device)
-        {
-            this.contentManager = contentManager;
-            this.device = device;
-        }
-
         public IList<Material> Materials { get; } = new List<Material>();
 
-        public async override Task CreateAssetAsync(Model model)
+        public async override Task CreateAssetAsync(Model model, IServiceProvider services)
         {
+            ContentManager contentManager = services.GetRequiredService<ContentManager>();
+            IGraphicsDeviceManager graphicsDeviceManager = services.GetRequiredService<IGraphicsDeviceManager>();
+            GraphicsDevice? device = graphicsDeviceManager.GraphicsDevice;
+
+            if (device is null) throw new InvalidOperationException();
+
             string extension = Path.GetExtension(Source);
 
             if (extension == ".glb")

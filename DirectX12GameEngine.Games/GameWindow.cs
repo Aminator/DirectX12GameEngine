@@ -14,17 +14,7 @@ namespace DirectX12GameEngine.Games
             Services = game.Services;
         }
 
-        public static GameWindow Create(GameBase game) => game.Context.ContextType switch
-        {
-#if WINDOWS_UWP
-            AppContextType.CoreWindow => new GameWindowUwp(game),
-            AppContextType.Xaml => new GameWindowUwp(game),
-#endif
-#if NETCOREAPP
-            AppContextType.WinForms => (GameWindow)new GameWindowWinForms(game),
-#endif
-            _ => throw new PlatformNotSupportedException("This context is not supported on this platform.")
-        };
+        public bool IsExiting { get; private set; }
 
         public event EventHandler SizeChanged;
 
@@ -36,6 +26,12 @@ namespace DirectX12GameEngine.Games
 
         public virtual void Dispose()
         {
+        }
+
+        public void Exit()
+        {
+            IsExiting = true;
+            Dispose();
         }
 
         internal abstract void Run();

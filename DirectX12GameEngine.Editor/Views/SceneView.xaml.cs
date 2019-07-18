@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using DirectX12GameEngine.Editor.ViewModels;
-using DirectX12GameEngine.Engine;
+﻿using DirectX12GameEngine.Editor.ViewModels;
 using DirectX12GameEngine.Games;
 using Windows.Storage;
 using Windows.UI.Xaml.Controls;
@@ -13,28 +11,16 @@ namespace DirectX12GameEngine.Editor.Views
 {
     public sealed partial class SceneView : UserControl
     {
-        private readonly EditorGame game;
-
         public SceneView(StorageFolder rootFolder)
         {
             InitializeComponent();
 
-            game = new EditorGame(new GameContextXaml(swapChainPanel), rootFolder);
-            game.Run();
+            EditorGame game = new EditorGame(rootFolder);
+            game.Run(new GameContextXaml(swapChainPanel));
 
-            game.SceneSystem.SceneInstance.RootEntity = ViewModel.Model;
+            ViewModel = new SceneViewModel(game);
         }
 
-        public EntityViewModel ViewModel { get; } = new EntityViewModel(new Entity("RootEntity"));
-
-        public async Task LoadAsync(string path)
-        {
-            ViewModel.Children.Clear();
-
-            Entity scene = await game.Content.LoadAsync<Entity>(path);
-
-            EntityViewModel sceneViewModel = new EntityViewModel(scene);
-            ViewModel.Children.Add(sceneViewModel);
-        }
+        public SceneViewModel ViewModel { get; }
     }
 }

@@ -4,7 +4,7 @@ namespace DirectX12GameEngine.Core
 {
     public sealed class WindowHandle
     {
-        public WindowHandle(AppContextType contextType, object nativeWindow, IntPtr handle)
+        public WindowHandle(AppContextType contextType, object nativeWindow, IntPtr handle = default)
         {
             ContextType = contextType;
             NativeWindow = nativeWindow;

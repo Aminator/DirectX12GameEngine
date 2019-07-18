@@ -5,17 +5,80 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:DirectX12GameEngine.Editor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:DirectX12GameEngine.Editor.ViewModels"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     d:DesignHeight="40"
     d:DesignWidth="400"
     mc:Ignorable="d">
-    
-    <local:FileMenuBarItem />
 
-    <local:EditMenuBarItem />
+    <winui:MenuBarItem Title="File">
+        <MenuFlyoutItem Icon="Add" Text="New">
+            <MenuFlyoutItem.KeyboardAccelerators>
+                <KeyboardAccelerator Key="N" Modifiers="Control" />
+            </MenuFlyoutItem.KeyboardAccelerators>
+        </MenuFlyoutItem>
+        <MenuFlyoutItem
+            Click="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerAsync}"
+            Icon="Folder"
+            Text="Open">
+            <MenuFlyoutItem.KeyboardAccelerators>
+                <KeyboardAccelerator Key="O" Modifiers="Control" />
+            </MenuFlyoutItem.KeyboardAccelerators>
+        </MenuFlyoutItem>
+        <MenuFlyoutSubItem Icon="Folder" Text="Open Recent">
+            <MenuFlyoutItem Text="Placeholder" />
+        </MenuFlyoutSubItem>
+        <MenuFlyoutItem
+            Click="{x:Bind ViewModel.ProjectLoader.SaveProjectAsync}"
+            Icon="Save"
+            Text="Save">
+            <MenuFlyoutItem.KeyboardAccelerators>
+                <KeyboardAccelerator Key="S" Modifiers="Control" />
+            </MenuFlyoutItem.KeyboardAccelerators>
+        </MenuFlyoutItem>
+        <MenuFlyoutSeparator />
+        <MenuFlyoutItem Icon="Cancel" Text="Exit" />
+    </winui:MenuBarItem>
 
-    <local:ViewMenuBarItem DataContext="{x:Bind ViewModel.EditorViews}" />
+    <winui:MenuBarItem Title="Edit">
+        <MenuFlyoutItem Icon="Undo" Text="Undo">
+            <MenuFlyoutItem.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Z" Modifiers="Control" />
+            </MenuFlyoutItem.KeyboardAccelerators>
+        </MenuFlyoutItem>
+        <MenuFlyoutItem Icon="Redo" Text="Redo">
+            <MenuFlyoutItem.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Y" Modifiers="Control" />
+            </MenuFlyoutItem.KeyboardAccelerators>
+        </MenuFlyoutItem>
+        <MenuFlyoutSeparator />
+        <MenuFlyoutItem Icon="Cut" Text="Cut">
+            <MenuFlyoutItem.KeyboardAccelerators>
+                <KeyboardAccelerator Key="X" Modifiers="Control" />
+            </MenuFlyoutItem.KeyboardAccelerators>
+        </MenuFlyoutItem>
+        <MenuFlyoutItem Icon="Copy" Text="Copy">
+            <MenuFlyoutItem.KeyboardAccelerators>
+                <KeyboardAccelerator Key="C" Modifiers="Control" />
+            </MenuFlyoutItem.KeyboardAccelerators>
+        </MenuFlyoutItem>
+        <MenuFlyoutItem Icon="Paste" Text="Paste">
+            <MenuFlyoutItem.KeyboardAccelerators>
+                <KeyboardAccelerator Key="V" Modifiers="Control" />
+            </MenuFlyoutItem.KeyboardAccelerators>
+        </MenuFlyoutItem>
+        <MenuFlyoutItem Icon="Delete" Text="Delete">
+            <MenuFlyoutItem.KeyboardAccelerators>
+                <KeyboardAccelerator Key="Delete" />
+            </MenuFlyoutItem.KeyboardAccelerators>
+        </MenuFlyoutItem>
+        <MenuFlyoutSeparator />
+        <MenuFlyoutItem Icon="Setting" Text="Settings" />
+    </winui:MenuBarItem>
+
+    <winui:MenuBarItem Title="View">
+        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.EditorViews.IsSolutionExplorerOpen, Mode=TwoWay}" Text="Solution Explorer" />
+        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.EditorViews.IsPropertyGridOpen, Mode=TwoWay}" Text="Property Grid" />
+    </winui:MenuBarItem>
 
     <winui:MenuBarItem Title="Project">
         <MenuFlyoutItem Text="Add New Item" />

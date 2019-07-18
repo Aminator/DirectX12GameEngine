@@ -19,6 +19,6 @@ namespace DirectX12GameEngine.Editor.Views
             };
         }
 
-        public EditorViewModel ViewModel => (EditorViewModel)DataContext;
+        public MainViewModel ViewModel => (MainViewModel)DataContext;
     }
 }
