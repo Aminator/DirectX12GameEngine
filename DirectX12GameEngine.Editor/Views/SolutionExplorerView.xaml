@@ -5,25 +5,21 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:DirectX12GameEngine.Editor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:viewmodels="using:DirectX12GameEngine.Editor.ViewModels"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">
 
     <Grid>
-        <winui:TreeView
-            x:Name="solutionExplorer"
-            Collapsed="SolutionExplorer_Collapsed"
-            Expanding="SolutionExplorer_Expanding"
-            ItemInvoked="SolutionExplorer_ItemInvoked"
-            ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}">
+        <winui:TreeView x:Name="solutionExplorer" ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}">
             <winui:TreeView.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:StorageItemViewModel">
                     <winui:TreeViewItem
                         Content="{x:Bind Name}"
                         DoubleTapped="{x:Bind OpenAsync}"
                         HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=OneWay}"
+                        IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
                         ItemsSource="{x:Bind Children, Mode=OneWay}" />
                 </DataTemplate>
             </winui:TreeView.ItemTemplate>

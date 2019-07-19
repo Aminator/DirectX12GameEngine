@@ -11,7 +11,10 @@
     mc:Ignorable="d">
 
     <winui:MenuBar.Resources>
-        <XamlUICommand x:Key="NewCommand" Description="Create a new project" Label="New">
+        <XamlUICommand
+            x:Key="NewCommand"
+            Description="Create a new project"
+            Label="New">
             <XamlUICommand.IconSource>
                 <SymbolIconSource Symbol="Add" />
             </XamlUICommand.IconSource>
@@ -19,8 +22,14 @@
                 <KeyboardAccelerator Key="N" Modifiers="Control" />
             </XamlUICommand.KeyboardAccelerators>
         </XamlUICommand>
-        <StandardUICommand x:Key="OpenCommand" Kind="Open" ExecuteRequested="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerAsync}" />
-        <StandardUICommand x:Key="SaveCommand" Kind="Save" ExecuteRequested="{x:Bind ViewModel.ProjectLoader.SaveProjectAsync}" />
+        <StandardUICommand
+            x:Key="OpenCommand"
+            ExecuteRequested="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerAsync}"
+            Kind="Open" />
+        <StandardUICommand
+            x:Key="SaveCommand"
+            ExecuteRequested="{x:Bind ViewModel.ProjectLoader.SaveProjectAsync}"
+            Kind="Save" />
         <StandardUICommand x:Key="CloseCommand" Kind="Close" />
 
         <StandardUICommand x:Key="UndoCommand" Kind="Undo" />
@@ -34,9 +43,10 @@
     <winui:MenuBarItem Title="File">
         <MenuFlyoutItem Command="{StaticResource NewCommand}" />
         <MenuFlyoutItem Command="{StaticResource OpenCommand}" />
-        <MenuFlyoutSubItem Icon="Folder" Text="Open Recent">
-            <MenuFlyoutItem Text="Placeholder" />
-        </MenuFlyoutSubItem>
+        <MenuFlyoutSubItem
+            x:Name="openRecentFlyoutItem"
+            Icon="OpenFile"
+            Text="Open Recent" />
         <MenuFlyoutItem Command="{StaticResource SaveCommand}" />
         <MenuFlyoutSeparator />
         <MenuFlyoutItem Command="{StaticResource CloseCommand}" />
@@ -56,10 +66,6 @@
     <winui:MenuBarItem Title="View">
         <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.EditorViews.IsSolutionExplorerOpen, Mode=TwoWay}" Text="Solution Explorer" />
         <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.EditorViews.IsPropertyGridOpen, Mode=TwoWay}" Text="Property Grid" />
-    </winui:MenuBarItem>
-
-    <winui:MenuBarItem Title="Project">
-        <MenuFlyoutItem Text="Add New Item" />
     </winui:MenuBarItem>
 
     <winui:MenuBarItem Title="Help">

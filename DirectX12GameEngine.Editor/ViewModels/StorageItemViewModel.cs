@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.Messages;
 using DirectX12GameEngine.Editor.Messaging;
 using Windows.Storage;
-using Windows.System;
 
 #nullable enable
 
@@ -15,10 +14,22 @@ namespace DirectX12GameEngine.Editor.ViewModels
     {
         private StorageItemViewModel? parent;
         private bool hasUnrealizedChildren;
+        private bool isExpanded;
 
         public StorageItemViewModel(IStorageItem model) : base(model)
         {
             Children.CollectionChanged += Children_CollectionChanged;
+
+            PropertyChanged += async (s, e) =>
+            {
+                if (e.PropertyName == nameof(IsExpanded))
+                {
+                    if (IsExpanded)
+                    {
+                        await FillAsync();
+                    }
+                }
+            };
         }
 
         public ObservableCollection<StorageItemViewModel> Children { get; } = new ObservableCollection<StorageItemViewModel>();
@@ -35,20 +46,15 @@ namespace DirectX12GameEngine.Editor.ViewModels
             set => Set(ref hasUnrealizedChildren, value);
         }
 
+        public bool IsExpanded
+        {
+            get => isExpanded;
+            set => Set(ref isExpanded, value);
+        }
+
         public string Name
         {
             get => Model.Name;
-        }
-
-        public void Collapse()
-        {
-            //Children.Clear();
-            //HasUnrealizedChildren = true;
-        }
-
-        public async Task ExpandAsync()
-        {
-            await FillAsync();
         }
 
         public async Task FillAsync()
