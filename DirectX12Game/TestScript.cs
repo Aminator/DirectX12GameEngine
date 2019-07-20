@@ -78,10 +78,10 @@ namespace DirectX12Game
 
             switch (key)
             {
-                case Windows.System.VirtualKey.Number0 when GraphicsDevice.Presenter != null:
+                case Windows.System.VirtualKey.Number0 when GraphicsDevice?.Presenter != null:
                     GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 0;
                     break;
-                case Windows.System.VirtualKey.Number1 when GraphicsDevice.Presenter != null:
+                case Windows.System.VirtualKey.Number1 when GraphicsDevice?.Presenter != null:
                     GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
                     break;
                 case Windows.System.VirtualKey.D:

@@ -6,15 +6,14 @@ using Windows.UI.Xaml.Media;
 
 namespace DirectX12GameEngine.Games
 {
-    internal class GameWindowXaml : GameWindow
+    public class GameWindowXaml : GameWindow
     {
         private readonly SwapChainPanel swapChainPanel;
         private readonly WindowHandle windowHandle;
 
-        public GameWindowXaml(GameBase game, GameContextXaml context) : base(game)
+        public GameWindowXaml(GameBase game, SwapChainPanel swapChainPanel) : base(game)
         {
-            swapChainPanel = context.Control;
-
+            this.swapChainPanel = swapChainPanel;
             windowHandle = new WindowHandle(AppContextType.Xaml, swapChainPanel);
 
             swapChainPanel.SizeChanged += SwapChainPanel_SizeChanged;

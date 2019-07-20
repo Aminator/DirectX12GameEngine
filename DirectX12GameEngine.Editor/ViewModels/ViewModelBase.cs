@@ -4,13 +4,15 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
+#nullable enable
+
 namespace DirectX12GameEngine.Editor.ViewModels
 {
     public abstract class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void NotifyPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -21,7 +23,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             NotifyPropertyChanged(propName);
         }
 
-        protected bool Set<T>(ref T field, T value, [CallerMemberName] string name = null)
+        protected bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
         {
             if (!EqualityComparer<T>.Default.Equals(field, value))
             {
@@ -33,7 +35,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             return false;
         }
 
-        protected bool Set<T>(T currentValue, T newValue, Action setAction, [CallerMemberName] string property = null)
+        protected bool Set<T>(T currentValue, T newValue, Action setAction, [CallerMemberName] string? property = null)
         {
             if (!EqualityComparer<T>.Default.Equals(currentValue, newValue))
             {

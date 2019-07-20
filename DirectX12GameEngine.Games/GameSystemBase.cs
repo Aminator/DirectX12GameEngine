@@ -1,25 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Core.Assets;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace DirectX12GameEngine.Games
 {
     public class GameSystemBase
     {
-        public GameSystemBase(IServiceProvider services)
-        {
-            Services = services;
-            Game = services.GetRequiredService<GameBase>();
-            Content = services.GetRequiredService<ContentManager>();
-        }
-
-        public GameBase Game { get; }
-
-        public IServiceProvider Services { get; }
-
-        protected ContentManager Content { get; }
-
         public virtual void Dispose()
         {
         }

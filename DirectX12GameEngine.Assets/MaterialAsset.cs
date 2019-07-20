@@ -3,7 +3,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
-using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Materials;
@@ -20,8 +19,7 @@ namespace DirectX12GameEngine.Assets
         {
             ContentManager contentManager = services.GetRequiredService<ContentManager>();
             ShaderContentManager shaderContentManager = services.GetRequiredService<ShaderContentManager>();
-            IGraphicsDeviceManager graphicsDeviceManager = services.GetRequiredService<IGraphicsDeviceManager>();
-            GraphicsDevice? device = graphicsDeviceManager.GraphicsDevice;
+            GraphicsDevice device = services.GetRequiredService<GraphicsDevice>();
 
             if (device is null) throw new InvalidOperationException();
 

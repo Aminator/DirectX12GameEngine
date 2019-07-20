@@ -1,15 +1,15 @@
-﻿using DirectX12GameEngine.Graphics;
+﻿//using DirectX12GameEngine.Graphics;
 
-namespace DirectX12GameEngine.Engine
-{
-    public interface IGraphicsDeviceManager
-    {
-        GraphicsDevice? GraphicsDevice { get; }
+//namespace DirectX12GameEngine.Engine
+//{
+//    public interface IGraphicsDeviceManager
+//    {
+//        GraphicsDevice? GraphicsDevice { get; }
 
-        bool BeginDraw();
+//        bool BeginDraw();
 
-        void CreateDevice();
+//        void CreateDevice();
 
-        void EndDraw();
-    }
-}
+//        void EndDraw();
+//    }
+//}

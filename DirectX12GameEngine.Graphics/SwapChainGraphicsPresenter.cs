@@ -68,11 +68,11 @@ namespace DirectX12GameEngine.Graphics
 
             SwapChain3 swapChain;
 
-            switch (PresentationParameters.DeviceWindowHandle.ContextType)
+            switch (PresentationParameters.WindowHandle?.ContextType)
             {
                 case AppContextType.CoreWindow:
                     using (Factory4 factory = new Factory4())
-                    using (ComObject window = new ComObject(PresentationParameters.DeviceWindowHandle.NativeWindow))
+                    using (ComObject window = new ComObject(PresentationParameters.WindowHandle.NativeWindow))
                     using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, window, ref swapChainDescription))
                     {
                         swapChain = tempSwapChain.QueryInterface<SwapChain3>();
@@ -82,7 +82,7 @@ namespace DirectX12GameEngine.Graphics
                     swapChainDescription.AlphaMode = AlphaMode.Premultiplied;
 
                     using (Factory4 factory = new Factory4())
-                    using (ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(PresentationParameters.DeviceWindowHandle.NativeWindow))
+                    using (ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(PresentationParameters.WindowHandle.NativeWindow))
                     using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, ref swapChainDescription))
                     {
                         swapChain = tempSwapChain.QueryInterface<SwapChain3>();
@@ -91,7 +91,7 @@ namespace DirectX12GameEngine.Graphics
                     break;
                 case AppContextType.WinForms:
                     using (Factory4 factory = new Factory4())
-                    using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, PresentationParameters.DeviceWindowHandle.Handle, ref swapChainDescription))
+                    using (SwapChain1 tempSwapChain = new SwapChain1(factory, GraphicsDevice.NativeCommandQueue, PresentationParameters.WindowHandle.Handle, ref swapChainDescription))
                     {
                         swapChain = tempSwapChain.QueryInterface<SwapChain3>();
                     }

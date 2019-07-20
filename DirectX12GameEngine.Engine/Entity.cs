@@ -17,24 +17,19 @@ namespace DirectX12GameEngine.Engine
 
         private Guid id = Guid.NewGuid();
         private string name;
-        private TransformComponent transform;
+        private TransformComponent transform = new TransformComponent();
 
-        public Entity() : this(null)
+        public Entity() : this("Entity")
         {
         }
 
-        public Entity(string? name) : this(name, null)
+        public Entity(string name)
         {
-        }
+            this.name = name;
 
-        public Entity(string? name, TransformComponent? transform)
-        {
             Children.CollectionChanged += Children_CollectionChanged;
             Components.CollectionChanged += Components_CollectionChanged;
 
-            Name = name ?? GetType().Name;
-
-            Transform = transform ?? new TransformComponent();
             Components.Add(Transform);
         }
 

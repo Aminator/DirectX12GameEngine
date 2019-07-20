@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
-using Microsoft.Extensions.DependencyInjection;
 using SharpDX.Direct3D12;
 
 using Buffer = DirectX12GameEngine.Graphics.Buffer;
@@ -19,24 +17,25 @@ namespace DirectX12GameEngine.Engine
 {
     public sealed class RenderSystem : EntitySystem<ModelComponent>
     {
-        private IGraphicsDeviceManager? graphicsDeviceManager;
-
         private const int MaxLights = 512;
+
+        private readonly GraphicsDevice graphicsDevice;
+        private readonly SceneSystem sceneSystem;
 
         private readonly List<CommandList> commandLists = new List<CommandList>();
 
         private readonly Dictionary<Model, (CompiledCommandList[] Bundles, Buffer[] WorldMatrixBuffers)> models = new Dictionary<Model, (CompiledCommandList[], Buffer[])>();
 
-        public unsafe RenderSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
+        public unsafe RenderSystem(GraphicsDevice device, SceneSystem sceneSystem) : base(typeof(TransformComponent))
         {
-            graphicsDeviceManager = Services.GetRequiredService<IGraphicsDeviceManager>();
-            SceneSystem = services.GetRequiredService<SceneSystem>();
+            graphicsDevice = device;
+            this.sceneSystem = sceneSystem;
 
-            if (GraphicsDevice is null) throw new InvalidOperationException();
+            if (graphicsDevice is null) throw new InvalidOperationException();
 
-            DirectionalLightGroupBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
-            GlobalBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(GlobalBuffer));
-            ViewProjectionTransformBuffer = Buffer.Constant.New(GraphicsDevice, sizeof(StereoViewProjectionTransform));
+            DirectionalLightGroupBuffer = Buffer.Constant.New(graphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
+            GlobalBuffer = Buffer.Constant.New(graphicsDevice, sizeof(GlobalBuffer));
+            ViewProjectionTransformBuffer = Buffer.Constant.New(graphicsDevice, sizeof(StereoViewProjectionTransform));
         }
 
         public Buffer DirectionalLightGroupBuffer { get; }
@@ -45,13 +44,9 @@ namespace DirectX12GameEngine.Engine
 
         public Buffer ViewProjectionTransformBuffer { get; }
 
-        public GraphicsDevice? GraphicsDevice => graphicsDeviceManager?.GraphicsDevice;
-
-        public SceneSystem SceneSystem { get; }
-
         public override void Draw(GameTime gameTime)
         {
-            if (GraphicsDevice is null) return;
+            if (graphicsDevice is null) return;
 
             UpdateGlobals(gameTime);
             UpdateLights();
@@ -62,14 +57,14 @@ namespace DirectX12GameEngine.Engine
             int batchCount = Math.Min(Environment.ProcessorCount, componentsWithSameModel.Length);
             int batchSize = (int)Math.Ceiling((double)componentsWithSameModel.Length / batchCount);
 
-            Texture? depthStencilBuffer = GraphicsDevice.CommandList.DepthStencilBuffer;
-            Texture[] renderTargets = GraphicsDevice.CommandList.RenderTargets;
-            var viewports = GraphicsDevice.CommandList.Viewports;
-            var scissorRectangles = GraphicsDevice.CommandList.ScissorRectangles;
+            Texture? depthStencilBuffer = graphicsDevice.CommandList.DepthStencilBuffer;
+            Texture[] renderTargets = graphicsDevice.CommandList.RenderTargets;
+            var viewports = graphicsDevice.CommandList.Viewports;
+            var scissorRectangles = graphicsDevice.CommandList.ScissorRectangles;
 
             for (int i = commandLists.Count; i < batchCount; i++)
             {
-                CommandList commandList = new CommandList(GraphicsDevice, CommandListType.Direct);
+                CommandList commandList = new CommandList(graphicsDevice, CommandListType.Direct);
                 commandList.Close();
 
                 commandLists.Add(commandList);
@@ -106,14 +101,14 @@ namespace DirectX12GameEngine.Engine
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            newWorldMatrixBuffers[meshIndex] = Buffer.Constant.New(GraphicsDevice, modelComponents.Count() * 16 * sizeof(float));
+                            newWorldMatrixBuffers[meshIndex] = Buffer.Constant.New(graphicsDevice, modelComponents.Count() * 16 * sizeof(float));
                         }
 
                         CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];
 
                         for (int passIndex = 0; passIndex < highestPassCount; passIndex++)
                         {
-                            CommandList bundleCommandList = new CommandList(GraphicsDevice, CommandListType.Bundle);
+                            CommandList bundleCommandList = new CommandList(graphicsDevice, CommandListType.Bundle);
 
                             RecordCommandList(
                                 model,
@@ -172,15 +167,15 @@ namespace DirectX12GameEngine.Engine
                 compiledCommandLists[batchIndex] = commandList.Close();
             }
 
-            GraphicsDevice.CommandList.Flush();
-            GraphicsDevice.ExecuteCommandLists(compiledCommandLists);
+            graphicsDevice.CommandList.Flush();
+            graphicsDevice.ExecuteCommandLists(compiledCommandLists);
 
-            GraphicsDevice.CommandList.Reset();
-            GraphicsDevice.CommandList.ClearState();
+            graphicsDevice.CommandList.Reset();
+            graphicsDevice.CommandList.ClearState();
 
-            GraphicsDevice.CommandList.SetRenderTargets(depthStencilBuffer, renderTargets);
-            GraphicsDevice.CommandList.SetViewports(viewports);
-            GraphicsDevice.CommandList.SetScissorRectangles(scissorRectangles);
+            graphicsDevice.CommandList.SetRenderTargets(depthStencilBuffer, renderTargets);
+            graphicsDevice.CommandList.SetViewports(viewports);
+            graphicsDevice.CommandList.SetScissorRectangles(scissorRectangles);
         }
 
         public override void Dispose()
@@ -239,7 +234,7 @@ namespace DirectX12GameEngine.Engine
 
         private void RecordCommandList(Model model, CommandList commandList, Buffer[] worldMatrixBuffers, int instanceCount, int passIndex)
         {
-            int renderTargetCount = GraphicsDevice?.Presenter is null ? 1 : GraphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
+            int renderTargetCount = graphicsDevice?.Presenter is null ? 1 : graphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
             instanceCount *= renderTargetCount;
 
             for (int i = 0; i < model.Meshes.Count; i++)
@@ -330,15 +325,17 @@ namespace DirectX12GameEngine.Engine
 
         private void UpdateViewProjectionMatrices()
         {
-            if (SceneSystem.CurrentCamera != null && SceneSystem.CurrentCamera.Entity != null)
+            CameraComponent? currentCamera = sceneSystem.CurrentCamera;
+
+            if (currentCamera != null && currentCamera.Entity != null)
             {
 #if WINDOWS_UWP
-                if (GraphicsDevice?.Presenter is Graphics.Holographic.HolographicGraphicsPresenter graphicsPresenter)
+                if (graphicsDevice?.Presenter is Graphics.Holographic.HolographicGraphicsPresenter graphicsPresenter)
                 {
                     var cameraPose = graphicsPresenter.HolographicFrame.CurrentPrediction.CameraPoses[0];
 
-                    cameraPose.HolographicCamera.SetNearPlaneDistance(SceneSystem.CurrentCamera.NearPlaneDistance);
-                    cameraPose.HolographicCamera.SetFarPlaneDistance(SceneSystem.CurrentCamera.FarPlaneDistance);
+                    cameraPose.HolographicCamera.SetNearPlaneDistance(currentCamera.NearPlaneDistance);
+                    cameraPose.HolographicCamera.SetFarPlaneDistance(currentCamera.FarPlaneDistance);
 
                     var viewTransform = cameraPose.TryGetViewTransform(graphicsPresenter.SpatialStationaryFrameOfReference.CoordinateSystem);
 
@@ -346,7 +343,7 @@ namespace DirectX12GameEngine.Engine
 
                     if (viewTransform.HasValue)
                     {
-                        Matrix4x4.Decompose(SceneSystem.CurrentCamera.Entity.Transform.WorldMatrix, out _,
+                        Matrix4x4.Decompose(currentCamera.Entity.Transform.WorldMatrix, out _,
                             out Quaternion rotation,
                             out Vector3 translation);
 
@@ -373,14 +370,14 @@ namespace DirectX12GameEngine.Engine
                 else
 #endif
                 {
-                    Matrix4x4.Invert(SceneSystem.CurrentCamera.ViewMatrix, out Matrix4x4 inverseViewMatrix);
+                    Matrix4x4.Invert(currentCamera.ViewMatrix, out Matrix4x4 inverseViewMatrix);
 
                     ViewProjectionTransform viewProjectionTransform = new ViewProjectionTransform
                     {
-                        ViewMatrix = SceneSystem.CurrentCamera.ViewMatrix,
+                        ViewMatrix = currentCamera.ViewMatrix,
                         InverseViewMatrix = inverseViewMatrix,
-                        ProjectionMatrix = SceneSystem.CurrentCamera.ProjectionMatrix,
-                        ViewProjectionMatrix = SceneSystem.CurrentCamera.ViewProjectionMatrix
+                        ProjectionMatrix = currentCamera.ProjectionMatrix,
+                        ViewProjectionMatrix = currentCamera.ViewProjectionMatrix
                     };
 
                     StereoViewProjectionTransform stereoViewProjectionTransform = new StereoViewProjectionTransform { Left = viewProjectionTransform, Right = viewProjectionTransform };

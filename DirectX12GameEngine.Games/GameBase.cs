@@ -14,22 +14,25 @@ namespace DirectX12GameEngine.Games
         private DateTime previousTime;
         private TimeSpan totalTime;
 
-        public GameBase()
+        public GameBase(GameContext context)
         {
+            Context = context;
+
             ServiceCollection services = new ServiceCollection();
             ConfigureServices(services);
 
             Services = services.BuildServiceProvider();
 
+            Window = Services.GetService<GameWindow>();
+
             Content = Services.GetRequiredService<ContentManager>();
-            GameSystems = Services.GetRequiredService<List<GameSystemBase>>();
         }
 
         public ContentManager Content { get; }
 
-        public IList<GameSystemBase> GameSystems { get; }
+        public IList<GameSystemBase> GameSystems { get; } = new List<GameSystemBase>();
 
-        public GameContext? Context { get; private set; }
+        public GameContext Context { get; }
 
         public GameWindow? Window { get; private set; }
 
@@ -50,7 +53,7 @@ namespace DirectX12GameEngine.Games
             Window = null;
         }
 
-        public void Run(GameContext? context = null)
+        public void Run()
         {
             if (IsRunning)
             {
@@ -58,9 +61,6 @@ namespace DirectX12GameEngine.Games
             }
 
             IsRunning = true;
-
-            Context = context;
-            Window = Context?.CreateWindow(this);
 
             Initialize();
             LoadContentAsync();
@@ -177,9 +177,10 @@ namespace DirectX12GameEngine.Games
 
         protected virtual void ConfigureServices(IServiceCollection services)
         {
+            Context.ConfigureServices(services);
+
             services.AddSingleton<GameBase>(this);
             services.AddSingleton<ContentManager>();
-            services.AddSingleton<List<GameSystemBase>>();
         }
 
         private void CheckEndRun()

@@ -1,27 +1,28 @@
-﻿using DirectX12GameEngine.Core;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Games
 {
     public abstract class GameContext
     {
-        public AppContextType ContextType { get; protected set; }
-
-        public int RequestedHeight { get; private protected set; }
-
-        public int RequestedWidth { get; private protected set; }
-
-        public abstract GameWindow CreateWindow(GameBase game);
+        public virtual void ConfigureServices(IServiceCollection services)
+        {
+        }
     }
 
-    public abstract class GameContext<TControl> : GameContext
+    public abstract class GameContext<TControl> : GameContext where TControl : class
     {
         public TControl Control { get; private protected set; }
 
-        protected GameContext(TControl control, int requestedWidth = 0, int requestedHeight = 0)
+        protected GameContext(TControl control)
         {
             Control = control;
-            RequestedWidth = requestedWidth;
-            RequestedHeight = requestedHeight;
+        }
+
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            base.ConfigureServices(services);
+
+            services.AddSingleton(Control);
         }
     }
 }

@@ -10,10 +10,8 @@ namespace DirectX12GameEngine.Engine
     [DefaultEntitySystem(typeof(ScriptProcessor))]
     public abstract class ScriptComponent : EntityComponent
     {
-        private IGraphicsDeviceManager? graphicsDeviceManager;
-
         [IgnoreDataMember]
-        public GraphicsDevice? GraphicsDevice => graphicsDeviceManager?.GraphicsDevice;
+        public GraphicsDevice? GraphicsDevice { get; private set; }
 
 #nullable disable
         [IgnoreDataMember]
@@ -36,7 +34,7 @@ namespace DirectX12GameEngine.Engine
         {
             Services = services;
 
-            graphicsDeviceManager = Services.GetRequiredService<IGraphicsDeviceManager>();
+            GraphicsDevice = Services.GetService<GraphicsDevice>();
 
             Content = Services.GetRequiredService<ContentManager>();
             Game = Services.GetRequiredService<GameBase>();

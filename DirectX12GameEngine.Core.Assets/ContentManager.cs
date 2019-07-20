@@ -60,12 +60,14 @@ namespace DirectX12GameEngine.Core.Assets
 
         public string FileExtension { get; set; } = ".xaml";
 
-        public StorageFolder RootFolder { get; set; }
+        public StorageFolder? RootFolder { get; set; }
 
-        public string RootPath => RootFolder.Path;
+        public string? RootPath => RootFolder?.Path;
 
         public async Task<bool> ExistsAsync(string path)
         {
+            if (RootFolder is null) throw new InvalidOperationException("The root folder cannot be null.");
+
             return await RootFolder.TryGetItemAsync(path + FileExtension) != null;
         }
 

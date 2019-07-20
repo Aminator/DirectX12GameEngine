@@ -7,15 +7,14 @@ using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Games
 {
-    internal class GameWindowWinForms : GameWindow
+    public class GameWindowWinForms : GameWindow
     {
         private readonly Control control;
         private readonly WindowHandle windowHandle;
 
-        public GameWindowWinForms(GameBase game, GameContextWinForms context) : base(game)
+        public GameWindowWinForms(GameBase game, Control control) : base(game)
         {
-            control = context.Control;
-
+            this.control = control;
             windowHandle = new WindowHandle(AppContextType.WinForms, control, control.Handle);
 
             control.ClientSizeChanged += Control_ClientSizeChanged;

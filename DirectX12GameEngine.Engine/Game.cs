@@ -1,5 +1,4 @@
-﻿using System;
-using DirectX12GameEngine.Games;
+﻿using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering.Materials;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,11 +7,14 @@ namespace DirectX12GameEngine.Engine
 {
     public class Game : GameBase
     {
-        private readonly IGraphicsDeviceManager graphicsDeviceManager;
-
-        public Game()
+        public Game(GameContext context) : base(context)
         {
-            graphicsDeviceManager = Services.GetRequiredService<IGraphicsDeviceManager>();
+            GraphicsDevice = Services.GetService<GraphicsDevice>();
+            
+            if (GraphicsDevice != null)
+            {
+                GraphicsDevice.Presenter = Services.GetService<GraphicsPresenter>();
+            }
 
             SceneSystem = Services.GetRequiredService<SceneSystem>();
             Script = Services.GetRequiredService<ScriptSystem>();
@@ -22,7 +24,7 @@ namespace DirectX12GameEngine.Engine
             GameSystems.Add(Script);
         }
 
-        public GraphicsDevice? GraphicsDevice => graphicsDeviceManager.GraphicsDevice;
+        public GraphicsDevice? GraphicsDevice { get; set; }
 
         public SceneSystem SceneSystem { get; }
 
@@ -34,42 +36,21 @@ namespace DirectX12GameEngine.Engine
         {
             base.Dispose();
 
-            if (graphicsDeviceManager is IDisposable disposableGraphicsDeviceManager)
+            if (GraphicsDevice != null)
             {
-                disposableGraphicsDeviceManager.Dispose();
+                if (GraphicsDevice.Presenter != null)
+                {
+                    GraphicsDevice.Presenter.Dispose();
+                    GraphicsDevice.Presenter = null;
+                }
+
+                GraphicsDevice.Dispose();
+                GraphicsDevice = null;
             }
-        }
-
-        protected override void Initialize()
-        {
-            graphicsDeviceManager.CreateDevice();
-
-            if (Window is null || GraphicsDevice is null) return;
-
-            PresentationParameters presentationParameters = new PresentationParameters(
-                Window.ClientBounds.Width, Window.ClientBounds.Height, Window.NativeWindow);
-
-            switch (Context)
-            {
-                case GameContextHolographic context:
-                    presentationParameters.Stereo = Windows.Graphics.Holographic.HolographicDisplay.GetDefault().IsStereo;
-                    GraphicsDevice.Presenter = new Graphics.Holographic.HolographicGraphicsPresenter(GraphicsDevice, presentationParameters, context.HolographicSpace);
-                    break;
-                default:
-                    GraphicsDevice.Presenter = new SwapChainGraphicsPresenter(GraphicsDevice, presentationParameters);
-                    break;
-            }
-
-            base.Initialize();
         }
 
         protected override void BeginDraw()
         {
-            if (!graphicsDeviceManager.BeginDraw())
-            {
-                return;
-            }
-
             if (GraphicsDevice != null)
             {
                 GraphicsDevice.CommandList.Reset();
@@ -116,14 +97,13 @@ namespace DirectX12GameEngine.Engine
             base.EndDraw();
 
             GraphicsDevice?.CommandList.Flush(true);
-            graphicsDeviceManager.EndDraw();
+            GraphicsDevice?.Presenter?.Present();
         }
 
         protected override void ConfigureServices(IServiceCollection services)
         {
             base.ConfigureServices(services);
 
-            services.AddSingleton<IGraphicsDeviceManager, GraphicsDeviceManager>();
             services.AddSingleton<SceneSystem>();
             services.AddSingleton<ScriptSystem>();
             services.AddSingleton<ShaderContentManager>();

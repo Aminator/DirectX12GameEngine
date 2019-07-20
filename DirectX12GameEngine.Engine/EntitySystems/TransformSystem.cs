@@ -9,7 +9,7 @@ namespace DirectX12GameEngine.Engine
     {
         internal HashSet<TransformComponent> TransformationRoots { get; } = new HashSet<TransformComponent>();
 
-        public TransformSystem(IServiceProvider services) : base(services)
+        public TransformSystem()
         {
             Order = -200;
         }

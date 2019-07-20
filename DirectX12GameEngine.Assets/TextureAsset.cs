@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
-using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Graphics;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,8 +13,7 @@ namespace DirectX12GameEngine.Assets
         public async override Task CreateAssetAsync(Texture texture, IServiceProvider services)
         {
             ContentManager contentManager = services.GetRequiredService<ContentManager>();
-            IGraphicsDeviceManager graphicsDeviceManager = services.GetRequiredService<IGraphicsDeviceManager>();
-            GraphicsDevice? device = graphicsDeviceManager.GraphicsDevice;
+            GraphicsDevice device = services.GetRequiredService<GraphicsDevice>();
 
             if (device is null) throw new InvalidOperationException();
 

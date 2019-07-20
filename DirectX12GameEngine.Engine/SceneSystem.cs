@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Games;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
 {
     public sealed class SceneSystem : GameSystemBase
     {
-        public SceneSystem(IServiceProvider services) : base(services)
+        private readonly ContentManager content;
+
+        public SceneSystem(IServiceProvider services)
         {
             SceneInstance = new SceneInstance(services);
+            content = services.GetRequiredService<ContentManager>();
         }
 
         public CameraComponent? CurrentCamera { get; set; }
@@ -21,7 +26,7 @@ namespace DirectX12GameEngine.Engine
         {
             if (InitialScenePath != null)
             {
-                SceneInstance.RootEntity = await Content.LoadAsync<Entity>(InitialScenePath);
+                SceneInstance.RootEntity = await content.LoadAsync<Entity>(InitialScenePath);
             }
         }
 

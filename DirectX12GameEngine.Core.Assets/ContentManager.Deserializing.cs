@@ -121,7 +121,7 @@ namespace DirectX12GameEngine.Core.Assets
             {
                 if (typeof(Asset).IsAssignableFrom(loadedType))
                 {
-                    asset = (Asset)ActivatorUtilities.CreateInstance(Services, loadedType);
+                    asset = (Asset)Activator.CreateInstance(loadedType);
                 }
                 else
                 {
@@ -139,11 +139,11 @@ namespace DirectX12GameEngine.Core.Assets
                 {
                     if (type.IsAssignableFrom(loadedType))
                     {
-                        result = ActivatorUtilities.CreateInstance(Services, loadedType);
+                        result = Activator.CreateInstance(loadedType);
                     }
                     else if (typeof(Asset).IsAssignableFrom(loadedType))
                     {
-                        result = ActivatorUtilities.CreateInstance(Services, type);
+                        result = Activator.CreateInstance(type);
                     }
                     else
                     {
@@ -310,7 +310,7 @@ namespace DirectX12GameEngine.Core.Assets
             string? content = element.Nodes().OfType<XText>().FirstOrDefault()?.Value;
 
             return string.IsNullOrWhiteSpace(content)
-                ? ActivatorUtilities.CreateInstance(Services, type)
+                ? Activator.CreateInstance(type)
                 : TypeDescriptor.GetConverter(type).ConvertFromString(content);
         }
 
@@ -357,11 +357,11 @@ namespace DirectX12GameEngine.Core.Assets
                     parsedParameters[i] = TypeDescriptor.GetConverter(constructorParameters[i].ParameterType).ConvertFromString(markupExtensionParameters[i]);
                 }
 
-                markupExtension = (MarkupExtension)ActivatorUtilities.CreateInstance(Services, markupExtensionType, parsedParameters);
+                markupExtension = (MarkupExtension)Activator.CreateInstance(markupExtensionType, parsedParameters);
             }
             else
             {
-                markupExtension = (MarkupExtension)ActivatorUtilities.CreateInstance(Services, markupExtensionType);
+                markupExtension = (MarkupExtension)Activator.CreateInstance(markupExtensionType);
             }
 
             if (markupExtensionString.Length == 2)

@@ -5,32 +5,37 @@ namespace DirectX12GameEngine.Graphics
 {
     public class PresentationParameters
     {
-        public PresentationParameters(int backBufferWidth, int backBufferHeight, WindowHandle deviceWindowHandle, PixelFormat backBufferFomat = PixelFormat.B8G8R8A8_UNorm, PixelFormat depthStencilFormat = PixelFormat.D32_Float, bool stereo = false, int syncInterval = 1, PresentParameters presentParameters = default)
+        public PresentationParameters()
+        {
+        }
+
+        public PresentationParameters(int backBufferWidth, int backBufferHeight, WindowHandle windowHandle)
+            : this(backBufferWidth, backBufferHeight, windowHandle, PixelFormat.B8G8R8A8_UNorm)
+        {
+        }
+
+        public PresentationParameters(int backBufferWidth, int backBufferHeight, WindowHandle windowHandle, PixelFormat backBufferFomat)
         {
             BackBufferWidth = backBufferWidth;
             BackBufferHeight = backBufferHeight;
             BackBufferFormat = backBufferFomat;
-            DepthStencilFormat = depthStencilFormat;
-            DeviceWindowHandle = deviceWindowHandle;
-            PresentParameters = presentParameters;
-            Stereo = stereo;
-            SyncInterval = syncInterval;
+            WindowHandle = windowHandle;
         }
 
         public int BackBufferWidth { get; set; }
 
         public int BackBufferHeight { get; set; }
 
-        public PixelFormat BackBufferFormat { get; set; }
+        public PixelFormat BackBufferFormat { get; set; } = PixelFormat.B8G8R8A8_UNorm;
 
-        public PixelFormat DepthStencilFormat { get; set; }
+        public PixelFormat DepthStencilFormat { get; set; } = PixelFormat.D32_Float;
 
-        public WindowHandle DeviceWindowHandle { get; set; }
+        public WindowHandle? WindowHandle { get; set; }
 
         public PresentParameters PresentParameters { get; set; }
 
         public bool Stereo { get; set; }
 
-        public int SyncInterval { get; set; }
+        public int SyncInterval { get; set; } = 1;
     }
 }

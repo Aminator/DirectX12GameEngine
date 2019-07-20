@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Assets;
 using DirectX12GameEngine.Engine;
+using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using Windows.Storage;
 
@@ -11,7 +12,7 @@ namespace DirectX12Game
 {
     public sealed class MyGame : Game
     {
-        public MyGame()
+        public MyGame(GameContext context) : base(context)
         {
             SceneSystem.InitialScenePath = @"Assets\Scenes\Scene1";
         }
@@ -30,7 +31,7 @@ namespace DirectX12Game
         {
             base.BeginDraw();
 
-            if (GraphicsDevice.Presenter != null)
+            if (GraphicsDevice?.Presenter != null)
             {
                 GraphicsDevice.CommandList.Clear(GraphicsDevice.Presenter.BackBuffer, new Vector4(0.0f, 0.25f, 0.5f, 1.0f));
                 GraphicsDevice.CommandList.Clear(GraphicsDevice.Presenter.DepthStencilBuffer, ClearFlags.FlagsDepth);

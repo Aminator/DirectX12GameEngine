@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Engine
 {
     public class VideoSystem : EntitySystem<VideoComponent>
     {
-        public VideoSystem(IServiceProvider services) : base(services)
+        public VideoSystem()
         {
         }
 

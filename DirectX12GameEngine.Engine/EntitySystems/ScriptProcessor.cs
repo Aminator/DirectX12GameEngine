@@ -1,15 +1,12 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace DirectX12GameEngine.Engine
+﻿namespace DirectX12GameEngine.Engine
 {
     public class ScriptProcessor : EntitySystem<ScriptComponent>
     {
         private readonly ScriptSystem scriptSystem;
 
-        public ScriptProcessor(IServiceProvider services) : base(services)
+        public ScriptProcessor(ScriptSystem scriptSystem)
         {
-            scriptSystem = services.GetRequiredService<ScriptSystem>();
+            this.scriptSystem = scriptSystem;
         }
 
         protected override void OnEntityComponentAdded(ScriptComponent component)

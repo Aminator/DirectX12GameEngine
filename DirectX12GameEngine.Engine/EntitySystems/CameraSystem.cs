@@ -1,22 +1,20 @@
-﻿using System;
-using DirectX12GameEngine.Games;
+﻿using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
 {
     public sealed class CameraSystem : EntitySystem<CameraComponent>
     {
-        private readonly IGraphicsDeviceManager graphicsDeviceManager;
+        private readonly GraphicsDevice graphicsDevice;
 
-        public CameraSystem(IServiceProvider services) : base(services, typeof(TransformComponent))
+        public CameraSystem(GraphicsDevice device) : base(typeof(TransformComponent))
         {
             Order = -10;
 
-            graphicsDeviceManager = services.GetRequiredService<IGraphicsDeviceManager>();
+            graphicsDevice = device;
         }
 
-        public GraphicsDevice? GraphicsDevice => graphicsDeviceManager.GraphicsDevice;
+        public GraphicsDevice? GraphicsDevice { get; set; }
 
         public override void Draw(GameTime gameTime)
         {
@@ -24,10 +22,7 @@ namespace DirectX12GameEngine.Engine
             {
                 float? screenAspectRatio = null;
 
-                if (GraphicsDevice != null)
-                {
-                    screenAspectRatio = GraphicsDevice.CommandList.Viewports[0].Width / GraphicsDevice.CommandList.Viewports[0].Height;
-                }
+                screenAspectRatio = graphicsDevice.CommandList.Viewports[0].Width / graphicsDevice.CommandList.Viewports[0].Height;
 
                 cameraComponent.Update(screenAspectRatio);
             }

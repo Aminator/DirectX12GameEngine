@@ -7,14 +7,17 @@ namespace DirectX12GameEngine.Engine
 {
     public class ScriptSystem : GameSystemBase
     {
+        private readonly IServiceProvider services;
+
         private readonly HashSet<ScriptComponent> registeredScripts = new HashSet<ScriptComponent>();
         private readonly HashSet<ScriptComponent> scriptsToStart = new HashSet<ScriptComponent>();
         private readonly HashSet<SyncScript> syncScripts = new HashSet<SyncScript>();
         private readonly List<ScriptComponent> scriptsToStartCopy = new List<ScriptComponent>();
         private readonly List<SyncScript> syncScriptsCopy = new List<SyncScript>();
 
-        public ScriptSystem(IServiceProvider services) : base(services)
+        public ScriptSystem(IServiceProvider services)
         {
+            this.services = services;
         }
 
         public override void Update(GameTime gameTime)
@@ -48,7 +51,7 @@ namespace DirectX12GameEngine.Engine
 
         public void Add(ScriptComponent script)
         {
-            script.Initialize(Services);
+            script.Initialize(services);
             registeredScripts.Add(script);
 
             scriptsToStart.Add(script);

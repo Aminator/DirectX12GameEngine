@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Engine;
+using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using Windows.Storage;
 
@@ -11,7 +12,7 @@ namespace DirectX12GameEngine.Editor
 {
     public class EditorGame : Game
     {
-        public EditorGame(StorageFolder rootFolder)
+        public EditorGame(GameContext context, StorageFolder rootFolder) : base(context)
         {
             Content.RootFolder = rootFolder;
         }

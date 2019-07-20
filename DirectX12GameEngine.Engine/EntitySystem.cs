@@ -6,11 +6,10 @@ namespace DirectX12GameEngine.Engine
 {
     public abstract class EntitySystem : IDisposable
     {
-        public EntitySystem(Type mainType, IServiceProvider services, params Type[] requiredAdditionalTypes)
+        public EntitySystem(Type mainType, params Type[] requiredAdditionalTypes)
         {
             MainType = mainType;
             RequiredTypes = requiredAdditionalTypes;
-            Services = services;
         }
 
         public EntityManager? EntityManager { get; internal set; }
@@ -18,8 +17,6 @@ namespace DirectX12GameEngine.Engine
         public Type MainType { get; }
 
         public Type[] RequiredTypes { get; }
-
-        public IServiceProvider Services { get; }
 
         public int Order { get; protected set; }
 
@@ -45,8 +42,8 @@ namespace DirectX12GameEngine.Engine
 
     public abstract class EntitySystem<TComponent> : EntitySystem where TComponent : EntityComponent
     {
-        public EntitySystem(IServiceProvider services, params Type[] requiredAdditionalTypes)
-            : base(typeof(TComponent), services, requiredAdditionalTypes)
+        public EntitySystem(params Type[] requiredAdditionalTypes)
+            : base(typeof(TComponent), requiredAdditionalTypes)
         {
         }
 
@@ -61,13 +58,13 @@ namespace DirectX12GameEngine.Engine
 
             if (entityMatch && !entityAdded)
             {
-                OnEntityComponentAdded(entityComponent);
                 Components.Add(entityComponent);
+                OnEntityComponentAdded(entityComponent);
             }
             else if (!entityMatch && entityAdded)
             {
-                OnEntityComponentRemoved(entityComponent);
                 Components.Remove(entityComponent);
+                OnEntityComponentRemoved(entityComponent);
             }
         }
 
