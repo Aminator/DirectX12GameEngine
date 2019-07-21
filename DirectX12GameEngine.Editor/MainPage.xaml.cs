@@ -23,13 +23,15 @@ namespace DirectX12GameEngine.Editor
             DataContext = ((ViewModelLocator)Application.Current.Resources["ViewModelLocator"]).Main;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        public MainViewModel ViewModel => (MainViewModel)DataContext;
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
             if (e.Parameter is string token && !string.IsNullOrEmpty(token))
             {
-                Messenger.Default.Send(new OpenRecentProjectMessage(token));
+                await ViewModel.ProjectLoader.OpenRecentProjectAsync(token);
             }
         }
     }

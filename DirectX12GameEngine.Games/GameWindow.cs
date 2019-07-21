@@ -1,28 +1,17 @@
 ﻿using System;
 using System.Drawing;
-using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Games
 {
     public abstract class GameWindow : IDisposable
     {
-        private readonly GameBase game;
+        public event EventHandler SizeChanged;
 
-        protected GameWindow(GameBase game)
-        {
-            this.game = game;
-            Services = game.Services;
-        }
+        public event EventHandler TickRequested;
 
         public bool IsExiting { get; private set; }
 
-        public event EventHandler SizeChanged;
-
         public abstract Rectangle ClientBounds { get; }
-
-        public abstract WindowHandle NativeWindow { get; }
-
-        internal IServiceProvider Services { get; set; }
 
         public virtual void Dispose()
         {
@@ -36,14 +25,14 @@ namespace DirectX12GameEngine.Games
 
         internal abstract void Run();
 
-        protected virtual void OnSizeChanged(EventArgs e)
+        protected virtual void NotifySizeChanged()
         {
-            SizeChanged?.Invoke(this, e);
+            SizeChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void Tick()
+        protected virtual void Tick()
         {
-            game.Tick();
+            TickRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }

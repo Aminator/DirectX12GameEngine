@@ -17,13 +17,13 @@ namespace DirectX12Game
             SceneSystem.CurrentCamera = Camera;
 
 #if WINDOWS_UWP
-            if (Game.Context is GameContextCoreWindow context)
+            if (Game.Context is CoreWindowGameContext context)
             {
                 context.Control.PointerPressed += (s, e) => OnPointerPressed(e.CurrentPoint);
                 context.Control.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.CurrentPoint);
                 context.Control.KeyDown += (s, e) => OnKeyDown(e.VirtualKey);
             }
-            else if (Game.Context is GameContextXaml xamlContext)
+            else if (Game.Context is XamlGameContext xamlContext)
             {
                 xamlContext.Control.PointerPressed += (s, e) => OnPointerPressed(e.GetCurrentPoint(xamlContext.Control));
                 xamlContext.Control.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.GetCurrentPoint(xamlContext.Control));
@@ -31,7 +31,7 @@ namespace DirectX12Game
             }
 #endif
 #if NETCOREAPP
-            if (Game.Context is GameContextWinForms winFormsContext)
+            if (Game.Context is WinFormsGameContext winFormsContext)
             {
                 winFormsContext.Control.KeyDown += (s, e) => OnKeyDown((Windows.System.VirtualKey)e.KeyCode);
             }

@@ -120,10 +120,12 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Commanding\RelayCommand.cs" />
     <Compile Include="Factories\AssetViewFactory.cs" />
     <Compile Include="Factories\EngineAssetViewFactory.cs" />
     <Compile Include="Factories\IAssetViewFactory.cs" />
     <Compile Include="Factories\SceneViewFactory.cs" />
+    <Compile Include="Messages\DeleteMessage.cs" />
     <Compile Include="Messages\LaunchStorageItemMessage.cs" />
     <Compile Include="Messaging\IMessenger.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
@@ -134,7 +136,6 @@
       <DependentUpon>EditorMenuBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Messaging\Messenger.cs" />
-    <Compile Include="Messages\OpenRecentProjectMessage.cs" />
     <Compile Include="Messages\ProjectLoadedMessage.cs" />
     <Compile Include="ViewModels\ProjectLoaderViewModel.cs" />
     <Compile Include="EditorGame.cs" />

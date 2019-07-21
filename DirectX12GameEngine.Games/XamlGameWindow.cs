@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Drawing;
-using DirectX12GameEngine.Core;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 
 namespace DirectX12GameEngine.Games
 {
-    public class GameWindowXaml : GameWindow
+    public class XamlGameWindow : GameWindow
     {
         private readonly SwapChainPanel swapChainPanel;
-        private readonly WindowHandle windowHandle;
 
-        public GameWindowXaml(GameBase game, SwapChainPanel swapChainPanel) : base(game)
+        public XamlGameWindow(SwapChainPanel swapChainPanel)
         {
             this.swapChainPanel = swapChainPanel;
-            windowHandle = new WindowHandle(AppContextType.Xaml, swapChainPanel);
 
             swapChainPanel.SizeChanged += SwapChainPanel_SizeChanged;
             swapChainPanel.CompositionScaleChanged += SwapChainPanel_CompositionScaleChanged;
@@ -29,8 +26,6 @@ namespace DirectX12GameEngine.Games
                     Math.Max(1, (int)(swapChainPanel.ActualHeight * swapChainPanel.CompositionScaleY + 0.5f)));
             }
         }
-
-        public override WindowHandle NativeWindow => windowHandle;
 
         public override void Dispose()
         {
@@ -49,12 +44,12 @@ namespace DirectX12GameEngine.Games
 
         private void SwapChainPanel_CompositionScaleChanged(SwapChainPanel sender, object args)
         {
-            OnSizeChanged(EventArgs.Empty);
+            NotifySizeChanged();
         }
 
         private void SwapChainPanel_SizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
         {
-            OnSizeChanged(EventArgs.Empty);
+            NotifySizeChanged();
         }
     }
 }

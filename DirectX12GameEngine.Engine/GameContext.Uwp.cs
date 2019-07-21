@@ -1,8 +1,6 @@
 ﻿#if WINDOWS_UWP
 using System;
-using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
-using DirectX12GameEngine.Graphics.Holographic;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.Graphics.Holographic;
 using Windows.UI.Core;
@@ -10,13 +8,11 @@ using Windows.UI.Xaml.Controls;
 
 namespace DirectX12GameEngine.Games
 {
-    public class GameContextCoreWindow : GameContextWithGraphics<CoreWindow>
+    public class CoreWindowGameContext : GameContextWithGraphics<CoreWindow>
     {
-        public GameContextCoreWindow(CoreWindow? control = null)
+        public CoreWindowGameContext(CoreWindow? control = null)
             : base(control ?? CoreWindow.GetForCurrentThread())
         {
-            PresentationParameters.WindowHandle = new WindowHandle(AppContextType.CoreWindow, Control);
-
             PresentationParameters.BackBufferWidth = (int)Control.Bounds.Width;
             PresentationParameters.BackBufferHeight = (int)Control.Bounds.Width;
         }
@@ -25,19 +21,17 @@ namespace DirectX12GameEngine.Games
         {
             base.ConfigureServices(services);
 
-            services.AddSingleton<GameWindow, GameWindowCoreWindow>();
-            services.AddSingleton<GraphicsPresenter, SwapChainGraphicsPresenter>();
+            services.AddSingleton<GameWindow, CoreWindowGameWindow>();
+            services.AddSingleton<GraphicsPresenter, CoreWindowSwapChainGraphicsPresenter>();
         }
     }
 
-    public class GameContextHolographic : GameContextWithGraphics<CoreWindow>
+    public class HolographicGameContext : GameContextWithGraphics<CoreWindow>
     {
-        public GameContextHolographic(HolographicSpace? holographicSpace = null, CoreWindow? control = null)
+        public HolographicGameContext(HolographicSpace? holographicSpace = null, CoreWindow? control = null)
             : base(control ?? CoreWindow.GetForCurrentThread())
         {
             HolographicSpace = holographicSpace ?? HolographicSpace.CreateForCoreWindow(Control);
-
-            PresentationParameters.WindowHandle = new WindowHandle(AppContextType.CoreWindow, Control);
 
             PresentationParameters.BackBufferWidth = (int)Control.Bounds.Width;
             PresentationParameters.BackBufferHeight = (int)Control.Bounds.Width;
@@ -50,17 +44,15 @@ namespace DirectX12GameEngine.Games
             base.ConfigureServices(services);
 
             services.AddSingleton(HolographicSpace);
-            services.AddSingleton<GameWindow, GameWindowCoreWindow>();
-            services.AddSingleton<GraphicsPresenter, HolographicGraphicsPresenter>();
+            services.AddSingleton<GameWindow, CoreWindowGameWindow>();
+            services.AddSingleton<GraphicsPresenter, CoreWindowSwapChainGraphicsPresenter>();
         }
     }
 
-    public class GameContextXaml : GameContextWithGraphics<SwapChainPanel>
+    public class XamlGameContext : GameContextWithGraphics<SwapChainPanel>
     {
-        public GameContextXaml(SwapChainPanel control) : base(control)
+        public XamlGameContext(SwapChainPanel control) : base(control)
         {
-            PresentationParameters.WindowHandle = new WindowHandle(AppContextType.Xaml, Control);
-
             PresentationParameters.BackBufferWidth = Math.Max(1, (int)(Control.ActualWidth * Control.CompositionScaleX + 0.5f));
             PresentationParameters.BackBufferHeight = Math.Max(1, (int)(Control.ActualHeight * Control.CompositionScaleY + 0.5f));
         }
@@ -69,8 +61,8 @@ namespace DirectX12GameEngine.Games
         {
             base.ConfigureServices(services);
 
-            services.AddSingleton<GameWindow, GameWindowXaml>();
-            services.AddSingleton<GraphicsPresenter, SwapChainGraphicsPresenter>();
+            services.AddSingleton<GameWindow, XamlGameWindow>();
+            services.AddSingleton<GraphicsPresenter, XamlSwapChainGraphicsPresenter>();
         }
     }
 }

@@ -28,8 +28,12 @@ namespace DirectX12GameEngine.Editor.Views
         {
             foreach (AccessListEntry accessListEntry in ViewModel.ProjectLoader.RecentProjects)
             {
-                MenuFlyoutItem item = new MenuFlyoutItem { Text = accessListEntry.Metadata };
-                item.Click += async (s, e) => await ViewModel.ProjectLoader.OpenRecentProjectAsync(accessListEntry.Token);
+                MenuFlyoutItem item = new MenuFlyoutItem
+                {
+                    Text = accessListEntry.Metadata,
+                    Command = ViewModel.ProjectLoader.OpenRecentProjectCommand,
+                    CommandParameter = accessListEntry.Token
+                };
 
                 openRecentFlyoutItem.Items.Add(item);
             }

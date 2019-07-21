@@ -25,6 +25,11 @@ namespace DirectX12GameEngine.Games
 
             Window = Services.GetService<GameWindow>();
 
+            if (Window != null)
+            {
+                Window.TickRequested += (s, e) => Tick();
+            }
+
             Content = Services.GetRequiredService<ContentManager>();
         }
 

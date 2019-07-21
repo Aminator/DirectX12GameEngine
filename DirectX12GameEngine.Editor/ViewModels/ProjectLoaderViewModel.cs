@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Editor.Commanding;
 using DirectX12GameEngine.Editor.Messages;
 using DirectX12GameEngine.Editor.Messaging;
 using Windows.ApplicationModel.Core;
@@ -26,7 +27,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 RecentProjects.Add(accessListEntry);
             }
 
-            Messenger.Default.Register<OpenRecentProjectMessage>(this, async m => await OpenRecentProjectAsync(m.Token));
+            OpenProjectWithPickerCommand = new RelayCommand(async () => await OpenProjectWithPickerAsync());
+            OpenRecentProjectCommand = new RelayCommand<string>(async token => await OpenRecentProjectAsync(token));
         }
 
         public bool IsProjectLoaded
@@ -37,12 +39,9 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public ObservableCollection<AccessListEntry> RecentProjects { get; } = new ObservableCollection<AccessListEntry>();
 
-        public async Task OpenRecentProjectAsync(string token)
-        {
-            StorageFolder folder = await StorageApplicationPermissions.MostRecentlyUsedList.GetFolderAsync(token);
+        public RelayCommand OpenProjectWithPickerCommand { get; }
 
-            await OpenProjectAsync(folder);
-        }
+        public RelayCommand<string> OpenRecentProjectCommand { get; }
 
         public async Task OpenProjectWithPickerAsync()
         {
@@ -54,6 +53,13 @@ namespace DirectX12GameEngine.Editor.ViewModels
             {
                 await OpenProjectAsync(folder);
             }
+        }
+
+        public async Task OpenRecentProjectAsync(string token)
+        {
+            StorageFolder folder = await StorageApplicationPermissions.MostRecentlyUsedList.GetFolderAsync(token);
+
+            await OpenProjectAsync(folder);
         }
 
         public async Task OpenProjectAsync(StorageFolder folder)
@@ -79,11 +85,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
                 await LoadAssemblyAsync(folder);
             }
-        }
-
-        public Task SaveProjectAsync()
-        {
-            throw new NotImplementedException();
         }
 
         private async Task LoadAssemblyAsync(StorageFolder folder)

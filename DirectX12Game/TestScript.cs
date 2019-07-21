@@ -16,17 +16,17 @@ namespace DirectX12Game
         public override void Start()
         {
 #if WINDOWS_UWP
-            if (Game.Context is GameContextCoreWindow context)
+            if (Game.Context is CoreWindowGameContext context)
             {
                 context.Control.KeyDown += Control_KeyDown;
             }
-            else if (Game.Context is GameContextXaml xamlContext)
+            else if (Game.Context is XamlGameContext xamlContext)
             {
                 xamlContext.Control.KeyDown += Control_KeyDown1;
             }
 #endif
 #if NETCOREAPP
-            if (Game.Context is GameContextWinForms winFormsContext)
+            if (Game.Context is WinFormsGameContext winFormsContext)
             {
                 winFormsContext.Control.KeyDown += Control_KeyDown2;
             }
@@ -54,17 +54,17 @@ namespace DirectX12Game
         public override void Cancel()
         {
 #if WINDOWS_UWP
-            if (Game.Context is GameContextCoreWindow context)
+            if (Game.Context is CoreWindowGameContext context)
             {
                 context.Control.KeyDown -= Control_KeyDown;
             }
-            else if (Game.Context is GameContextXaml xamlContext)
+            else if (Game.Context is XamlGameContext xamlContext)
             {
                 xamlContext.Control.KeyDown -= Control_KeyDown1;
             }
 #endif
 #if NETCOREAPP
-            if (Game.Context is GameContextWinForms winFormsContext)
+            if (Game.Context is WinFormsGameContext winFormsContext)
             {
                 winFormsContext.Control.KeyDown -= Control_KeyDown2;
             }

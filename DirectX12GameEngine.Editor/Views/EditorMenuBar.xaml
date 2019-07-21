@@ -24,12 +24,9 @@
         </XamlUICommand>
         <StandardUICommand
             x:Key="OpenCommand"
-            ExecuteRequested="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerAsync}"
+            Command="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerCommand}"
             Kind="Open" />
-        <StandardUICommand
-            x:Key="SaveCommand"
-            ExecuteRequested="{x:Bind ViewModel.ProjectLoader.SaveProjectAsync}"
-            Kind="Save" />
+        <StandardUICommand x:Key="SaveCommand" Kind="Save" />
         <StandardUICommand x:Key="CloseCommand" Kind="Close" />
 
         <StandardUICommand x:Key="UndoCommand" Kind="Undo" />

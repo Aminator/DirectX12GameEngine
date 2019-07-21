@@ -3,19 +3,16 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Media;
-using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Games
 {
-    public class GameWindowWinForms : GameWindow
+    public class WinFormsGameWindow : GameWindow
     {
         private readonly Control control;
-        private readonly WindowHandle windowHandle;
 
-        public GameWindowWinForms(GameBase game, Control control) : base(game)
+        public WinFormsGameWindow(Control control)
         {
             this.control = control;
-            windowHandle = new WindowHandle(AppContextType.WinForms, control, control.Handle);
 
             control.ClientSizeChanged += Control_ClientSizeChanged;
         }
@@ -33,8 +30,6 @@ namespace DirectX12GameEngine.Games
             }
         }
 
-        public override WindowHandle NativeWindow => windowHandle;
-
         public override void Dispose()
         {
             CompositionTarget.Rendering -= CompositionTarget_Rendering;
@@ -42,7 +37,7 @@ namespace DirectX12GameEngine.Games
 
         internal override void Run()
         {
-            CompositionTarget.Rendering += (s, e) => Tick();
+            CompositionTarget.Rendering += CompositionTarget_Rendering;
         }
 
         private void CompositionTarget_Rendering(object sender, object e)
@@ -52,7 +47,7 @@ namespace DirectX12GameEngine.Games
 
         private void Control_ClientSizeChanged(object sender, EventArgs e)
         {
-            OnSizeChanged(e);
+            NotifySizeChanged();
         }
     }
 }

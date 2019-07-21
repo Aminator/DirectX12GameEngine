@@ -1,21 +1,18 @@
 ﻿#if WINDOWS_UWP
 using System;
 using System.Drawing;
-using DirectX12GameEngine.Core;
 using Windows.Graphics.Display;
 using Windows.UI.Core;
 
 namespace DirectX12GameEngine.Games
 {
-    public class GameWindowCoreWindow : GameWindow
+    public class CoreWindowGameWindow : GameWindow
     {
         private readonly CoreWindow coreWindow;
-        private readonly WindowHandle windowHandle;
 
-        public GameWindowCoreWindow(GameBase game, CoreWindow coreWindow) : base(game)
+        public CoreWindowGameWindow(CoreWindow coreWindow)
         {
             this.coreWindow = coreWindow;
-            windowHandle = new WindowHandle(AppContextType.CoreWindow, coreWindow);
 
             coreWindow.SizeChanged += CoreWindow_SizeChanged;
         }
@@ -31,8 +28,6 @@ namespace DirectX12GameEngine.Games
             }
         }
 
-        public override WindowHandle NativeWindow => windowHandle;
-
         internal override void Run()
         {
             while (!IsExiting)
@@ -44,7 +39,7 @@ namespace DirectX12GameEngine.Games
 
         private void CoreWindow_SizeChanged(CoreWindow sender, WindowSizeChangedEventArgs args)
         {
-            OnSizeChanged(EventArgs.Empty);
+            NotifySizeChanged();
         }
     }
 }

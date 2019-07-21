@@ -15,7 +15,7 @@ namespace DirectX12GameEngine.Editor.Views
         {
             InitializeComponent();
 
-            EditorGame game = new EditorGame(new GameContextXaml(swapChainPanel), rootFolder);
+            EditorGame game = new EditorGame(new XamlGameContext(swapChainPanel), rootFolder);
             game.Run();
 
             ViewModel = new SceneViewModel(game);

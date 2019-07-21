@@ -33,11 +33,11 @@ namespace DirectX12CoreWindowApp
             {
                 HolographicSpace holographicSpace = HolographicSpace.CreateForCoreWindow(sender.CoreWindow);
 
-                gameContext = new GameContextHolographic(holographicSpace);
+                gameContext = new HolographicGameContext(holographicSpace);
             }
             else
             {
-                gameContext = new GameContextCoreWindow();
+                gameContext = new CoreWindowGameContext();
             }
 
             sender.CoreWindow.Activate();

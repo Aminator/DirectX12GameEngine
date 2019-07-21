@@ -1,5 +1,4 @@
-﻿using DirectX12GameEngine.Core;
-using SharpDX.DXGI;
+﻿using SharpDX.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -9,17 +8,16 @@ namespace DirectX12GameEngine.Graphics
         {
         }
 
-        public PresentationParameters(int backBufferWidth, int backBufferHeight, WindowHandle windowHandle)
-            : this(backBufferWidth, backBufferHeight, windowHandle, PixelFormat.B8G8R8A8_UNorm)
+        public PresentationParameters(int backBufferWidth, int backBufferHeight)
+            : this(backBufferWidth, backBufferHeight, PixelFormat.B8G8R8A8_UNorm)
         {
         }
 
-        public PresentationParameters(int backBufferWidth, int backBufferHeight, WindowHandle windowHandle, PixelFormat backBufferFomat)
+        public PresentationParameters(int backBufferWidth, int backBufferHeight, PixelFormat backBufferFomat)
         {
             BackBufferWidth = backBufferWidth;
             BackBufferHeight = backBufferHeight;
             BackBufferFormat = backBufferFomat;
-            WindowHandle = windowHandle;
         }
 
         public int BackBufferWidth { get; set; }
@@ -29,8 +27,6 @@ namespace DirectX12GameEngine.Graphics
         public PixelFormat BackBufferFormat { get; set; } = PixelFormat.B8G8R8A8_UNorm;
 
         public PixelFormat DepthStencilFormat { get; set; } = PixelFormat.D32_Float;
-
-        public WindowHandle? WindowHandle { get; set; }
 
         public PresentParameters PresentParameters { get; set; }
 

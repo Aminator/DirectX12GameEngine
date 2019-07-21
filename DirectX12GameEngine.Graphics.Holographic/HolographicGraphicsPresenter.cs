@@ -40,8 +40,6 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
             renderTarget = CreateRenderTarget();
             direct3D11RenderTarget = CreateDirect3D11RenderTarget();
-
-            Resize(PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
         }
 
         public override Texture BackBuffer => renderTarget;
@@ -81,13 +79,13 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
         protected override void ResizeBackBuffer(int width, int height)
         {
-            using SharpDX.Direct3D11.Device11On12 device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.Direct3D11.Device11On12>();
-            device11On12.ReleaseWrappedResources(new[] { direct3D11RenderTarget }, 1);
+            //using SharpDX.Direct3D11.Device11On12 device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.Direct3D11.Device11On12>();
+            //device11On12.ReleaseWrappedResources(new[] { direct3D11RenderTarget }, 1);
 
-            renderTarget.Dispose();
+            //renderTarget.Dispose();
 
-            renderTarget = CreateRenderTarget();
-            direct3D11RenderTarget = CreateDirect3D11RenderTarget();
+            //renderTarget = CreateRenderTarget();
+            //direct3D11RenderTarget = CreateDirect3D11RenderTarget();
         }
 
         protected override void ResizeDepthStencilBuffer(int width, int height)
