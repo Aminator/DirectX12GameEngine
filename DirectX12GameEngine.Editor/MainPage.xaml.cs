@@ -1,6 +1,4 @@
-﻿using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Editor.Messaging;
-using DirectX12GameEngine.Editor.ViewModels;
+﻿using DirectX12GameEngine.Editor.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;

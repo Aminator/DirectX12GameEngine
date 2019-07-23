@@ -41,21 +41,13 @@
 
         <Grid Grid.Column="1" Background="{ThemeResource AcrylicAssetEditorBackground}">
             <SwapChainPanel x:Name="swapChainPanel" />
+
+            <ProgressRing
+                Width="72"
+                Height="72"
+                IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
         </Grid>
 
-        <controls:GridSplitter
-            Grid.Column="1"
-            HorizontalAlignment="Left"
-            Background="Transparent">
-            <controls:GridSplitter.RenderTransform>
-                <TranslateTransform X="-8" />
-            </controls:GridSplitter.RenderTransform>
-        </controls:GridSplitter>
-
-        <ProgressRing
-            Grid.ColumnSpan="2"
-            Width="72"
-            Height="72"
-            IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+        <controls:GridSplitter HorizontalAlignment="Right" Background="Transparent" />
     </Grid>
 </UserControl>

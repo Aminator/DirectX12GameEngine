@@ -1,4 +1,7 @@
-﻿using Windows.UI.WindowManagement;
+﻿using System;
+using Windows.ApplicationModel.Core;
+using Windows.UI.ViewManagement;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
@@ -14,6 +17,12 @@ namespace DirectX12GameEngine.Editor.Views
         public AppWindowPage()
         {
             InitializeComponent();
+
+            CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
+
+            UpdateTitleBarLayout(titleBar);
+
+            titleBar.LayoutMetricsChanged += (s, e) => UpdateTitleBarLayout(s);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -27,6 +36,18 @@ namespace DirectX12GameEngine.Editor.Views
 
                 tabView.Items.Add(parameters.Tab);
             }
+        }
+
+        private async void OpenMainWindow()
+        {
+            await ApplicationViewSwitcher.TryShowAsStandaloneAsync(ApplicationView.GetApplicationViewIdForWindow(CoreApplication.MainView.CoreWindow));
+        }
+
+        private void UpdateTitleBarLayout(CoreApplicationViewTitleBar coreTitleBar)
+        {
+            commandBar.Margin = new Thickness(0, 0, coreTitleBar.SystemOverlayRightInset, 0);
+
+            titleBar.Height = coreTitleBar.Height;
         }
     }
 }

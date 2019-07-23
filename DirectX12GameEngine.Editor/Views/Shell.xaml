@@ -14,21 +14,8 @@
     AllowDrop="True"
     mc:Ignorable="d">
 
-    <interactivity:Interaction.Behaviors>
-        <core:DataTriggerBehavior
-            Binding="{x:Bind solutionExplorerTabView.Visibility, Mode=OneWay}"
-            ComparisonCondition="Equal"
-            Value="Collapsed">
-            <core:ChangePropertyAction
-                PropertyName="Width"
-                TargetObject="{x:Bind solutionExplorerColumnDefinition}"
-                Value="Auto" />
-        </core:DataTriggerBehavior>
-    </interactivity:Interaction.Behaviors>
-
     <UserControl.Resources>
         <ThemeShadow x:Name="SolutionExplorerShadow" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
 
     <Grid>
@@ -63,18 +50,20 @@
                 x:Name="solutionExplorerTabView"
                 Grid.Column="1"
                 Background="{ThemeResource AcrylicSolutionExplorerBackground}"
-                Shadow="{StaticResource SolutionExplorerShadow}" />
+                Shadow="{StaticResource SolutionExplorerShadow}">
+                <local:ExtendedTabView.Transitions>
+                    <TransitionCollection>
+                        <PaneThemeTransition Edge="Left" />
+                    </TransitionCollection>
+                </local:ExtendedTabView.Transitions>
+            </local:ExtendedTabView>
 
             <controls:GridSplitter
                 x:Name="solutionExplorerGridSplitter"
                 Grid.Column="1"
                 HorizontalAlignment="Left"
                 Background="Transparent"
-                Visibility="{x:Bind solutionExplorerTabView.Visibility, Mode=OneWay}">
-                <controls:GridSplitter.RenderTransform>
-                    <TranslateTransform X="-8" />
-                </controls:GridSplitter.RenderTransform>
-            </controls:GridSplitter>
+                Visibility="{x:Bind solutionExplorerTabView.Visibility, Mode=OneWay}" />
         </Grid>
     </Grid>
 </UserControl>

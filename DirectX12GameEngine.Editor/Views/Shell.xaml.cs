@@ -20,7 +20,6 @@ namespace DirectX12GameEngine.Editor.Views
 {
     public sealed partial class Shell : UserControl
     {
-        private Visibility previousVisibilty;
         private readonly Dictionary<string, TabViewItem> visibleViews = new Dictionary<string, TabViewItem>();
 
         public Shell()
@@ -32,7 +31,7 @@ namespace DirectX12GameEngine.Editor.Views
                 Bindings.Update();
             };
 
-            solutionExplorerTabView.Items.VectorChanged += (s, e) => solutionExplorerTabView.Visibility = s.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            solutionExplorerTabView.Items.VectorChanged += (s, e) => solutionExplorerColumnDefinition.Width = GridLength.Auto;
 
             SolutionExplorerShadow.Receivers.Add(assetEditorTabView);
 
@@ -47,24 +46,14 @@ namespace DirectX12GameEngine.Editor.Views
             AssetViewFactory.Default.Add(".xaml", factory);
 
             RegisterMessages();
-
-            Loaded += Shell_Loaded;
-        }
-
-        private void Shell_Loaded(object sender, RoutedEventArgs e)
-        {
-            solutionExplorerTabView.Visibility = solutionExplorerTabView.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         protected override void OnDragEnter(DragEventArgs e)
         {
             base.OnDragEnter(e);
 
-            previousVisibilty = solutionExplorerTabView.Visibility;
-
-            if (previousVisibilty == Visibility.Collapsed)
+            if (solutionExplorerTabView.Items.Count == 0)
             {
-                solutionExplorerTabView.Visibility = Visibility.Visible;
                 solutionExplorerColumnDefinition.Width = new GridLength(200);
             }
         }
@@ -73,7 +62,10 @@ namespace DirectX12GameEngine.Editor.Views
         {
             base.OnDragLeave(e);
 
-            solutionExplorerTabView.Visibility = previousVisibilty;
+            if (solutionExplorerTabView.Items.Count == 0)
+            {
+                solutionExplorerColumnDefinition.Width = GridLength.Auto;
+            }
         }
 
         private void RegisterMessages()

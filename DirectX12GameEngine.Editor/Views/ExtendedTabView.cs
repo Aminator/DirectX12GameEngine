@@ -19,7 +19,7 @@ namespace DirectX12GameEngine.Editor.Views
 {
     public class ExtendedTabView : TabView
     {
-        private const double MinWindowWidth = 192;
+        private const double MinWindowWidth = 440;
         private const double MinWindowHeight = 48;
 
         private const string TabKey = "Tab";
@@ -140,14 +140,15 @@ namespace DirectX12GameEngine.Editor.Views
             appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
             appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 
-            WindowManagementPreview.SetPreferredMinSize(appWindow, new Size(MinWindowWidth, MinWindowHeight));
-
-            appWindow.RequestSize(size);
-
             Frame frame = new Frame();
             frame.Navigate(typeof(AppWindowPage), new TabViewNavigationParameters(tab, appWindow));
 
             ElementCompositionPreview.SetAppWindowContent(appWindow, frame);
+
+            WindowManagementPreview.SetPreferredMinSize(appWindow, new Size(MinWindowWidth, MinWindowHeight));
+            appWindow.RequestSize(size);
+
+            appWindow.RequestMoveAdjacentToCurrentView();
 
             bool success = await appWindow.TryShowAsync();
 

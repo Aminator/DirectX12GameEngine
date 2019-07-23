@@ -8,6 +8,17 @@
     Background="{ThemeResource AcrylicWindowBackground}"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <XamlUICommand
+            x:Key="OpenMainWindowCommand"
+            Description="Open the main window"
+            ExecuteRequested="{x:Bind OpenMainWindow}">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="NewWindow" />
+            </XamlUICommand.IconSource>
+        </XamlUICommand>
+    </Page.Resources>
+
     <Grid>
         <Grid
             x:Name="titleBar"
@@ -15,6 +26,14 @@
             VerticalAlignment="Top"
             Background="Transparent" />
 
-        <local:ExtendedTabView x:Name="tabView" />
+        <CommandBar
+            x:Name="commandBar"
+            HorizontalAlignment="Right"
+            Background="Transparent"
+            OverflowButtonVisibility="Collapsed">
+            <AppBarButton Command="{StaticResource OpenMainWindowCommand}" />
+        </CommandBar>
+
+        <local:ExtendedTabView x:Name="tabView" Background="Transparent" />
     </Grid>
 </Page>

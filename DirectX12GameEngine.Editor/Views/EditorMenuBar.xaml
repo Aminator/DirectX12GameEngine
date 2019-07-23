@@ -27,7 +27,10 @@
             Command="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerCommand}"
             Kind="Open" />
         <StandardUICommand x:Key="SaveCommand" Kind="Save" />
-        <StandardUICommand x:Key="CloseCommand" Kind="Close" />
+        <StandardUICommand
+            x:Key="CloseCommand"
+            Command="{x:Bind ViewModel.CloseApplicationCommand}"
+            Kind="Close" />
 
         <StandardUICommand x:Key="UndoCommand" Kind="Undo" />
         <StandardUICommand x:Key="RedoCommand" Kind="Redo" />
