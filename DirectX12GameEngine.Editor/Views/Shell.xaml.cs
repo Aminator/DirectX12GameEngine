@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
 using DirectX12GameEngine.Editor.Factories;
 using DirectX12GameEngine.Editor.Messages;
 using DirectX12GameEngine.Editor.Messaging;
@@ -18,6 +20,9 @@ namespace DirectX12GameEngine.Editor.Views
 {
     public sealed partial class Shell : UserControl
     {
+        private Visibility previousVisibilty;
+        private readonly Dictionary<string, TabViewItem> visibleViews = new Dictionary<string, TabViewItem>();
+
         public Shell()
         {
             InitializeComponent();
@@ -27,6 +32,13 @@ namespace DirectX12GameEngine.Editor.Views
                 Bindings.Update();
             };
 
+            solutionExplorerTabView.Items.VectorChanged += (s, e) => solutionExplorerTabView.Visibility = s.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            SolutionExplorerShadow.Receivers.Add(assetEditorTabView);
+
+            assetEditorTabView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
+            solutionExplorerTabView.Translation += new Vector3(0.0f, 0.0f, 64.0f);
+
             Window.Current.SetTitleBar(titleBar);
 
             EngineAssetViewFactory factory = new EngineAssetViewFactory();
@@ -34,23 +46,51 @@ namespace DirectX12GameEngine.Editor.Views
 
             AssetViewFactory.Default.Add(".xaml", factory);
 
+            RegisterMessages();
+
+            Loaded += Shell_Loaded;
+        }
+
+        private void Shell_Loaded(object sender, RoutedEventArgs e)
+        {
+            solutionExplorerTabView.Visibility = solutionExplorerTabView.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        protected override void OnDragEnter(DragEventArgs e)
+        {
+            base.OnDragEnter(e);
+
+            previousVisibilty = solutionExplorerTabView.Visibility;
+
+            if (previousVisibilty == Visibility.Collapsed)
+            {
+                solutionExplorerTabView.Visibility = Visibility.Visible;
+                solutionExplorerColumnDefinition.Width = new GridLength(200);
+            }
+        }
+
+        protected override void OnDragLeave(DragEventArgs e)
+        {
+            base.OnDragLeave(e);
+
+            solutionExplorerTabView.Visibility = previousVisibilty;
+        }
+
+        private void RegisterMessages()
+        {
             Messenger.Default.Register<LaunchStorageItemMessage>(this, async m =>
             {
-                UIElement? uiElement = await AssetViewFactory.Default.CreateAsync(m.Item);
+                object? uiElement = await AssetViewFactory.Default.CreateAsync(m.Item);
 
                 if (uiElement != null)
                 {
-                    TabViewItem tab = new TabViewItem
+                    TabViewItem tabViewItem = new TabViewItem
                     {
-                        Header = m.Item.Name,
-                        Content = uiElement
+                        Content = uiElement,
+                        Header = m.Item.Name
                     };
 
-                    ExtendedTabView tabView = new ExtendedTabView();
-                    tabView.Items.Add(tab);
-
-                    dockPanel.Children.Add(tabView);
-                    DockPanel.SetDock(tabView, Dock.Right);
+                    assetEditorTabView.Items.Add(tabViewItem);
                 }
                 else
                 {
@@ -62,6 +102,53 @@ namespace DirectX12GameEngine.Editor.Views
                     {
                         await Launcher.LaunchFolderAsync(folder);
                     }
+                }
+            });
+
+            Messenger.Default.Register<OpenViewMessage>(this, m =>
+            {
+                if (m.ViewName == "SolutionExplorer")
+                {
+                    TabViewItem tabViewItem = new TabViewItem
+                    {
+                        Header = "Solution Explorer",
+                        Content = new SolutionExplorerView { DataContext = ViewModel.SolutionExplorer }
+                    };
+
+                    tabViewItem.Closing += (s, e) =>
+                    {
+                        e.Cancel = true;
+                        ViewModel.EditorViews.IsSolutionExplorerOpen = false;
+                    };
+
+                    solutionExplorerTabView.Items.Add(tabViewItem);
+                    visibleViews.Add(m.ViewName, tabViewItem);
+                }
+                else if (m.ViewName == "PropertyGrid")
+                {
+                    TabViewItem tabViewItem = new TabViewItem
+                    {
+                        Header = "Property Grid",
+                        Content = new PropertyGridView { DataContext = ViewModel.PropertyGrid }
+                    };
+
+                    tabViewItem.Closing += (s, e) =>
+                    {
+                        e.Cancel = true;
+                        ViewModel.EditorViews.IsPropertyGridOpen = false;
+                    };
+
+                    solutionExplorerTabView.Items.Add(tabViewItem);
+                    visibleViews.Add(m.ViewName, tabViewItem);
+                }
+            });
+
+            Messenger.Default.Register<CloseViewMessage>(this, m =>
+            {
+                if (visibleViews.TryGetValue(m.ViewName, out TabViewItem item))
+                {
+                    (item.Parent as TabView)?.Items.Remove(item);
+                    visibleViews.Remove(m.ViewName);
                 }
             });
         }

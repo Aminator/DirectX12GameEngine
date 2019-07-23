@@ -29,7 +29,10 @@ namespace DirectX12GameEngine.Editor.Commanding
 
         public void Execute(object parameter)
         {
-            execute();
+            if (CanExecute(parameter))
+            {
+                execute();
+            }
         }
 
         public void NotifyCanExecuteChanged()
@@ -62,7 +65,10 @@ namespace DirectX12GameEngine.Editor.Commanding
 
         public void Execute(object parameter)
         {
-            execute((T)parameter);
+            if (CanExecute(parameter))
+            {
+                execute((T)parameter);
+            }
         }
 
         public void NotifyCanExecuteChanged()

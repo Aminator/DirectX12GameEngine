@@ -1,14 +1,9 @@
 ﻿#nullable enable
 
-using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Editor.Messaging;
-
 namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
-        private StorageItemViewModel? rootFolder;
-
         public MainViewModel()
         {
             RegisterMessages();
@@ -18,20 +13,12 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public ProjectLoaderViewModel ProjectLoader { get; } = new ProjectLoaderViewModel();
 
-        public StorageItemViewModel? RootFolder
-        {
-            get => rootFolder;
-            set => Set(ref rootFolder, value);
-        }
+        public PropertyGridViewModel PropertyGrid { get; } = new PropertyGridViewModel();
+
+        public SolutionExplorerViewModel SolutionExplorer { get; } = new SolutionExplorerViewModel();
 
         private void RegisterMessages()
         {
-            Messenger.Default.Register<ProjectLoadedMessage>(this, async m =>
-            {
-                RootFolder = m.RootFolder;
-                RootFolder.HasUnrealizedChildren = true;
-                await RootFolder.FillAsync();
-            });
         }
     }
 }

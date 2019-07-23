@@ -2,7 +2,9 @@
     x:Class="DirectX12GameEngine.Editor.Views.SolutionExplorerView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:DirectX12GameEngine.Editor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:DirectX12GameEngine.Editor.ViewModels"
@@ -11,18 +13,56 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <Grid>
-        <winui:TreeView x:Name="solutionExplorer" ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}">
-            <winui:TreeView.ItemTemplate>
-                <DataTemplate x:DataType="viewmodels:StorageItemViewModel">
-                    <winui:TreeViewItem
-                        Content="{x:Bind Name}"
-                        DoubleTapped="{x:Bind OpenAsync}"
-                        HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=OneWay}"
-                        IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
-                        ItemsSource="{x:Bind Children, Mode=OneWay}" />
-                </DataTemplate>
-            </winui:TreeView.ItemTemplate>
-        </winui:TreeView>
+    <UserControl.Resources>
+        <StandardUICommand
+            x:Key="OpenCommand"
+            Command="{x:Bind ViewModel.OpenCommand}"
+            Kind="Open" />
+        <StandardUICommand
+            x:Key="DeleteCommand"
+            Command="{x:Bind ViewModel.DeleteCommand}"
+            Kind="Delete" />
+        <XamlUICommand
+            x:Key="RefreshCommand"
+            Command="{x:Bind ViewModel.RefreshCommand}"
+            Description="Refresh items"
+            Label="Refresh">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Refresh" />
+            </XamlUICommand.IconSource>
+        </XamlUICommand>
+    </UserControl.Resources>
+
+    <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
+        <winui:RefreshContainer RefreshRequested="RefreshContainer_RefreshRequested">
+            <winui:RefreshContainer.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Command="{StaticResource RefreshCommand}" />
+                </MenuFlyout>
+            </winui:RefreshContainer.ContextFlyout>
+            <winui:TreeView x:Name="solutionExplorer" ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}">
+                <winui:TreeView.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:StorageItemViewModel">
+                        <winui:TreeViewItem
+                            Content="{x:Bind Name}"
+                            HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
+                            IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                            ItemsSource="{x:Bind Children, Mode=OneWay}">
+                            <interactivity:Interaction.Behaviors>
+                                <core:EventTriggerBehavior EventName="DoubleTapped">
+                                    <core:InvokeCommandAction Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
+                                </core:EventTriggerBehavior>
+                            </interactivity:Interaction.Behaviors>
+                            <winui:TreeViewItem.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
+                                    <MenuFlyoutItem Command="{StaticResource DeleteCommand}" CommandParameter="{x:Bind}" />
+                                </MenuFlyout>
+                            </winui:TreeViewItem.ContextFlyout>
+                        </winui:TreeViewItem>
+                    </DataTemplate>
+                </winui:TreeView.ItemTemplate>
+            </winui:TreeView>
+        </winui:RefreshContainer>
     </Grid>
 </UserControl>

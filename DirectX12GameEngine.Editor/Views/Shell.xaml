@@ -3,12 +3,33 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:DirectX12GameEngine.Editor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="300"
     d:DesignWidth="400"
+    AllowDrop="True"
     mc:Ignorable="d">
+
+    <interactivity:Interaction.Behaviors>
+        <core:DataTriggerBehavior
+            Binding="{x:Bind solutionExplorerTabView.Visibility, Mode=OneWay}"
+            ComparisonCondition="Equal"
+            Value="Collapsed">
+            <core:ChangePropertyAction
+                PropertyName="Width"
+                TargetObject="{x:Bind solutionExplorerColumnDefinition}"
+                Value="Auto" />
+        </core:DataTriggerBehavior>
+    </interactivity:Interaction.Behaviors>
+
+    <UserControl.Resources>
+        <ThemeShadow x:Name="SolutionExplorerShadow" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -31,13 +52,29 @@
         </Grid>
 
         <Grid Grid.Row="1">
-            <controls:DockPanel x:Name="dockPanel">
-                <local:ExtendedTabView>
-                    <controls:TabViewItem Header="Solution Explorer" Visibility="{x:Bind ViewModel.EditorViews.IsSolutionExplorerOpen, Mode=OneWay}">
-                        <local:SolutionExplorerView />
-                    </controls:TabViewItem>
-                </local:ExtendedTabView>
-            </controls:DockPanel>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition x:Name="solutionExplorerColumnDefinition" Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <local:ExtendedTabView x:Name="assetEditorTabView" Background="Transparent" />
+
+            <local:ExtendedTabView
+                x:Name="solutionExplorerTabView"
+                Grid.Column="1"
+                Background="{ThemeResource AcrylicSolutionExplorerBackground}"
+                Shadow="{StaticResource SolutionExplorerShadow}" />
+
+            <controls:GridSplitter
+                x:Name="solutionExplorerGridSplitter"
+                Grid.Column="1"
+                HorizontalAlignment="Left"
+                Background="Transparent"
+                Visibility="{x:Bind solutionExplorerTabView.Visibility, Mode=OneWay}">
+                <controls:GridSplitter.RenderTransform>
+                    <TranslateTransform X="-8" />
+                </controls:GridSplitter.RenderTransform>
+            </controls:GridSplitter>
         </Grid>
     </Grid>
 </UserControl>

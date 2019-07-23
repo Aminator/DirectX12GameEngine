@@ -125,13 +125,20 @@
     <Compile Include="Factories\EngineAssetViewFactory.cs" />
     <Compile Include="Factories\IAssetViewFactory.cs" />
     <Compile Include="Factories\SceneViewFactory.cs" />
+    <Compile Include="Messages\CloseViewMessage.cs" />
     <Compile Include="Messages\DeleteMessage.cs" />
     <Compile Include="Messages\LaunchStorageItemMessage.cs" />
+    <Compile Include="Messages\OpenViewMessage.cs" />
     <Compile Include="Messaging\IMessenger.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\EditorViewsViewModel.cs" />
+    <Compile Include="ViewModels\PropertyGridViewModel.cs" />
     <Compile Include="ViewModels\SceneViewModel.cs" />
+    <Compile Include="ViewModels\SolutionExplorerViewModel.cs" />
     <Compile Include="ViewModels\ViewModelLocator.cs" />
+    <Compile Include="Views\AppWindowPage.xaml.cs">
+      <DependentUpon>AppWindowPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\EditorMenuBar.xaml.cs">
       <DependentUpon>EditorMenuBar.xaml</DependentUpon>
     </Compile>
@@ -144,6 +151,9 @@
     <Compile Include="Views\ExtendedTabView.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PropertyGridView.xaml.cs">
+      <DependentUpon>PropertyGridView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SceneView.xaml.cs">
       <DependentUpon>SceneView.xaml</DependentUpon>
@@ -158,6 +168,7 @@
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="ViewModels\ObservableViewModelCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Views\TabViewNavigationParameters.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -184,7 +195,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\AppWindowPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\EditorMenuBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PropertyGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

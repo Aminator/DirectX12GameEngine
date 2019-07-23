@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using SharpDX.DXGI;
-using SharpDX.WIC;
+using Windows.Graphics.Imaging;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -32,26 +32,26 @@ namespace DirectX12GameEngine.Graphics
             return await LoadAsync(stream);
         }
 
-        public static Task<Image> LoadAsync(Stream stream)
+        public static async Task<Image> LoadAsync(Stream stream)
         {
-            return Task.Run(() =>
+            BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream.AsRandomAccessStream());
+
+            PixelDataProvider pixelDataProvider = await decoder.GetPixelDataAsync(
+                decoder.BitmapPixelFormat, decoder.BitmapAlphaMode, new BitmapTransform(),
+                ExifOrientationMode.RespectExifOrientation, ColorManagementMode.DoNotColorManage);
+
+            byte[] imageBuffer = pixelDataProvider.DetachPixelData();
+
+            PixelFormat pixelFormat = decoder.BitmapPixelFormat switch
             {
-                ImagingFactory2 imagingFactory = new ImagingFactory2();
-                BitmapDecoder decoder = new BitmapDecoder(imagingFactory, stream, DecodeOptions.CacheOnDemand);
+                BitmapPixelFormat.Rgba8 => PixelFormat.R8G8B8A8_UNorm,
+                BitmapPixelFormat.Bgra8 => PixelFormat.B8G8R8A8_UNorm,
+                _ => throw new NotSupportedException("This format is not supported.")
+            };
 
-                FormatConverter bitmapSource = new FormatConverter(imagingFactory);
-                bitmapSource.Initialize(decoder.GetFrame(0), SharpDX.WIC.PixelFormat.Format32bppBGRA);
+            ImageDescription description = ImageDescription.New2D((int)decoder.PixelWidth, (int)decoder.OrientedPixelHeight, pixelFormat);
 
-                PixelFormat pixelFormat = PixelFormat.B8G8R8A8_UNorm;
-                int stride = bitmapSource.Size.Width * FormatHelper.SizeOfInBytes((Format)pixelFormat);
-                byte[] imageBuffer = new byte[stride * bitmapSource.Size.Height];
-
-                bitmapSource.CopyPixels(imageBuffer, stride);
-
-                ImageDescription description = ImageDescription.New2D(bitmapSource.Size.Width, bitmapSource.Size.Height, pixelFormat);
-
-                return new Image(description, imageBuffer);
-            });
+            return new Image(description, imageBuffer);
         }
 
         public void Dispose()

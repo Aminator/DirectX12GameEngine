@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Graphics.Imaging;
-using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.UI.WindowManagement.Preview;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
-using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
 
 #nullable enable
 
@@ -39,19 +33,20 @@ namespace DirectX12GameEngine.Editor.Views
             CanCloseTabs = true;
             CanDragItems = true;
             CanReorderItems = true;
+            IsCloseButtonOverlay = false;
 
             DragItemsStarting += TabView_DragItemsStarting;
-            DragItemsCompleted += ExtendedTabView_DragItemsCompleted;
+            DragItemsCompleted += TabView_DragItemsCompleted;
             TabDraggedOutside += TabView_TabDraggedOutside;
         }
 
-        public AppWindow? AppWindow { get; private set; }
+        public AppWindow? AppWindow { get; set; }
 
         protected override async void OnItemsChanged(object e)
         {
             base.OnItemsChanged(e);
 
-            await CloseAsync();
+            await TryCloseAsync();
         }
 
         protected override void OnDragOver(DragEventArgs e)
@@ -70,13 +65,13 @@ namespace DirectX12GameEngine.Editor.Views
                 ExtendedTabView source = (ExtendedTabView)tab.Parent;
                 source.Items.Remove(tab);
 
-                int selectedIndex = SelectedIndex;
+                int previousSelectedIndex = SelectedIndex;
                 Items.Add(tab);
-                SelectedIndex = selectedIndex;
+                SelectedIndex = previousSelectedIndex;
             }
         }
 
-        private async void TabView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        private void TabView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             isDragging = true;
 
@@ -120,7 +115,7 @@ namespace DirectX12GameEngine.Editor.Views
             //e.Data.SetStorageItems(new[] { file });
         }
 
-        private void ExtendedTabView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        private void TabView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
             isDragging = false;
         }
@@ -134,7 +129,7 @@ namespace DirectX12GameEngine.Editor.Views
             await TryCreateNewAppWindowAsync(e.Tab, new Size(ActualWidth * scaling, ActualHeight * scaling));
 
             isCreatingNewAppWindow = false;
-            await CloseAsync();
+            await TryCloseAsync();
         }
 
         private async Task<bool> TryCreateNewAppWindowAsync(TabViewItem tab, Size size)
@@ -149,34 +144,26 @@ namespace DirectX12GameEngine.Editor.Views
 
             appWindow.RequestSize(size);
 
-            Grid grid = new Grid { Background = (Brush)Resources["SystemControlAcrylicWindowBrush"] };
+            Frame frame = new Frame();
+            frame.Navigate(typeof(AppWindowPage), new TabViewNavigationParameters(tab, appWindow));
 
-            Grid titleBar = new Grid { Height = 40, VerticalAlignment = VerticalAlignment.Top, Background = new SolidColorBrush(Colors.Transparent) };
-            grid.Children.Add(titleBar);
-
-            ExtendedTabView tabView = new ExtendedTabView { AppWindow = appWindow };
-            tabView.Items.Add(tab);
-            grid.Children.Add(tabView);
-
-            appWindow.Frame.DragRegionVisuals.Add(titleBar);
-
-            ElementCompositionPreview.SetAppWindowContent(appWindow, grid);
+            ElementCompositionPreview.SetAppWindowContent(appWindow, frame);
 
             bool success = await appWindow.TryShowAsync();
 
             return success;
         }
 
-        private async Task CloseAsync()
+        private async Task TryCloseAsync()
         {
             if (Items.Count == 0 && !isCreatingNewAppWindow)
             {
-                DragItemsStarting -= TabView_DragItemsStarting;
-                DragItemsCompleted -= ExtendedTabView_DragItemsCompleted;
-                TabDraggedOutside -= TabView_TabDraggedOutside;
-
                 if (AppWindow != null)
                 {
+                    DragItemsStarting -= TabView_DragItemsStarting;
+                    DragItemsCompleted -= TabView_DragItemsCompleted;
+                    TabDraggedOutside -= TabView_TabDraggedOutside;
+
                     await AppWindow.CloseAsync();
                 }
             }

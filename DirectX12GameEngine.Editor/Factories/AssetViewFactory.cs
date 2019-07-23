@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.ViewModels;
 using Windows.Storage;
-using Windows.UI.Xaml;
 
 #nullable enable
 
@@ -25,7 +24,7 @@ namespace DirectX12GameEngine.Editor.Factories
             factories.Add(fileExtension, factory);
         }
 
-        public async Task<UIElement?> CreateAsync(StorageItemViewModel item)
+        public async Task<object?> CreateAsync(StorageItemViewModel item)
         {
             if (item.Model is IStorageFile file)
             {

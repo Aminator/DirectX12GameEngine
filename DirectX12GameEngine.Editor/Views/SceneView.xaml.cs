@@ -1,4 +1,5 @@
-﻿using DirectX12GameEngine.Editor.ViewModels;
+﻿using System.Numerics;
+using DirectX12GameEngine.Editor.ViewModels;
 using DirectX12GameEngine.Games;
 using Windows.Storage;
 using Windows.UI.Xaml.Controls;
@@ -14,6 +15,10 @@ namespace DirectX12GameEngine.Editor.Views
         public SceneView(StorageFolder rootFolder)
         {
             InitializeComponent();
+
+            SharedShadow.Receivers.Add(swapChainPanel);
+
+            treeView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
 
             EditorGame game = new EditorGame(new XamlGameContext(swapChainPanel), rootFolder);
             game.Run();

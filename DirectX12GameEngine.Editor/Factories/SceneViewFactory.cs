@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.ViewModels;
 using DirectX12GameEngine.Editor.Views;
 using Windows.Storage;
-using Windows.UI.Xaml;
 
 #nullable enable
 
@@ -11,7 +10,7 @@ namespace DirectX12GameEngine.Editor.Factories
 {
     public class SceneViewFactory : IAssetViewFactory
     {
-        public async Task<UIElement?> CreateAsync(StorageItemViewModel item)
+        public async Task<object?> CreateAsync(StorageItemViewModel item)
         {
             if (item.Parent is null) return null;
 

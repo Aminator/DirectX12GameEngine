@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Editor.Factories
             factories.Add(type, factory);
         }
 
-        public async Task<UIElement?> CreateAsync(StorageItemViewModel item)
+        public async Task<object?> CreateAsync(StorageItemViewModel item)
         {
             if (item.Model is IStorageFile file)
             {

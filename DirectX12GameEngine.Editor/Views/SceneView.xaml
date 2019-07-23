@@ -2,6 +2,7 @@
     x:Class="DirectX12GameEngine.Editor.Views.SceneView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:DirectX12GameEngine.Editor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -11,25 +12,45 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <ThemeShadow x:Name="SharedShadow" />
+    </UserControl.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
-            <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
 
-        <winui:TreeView x:Name="treeView" ItemsSource="{x:Bind ViewModel.RootEntity.Children}">
-            <winui:TreeView.ItemTemplate>
-                <DataTemplate x:DataType="viewmodels:EntityViewModel">
-                    <winui:TreeViewItem AutomationProperties.Name="{x:Bind Name, Mode=OneWay}" ItemsSource="{x:Bind Children, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
-                        </StackPanel>
-                    </winui:TreeViewItem>
-                </DataTemplate>
-            </winui:TreeView.ItemTemplate>
-        </winui:TreeView>
+        <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
+            <winui:TreeView
+                x:Name="treeView"
+                ItemsSource="{x:Bind ViewModel.RootEntity.Children}"
+                Shadow="{StaticResource SharedShadow}">
+                <winui:TreeView.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:EntityViewModel">
+                        <winui:TreeViewItem AutomationProperties.Name="{x:Bind Name, Mode=OneWay}" ItemsSource="{x:Bind Children, Mode=OneWay}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
+                            </StackPanel>
+                        </winui:TreeViewItem>
+                    </DataTemplate>
+                </winui:TreeView.ItemTemplate>
+            </winui:TreeView>
+        </Grid>
 
-        <SwapChainPanel x:Name="swapChainPanel" Grid.Column="1" />
+        <Grid Grid.Column="1" Background="{ThemeResource AcrylicAssetEditorBackground}">
+            <SwapChainPanel x:Name="swapChainPanel" />
+        </Grid>
+
+        <controls:GridSplitter
+            Grid.Column="1"
+            HorizontalAlignment="Left"
+            Background="Transparent">
+            <controls:GridSplitter.RenderTransform>
+                <TranslateTransform X="-8" />
+            </controls:GridSplitter.RenderTransform>
+        </controls:GridSplitter>
 
         <ProgressRing
             Grid.ColumnSpan="2"

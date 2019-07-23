@@ -10,7 +10,7 @@
     extensions:ApplicationViewExtensions.ExtendViewIntoTitleBar="True"
     extensions:TitleBarExtensions.ButtonBackgroundColor="Transparent"
     extensions:TitleBarExtensions.ButtonInactiveBackgroundColor="Transparent"
-    Background="{ThemeResource SystemControlAcrylicWindowBrush}"
+    Background="{ThemeResource AcrylicWindowBackground}"
     mc:Ignorable="d">
 
     <Grid>

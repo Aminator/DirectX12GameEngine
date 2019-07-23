@@ -2,8 +2,6 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Editor.Messaging;
 using Windows.Storage;
 
 #nullable enable
@@ -57,7 +55,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             get => Model.Name;
         }
 
-        public async Task FillAsync()
+        private async Task FillAsync()
         {
             if (Model is IStorageFolder folder && HasUnrealizedChildren)
             {
@@ -79,13 +77,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
                 HasUnrealizedChildren = false;
             }
-        }
-
-        public Task OpenAsync()
-        {
-            Messenger.Default.Send(new LaunchStorageItemMessage(this));
-
-            return Task.CompletedTask;
         }
 
         private void AddInternal(StorageItemViewModel item)
