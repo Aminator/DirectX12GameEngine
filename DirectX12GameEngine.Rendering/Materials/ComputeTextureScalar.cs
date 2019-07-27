@@ -9,15 +9,20 @@ namespace DirectX12GameEngine.Rendering.Materials
     [StaticResource]
     public class ComputeTextureScalar : IComputeScalar
     {
+        private ColorChannel channel;
         private Buffer? colorChannelBuffer;
 
         public ComputeTextureScalar()
         {
         }
 
-        public ComputeTextureScalar(Texture texture, ColorChannel channel = ColorChannel.R)
+        public ComputeTextureScalar(Texture texture)
         {
             Texture = texture;
+        }
+
+        public ComputeTextureScalar(Texture texture, ColorChannel channel) : this(texture)
+        {
             Channel = channel;
         }
 
@@ -40,7 +45,15 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderResource] public Texture2DResource ScalarTexture;
 #nullable enable
 
-        [ConstantBufferResource] public ColorChannel Channel { get; set; } = ColorChannel.R;
+        [ConstantBufferResource] public ColorChannel Channel
+        {
+            get => channel;
+            set
+            {
+                channel = value;
+                colorChannelBuffer?.SetData(channel);
+            }
+        }
 
         [ShaderMethod]
         public float Compute()

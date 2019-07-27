@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -48,7 +49,7 @@ namespace DirectX12GameEngine.Core.Assets
             Services = services;
         }
 
-        public ContentManager(IServiceProvider services, StorageFolder rootFolder)
+        public ContentManager(IServiceProvider services, IStorageFolder rootFolder)
         {
             Services = services;
             RootFolder = rootFolder;
@@ -60,15 +61,15 @@ namespace DirectX12GameEngine.Core.Assets
 
         public string FileExtension { get; set; } = ".xaml";
 
-        public StorageFolder? RootFolder { get; set; }
+        public IStorageFolder? RootFolder { get; set; }
 
         public string? RootPath => RootFolder?.Path;
 
         public async Task<bool> ExistsAsync(string path)
         {
-            if (RootFolder is null) throw new InvalidOperationException("The root folder cannot be null.");
+            if (RootFolder is null || !(RootFolder is IStorageFolder2 folder)) throw new InvalidOperationException("The root folder cannot be null.");
 
-            return await RootFolder.TryGetItemAsync(path + FileExtension) != null;
+            return await folder.TryGetItemAsync(path + FileExtension) != null;
         }
 
         public T Get<T>(string path) where T : class?
@@ -166,7 +167,7 @@ namespace DirectX12GameEngine.Core.Assets
             }
         }
 
-        public static IEnumerable<PropertyInfo> GetDataContractProperties(Type type)
+        public static IEnumerable<PropertyInfo> GetDataContractProperties(Type type, object obj)
         {
             bool isDataContractPresent = type.IsDefined(typeof(DataContractAttribute));
 
@@ -175,7 +176,9 @@ namespace DirectX12GameEngine.Core.Assets
                 : type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                     .Where(p => p.IsDefined(typeof(DataMemberAttribute))).OrderBy(p => p.GetCustomAttribute<DataMemberAttribute>().Order);
 
-            return properties.Where(p => !p.IsDefined(typeof(IgnoreDataMemberAttribute)) && !p.IsSpecialName && !(p.GetIndexParameters().Length > 0));
+            properties = properties.Where(p => !p.IsDefined(typeof(IgnoreDataMemberAttribute)) && !p.IsSpecialName && !(p.GetIndexParameters().Length > 0));
+
+            return properties.Where(p => p.CanRead).Where(p => p.CanWrite || p.GetValue(obj) is IList);
         }
 
         public static void GetNamespaceAndTypeName(string xmlName, XElement element, out string namespaceName, out string typeName)

@@ -54,6 +54,8 @@ namespace DirectX12GameEngine.Engine
 
             var componentsWithSameModel = Components.GroupBy(m => m.Model).ToArray();
 
+            if (componentsWithSameModel.Length < 1) return;
+
             int batchCount = Math.Min(Environment.ProcessorCount, componentsWithSameModel.Length);
             int batchSize = (int)Math.Ceiling((double)componentsWithSameModel.Length / batchCount);
 

@@ -7,6 +7,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     [StaticResource]
     public class MaterialRoughnessMapFeature : IMaterialMicroSurfaceFeature
     {
+        private bool invert;
         private Buffer? invertBuffer;
 
         public MaterialRoughnessMapFeature()
@@ -31,7 +32,15 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         [ShaderResource] public IComputeScalar RoughnessMap { get; set; } = new ComputeScalar();
 
-        [ConstantBufferResource] public bool Invert { get; set; }
+        [ConstantBufferResource] public bool Invert
+        {
+            get => invert;
+            set
+            {
+                invert = value;
+                invertBuffer?.SetData(invert);
+            }
+        }
 
         [ShaderMethod]
         public void Compute()

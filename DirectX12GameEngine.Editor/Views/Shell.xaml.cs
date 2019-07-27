@@ -72,28 +72,28 @@ namespace DirectX12GameEngine.Editor.Views
         {
             Messenger.Default.Register<LaunchStorageItemMessage>(this, async m =>
             {
-                object? uiElement = await AssetViewFactory.Default.CreateAsync(m.Item);
-
-                if (uiElement != null)
+                if (m.Item is StorageFileViewModel file)
                 {
-                    TabViewItem tabViewItem = new TabViewItem
-                    {
-                        Content = uiElement,
-                        Header = m.Item.Name
-                    };
+                    object? uiElement = await AssetViewFactory.Default.CreateAsync(file);
 
-                    assetEditorTabView.Items.Add(tabViewItem);
+                    if (uiElement != null)
+                    {
+                        TabViewItem tabViewItem = new TabViewItem
+                        {
+                            Content = uiElement,
+                            Header = m.Item.Name
+                        };
+
+                        assetEditorTabView.Items.Add(tabViewItem);
+                    }
+                    else
+                    {
+                        await Launcher.LaunchFileAsync(file.Model);
+                    }
                 }
-                else
+                else if (m.Item is StorageFolderViewModel folder)
                 {
-                    if (m.Item.Model is IStorageFile file)
-                    {
-                        await Launcher.LaunchFileAsync(file);
-                    }
-                    else if (m.Item.Model is IStorageFolder folder)
-                    {
-                        await Launcher.LaunchFolderAsync(folder);
-                    }
+                    await Launcher.LaunchFolderAsync(folder.Model);
                 }
             });
 
@@ -120,7 +120,7 @@ namespace DirectX12GameEngine.Editor.Views
                 {
                     TabViewItem tabViewItem = new TabViewItem
                     {
-                        Header = "Property Grid",
+                        Header = "Properties",
                         Content = new PropertyGridView { DataContext = ViewModel.PropertyGrid }
                     };
 

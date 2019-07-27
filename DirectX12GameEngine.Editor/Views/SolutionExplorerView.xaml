@@ -31,6 +31,43 @@
                 <SymbolIconSource Symbol="Refresh" />
             </XamlUICommand.IconSource>
         </XamlUICommand>
+
+        <DataTemplate x:Key="FileTemplate" x:DataType="viewmodels:StorageFileViewModel">
+            <winui:TreeViewItem>
+                <StackPanel Orientation="Horizontal">
+                    <SymbolIcon Symbol="Document" />
+                    <TextBlock Margin="12,0,0,0" Text="{x:Bind Name, Mode=OneWay}" />
+                </StackPanel>
+                <interactivity:Interaction.Behaviors>
+                    <core:EventTriggerBehavior EventName="DoubleTapped">
+                        <core:InvokeCommandAction Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
+                    </core:EventTriggerBehavior>
+                </interactivity:Interaction.Behaviors>
+                <winui:TreeViewItem.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutItem Command="{StaticResource DeleteCommand}" CommandParameter="{x:Bind}" />
+                    </MenuFlyout>
+                </winui:TreeViewItem.ContextFlyout>
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="FolderTemplate" x:DataType="viewmodels:StorageFolderViewModel">
+            <winui:TreeViewItem
+                HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
+                IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                ItemsSource="{x:Bind Children, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal">
+                    <SymbolIcon Symbol="Folder" />
+                    <TextBlock Margin="12,0,0,0" Text="{x:Bind Name, Mode=OneWay}" />
+                </StackPanel>
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <local:StorageItemTemplateSelector
+            x:Key="StorageItemTemplateSelector"
+            FileTemplate="{StaticResource FileTemplate}"
+            FolderTemplate="{StaticResource FolderTemplate}" />
     </UserControl.Resources>
 
     <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
@@ -40,29 +77,10 @@
                     <MenuFlyoutItem Command="{StaticResource RefreshCommand}" />
                 </MenuFlyout>
             </winui:RefreshContainer.ContextFlyout>
-            <winui:TreeView x:Name="solutionExplorer" ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}">
-                <winui:TreeView.ItemTemplate>
-                    <DataTemplate x:DataType="viewmodels:StorageItemViewModel">
-                        <winui:TreeViewItem
-                            Content="{x:Bind Name}"
-                            HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
-                            IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
-                            ItemsSource="{x:Bind Children, Mode=OneWay}">
-                            <interactivity:Interaction.Behaviors>
-                                <core:EventTriggerBehavior EventName="DoubleTapped">
-                                    <core:InvokeCommandAction Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
-                                </core:EventTriggerBehavior>
-                            </interactivity:Interaction.Behaviors>
-                            <winui:TreeViewItem.ContextFlyout>
-                                <MenuFlyout>
-                                    <MenuFlyoutItem Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
-                                    <MenuFlyoutItem Command="{StaticResource DeleteCommand}" CommandParameter="{x:Bind}" />
-                                </MenuFlyout>
-                            </winui:TreeViewItem.ContextFlyout>
-                        </winui:TreeViewItem>
-                    </DataTemplate>
-                </winui:TreeView.ItemTemplate>
-            </winui:TreeView>
+            <winui:TreeView
+                x:Name="solutionExplorer"
+                ItemTemplateSelector="{StaticResource StorageItemTemplateSelector}"
+                ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}" />
         </winui:RefreshContainer>
     </Grid>
 </UserControl>

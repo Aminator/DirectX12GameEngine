@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.ViewModels;
 using DirectX12GameEngine.Editor.Views;
-using Windows.Storage;
 
 #nullable enable
 
@@ -10,28 +9,23 @@ namespace DirectX12GameEngine.Editor.Factories
 {
     public class SceneViewFactory : IAssetViewFactory
     {
-        public async Task<object?> CreateAsync(StorageItemViewModel item)
+        public Task<object?> CreateAsync(StorageFileViewModel item)
         {
-            if (item.Parent is null) return null;
+            if (item.Parent is null) return Task.FromResult<object?>(null);
 
             string path = Path.GetFileNameWithoutExtension(item.Name);
-            StorageItemViewModel rootItem = item.Parent;
+            StorageFolderViewModel rootFolder = item.Parent;
 
-            while (rootItem.Parent != null)
+            while (rootFolder.Parent != null)
             {
-                path = Path.Combine(rootItem.Name, path);
-                rootItem = rootItem.Parent;
+                path = Path.Combine(rootFolder.Name, path);
+                rootFolder = rootFolder.Parent;
             }
 
-            if (rootItem.Model is StorageFolder rootFolder)
-            {
-                SceneView sceneView = new SceneView(rootFolder);
-                Task sceneTask = sceneView.ViewModel.LoadAsync(path);
+            SceneView sceneView = new SceneView(rootFolder);
+            Task sceneTask = sceneView.ViewModel.LoadAsync(path);
 
-                return sceneView;
-            }
-
-            return null;
+            return Task.FromResult<object?>(sceneView);
         }
     }
 }

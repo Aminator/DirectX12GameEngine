@@ -25,12 +25,12 @@ namespace DirectX12GameEngine.Games
 
         internal abstract void Run();
 
-        protected virtual void NotifySizeChanged()
+        protected virtual void OnSizeChanged()
         {
             SizeChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void Tick()
+        protected void Tick()
         {
             TickRequested?.Invoke(this, EventArgs.Empty);
         }

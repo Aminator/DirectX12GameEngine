@@ -2,15 +2,191 @@
     x:Class="DirectX12GameEngine.Editor.Views.PropertyGridView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:DirectX12GameEngine.Editor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:properties="using:DirectX12GameEngine.Editor.ViewModels.Properties"
+    xmlns:propertyViews="using:DirectX12GameEngine.Editor.Views.Properties"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    Background="{ThemeResource AcrylicSolutionExplorerBackground}"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+
+        <Style TargetType="controls:UniformGrid">
+            <Setter Property="Columns" Value="1" />
+        </Style>
+
+        <DataTemplate x:Key="Vector3PropertyTemplate" x:DataType="properties:Vector3PropertyViewModel">
+            <winui:TreeViewItem>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
+
+                    <controls:UniformGrid>
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Red"
+                            MemberName="X"
+                            MemberValue="{x:Bind X, Mode=TwoWay}" />
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Green"
+                            MemberName="Y"
+                            MemberValue="{x:Bind Y, Mode=TwoWay}" />
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Blue"
+                            MemberName="Z"
+                            MemberValue="{x:Bind Z, Mode=TwoWay}" />
+                    </controls:UniformGrid>
+                </StackPanel>
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="Vector4PropertyTemplate" x:DataType="properties:Vector4PropertyViewModel">
+            <winui:TreeViewItem>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
+
+                    <controls:UniformGrid>
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Red"
+                            MemberName="X"
+                            MemberValue="{x:Bind X, Mode=TwoWay}" />
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Green"
+                            MemberName="Y"
+                            MemberValue="{x:Bind Y, Mode=TwoWay}" />
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Blue"
+                            MemberName="Z"
+                            MemberValue="{x:Bind Z, Mode=TwoWay}" />
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Gray"
+                            MemberName="W"
+                            MemberValue="{x:Bind W, Mode=TwoWay}" />
+                    </controls:UniformGrid>
+                </StackPanel>
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="QuaternionPropertyTemplate" x:DataType="properties:QuaternionPropertyViewModel">
+            <winui:TreeViewItem>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
+
+                    <controls:UniformGrid>
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Red"
+                            MemberName="X"
+                            MemberValue="{x:Bind X, Mode=TwoWay}" />
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Green"
+                            MemberName="Y"
+                            MemberValue="{x:Bind Y, Mode=TwoWay}" />
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Blue"
+                            MemberName="Z"
+                            MemberValue="{x:Bind Z, Mode=TwoWay}" />
+                        <propertyViews:PropertyMemberTemplate
+                            MemberColor="Gray"
+                            MemberName="W"
+                            MemberValue="{x:Bind W, Mode=TwoWay}" />
+                    </controls:UniformGrid>
+                </StackPanel>
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="StringPropertyTemplate" x:DataType="properties:StringPropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SinglePropertyTemplate" x:DataType="properties:SinglePropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DoublePropertyTemplate" x:DataType="properties:DoublePropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="NullPropertyTemplate" x:DataType="properties:NullPropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="(None)" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BooleanPropertyTemplate" x:DataType="properties:BooleanPropertyViewModel">
+            <winui:TreeViewItem>
+                <CheckBox Content="{x:Bind PropertyName, Mode=OneWay}" IsChecked="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="EnumPropertyTemplate" x:DataType="properties:EnumPropertyViewModel">
+            <winui:TreeViewItem>
+                <ComboBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    ItemsSource="{x:Bind Values, Mode=OneWay}"
+                    SelectedItem="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ClassPropertyTemplate" x:DataType="properties:ClassPropertyViewModel">
+            <winui:TreeViewItem
+                HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
+                IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                ItemsSource="{x:Bind Properties, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind Type.Name}" />
+                </StackPanel>
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CollectionPropertyTemplate" x:DataType="properties:CollectionPropertyViewModel">
+            <winui:TreeViewItem
+                Content="{x:Bind PropertyName, Mode=OneWay}"
+                HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
+                IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                ItemsSource="{x:Bind Items, Mode=OneWay}" />
+        </DataTemplate>
+
+        <local:DataTypeTemplateSelector x:Key="PropertyTemplateSelector">
+            <local:TemplateDefinition DataTemplate="{StaticResource ClassPropertyTemplate}" DataType="properties:ClassPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource CollectionPropertyTemplate}" DataType="properties:CollectionPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource NullPropertyTemplate}" DataType="properties:NullPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource SinglePropertyTemplate}" DataType="properties:SinglePropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource DoublePropertyTemplate}" DataType="properties:DoublePropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource StringPropertyTemplate}" DataType="properties:StringPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource QuaternionPropertyTemplate}" DataType="properties:QuaternionPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource Vector4PropertyTemplate}" DataType="properties:Vector4PropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource Vector3PropertyTemplate}" DataType="properties:Vector3PropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource BooleanPropertyTemplate}" DataType="properties:BooleanPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource EnumPropertyTemplate}" DataType="properties:EnumPropertyViewModel" />
+        </local:DataTypeTemplateSelector>
+    </UserControl.Resources>
+
     <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
-        <TextBlock Text="{x:Bind ViewModel.AssetName}" />
+        <controls:UniformGrid />
+
+        <winui:TreeView ItemTemplateSelector="{StaticResource PropertyTemplateSelector}" ItemsSource="{x:Bind ViewModel.Properties, Mode=OneWay}">
+            <winui:TreeView.ItemContainerStyle>
+                <Style TargetType="winui:TreeViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0,4,12,4" />
+                </Style>
+            </winui:TreeView.ItemContainerStyle>
+        </winui:TreeView>
     </Grid>
 </UserControl>

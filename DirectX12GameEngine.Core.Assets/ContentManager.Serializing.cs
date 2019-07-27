@@ -51,7 +51,7 @@ namespace DirectX12GameEngine.Core.Assets
                 root.Add(new XAttribute(XNamespace.Xmlns + "x", x.NamespaceName));
             }
 
-            foreach (PropertyInfo propertyInfo in GetDataContractProperties(storageType))
+            foreach (PropertyInfo propertyInfo in GetDataContractProperties(storageType, obj))
             {
                 DataMemberAttribute? dataMember = propertyInfo.GetCustomAttribute<DataMemberAttribute>();
                 XName propertyName = dataMember?.Name ?? propertyInfo.Name;
@@ -64,14 +64,20 @@ namespace DirectX12GameEngine.Core.Assets
 
                 if (loadedAssetReferences.TryGetValue(propertyValue, out Reference propertyReference))
                 {
-                    XAttribute propertyAttribute = new XAttribute(propertyName, $"{{x:AssetReference {propertyReference.Path}}}");
-                    root.Add(propertyAttribute);
+                    if (propertyInfo.CanWrite)
+                    {
+                        XAttribute propertyAttribute = new XAttribute(propertyName, $"{{x:AssetReference {propertyReference.Path}}}");
+                        root.Add(propertyAttribute);
+                    }
                 }
                 // TODO: Handle references better.
-                else if (!(propertyValue is IList) && propertyValue is IIdentifiable identifiable && propertyInfo.CanWrite)
+                else if (!(propertyValue is IList) && propertyValue is IIdentifiable identifiable)
                 {
-                    XAttribute propertyAttribute = new XAttribute(propertyName, $"{{x:Reference {identifiable.Id}}}");
-                    root.Add(propertyAttribute);
+                    if (propertyInfo.CanWrite)
+                    {
+                        XAttribute propertyAttribute = new XAttribute(propertyName, $"{{x:Reference {identifiable.Id}}}");
+                        root.Add(propertyAttribute);
+                    }
                 }
                 else if (!(propertyValue is IList) && typeConverter.GetType() != typeof(TypeConverter) && typeConverter.CanConvertTo(typeof(string)))
                 {

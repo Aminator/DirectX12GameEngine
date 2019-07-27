@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.ViewModels;
-using Windows.Storage;
 
 #nullable enable
 
@@ -24,14 +23,11 @@ namespace DirectX12GameEngine.Editor.Factories
             factories.Add(fileExtension, factory);
         }
 
-        public async Task<object?> CreateAsync(StorageItemViewModel item)
+        public async Task<object?> CreateAsync(StorageFileViewModel item)
         {
-            if (item.Model is IStorageFile file)
+            if (factories.TryGetValue(item.Model.FileType, out IAssetViewFactory factory))
             {
-                if (factories.TryGetValue(file.FileType, out IAssetViewFactory factory))
-                {
-                    return await factory.CreateAsync(item);
-                }
+                return await factory.CreateAsync(item);
             }
 
             return null;

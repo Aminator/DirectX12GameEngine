@@ -35,13 +35,13 @@ namespace DirectX12GameEngine.Engine
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ObservableCollection<Entity> Children { get; } = new ObservableCollection<Entity>();
-
-        public ObservableCollection<EntityComponent> Components { get; } = new ObservableCollection<EntityComponent>();
-
         public Guid Id { get => id; set => Set(ref id, value); }
 
         public string Name { get => name; set => Set(ref name, value); }
+
+        public ObservableCollection<Entity> Children { get; } = new ObservableCollection<Entity>();
+
+        public ObservableCollection<EntityComponent> Components { get; } = new ObservableCollection<EntityComponent>();
 
         [IgnoreDataMember]
         public Entity? Parent
@@ -73,14 +73,14 @@ namespace DirectX12GameEngine.Engine
             Components.Add(component);
         }
 
-        public T? Get<T>() where T : EntityComponent
+        public T Get<T>() where T : EntityComponent
         {
             return this.OfType<T>().FirstOrDefault();
         }
 
         public T GetOrCreate<T>() where T : EntityComponent, new()
         {
-            T? component = Get<T>();
+            T component = Get<T>();
 
             if (component is null)
             {
@@ -93,7 +93,7 @@ namespace DirectX12GameEngine.Engine
 
         public bool Remove<T>() where T : EntityComponent
         {
-            T? component = Get<T>();
+            T component = Get<T>();
 
             if (component != null)
             {

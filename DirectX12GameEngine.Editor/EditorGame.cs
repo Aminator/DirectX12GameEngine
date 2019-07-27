@@ -12,7 +12,7 @@ namespace DirectX12GameEngine.Editor
 {
     public class EditorGame : Game
     {
-        public EditorGame(GameContext context, StorageFolder rootFolder) : base(context)
+        public EditorGame(GameContext context, IStorageFolder rootFolder) : base(context)
         {
             Content.RootFolder = rootFolder;
         }

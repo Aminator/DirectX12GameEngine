@@ -39,7 +39,7 @@ namespace DirectX12GameEngine.Games
 
         private void CoreWindow_SizeChanged(CoreWindow sender, WindowSizeChangedEventArgs args)
         {
-            NotifySizeChanged();
+            OnSizeChanged();
         }
     }
 }

@@ -47,7 +47,7 @@ namespace DirectX12GameEngine.Games
 
         private void Control_ClientSizeChanged(object sender, EventArgs e)
         {
-            NotifySizeChanged();
+            OnSizeChanged();
         }
     }
 }

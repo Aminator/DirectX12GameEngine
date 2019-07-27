@@ -126,15 +126,21 @@
     <Compile Include="Factories\IAssetViewFactory.cs" />
     <Compile Include="Factories\SceneViewFactory.cs" />
     <Compile Include="Messages\CloseViewMessage.cs" />
-    <Compile Include="Messages\DeleteMessage.cs" />
     <Compile Include="Messages\LaunchStorageItemMessage.cs" />
     <Compile Include="Messages\OpenViewMessage.cs" />
+    <Compile Include="Messages\ShowEntityPropertiesMessage.cs" />
     <Compile Include="Messaging\IMessenger.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\EditorViewsViewModel.cs" />
+    <Compile Include="ViewModels\Properties\IPropertyViewModelFactory.cs" />
+    <Compile Include="ViewModels\Properties\PrimitivePropertyViewModels.cs" />
+    <Compile Include="ViewModels\Properties\PropertyViewModelFactory.cs" />
     <Compile Include="ViewModels\PropertyGridViewModel.cs" />
+    <Compile Include="ViewModels\Properties\PropertyViewModel.cs" />
     <Compile Include="ViewModels\SceneViewModel.cs" />
     <Compile Include="ViewModels\SolutionExplorerViewModel.cs" />
+    <Compile Include="ViewModels\StorageFileViewModel.cs" />
+    <Compile Include="ViewModels\StorageFolderViewModel.cs" />
     <Compile Include="ViewModels\ViewModelLocator.cs" />
     <Compile Include="Views\AppWindowPage.xaml.cs">
       <DependentUpon>AppWindowPage.xaml</DependentUpon>
@@ -151,6 +157,9 @@
     <Compile Include="Views\ExtendedTabView.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Properties\PropertyMemberTemplate.xaml.cs">
+      <DependentUpon>PropertyMemberTemplate.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PropertyGridView.xaml.cs">
       <DependentUpon>PropertyGridView.xaml</DependentUpon>
@@ -200,6 +209,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\EditorMenuBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Properties\PropertyMemberTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -44,12 +44,12 @@ namespace DirectX12GameEngine.Games
 
         private void SwapChainPanel_CompositionScaleChanged(SwapChainPanel sender, object args)
         {
-            NotifySizeChanged();
+            OnSizeChanged();
         }
 
         private void SwapChainPanel_SizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
         {
-            NotifySizeChanged();
+            OnSizeChanged();
         }
     }
 }

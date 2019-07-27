@@ -7,6 +7,6 @@ namespace DirectX12GameEngine.Editor.Factories
 {
     public interface IAssetViewFactory
     {
-        public Task<object?> CreateAsync(StorageItemViewModel item);
+        public Task<object?> CreateAsync(StorageFileViewModel item);
     }
 }

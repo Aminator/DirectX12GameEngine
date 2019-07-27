@@ -22,12 +22,12 @@ namespace DirectX12GameEngine.Editor.Commanding
 
         public event EventHandler CanExecuteChanged;
 
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
             return canExecute is null ? true : canExecute();
         }
 
-        public void Execute(object parameter)
+        public void Execute(object? parameter)
         {
             if (CanExecute(parameter))
             {

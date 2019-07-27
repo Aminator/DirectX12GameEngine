@@ -13,6 +13,16 @@ namespace DirectX12Game
 {
     public class TestScript : StartupScript
     {
+        public string NullProperty { get; set; }
+
+        public ColorChannel MyColorChannel { get; set; } = ColorChannel.G;
+
+        public ColorChannel MyOtherColorChannel { get; set; } = ColorChannel.B;
+
+        public List<string> MyStringList { get; } = new List<string> { "One", "Two", "Three", "Four" };
+
+        public List<Vector3> MyVectorList { get; } = new List<Vector3> { new Vector3(4, 3, 2), new Vector3(34, 2, 9) };
+
         public override void Start()
         {
 #if WINDOWS_UWP

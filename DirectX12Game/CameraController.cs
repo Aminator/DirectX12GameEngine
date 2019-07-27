@@ -7,8 +7,7 @@ namespace DirectX12Game
 {
     public class CameraController : SyncScript
     {
-        private readonly float scrollSpeed = 0.01f;
-        private float scrollAmount = 50.0f;
+        private readonly float scrollSpeed = 0.05f;
 
         public CameraComponent? Camera { get; set; }
 
@@ -40,10 +39,14 @@ namespace DirectX12Game
 
         public override void Update()
         {
+        }
+
+        private void MoveCamera(float value)
+        {
             if (Camera != null && Camera.Entity != null)
             {
                 Vector3 position = Camera.Entity.Transform.Position;
-                position.Z = 10.0f * scrollAmount * 3;
+                position.Z += value;
                 Camera.Entity.Transform.Position = position;
             }
         }
@@ -52,17 +55,17 @@ namespace DirectX12Game
         {
             if (pointerPoint.Properties.IsLeftButtonPressed)
             {
-                scrollAmount--;
+                MoveCamera(-10.0f);
             }
             else if (pointerPoint.Properties.IsRightButtonPressed)
             {
-                scrollAmount++;
+                MoveCamera(10.0f);
             }
         }
 
         private void OnPointerWheelChanged(Windows.UI.Input.PointerPoint pointerPoint)
         {
-            scrollAmount -= pointerPoint.Properties.MouseWheelDelta * scrollSpeed;
+            MoveCamera(-pointerPoint.Properties.MouseWheelDelta * scrollSpeed);
         }
 
         private void OnKeyDown(Windows.System.VirtualKey key)
@@ -76,10 +79,10 @@ namespace DirectX12Game
                     if (Camera?.Entity != null) Camera.Entity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, (float)(-10 * Math.PI / 180.0f));
                     break;
                 case Windows.System.VirtualKey.Up:
-                    scrollAmount--;
+                    MoveCamera(-10.0f);
                     break;
                 case Windows.System.VirtualKey.Down:
-                    scrollAmount++;
+                    MoveCamera(10.0f);
                     break;
             }
         }

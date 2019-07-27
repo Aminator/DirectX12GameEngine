@@ -4,11 +4,11 @@ namespace DirectX12GameEngine.Editor.Messages
 {
     public class ProjectLoadedMessage
     {
-        public ProjectLoadedMessage(StorageItemViewModel rootFolder)
+        public ProjectLoadedMessage(StorageFolderViewModel rootFolder)
         {
             RootFolder = rootFolder;
         }
 
-        public StorageItemViewModel RootFolder { get; }
+        public StorageFolderViewModel RootFolder { get; }
     }
 }

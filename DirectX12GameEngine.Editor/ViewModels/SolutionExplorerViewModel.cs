@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class SolutionExplorerViewModel : ViewModelBase
     {
-        private StorageItemViewModel? rootFolder;
+        private StorageFolderViewModel? rootFolder;
 
         public SolutionExplorerViewModel()
         {
@@ -19,12 +19,11 @@ namespace DirectX12GameEngine.Editor.ViewModels
             Messenger.Default.Register<ProjectLoadedMessage>(this, m =>
             {
                 RootFolder = m.RootFolder;
-                RootFolder.HasUnrealizedChildren = true;
                 RootFolder.IsExpanded = true;
             });
         }
 
-        public StorageItemViewModel? RootFolder
+        public StorageFolderViewModel? RootFolder
         {
             get => rootFolder;
             set => Set(ref rootFolder, value);
@@ -50,9 +49,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
         {
             if (RootFolder != null)
             {
-                RootFolder = new StorageItemViewModel(RootFolder.Model)
+                RootFolder = new StorageFolderViewModel(RootFolder.Model)
                 {
-                    HasUnrealizedChildren = true,
                     IsExpanded = true
                 };
             }

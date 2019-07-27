@@ -11,7 +11,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
         }
 
-        public ShaderContentManager(IServiceProvider services, StorageFolder rootFolder)
+        public ShaderContentManager(IServiceProvider services, IStorageFolder rootFolder)
             : base(services, rootFolder)
         {
         }

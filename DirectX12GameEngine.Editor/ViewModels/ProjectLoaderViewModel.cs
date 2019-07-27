@@ -80,7 +80,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             {
                 IsProjectLoaded = true;
 
-                StorageItemViewModel item = new StorageItemViewModel(folder);
+                StorageFolderViewModel item = new StorageFolderViewModel(folder);
                 Messenger.Default.Send<ProjectLoadedMessage>(new ProjectLoadedMessage(item));
 
                 await LoadAssemblyAsync(folder);

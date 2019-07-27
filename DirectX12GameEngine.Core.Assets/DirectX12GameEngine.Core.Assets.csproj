@@ -15,7 +15,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview5.19227.9" />
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.18362.2002-preview" />
     <PackageReference Include="Nito.AsyncEx" Version="5.0.0" />
-    <PackageReference Include="Portable.Xaml" Version="0.24.0" />
     <PackageReference Include="System.Runtime.InteropServices.WindowsRuntime" Version="4.3.0" />
   </ItemGroup>
 

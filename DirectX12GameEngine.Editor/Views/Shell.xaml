@@ -51,11 +51,11 @@
                 Grid.Column="1"
                 Background="{ThemeResource AcrylicSolutionExplorerBackground}"
                 Shadow="{StaticResource SolutionExplorerShadow}">
-                <local:ExtendedTabView.Transitions>
+                <!--<local:ExtendedTabView.Transitions>
                     <TransitionCollection>
                         <PaneThemeTransition Edge="Left" />
                     </TransitionCollection>
-                </local:ExtendedTabView.Transitions>
+                </local:ExtendedTabView.Transitions>-->
             </local:ExtendedTabView>
 
             <controls:GridSplitter
