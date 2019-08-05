@@ -27,11 +27,11 @@ namespace DirectX12GameEngine.Editor.Views
 
         public SolutionExplorerViewModel ViewModel => (SolutionExplorerViewModel)DataContext;
 
-        private void RefreshContainer_RefreshRequested(Microsoft.UI.Xaml.Controls.RefreshContainer sender, Microsoft.UI.Xaml.Controls.RefreshRequestedEventArgs args)
+        private async void RefreshContainer_RefreshRequested(Microsoft.UI.Xaml.Controls.RefreshContainer sender, Microsoft.UI.Xaml.Controls.RefreshRequestedEventArgs args)
         {
             Deferral deferral = args.GetDeferral();
 
-            ViewModel.RefreshCommand.Execute(null);
+            await ViewModel.RefreshAsync();
 
             deferral.Complete();
         }

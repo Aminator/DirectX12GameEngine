@@ -8,16 +8,21 @@ using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Materials;
 using Microsoft.Extensions.DependencyInjection;
+using DirectX12GameEngine.Input;
+
+#nullable enable
 
 namespace DirectX12Game
 {
     public class TestScript : StartupScript
     {
-        public string NullProperty { get; set; }
+        public string? NullProperty { get; set; }
 
         public ColorChannel MyColorChannel { get; set; } = ColorChannel.G;
 
         public ColorChannel MyOtherColorChannel { get; set; } = ColorChannel.B;
+
+        public DateTimeOffset? MyDateTime { get; set; }
 
         public List<string> MyStringList { get; } = new List<string> { "One", "Two", "Three", "Four" };
 
@@ -25,76 +30,39 @@ namespace DirectX12Game
 
         public override void Start()
         {
-#if WINDOWS_UWP
-            if (Game.Context is CoreWindowGameContext context)
+            if (Input.Keyboard != null)
             {
-                context.Control.KeyDown += Control_KeyDown;
+                Input.Keyboard.KeyDown += Keyboard_KeyDown;
             }
-            else if (Game.Context is XamlGameContext xamlContext)
-            {
-                xamlContext.Control.KeyDown += Control_KeyDown1;
-            }
-#endif
-#if NETCOREAPP
-            if (Game.Context is WinFormsGameContext winFormsContext)
-            {
-                winFormsContext.Control.KeyDown += Control_KeyDown2;
-            }
-#endif
         }
-
-#if WINDOWS_UWP
-        private void Control_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
-        {
-            OnKeyDown(args.VirtualKey);
-        }
-
-        private void Control_KeyDown1(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            OnKeyDown(e.Key);
-        }
-#endif
-#if NETCOREAPP
-        private void Control_KeyDown2(object sender, System.Windows.Forms.KeyEventArgs e)
-        {
-            OnKeyDown((Windows.System.VirtualKey)e.KeyCode);
-        }
-#endif
 
         public override void Cancel()
         {
-#if WINDOWS_UWP
-            if (Game.Context is CoreWindowGameContext context)
+            if (Input.Keyboard != null)
             {
-                context.Control.KeyDown -= Control_KeyDown;
+                Input.Keyboard.KeyDown -= Keyboard_KeyDown;
             }
-            else if (Game.Context is XamlGameContext xamlContext)
-            {
-                xamlContext.Control.KeyDown -= Control_KeyDown1;
-            }
-#endif
-#if NETCOREAPP
-            if (Game.Context is WinFormsGameContext winFormsContext)
-            {
-                winFormsContext.Control.KeyDown -= Control_KeyDown2;
-            }
-#endif
         }
 
-        private async void OnKeyDown(Windows.System.VirtualKey key)
+        private void Keyboard_KeyDown(object sender, KeyEventArgs e)
+        {
+            OnKeyDown(e.Key);
+        }
+
+        private async void OnKeyDown(VirtualKey key)
         {
             Entity? cameraEntity = SceneSystem.CurrentCamera?.Entity;
             Entity scene = SceneSystem.SceneInstance?.RootEntity ?? throw new InvalidOperationException();
 
             switch (key)
             {
-                case Windows.System.VirtualKey.Number0 when GraphicsDevice?.Presenter != null:
+                case VirtualKey.Number0 when GraphicsDevice?.Presenter != null:
                     GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 0;
                     break;
-                case Windows.System.VirtualKey.Number1 when GraphicsDevice?.Presenter != null:
+                case VirtualKey.Number1 when GraphicsDevice?.Presenter != null:
                     GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
                     break;
-                case Windows.System.VirtualKey.D:
+                case VirtualKey.D:
                     Entity? customCliffhouse = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "CustomCliffhouse");
                     if (customCliffhouse != null)
                     {
@@ -107,18 +75,18 @@ namespace DirectX12Game
                         }
                     }
                     break;
-                case Windows.System.VirtualKey.R:
+                case VirtualKey.R:
                     Entity? cliffhouse = SceneSystem.SceneInstance?.RootEntity?.Children.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
                         SceneSystem.SceneInstance?.RootEntity?.Children.Remove(cliffhouse);
                     }
                     break;
-                case Windows.System.VirtualKey.T:
+                case VirtualKey.T:
                     Entity? cliffhouse1 = SceneSystem.SceneInstance?.RootEntity?.Children.FirstOrDefault(m => m.Name == "Cliffhouse");
                     cliffhouse1?.Remove<ModelComponent>();
                     break;
-                case Windows.System.VirtualKey.A:
+                case VirtualKey.A:
                     Entity newCliffhouse = new Entity("Cliffhouse")
                     {
                         new TransformComponent { Position = new Vector3(-200.0f, 120.0f, 500.0f) },
@@ -127,7 +95,7 @@ namespace DirectX12Game
 
                     SceneSystem.SceneInstance?.RootEntity?.Children.Add(newCliffhouse);
                     break;
-                case Windows.System.VirtualKey.P:
+                case VirtualKey.P:
                     Entity? child1 = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Child1");
                     if (child1 != null && child1.Parent is null)
                     {
@@ -135,7 +103,7 @@ namespace DirectX12Game
                         SceneSystem.SceneInstance?.RootEntity?.Children.Add(child1);
                     }
                     break;
-                case Windows.System.VirtualKey.Q:
+                case VirtualKey.Q:
                     Entity? child2 = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Child1");
                     if (child2 != null && child2.Parent != null)
                     {
@@ -143,7 +111,7 @@ namespace DirectX12Game
                         child2.Transform.Parent = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Parent1").Transform;
                     }
                     break;
-                case Windows.System.VirtualKey.S:
+                case VirtualKey.S:
                     SceneInstance? sceneInstance = SceneSystem.SceneInstance;
                     Entity? previousRootScene = sceneInstance?.RootEntity;
 
@@ -156,14 +124,14 @@ namespace DirectX12Game
                         sceneInstance.RootEntity.Children.Add(previousRootScene);
                     }
                     break;
-                case Windows.System.VirtualKey.O:
+                case VirtualKey.O:
                     Entity? entity = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "CustomCliffhouse");
                     if (entity != null)
                     {
                         await Content.SaveAsync(@"Assets\CustomCliffhouse", entity);
                     }
                     break;
-                case Windows.System.VirtualKey.I:
+                case VirtualKey.I:
                     {
                         if (scene != null)
                         {
@@ -180,10 +148,10 @@ namespace DirectX12Game
                         }
                     }
                     break;
-                case Windows.System.VirtualKey.G:
+                case VirtualKey.G:
                     GC.Collect();
                     break;
-                case Windows.System.VirtualKey.K:
+                case VirtualKey.K:
                     await Content.ReloadAsync(scene);
                     break;
             }

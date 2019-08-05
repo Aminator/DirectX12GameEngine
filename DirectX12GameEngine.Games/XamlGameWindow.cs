@@ -17,13 +17,13 @@ namespace DirectX12GameEngine.Games
             swapChainPanel.CompositionScaleChanged += SwapChainPanel_CompositionScaleChanged;
         }
 
-        public override Rectangle ClientBounds
+        public override RectangleF ClientBounds
         {
             get
             {
-                return new Rectangle(0, 0,
-                    Math.Max(1, (int)(swapChainPanel.ActualWidth * swapChainPanel.CompositionScaleX + 0.5f)),
-                    Math.Max(1, (int)(swapChainPanel.ActualHeight * swapChainPanel.CompositionScaleY + 0.5f)));
+                return new RectangleF(0, 0,
+                    Math.Max(1.0f, (float)swapChainPanel.ActualWidth * swapChainPanel.CompositionScaleX + 0.5f),
+                    Math.Max(1, (float)swapChainPanel.ActualHeight * swapChainPanel.CompositionScaleY + 0.5f));
             }
         }
 

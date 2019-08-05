@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using DirectX12GameEngine.Engine;
 
 #nullable enable
@@ -22,6 +23,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             }
 
             Children.CollectionChanged += Children_CollectionChanged;
+            Model.PropertyChanged += Model_PropertyChanged;
         }
 
         public EntityViewModel? Parent
@@ -36,16 +38,16 @@ namespace DirectX12GameEngine.Editor.ViewModels
             set => Set(ref isSelected, value);
         }
 
-        public string Name
-        {
-            get => Model.Name;
-            set => Set(Model.Name, value, () => Model.Name = value);
-        }
-
         public Guid Id
         {
             get => Model.Id;
             set => Set(Model.Id, value, () => Model.Id = value);
+        }
+
+        public string Name
+        {
+            get => Model.Name;
+            set => Set(Model.Name, value, () => Model.Name = value);
         }
 
         public ObservableViewModelCollection<EntityViewModel, Entity> Children { get; }
@@ -87,6 +89,19 @@ namespace DirectX12GameEngine.Editor.ViewModels
                     {
                         RemoveInternal(entity);
                     }
+                    break;
+            }
+        }
+
+        private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(Id):
+                    NotifyPropertyChanged(nameof(Id));
+                    break;
+                case nameof(Name):
+                    NotifyPropertyChanged(nameof(Name));
                     break;
             }
         }

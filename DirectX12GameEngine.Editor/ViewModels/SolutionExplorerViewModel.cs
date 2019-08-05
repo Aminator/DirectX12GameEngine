@@ -1,4 +1,5 @@
-﻿using DirectX12GameEngine.Editor.Commanding;
+﻿using System.Threading.Tasks;
+using DirectX12GameEngine.Editor.Commanding;
 using DirectX12GameEngine.Editor.Messages;
 using DirectX12GameEngine.Editor.Messaging;
 
@@ -14,7 +15,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
         {
             OpenCommand = new RelayCommand<StorageItemViewModel>(Open);
             DeleteCommand = new RelayCommand<StorageItemViewModel>(Delete);
-            RefreshCommand = new RelayCommand(Refresh, () => RootFolder != null);
+            RefreshCommand = new RelayCommand(async () => await RefreshAsync(), () => RootFolder != null);
 
             Messenger.Default.Register<ProjectLoadedMessage>(this, m =>
             {
@@ -35,6 +36,16 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public RelayCommand RefreshCommand { get; }
 
+        public async Task RefreshAsync()
+        {
+            if (RootFolder != null)
+            {
+                RootFolder = new StorageFolderViewModel(RootFolder.Model);
+                await RootFolder.FillAsync();
+                RootFolder.IsExpanded = true;
+            }
+        }
+
         private void Open(StorageItemViewModel item)
         {
             Messenger.Default.Send(new LaunchStorageItemMessage(item));
@@ -43,17 +54,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
         private void Delete(StorageItemViewModel item)
         {
             item.Parent?.Children.Remove(item);
-        }
-
-        private void Refresh()
-        {
-            if (RootFolder != null)
-            {
-                RootFolder = new StorageFolderViewModel(RootFolder.Model)
-                {
-                    IsExpanded = true
-                };
-            }
         }
     }
 }

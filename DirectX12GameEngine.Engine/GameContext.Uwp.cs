@@ -1,6 +1,8 @@
 ﻿#if WINDOWS_UWP
 using System;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Graphics.Holographic;
+using DirectX12GameEngine.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.Graphics.Holographic;
 using Windows.UI.Core;
@@ -21,8 +23,9 @@ namespace DirectX12GameEngine.Games
         {
             base.ConfigureServices(services);
 
-            services.AddSingleton<GameWindow, CoreWindowGameWindow>();
-            services.AddSingleton<GraphicsPresenter, CoreWindowSwapChainGraphicsPresenter>();
+            services.AddSingleton<GameWindow>(new CoreWindowGameWindow(Control));
+            services.AddSingleton<GraphicsPresenter>(new CoreWindowSwapChainGraphicsPresenter(GraphicsDevice, PresentationParameters, Control));
+            services.AddSingleton<IInputSourceConfiguration>(new CoreWindowInputSourceConfiguration(Control));
         }
     }
 
@@ -43,9 +46,9 @@ namespace DirectX12GameEngine.Games
         {
             base.ConfigureServices(services);
 
-            services.AddSingleton(HolographicSpace);
-            services.AddSingleton<GameWindow, CoreWindowGameWindow>();
-            services.AddSingleton<GraphicsPresenter, CoreWindowSwapChainGraphicsPresenter>();
+            services.AddSingleton<GameWindow>(new CoreWindowGameWindow(Control));
+            services.AddSingleton<GraphicsPresenter>(new HolographicGraphicsPresenter(GraphicsDevice, PresentationParameters, HolographicSpace));
+            services.AddSingleton<IInputSourceConfiguration>(new CoreWindowInputSourceConfiguration(Control));
         }
     }
 
@@ -61,8 +64,9 @@ namespace DirectX12GameEngine.Games
         {
             base.ConfigureServices(services);
 
-            services.AddSingleton<GameWindow, XamlGameWindow>();
-            services.AddSingleton<GraphicsPresenter, XamlSwapChainGraphicsPresenter>();
+            services.AddSingleton<GameWindow>(new XamlGameWindow(Control));
+            services.AddSingleton<GraphicsPresenter>(new XamlSwapChainGraphicsPresenter(GraphicsDevice, PresentationParameters, Control));
+            services.AddSingleton<IInputSourceConfiguration>(new XamlInputSourceConfiguration(Control));
         }
     }
 }

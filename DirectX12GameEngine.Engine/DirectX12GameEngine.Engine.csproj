@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
-    <NullableContextOptions>enable</NullableContextOptions>
+    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
     <DefineConstants>WINDOWS_UWP</DefineConstants>
@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine.Games\DirectX12GameEngine.Games.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Graphics.Holographic\DirectX12GameEngine.Graphics.Holographic.csproj" />
+    <ProjectReference Include="..\DirectX12GameEngine.Input\DirectX12GameEngine.Input.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj" />
   </ItemGroup>
 

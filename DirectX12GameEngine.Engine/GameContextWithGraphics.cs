@@ -9,14 +9,15 @@ namespace DirectX12GameEngine.Games
         {
         }
 
+        public GraphicsDevice GraphicsDevice { get; } = new GraphicsDevice();
+
         public PresentationParameters PresentationParameters { get; } = new PresentationParameters();
 
         public override void ConfigureServices(IServiceCollection services)
         {
             base.ConfigureServices(services);
 
-            services.AddSingleton<GraphicsDevice>();
-            services.AddSingleton(PresentationParameters);
+            services.AddSingleton(GraphicsDevice);
         }
     }
 }

@@ -58,6 +58,11 @@
                         </winui:TreeViewItem>
                     </DataTemplate>
                 </winui:TreeView.ItemTemplate>
+                <winui:TreeView.ItemContainerStyle>
+                    <Style TargetType="winui:TreeViewItem">
+                        <Setter Property="Padding" Value="0,0,12,0" />
+                    </Style>
+                </winui:TreeView.ItemContainerStyle>
             </winui:TreeView>
         </Grid>
 

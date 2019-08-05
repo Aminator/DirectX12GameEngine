@@ -98,7 +98,7 @@ namespace DirectX12GameEngine.Core.Assets
         {
             using (await asyncLock.LockAsync())
             {
-                return await DeserializeAsync(path, path, type, null);
+                return await DeserializeAsync(path, type, null, null);
             }
         }
 
@@ -113,7 +113,7 @@ namespace DirectX12GameEngine.Core.Assets
 
                 string path = newPath ?? reference.Path;
 
-                await DeserializeAsync(reference.Path, path, asset.GetType(), asset);
+                await DeserializeExistingObjectAsync(reference.Path, path, asset);
 
                 if (path != reference.Path)
                 {

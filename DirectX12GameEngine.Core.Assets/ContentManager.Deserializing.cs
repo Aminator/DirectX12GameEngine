@@ -44,38 +44,26 @@ namespace DirectX12GameEngine.Core.Assets
             return DeserializeAsync(element, operation, obj);
         }
 
-        internal async Task<object> DeserializeAsync(string initialPath, string newPath, Type type, object? obj)
+        internal async Task<object> DeserializeExistingObjectAsync(string initialPath, string newPath, object obj)
         {
-            Reference? reference = null;
+            Type type = obj.GetType();
 
-            if (obj != null)
+            Reference reference = FindDeserializedObject(initialPath, type);
+
+            if (reference is null || reference.Object != obj)
             {
-                reference = FindDeserializedObject(initialPath, type);
-
-                if (reference is null || reference.Object != obj)
-                {
-                    throw new InvalidOperationException();
-                }
+                throw new InvalidOperationException();
             }
 
-            HashSet<Reference>? references = null;
-
-            if (reference != null)
-            {
-                references = reference.References;
-                reference.References = new HashSet<Reference>();
-
-                reference.IsDeserialized = false;
-            }
+            HashSet<Reference>? references = reference.References;
+            reference.References = new HashSet<Reference>();
+            reference.IsDeserialized = false;
 
             object asset = await DeserializeAsync(newPath, type, null, obj);
 
-            if (references != null)
+            foreach (Reference childReference in references)
             {
-                foreach (Reference childReference in references)
-                {
-                    DecrementReference(childReference, false);
-                }
+                DecrementReference(childReference, false);
             }
 
             return asset;

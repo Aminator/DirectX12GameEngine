@@ -14,6 +14,10 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
         <Style TargetType="TextBox">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
         </Style>
@@ -25,6 +29,138 @@
         <Style TargetType="controls:UniformGrid">
             <Setter Property="Columns" Value="1" />
         </Style>
+
+        <DataTemplate x:Key="ClassPropertyTemplate" x:DataType="properties:ClassPropertyViewModel">
+            <winui:TreeViewItem
+                HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
+                IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                ItemsSource="{x:Bind Properties, Mode=OneWay}">
+                <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CollectionPropertyTemplate" x:DataType="properties:CollectionPropertyViewModel">
+            <winui:TreeViewItem
+                HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
+                IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                ItemsSource="{x:Bind Items, Mode=OneWay}">
+                <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="NullPropertyTemplate" x:DataType="properties:NullPropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="(None)" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BooleanPropertyTemplate" x:DataType="properties:BooleanPropertyViewModel">
+            <winui:TreeViewItem>
+                <CheckBox Content="{x:Bind PropertyName, Mode=OneWay}" IsChecked="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CharPropertyTemplate" x:DataType="properties:CharPropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="StringPropertyTemplate" x:DataType="properties:StringPropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SinglePropertyTemplate" x:DataType="properties:SinglePropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DoublePropertyTemplate" x:DataType="properties:DoublePropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DecimalPropertyTemplate" x:DataType="properties:DecimalPropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BytePropertyTemplate" x:DataType="properties:BytePropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SBytePropertyTemplate" x:DataType="properties:SBytePropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="Int16PropertyTemplate" x:DataType="properties:Int16PropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="UInt16PropertyTemplate" x:DataType="properties:UInt16PropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="Int32PropertyTemplate" x:DataType="properties:Int32PropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="UInt32PropertyTemplate" x:DataType="properties:UInt32PropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="Int64PropertyTemplate" x:DataType="properties:Int64PropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="UInt64PropertyTemplate" x:DataType="properties:UInt64PropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="EnumPropertyTemplate" x:DataType="properties:EnumPropertyViewModel">
+            <winui:TreeViewItem>
+                <ComboBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    ItemsSource="{x:Bind Values, Mode=OneWay}"
+                    SelectedItem="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GuidPropertyTemplate" x:DataType="properties:GuidPropertyViewModel">
+            <winui:TreeViewItem>
+                <TextBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsReadOnly="True"
+                    Text="{x:Bind Value, Mode=OneWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DateTimePropertyTemplate" x:DataType="properties:DateTimePropertyViewModel">
+            <winui:TreeViewItem>
+                <CalendarDatePicker Date="{x:Bind Value, Mode=TwoWay}" Header="{x:Bind PropertyName, Mode=OneWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
 
         <DataTemplate x:Key="Vector3PropertyTemplate" x:DataType="properties:Vector3PropertyViewModel">
             <winui:TreeViewItem>
@@ -103,77 +239,31 @@
             </winui:TreeViewItem>
         </DataTemplate>
 
-        <DataTemplate x:Key="StringPropertyTemplate" x:DataType="properties:StringPropertyViewModel">
-            <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
-            </winui:TreeViewItem>
-        </DataTemplate>
-
-        <DataTemplate x:Key="SinglePropertyTemplate" x:DataType="properties:SinglePropertyViewModel">
-            <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
-            </winui:TreeViewItem>
-        </DataTemplate>
-
-        <DataTemplate x:Key="DoublePropertyTemplate" x:DataType="properties:DoublePropertyViewModel">
-            <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
-            </winui:TreeViewItem>
-        </DataTemplate>
-
-        <DataTemplate x:Key="NullPropertyTemplate" x:DataType="properties:NullPropertyViewModel">
-            <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="(None)" />
-            </winui:TreeViewItem>
-        </DataTemplate>
-
-        <DataTemplate x:Key="BooleanPropertyTemplate" x:DataType="properties:BooleanPropertyViewModel">
-            <winui:TreeViewItem>
-                <CheckBox Content="{x:Bind PropertyName, Mode=OneWay}" IsChecked="{x:Bind Value, Mode=TwoWay}" />
-            </winui:TreeViewItem>
-        </DataTemplate>
-
-        <DataTemplate x:Key="EnumPropertyTemplate" x:DataType="properties:EnumPropertyViewModel">
-            <winui:TreeViewItem>
-                <ComboBox
-                    Header="{x:Bind PropertyName, Mode=OneWay}"
-                    ItemsSource="{x:Bind Values, Mode=OneWay}"
-                    SelectedItem="{x:Bind Value, Mode=TwoWay}" />
-            </winui:TreeViewItem>
-        </DataTemplate>
-
-        <DataTemplate x:Key="ClassPropertyTemplate" x:DataType="properties:ClassPropertyViewModel">
-            <winui:TreeViewItem
-                HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
-                IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
-                ItemsSource="{x:Bind Properties, Mode=OneWay}">
-                <StackPanel Orientation="Horizontal" Spacing="12">
-                    <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
-                    <TextBlock Text="{x:Bind Type.Name}" />
-                </StackPanel>
-            </winui:TreeViewItem>
-        </DataTemplate>
-
-        <DataTemplate x:Key="CollectionPropertyTemplate" x:DataType="properties:CollectionPropertyViewModel">
-            <winui:TreeViewItem
-                Content="{x:Bind PropertyName, Mode=OneWay}"
-                HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
-                IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
-                ItemsSource="{x:Bind Items, Mode=OneWay}" />
-        </DataTemplate>
-
         <local:DataTypeTemplateSelector x:Key="PropertyTemplateSelector">
             <local:TemplateDefinition DataTemplate="{StaticResource ClassPropertyTemplate}" DataType="properties:ClassPropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource CollectionPropertyTemplate}" DataType="properties:CollectionPropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource NullPropertyTemplate}" DataType="properties:NullPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource CharPropertyTemplate}" DataType="properties:CharPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource StringPropertyTemplate}" DataType="properties:StringPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource BooleanPropertyTemplate}" DataType="properties:BooleanPropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource SinglePropertyTemplate}" DataType="properties:SinglePropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource DoublePropertyTemplate}" DataType="properties:DoublePropertyViewModel" />
-            <local:TemplateDefinition DataTemplate="{StaticResource StringPropertyTemplate}" DataType="properties:StringPropertyViewModel" />
-            <local:TemplateDefinition DataTemplate="{StaticResource QuaternionPropertyTemplate}" DataType="properties:QuaternionPropertyViewModel" />
-            <local:TemplateDefinition DataTemplate="{StaticResource Vector4PropertyTemplate}" DataType="properties:Vector4PropertyViewModel" />
-            <local:TemplateDefinition DataTemplate="{StaticResource Vector3PropertyTemplate}" DataType="properties:Vector3PropertyViewModel" />
-            <local:TemplateDefinition DataTemplate="{StaticResource BooleanPropertyTemplate}" DataType="properties:BooleanPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource DecimalPropertyTemplate}" DataType="properties:DecimalPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource BytePropertyTemplate}" DataType="properties:BytePropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource SBytePropertyTemplate}" DataType="properties:SBytePropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource Int16PropertyTemplate}" DataType="properties:Int16PropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource UInt16PropertyTemplate}" DataType="properties:UInt16PropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource Int32PropertyTemplate}" DataType="properties:Int32PropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource UInt32PropertyTemplate}" DataType="properties:UInt32PropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource Int64PropertyTemplate}" DataType="properties:Int64PropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource UInt64PropertyTemplate}" DataType="properties:UInt64PropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource EnumPropertyTemplate}" DataType="properties:EnumPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource GuidPropertyTemplate}" DataType="properties:GuidPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource DateTimePropertyTemplate}" DataType="properties:DateTimePropertyViewModel" />
+
+            <local:TemplateDefinition DataTemplate="{StaticResource Vector3PropertyTemplate}" DataType="properties:Vector3PropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource Vector4PropertyTemplate}" DataType="properties:Vector4PropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource QuaternionPropertyTemplate}" DataType="properties:QuaternionPropertyViewModel" />
         </local:DataTypeTemplateSelector>
     </UserControl.Resources>
 

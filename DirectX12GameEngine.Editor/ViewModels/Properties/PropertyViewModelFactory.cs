@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace DirectX12GameEngine.Editor.ViewModels.Properties
 {
-    public class PropertyViewModelFactory : IPropertyViewModelFactory
+    public class PropertyViewModelFactory : IPropertyViewModelFactory, IEnumerable<KeyValuePair<Type, IPropertyViewModelFactory>>
     {
         private static PropertyViewModelFactory defaultInstance;
 
@@ -76,6 +76,10 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
 
             return propertyViewModel;
         }
+
+        public IEnumerator<KeyValuePair<Type, IPropertyViewModelFactory>> GetEnumerator() => factories.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     public class FunctionalPropertyViewModelFactory : IPropertyViewModelFactory

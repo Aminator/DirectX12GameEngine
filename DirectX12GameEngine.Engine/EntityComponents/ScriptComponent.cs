@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Input;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
@@ -24,6 +25,9 @@ namespace DirectX12GameEngine.Engine
         public GameBase Game { get; private set; }
 
         [IgnoreDataMember]
+        public InputManager Input { get; private set; }
+
+        [IgnoreDataMember]
         public SceneSystem SceneSystem { get; private set; }
 
         [IgnoreDataMember]
@@ -38,6 +42,7 @@ namespace DirectX12GameEngine.Engine
 
             Content = Services.GetRequiredService<ContentManager>();
             Game = Services.GetRequiredService<GameBase>();
+            Input = Services.GetRequiredService<InputManager>();
             SceneSystem = Services.GetRequiredService<SceneSystem>();
             Script = Services.GetRequiredService<ScriptSystem>();
         }

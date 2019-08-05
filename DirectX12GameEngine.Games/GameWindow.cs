@@ -11,7 +11,7 @@ namespace DirectX12GameEngine.Games
 
         public bool IsExiting { get; private set; }
 
-        public abstract Rectangle ClientBounds { get; }
+        public abstract RectangleF ClientBounds { get; }
 
         public virtual void Dispose()
         {

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
-    <NullableContextOptions>enable</NullableContextOptions>
+    <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <DefineConstants>WINDOWS_UWP</DefineConstants>
   </PropertyGroup>

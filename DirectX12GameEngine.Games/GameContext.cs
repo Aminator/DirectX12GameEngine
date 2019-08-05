@@ -21,8 +21,6 @@ namespace DirectX12GameEngine.Games
         public override void ConfigureServices(IServiceCollection services)
         {
             base.ConfigureServices(services);
-
-            services.AddSingleton(Control);
         }
     }
 }

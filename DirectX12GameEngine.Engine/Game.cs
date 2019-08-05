@@ -1,5 +1,6 @@
 ﻿using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Input;
 using DirectX12GameEngine.Rendering.Materials;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,15 +17,19 @@ namespace DirectX12GameEngine.Engine
                 GraphicsDevice.Presenter = Services.GetService<GraphicsPresenter>();
             }
 
+            Input = Services.GetRequiredService<InputManager>();
             SceneSystem = Services.GetRequiredService<SceneSystem>();
             Script = Services.GetRequiredService<ScriptSystem>();
             ShaderContent = Services.GetRequiredService<ShaderContentManager>();
 
+            GameSystems.Add(Input);
             GameSystems.Add(SceneSystem);
             GameSystems.Add(Script);
         }
 
         public GraphicsDevice? GraphicsDevice { get; set; }
+
+        public InputManager Input { get; }
 
         public SceneSystem SceneSystem { get; }
 
@@ -57,8 +62,8 @@ namespace DirectX12GameEngine.Engine
 
                 if (Window != null && GraphicsDevice.Presenter != null)
                 {
-                    int windowWidth = Window.ClientBounds.Width;
-                    int windowHeight = Window.ClientBounds.Height;
+                    int windowWidth = (int)Window.ClientBounds.Width;
+                    int windowHeight = (int)Window.ClientBounds.Height;
 
                     if (windowWidth != GraphicsDevice.Presenter.BackBuffer.Width || windowHeight != GraphicsDevice.Presenter.BackBuffer.Height)
                     {
@@ -86,6 +91,7 @@ namespace DirectX12GameEngine.Engine
         {
             base.ConfigureServices(services);
 
+            services.AddSingleton<InputManager>();
             services.AddSingleton<SceneSystem>();
             services.AddSingleton<ScriptSystem>();
             services.AddSingleton<ShaderContentManager>();

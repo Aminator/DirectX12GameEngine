@@ -135,6 +135,7 @@
     <Compile Include="ViewModels\Properties\IPropertyViewModelFactory.cs" />
     <Compile Include="ViewModels\Properties\PrimitivePropertyViewModels.cs" />
     <Compile Include="ViewModels\Properties\PropertyViewModelFactory.cs" />
+    <Compile Include="ViewModels\Properties\VectorPropertyViewModels.cs" />
     <Compile Include="ViewModels\PropertyGridViewModel.cs" />
     <Compile Include="ViewModels\Properties\PropertyViewModel.cs" />
     <Compile Include="ViewModels\SceneViewModel.cs" />

@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Assets"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectX12GameEngine.Editor", "DirectX12GameEngine.Editor\DirectX12GameEngine.Editor.csproj", "{D1F2CBF7-6205-4A81-9262-06B2B747D05B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectX12GameEngine.Input", "DirectX12GameEngine.Input\DirectX12GameEngine.Input.csproj", "{DB93C2C6-419A-4D51-AD9A-12556771C28D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -341,6 +343,26 @@ Global
 		{D1F2CBF7-6205-4A81-9262-06B2B747D05B}.Release|x86.ActiveCfg = Release|x86
 		{D1F2CBF7-6205-4A81-9262-06B2B747D05B}.Release|x86.Build.0 = Release|x86
 		{D1F2CBF7-6205-4A81-9262-06B2B747D05B}.Release|x86.Deploy.0 = Release|x86
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|ARM.Build.0 = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Debug|x86.Build.0 = Debug|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|ARM.ActiveCfg = Release|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|ARM.Build.0 = Release|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|ARM64.Build.0 = Release|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|x64.Build.0 = Release|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|x86.ActiveCfg = Release|Any CPU
+		{DB93C2C6-419A-4D51-AD9A-12556771C28D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

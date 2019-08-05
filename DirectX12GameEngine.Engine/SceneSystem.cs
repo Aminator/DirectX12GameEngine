@@ -32,17 +32,17 @@ namespace DirectX12GameEngine.Engine
 
         public override void Update(GameTime gameTime)
         {
-            SceneInstance?.Update(gameTime);
+            SceneInstance.Update(gameTime);
         }
 
         public override void Draw(GameTime gameTime)
         {
-            SceneInstance?.Draw(gameTime);
+            SceneInstance.Draw(gameTime);
         }
 
         public override void Dispose()
         {
-            SceneInstance?.Dispose();
+            SceneInstance.Dispose();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿#if NETCOREAPP
 using System.Windows.Forms;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Input;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Games
@@ -18,9 +19,9 @@ namespace DirectX12GameEngine.Games
         {
             base.ConfigureServices(services);
 
-            services.AddSingleton(new WindowHandle(Control.Handle));
-            services.AddSingleton<GameWindow, WinFormsGameWindow>();
-            services.AddSingleton<GraphicsPresenter, HwndSwapChainGraphicsPresenter>();
+            services.AddSingleton<GameWindow>(new WinFormsGameWindow(Control));
+            services.AddSingleton<GraphicsPresenter>(new HwndSwapChainGraphicsPresenter(GraphicsDevice, PresentationParameters, new WindowHandle(Control.Handle)));
+            services.AddSingleton<IInputSourceConfiguration>(new WinFormsInputSourceConfiguration(Control));
         }
     }
 }

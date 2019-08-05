@@ -17,11 +17,11 @@ namespace DirectX12GameEngine.Games
             control.ClientSizeChanged += Control_ClientSizeChanged;
         }
 
-        public override Rectangle ClientBounds
+        public override RectangleF ClientBounds
         {
             get
             {
-                Rectangle clientRectangle = control.ClientRectangle;
+                RectangleF clientRectangle = control.ClientRectangle;
 
                 clientRectangle.Width = Math.Max(clientRectangle.Width, 1);
                 clientRectangle.Height = Math.Max(clientRectangle.Height, 1);

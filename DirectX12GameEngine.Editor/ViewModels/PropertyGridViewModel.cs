@@ -18,24 +18,32 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public PropertyGridViewModel()
         {
-            PropertyViewModelFactory.Default.Add(typeof(Enum), (m, p) => new EnumPropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(byte), (m, p) => new BytePropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(sbyte), (m, p) => new SBytePropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(short), (m, p) => new Int16PropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(ushort), (m, p) => new UInt16PropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(int), (m, p) => new Int32PropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(uint), (m, p) => new UInt32PropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(long), (m, p) => new Int64PropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(ulong), (m, p) => new UInt64PropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(float), (m, p) => new SinglePropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(double), (m, p) => new DoublePropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(decimal), (m, p) => new DecimalPropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(string), (m, p) => new StringPropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(char), (m, p) => new CharPropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(bool), (m, p) => new BooleanPropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(Vector3), (m, p) => new Vector3PropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(Vector4), (m, p) => new Vector4PropertyViewModel(m, p));
-            PropertyViewModelFactory.Default.Add(typeof(Quaternion), (m, p) => new QuaternionPropertyViewModel(m, p));
+            PropertyViewModelFactory factory = new PropertyViewModelFactory
+            {
+                { typeof(char), (m, p) => new CharPropertyViewModel(m, p) },
+                { typeof(string), (m, p) => new StringPropertyViewModel(m, p) },
+                { typeof(bool), (m, p) => new BooleanPropertyViewModel(m, p) },
+                { typeof(float), (m, p) => new SinglePropertyViewModel(m, p) },
+                { typeof(double), (m, p) => new DoublePropertyViewModel(m, p) },
+                { typeof(decimal), (m, p) => new DecimalPropertyViewModel(m, p) },
+                { typeof(byte), (m, p) => new BytePropertyViewModel(m, p) },
+                { typeof(sbyte), (m, p) => new SBytePropertyViewModel(m, p) },
+                { typeof(short), (m, p) => new Int16PropertyViewModel(m, p) },
+                { typeof(ushort), (m, p) => new UInt16PropertyViewModel(m, p) },
+                { typeof(int), (m, p) => new Int32PropertyViewModel(m, p) },
+                { typeof(uint), (m, p) => new UInt32PropertyViewModel(m, p) },
+                { typeof(long), (m, p) => new Int64PropertyViewModel(m, p) },
+                { typeof(ulong), (m, p) => new UInt64PropertyViewModel(m, p) },
+                { typeof(Enum), (m, p) => new EnumPropertyViewModel(m, p) },
+                { typeof(Guid), (m, p) => new GuidPropertyViewModel(m, p) },
+                { typeof(DateTimeOffset?), (m, p) => new DateTimePropertyViewModel(m, p) },
+
+                { typeof(Vector3), (m, p) => new Vector3PropertyViewModel(m, p) },
+                { typeof(Vector4), (m, p) => new Vector4PropertyViewModel(m, p) },
+                { typeof(Quaternion), (m, p) => new QuaternionPropertyViewModel(m, p) }
+            };
+
+            PropertyViewModelFactory.Default = factory;
 
             Messenger.Default.Register<ShowEntityPropertiesMessage>(this, m => ShowProperties(m.Entity));
         }

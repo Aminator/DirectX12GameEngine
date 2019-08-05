@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Threading.Tasks;
 using Windows.Storage;
 
 #nullable enable
@@ -38,13 +39,13 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 {
                     if (isExpanded)
                     {
-                        Fill();
+                        _ = FillAsync();
                     }
                 }
             }
         }
 
-        private async void Fill()
+        public async Task FillAsync()
         {
             if (HasUnrealizedChildren)
             {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using DirectX12GameEngine.Engine;
-using DirectX12GameEngine.Games;
+using DirectX12GameEngine.Input;
 
 namespace DirectX12Game
 {
@@ -15,26 +15,16 @@ namespace DirectX12Game
         {
             SceneSystem.CurrentCamera = Camera;
 
-#if WINDOWS_UWP
-            if (Game.Context is CoreWindowGameContext context)
+            if (Input.Keyboard != null)
             {
-                context.Control.PointerPressed += (s, e) => OnPointerPressed(e.CurrentPoint);
-                context.Control.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.CurrentPoint);
-                context.Control.KeyDown += (s, e) => OnKeyDown(e.VirtualKey);
+                Input.Keyboard.KeyDown += (s, e) => OnKeyDown(e.Key);
             }
-            else if (Game.Context is XamlGameContext xamlContext)
+
+            if (Input.Pointer != null)
             {
-                xamlContext.Control.PointerPressed += (s, e) => OnPointerPressed(e.GetCurrentPoint(xamlContext.Control));
-                xamlContext.Control.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.GetCurrentPoint(xamlContext.Control));
-                xamlContext.Control.KeyDown += (s, e) => OnKeyDown(e.Key);
+                Input.Pointer.PointerPressed += (s, e) => OnPointerPressed(e.CurrentPoint);
+                Input.Pointer.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.CurrentPoint);
             }
-#endif
-#if NETCOREAPP
-            if (Game.Context is WinFormsGameContext winFormsContext)
-            {
-                winFormsContext.Control.KeyDown += (s, e) => OnKeyDown((Windows.System.VirtualKey)e.KeyCode);
-            }
-#endif
         }
 
         public override void Update()
@@ -51,7 +41,7 @@ namespace DirectX12Game
             }
         }
 
-        private void OnPointerPressed(Windows.UI.Input.PointerPoint pointerPoint)
+        private void OnPointerPressed(PointerPoint pointerPoint)
         {
             if (pointerPoint.Properties.IsLeftButtonPressed)
             {
@@ -63,25 +53,25 @@ namespace DirectX12Game
             }
         }
 
-        private void OnPointerWheelChanged(Windows.UI.Input.PointerPoint pointerPoint)
+        private void OnPointerWheelChanged(PointerPoint pointerPoint)
         {
             MoveCamera(-pointerPoint.Properties.MouseWheelDelta * scrollSpeed);
         }
 
-        private void OnKeyDown(Windows.System.VirtualKey key)
+        private void OnKeyDown(VirtualKey key)
         {
             switch (key)
             {
-                case Windows.System.VirtualKey.Left:
+                case VirtualKey.Left:
                     if (Camera?.Entity != null) Camera.Entity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, (float)(10 * Math.PI / 180.0f));
                     break;
-                case Windows.System.VirtualKey.Right:
+                case VirtualKey.Right:
                     if (Camera?.Entity != null) Camera.Entity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, (float)(-10 * Math.PI / 180.0f));
                     break;
-                case Windows.System.VirtualKey.Up:
+                case VirtualKey.Up:
                     MoveCamera(-10.0f);
                     break;
-                case Windows.System.VirtualKey.Down:
+                case VirtualKey.Down:
                     MoveCamera(10.0f);
                     break;
             }

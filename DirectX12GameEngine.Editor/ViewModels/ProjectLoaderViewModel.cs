@@ -11,6 +11,7 @@ using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
+using Windows.UI.StartScreen;
 
 #nullable enable
 
@@ -64,16 +65,40 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public async Task OpenProjectAsync(StorageFolder folder)
         {
+            string token;
+
             if (!StorageApplicationPermissions.MostRecentlyUsedList.CheckAccess(folder))
             {
-                string token = StorageApplicationPermissions.MostRecentlyUsedList.Add(folder, folder.Path);
+                token = StorageApplicationPermissions.MostRecentlyUsedList.Add(folder, folder.Path);
                 AccessListEntry accessListEntry = new AccessListEntry { Token = token, Metadata = folder.Path };
                 RecentProjects.Add(accessListEntry);
+            }
+            else
+            {
+                token = RecentProjects.First(e => e.Metadata == folder.Path).Token;
+            }
+
+            if (JumpList.IsSupported())
+            {
+                JumpList jumpList = await JumpList.LoadCurrentAsync();
+                jumpList.SystemGroupKind = JumpListSystemGroupKind.Recent;
+
+                JumpListItem? existingJumpListItem = jumpList.Items.FirstOrDefault(j => j.Arguments == token);
+
+                if (existingJumpListItem is null || existingJumpListItem.RemovedByUser)
+                {
+                    JumpListItem jumpListItem = JumpListItem.CreateWithArguments(token, folder.Name);
+                    jumpListItem.Description = folder.Path;
+                    jumpListItem.GroupName = "Recent";
+
+                    jumpList.Items.Add(jumpListItem);
+                }
+
+                await jumpList.SaveAsync();
             }
 
             if (IsProjectLoaded)
             {
-                string token = RecentProjects.First(e => e.Metadata == folder.Path).Token;
                 await CoreApplication.RequestRestartAsync(token);
             }
             else

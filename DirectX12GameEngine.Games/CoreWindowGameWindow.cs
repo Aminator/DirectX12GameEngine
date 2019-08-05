@@ -17,14 +17,14 @@ namespace DirectX12GameEngine.Games
             coreWindow.SizeChanged += CoreWindow_SizeChanged;
         }
 
-        public override Rectangle ClientBounds
+        public override RectangleF ClientBounds
         {
             get
             {
                 double resolutionScale = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
 
-                return new Rectangle((int)coreWindow.Bounds.X, (int)coreWindow.Bounds.X,
-                    Math.Max(1, (int)(coreWindow.Bounds.Width * resolutionScale)), Math.Max(1, (int)(coreWindow.Bounds.Height * resolutionScale)));
+                return new RectangleF((float)coreWindow.Bounds.X, (float)coreWindow.Bounds.X,
+                    Math.Max(1, (float)(coreWindow.Bounds.Width * resolutionScale)), Math.Max(1, (float)(coreWindow.Bounds.Height * resolutionScale)));
             }
         }
 
