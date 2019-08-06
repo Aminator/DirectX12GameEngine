@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using DirectX12GameEngine.Core;
+using System.Drawing;
 using System.Numerics;
 
 namespace DirectX12GameEngine.Input
@@ -12,9 +13,9 @@ namespace DirectX12GameEngine.Input
             this.properties = properties;
         }
 
-        public override RectangleF ContactRect => new RectangleF((float)properties.ContactRect.X, (float)properties.ContactRect.Y, (float)properties.ContactRect.Width, (float)properties.ContactRect.Height);
+        public override RectangleF ContactRect => properties.ContactRect.ToRectangleF();
 
-        public override RectangleF ContactRectRaw => new RectangleF((float)properties.ContactRect.X, (float)properties.ContactRect.Y, (float)properties.ContactRect.Width, (float)properties.ContactRect.Height);
+        public override RectangleF ContactRectRaw => properties.ContactRectRaw.ToRectangleF();
 
         public override bool IsBarrelButtonPressed => properties.IsBarrelButtonPressed;
 

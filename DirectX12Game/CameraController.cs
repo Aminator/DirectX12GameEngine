@@ -45,7 +45,10 @@ namespace DirectX12Game
         {
             if (pointerPoint.Properties.IsLeftButtonPressed)
             {
-                MoveCamera(-10.0f);
+                if (Input.Pointer != null)
+                {
+                    Input.Pointer.IsPointerPositionLocked = true;
+                }
             }
             else if (pointerPoint.Properties.IsRightButtonPressed)
             {
@@ -73,6 +76,12 @@ namespace DirectX12Game
                     break;
                 case VirtualKey.Down:
                     MoveCamera(10.0f);
+                    break;
+                case VirtualKey.Escape:
+                    if (Input.Pointer != null)
+                    {
+                        Input.Pointer.IsPointerPositionLocked = false;
+                    }
                     break;
             }
         }

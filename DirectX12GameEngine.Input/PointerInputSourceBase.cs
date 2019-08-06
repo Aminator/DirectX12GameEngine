@@ -5,6 +5,9 @@ namespace DirectX12GameEngine.Input
 {
     public abstract class PointerInputSourceBase : IPointerInputSource
     {
+        private Vector2 capturedPointerPosition;
+        private bool isPointerPositionLocked;
+
         public event EventHandler<PointerEventArgs> PointerCaptureLost;
 
         public event EventHandler<PointerEventArgs> PointerEntered;
@@ -23,9 +26,26 @@ namespace DirectX12GameEngine.Input
 
         public abstract bool IsInputEnabled { get; set; }
 
+        public bool IsPointerPositionLocked
+        {
+            get => isPointerPositionLocked;
+            set
+            {
+                if (isPointerPositionLocked != value)
+                {
+                    isPointerPositionLocked = value;
+
+                    if (isPointerPositionLocked)
+                    {
+                        capturedPointerPosition = PointerPosition;
+                    }
+                }
+            }
+        }
+
         public abstract Cursor PointerCursor { get; set; }
 
-        public abstract Vector2 PointerPosition { get; }
+        public abstract Vector2 PointerPosition { get; set; }
 
         public virtual void Dispose()
         {
@@ -61,6 +81,11 @@ namespace DirectX12GameEngine.Input
         protected virtual void OnPointerMoved(PointerEventArgs e)
         {
             PointerMoved?.Invoke(this, e);
+
+            if (IsPointerPositionLocked)
+            {
+                PointerPosition = capturedPointerPosition;
+            }
         }
 
         protected virtual void OnPointerPressed(PointerEventArgs e)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DirectX12GameEngine.Core;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Windows.UI.Core;
@@ -34,17 +35,11 @@ namespace DirectX12GameEngine.Input
             set => Window.Current.CoreWindow.PointerCursor = new CoreCursor((CoreCursorType)value.Type, value.Id);
         }
 
-        public override Vector2 PointerPosition { get; }
+        public override Vector2 PointerPosition { get => Window.Current.CoreWindow.PointerPosition.ToVector2(); set => Window.Current.CoreWindow.PointerPosition = value.ToPoint(); }
 
-        public override void ReleasePointerCapture()
-        {
-            throw new System.NotImplementedException();
-        }
+        public override void ReleasePointerCapture() => Window.Current.CoreWindow.ReleasePointerCapture();
 
-        public override void SetPointerCapture()
-        {
-            throw new System.NotImplementedException();
-        }
+        public override void SetPointerCapture() => Window.Current.CoreWindow.SetPointerCapture();
 
         private void Control_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {

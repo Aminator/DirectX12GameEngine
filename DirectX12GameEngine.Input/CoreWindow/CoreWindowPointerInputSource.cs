@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using DirectX12GameEngine.Core;
 using System.Numerics;
 using Windows.UI.Core;
 
@@ -32,7 +31,7 @@ namespace DirectX12GameEngine.Input
             set => control.PointerCursor = new CoreCursor((CoreCursorType)value.Type, value.Id);
         }
 
-        public override Vector2 PointerPosition => new Vector2((float)control.PointerPosition.X, (float)control.PointerPosition.Y);
+        public override Vector2 PointerPosition { get => control.PointerPosition.ToVector2(); set => control.PointerPosition = value.ToPoint(); }
 
         public override void ReleasePointerCapture() => control.ReleasePointerCapture();
 
@@ -53,55 +52,37 @@ namespace DirectX12GameEngine.Input
 
         private void Control_PointerCaptureLost(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
-            OnPointerCaptureLost(new CoreWindowPointerEventArgs(args));
+            OnPointerCaptureLost(new UwpPointerEventArgs(args));
         }
 
         private void Control_PointerEntered(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
-            OnPointerEntered(new CoreWindowPointerEventArgs(args));
+            OnPointerEntered(new UwpPointerEventArgs(args));
         }
 
         private void Control_PointerExited(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
-            OnPointerExited(new CoreWindowPointerEventArgs(args));
+            OnPointerExited(new UwpPointerEventArgs(args));
         }
 
         private void Control_PointerMoved(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
-            OnPointerMoved(new CoreWindowPointerEventArgs(args));
+            OnPointerMoved(new UwpPointerEventArgs(args));
         }
 
         private void Control_PointerPressed(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
-            OnPointerPressed(new CoreWindowPointerEventArgs(args));
+            OnPointerPressed(new UwpPointerEventArgs(args));
         }
 
         private void Control_PointerReleased(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
-            OnPointerReleased(new CoreWindowPointerEventArgs(args));
+            OnPointerReleased(new UwpPointerEventArgs(args));
         }
 
         private void Control_PointerWheelChanged(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
-            OnPointerWheelChanged(new CoreWindowPointerEventArgs(args));
-        }
-
-        private class CoreWindowPointerEventArgs : PointerEventArgs
-        {
-            private readonly Windows.UI.Core.PointerEventArgs args;
-
-            public CoreWindowPointerEventArgs(Windows.UI.Core.PointerEventArgs args)
-            {
-                this.args = args;
-            }
-
-            public override bool Handled { get => args.Handled; set => args.Handled = value; }
-
-            public override PointerPoint CurrentPoint => new UwpPointerPoint(args.CurrentPoint);
-
-            public override VirtualKeyModifiers KeyModifiers => (VirtualKeyModifiers)args.KeyModifiers;
-
-            public override IList<PointerPoint> GetIntermediatePoints() => args.GetIntermediatePoints().Select(p => new UwpPointerPoint(p)).ToArray();
+            OnPointerWheelChanged(new UwpPointerEventArgs(args));
         }
     }
 }

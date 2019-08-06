@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using DirectX12GameEngine.Core;
+using System.Numerics;
 
 namespace DirectX12GameEngine.Input
 {
@@ -15,7 +16,7 @@ namespace DirectX12GameEngine.Input
 
         public override uint PointerId => pointerPoint.PointerId;
 
-        public override Vector2 Position => new Vector2((float)pointerPoint.Position.X, (float)pointerPoint.Position.Y);
+        public override Vector2 Position => pointerPoint.Position.ToVector2();
 
         public override PointerPointProperties Properties => new UwpPointerPointProperties(pointerPoint.Properties);
     }

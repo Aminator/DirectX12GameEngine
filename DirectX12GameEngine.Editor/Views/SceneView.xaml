@@ -67,7 +67,15 @@
         </Grid>
 
         <Grid Grid.Column="1" Background="{ThemeResource AcrylicAssetEditorBackground}">
-            <SwapChainPanel x:Name="swapChainPanel" />
+            <SwapChainPanel x:Name="swapChainPanel">
+                <local:BackgroundControl>
+                    <local:BackgroundControl.Template>
+                        <ControlTemplate TargetType="local:BackgroundControl">
+                            <Grid Background="Transparent" />
+                        </ControlTemplate>
+                    </local:BackgroundControl.Template>
+                </local:BackgroundControl>
+            </SwapChainPanel>
 
             <ProgressRing
                 Width="72"

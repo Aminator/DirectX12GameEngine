@@ -146,6 +146,7 @@
     <Compile Include="Views\AppWindowPage.xaml.cs">
       <DependentUpon>AppWindowPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\BackgroundControl.cs" />
     <Compile Include="Views\EditorMenuBar.xaml.cs">
       <DependentUpon>EditorMenuBar.xaml</DependentUpon>
     </Compile>

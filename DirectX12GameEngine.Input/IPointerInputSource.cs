@@ -23,9 +23,11 @@ namespace DirectX12GameEngine.Input
 
         bool IsInputEnabled { get; set; }
 
+        bool IsPointerPositionLocked { get; set; }
+
         Cursor PointerCursor { get; set; }
 
-        Vector2 PointerPosition { get; }
+        Vector2 PointerPosition { get; set; }
 
         void ReleasePointerCapture();
 

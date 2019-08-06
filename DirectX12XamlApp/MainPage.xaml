@@ -9,6 +9,8 @@
     Background="{ThemeResource SystemControlAcrylicWindowBrush}">
 
     <Grid>
-        <SwapChainPanel x:Name="swapChainPanel" />
+        <SwapChainPanel x:Name="swapChainPanel">
+            <Button Width="0" Height="0" />
+        </SwapChainPanel>
     </Grid>
 </Page>
