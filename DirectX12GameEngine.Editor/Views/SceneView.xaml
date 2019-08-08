@@ -34,7 +34,7 @@
 
         <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
             <winui:TreeView
-                x:Name="treeView"
+                x:Name="EntityTreeView"
                 ItemsSource="{x:Bind ViewModel.RootEntity.Children, Mode=OneWay}"
                 Shadow="{StaticResource SharedShadow}">
                 <winui:TreeView.ItemTemplate>
@@ -67,7 +67,7 @@
         </Grid>
 
         <Grid Grid.Column="1" Background="{ThemeResource AcrylicAssetEditorBackground}">
-            <SwapChainPanel x:Name="swapChainPanel">
+            <SwapChainPanel x:Name="SwapChainPanel">
                 <local:BackgroundControl>
                     <local:BackgroundControl.Template>
                         <ControlTemplate TargetType="local:BackgroundControl">

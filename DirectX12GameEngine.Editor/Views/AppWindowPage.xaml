@@ -21,19 +21,19 @@
 
     <Grid>
         <Grid
-            x:Name="titleBar"
+            x:Name="TitleBar"
             Height="40"
             VerticalAlignment="Top"
             Background="Transparent" />
 
         <CommandBar
-            x:Name="commandBar"
+            x:Name="CommandBar"
             HorizontalAlignment="Right"
             Background="Transparent"
             OverflowButtonVisibility="Collapsed">
             <AppBarButton Command="{StaticResource OpenMainWindowCommand}" />
         </CommandBar>
 
-        <local:ExtendedTabView x:Name="tabView" Background="Transparent" />
+        <local:ExtendedTabView x:Name="TabView" Background="Transparent" />
     </Grid>
 </Page>

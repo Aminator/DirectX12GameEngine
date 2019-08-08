@@ -7,7 +7,6 @@ using DirectX12GameEngine.Editor.Messaging;
 using DirectX12GameEngine.Editor.ViewModels;
 using DirectX12GameEngine.Engine;
 using Microsoft.Toolkit.Uwp.UI.Controls;
-using Windows.Storage;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -15,6 +14,9 @@ using Windows.UI.Xaml.Controls;
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 #nullable enable
+
+#pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+
 
 namespace DirectX12GameEngine.Editor.Views
 {
@@ -31,14 +33,16 @@ namespace DirectX12GameEngine.Editor.Views
                 Bindings.Update();
             };
 
-            solutionExplorerTabView.Items.VectorChanged += (s, e) => solutionExplorerColumnDefinition.Width = GridLength.Auto;
+            SolutionExplorerTabView.Items.VectorChanged += (s, e) => SolutionExplorerColumnDefinition.Width = GridLength.Auto;
 
-            SolutionExplorerShadow.Receivers.Add(assetEditorTabView);
+            SolutionExplorerShadow.Receivers.Add(AssetEditorTabView);
+            //SolutionExplorerShadow.Receivers.Add(BackgroundPanel);
+            //AssetEditorShadow.Receivers.Add(BackgroundPanel);
 
-            assetEditorTabView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
-            solutionExplorerTabView.Translation += new Vector3(0.0f, 0.0f, 64.0f);
+            AssetEditorTabView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
+            SolutionExplorerTabView.Translation += new Vector3(0.0f, 0.0f, 64.0f);
 
-            Window.Current.SetTitleBar(titleBar);
+            Window.Current.SetTitleBar(TitleBar);
 
             EngineAssetViewFactory factory = new EngineAssetViewFactory();
             factory.Add(typeof(Entity), new SceneViewFactory());
@@ -48,13 +52,15 @@ namespace DirectX12GameEngine.Editor.Views
             RegisterMessages();
         }
 
+        public MainViewModel ViewModel => (MainViewModel)DataContext;
+
         protected override void OnDragEnter(DragEventArgs e)
         {
             base.OnDragEnter(e);
 
-            if (solutionExplorerTabView.Items.Count == 0)
+            if (SolutionExplorerTabView.Items.Count == 0)
             {
-                solutionExplorerColumnDefinition.Width = new GridLength(200);
+                SolutionExplorerColumnDefinition.Width = new GridLength(200);
             }
         }
 
@@ -62,9 +68,9 @@ namespace DirectX12GameEngine.Editor.Views
         {
             base.OnDragLeave(e);
 
-            if (solutionExplorerTabView.Items.Count == 0)
+            if (SolutionExplorerTabView.Items.Count == 0)
             {
-                solutionExplorerColumnDefinition.Width = GridLength.Auto;
+                SolutionExplorerColumnDefinition.Width = GridLength.Auto;
             }
         }
 
@@ -84,7 +90,7 @@ namespace DirectX12GameEngine.Editor.Views
                             Header = m.Item.Name
                         };
 
-                        assetEditorTabView.Items.Add(tabViewItem);
+                        AssetEditorTabView.Items.Add(tabViewItem);
                     }
                     else
                     {
@@ -113,7 +119,7 @@ namespace DirectX12GameEngine.Editor.Views
                         ViewModel.EditorViews.IsSolutionExplorerOpen = false;
                     };
 
-                    solutionExplorerTabView.Items.Add(tabViewItem);
+                    SolutionExplorerTabView.Items.Add(tabViewItem);
                     visibleViews.Add(m.ViewName, tabViewItem);
                 }
                 else if (m.ViewName == "PropertyGrid")
@@ -130,21 +136,21 @@ namespace DirectX12GameEngine.Editor.Views
                         ViewModel.EditorViews.IsPropertyGridOpen = false;
                     };
 
-                    solutionExplorerTabView.Items.Add(tabViewItem);
+                    SolutionExplorerTabView.Items.Add(tabViewItem);
                     visibleViews.Add(m.ViewName, tabViewItem);
                 }
             });
 
             Messenger.Default.Register<CloseViewMessage>(this, m =>
             {
-                if (visibleViews.TryGetValue(m.ViewName, out TabViewItem item))
+                string viewName = m.ViewName;
+
+                if (visibleViews.TryGetValue(viewName, out TabViewItem item))
                 {
                     (item.Parent as TabView)?.Items.Remove(item);
-                    visibleViews.Remove(m.ViewName);
+                    visibleViews.Remove(viewName);
                 }
             });
         }
-
-        public MainViewModel ViewModel => (MainViewModel)DataContext;
     }
 }

@@ -27,7 +27,7 @@ namespace DirectX12CoreWindowApp
             CoreApplication.Suspending += CoreApplication_Suspending;
         }
 
-        private void ApplicationView_Activated(CoreApplicationView sender, IActivatedEventArgs args)
+        private void ApplicationView_Activated(CoreApplicationView sender, IActivatedEventArgs e)
         {
             if (HolographicApplicationPreview.IsCurrentViewPresentedOnHolographicDisplay())
             {

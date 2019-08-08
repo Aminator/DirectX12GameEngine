@@ -42,7 +42,7 @@ namespace DirectX12GameEngine.Games
             Tick();
         }
 
-        private void SwapChainPanel_CompositionScaleChanged(SwapChainPanel sender, object args)
+        private void SwapChainPanel_CompositionScaleChanged(SwapChainPanel sender, object e)
         {
             OnSizeChanged();
         }

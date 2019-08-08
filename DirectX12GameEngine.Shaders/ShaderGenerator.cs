@@ -65,11 +65,11 @@ namespace DirectX12GameEngine.Shaders
             AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
         }
 
-        private static void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs args)
+        private static void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs e)
         {
-            if (!args.LoadedAssembly.IsDynamic)
+            if (!e.LoadedAssembly.IsDynamic)
             {
-                PortableExecutableReference metadataReference = MetadataReference.CreateFromFile(args.LoadedAssembly.Location);
+                PortableExecutableReference metadataReference = MetadataReference.CreateFromFile(e.LoadedAssembly.Location);
                 compilation = compilation.AddReferences(metadataReference);
             }
         }

@@ -20,14 +20,14 @@ namespace DirectX12GameEngine.Input
             control.KeyUp -= Control_KeyUp;
         }
 
-        private void Control_KeyDown(CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
+        private void Control_KeyDown(CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
-            OnKeyDown(new CoreWindowKeyEventArgs(args));
+            OnKeyDown(new CoreWindowKeyEventArgs(e));
         }
 
-        private void Control_KeyUp(CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
+        private void Control_KeyUp(CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
-            OnKeyUp(new CoreWindowKeyEventArgs(args));
+            OnKeyUp(new CoreWindowKeyEventArgs(e));
         }
 
         private class CoreWindowKeyEventArgs : KeyEventArgs

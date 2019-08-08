@@ -9,6 +9,7 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:DirectX12GameEngine.Editor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     d:DesignHeight="300"
     d:DesignWidth="400"
     AllowDrop="True"
@@ -16,6 +17,7 @@
 
     <UserControl.Resources>
         <ThemeShadow x:Name="SolutionExplorerShadow" />
+        <ThemeShadow x:Name="AssetEditorShadow" />
     </UserControl.Resources>
 
     <Grid>
@@ -23,6 +25,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
+
+        <Grid x:Name="BackgroundPanel" Grid.RowSpan="2" />
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -33,7 +37,7 @@
             <local:EditorMenuBar />
 
             <Grid
-                x:Name="titleBar"
+                x:Name="TitleBar"
                 Grid.Column="1"
                 Background="Transparent" />
         </Grid>
@@ -41,13 +45,16 @@
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
-                <ColumnDefinition x:Name="solutionExplorerColumnDefinition" Width="Auto" />
+                <ColumnDefinition x:Name="SolutionExplorerColumnDefinition" Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <local:ExtendedTabView x:Name="assetEditorTabView" Background="Transparent" />
+            <local:ExtendedTabView
+                x:Name="AssetEditorTabView"
+                Background="Transparent"
+                Shadow="{StaticResource AssetEditorShadow}" />
 
             <local:ExtendedTabView
-                x:Name="solutionExplorerTabView"
+                x:Name="SolutionExplorerTabView"
                 Grid.Column="1"
                 Background="{ThemeResource AcrylicSolutionExplorerBackground}"
                 Shadow="{StaticResource SolutionExplorerShadow}">
@@ -59,11 +66,10 @@
             </local:ExtendedTabView>
 
             <controls:GridSplitter
-                x:Name="solutionExplorerGridSplitter"
                 Grid.Column="1"
                 HorizontalAlignment="Left"
                 Background="Transparent"
-                Visibility="{x:Bind solutionExplorerTabView.Visibility, Mode=OneWay}" />
+                Visibility="{x:Bind SolutionExplorerTabView.Visibility, Mode=OneWay}" />
         </Grid>
     </Grid>
 </UserControl>

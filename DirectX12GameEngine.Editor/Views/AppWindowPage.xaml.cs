@@ -31,10 +31,10 @@ namespace DirectX12GameEngine.Editor.Views
 
             if (e.Parameter is TabViewNavigationParameters parameters)
             {
-                tabView.AppWindow = parameters.AppWindow;
-                tabView.AppWindow.Frame.DragRegionVisuals.Add(titleBar);
+                TabView.AppWindow = parameters.AppWindow;
+                TabView.AppWindow.Frame.DragRegionVisuals.Add(TitleBar);
 
-                tabView.Items.Add(parameters.Tab);
+                TabView.Items.Add(parameters.Tab);
             }
         }
 
@@ -45,9 +45,9 @@ namespace DirectX12GameEngine.Editor.Views
 
         private void UpdateTitleBarLayout(CoreApplicationViewTitleBar coreTitleBar)
         {
-            commandBar.Margin = new Thickness(0, 0, coreTitleBar.SystemOverlayRightInset, 0);
+            CommandBar.Margin = new Thickness(0, 0, coreTitleBar.SystemOverlayRightInset, 0);
 
-            titleBar.Height = coreTitleBar.Height;
+            TitleBar.Height = coreTitleBar.Height;
         }
     }
 }

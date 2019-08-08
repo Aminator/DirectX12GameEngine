@@ -77,10 +77,7 @@
                     <MenuFlyoutItem Command="{StaticResource RefreshCommand}" />
                 </MenuFlyout>
             </winui:RefreshContainer.ContextFlyout>
-            <winui:TreeView
-                x:Name="solutionExplorer"
-                ItemTemplateSelector="{StaticResource StorageItemTemplateSelector}"
-                ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}" />
+            <winui:TreeView ItemTemplateSelector="{StaticResource StorageItemTemplateSelector}" ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}" />
         </winui:RefreshContainer>
     </Grid>
 </UserControl>

@@ -50,39 +50,39 @@ namespace DirectX12GameEngine.Input
             control.PointerWheelChanged -= Control_PointerWheelChanged;
         }
 
-        private void Control_PointerCaptureLost(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        private void Control_PointerCaptureLost(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
-            OnPointerCaptureLost(new UwpPointerEventArgs(args));
+            OnPointerCaptureLost(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerEntered(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        private void Control_PointerEntered(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
-            OnPointerEntered(new UwpPointerEventArgs(args));
+            OnPointerEntered(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerExited(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        private void Control_PointerExited(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
-            OnPointerExited(new UwpPointerEventArgs(args));
+            OnPointerExited(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerMoved(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        private void Control_PointerMoved(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
-            OnPointerMoved(new UwpPointerEventArgs(args));
+            OnPointerMoved(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerPressed(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        private void Control_PointerPressed(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
-            OnPointerPressed(new UwpPointerEventArgs(args));
+            OnPointerPressed(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerReleased(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        private void Control_PointerReleased(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
-            OnPointerReleased(new UwpPointerEventArgs(args));
+            OnPointerReleased(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerWheelChanged(CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        private void Control_PointerWheelChanged(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
-            OnPointerWheelChanged(new UwpPointerEventArgs(args));
+            OnPointerWheelChanged(new UwpPointerEventArgs(e));
         }
     }
 }

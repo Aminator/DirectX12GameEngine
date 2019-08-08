@@ -18,7 +18,7 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <LangVersion>8.0</LangVersion>
-    <NullableContextOptions>enable</NullableContextOptions>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -156,9 +156,11 @@
     <Compile Include="EditorGame.cs" />
     <Compile Include="ViewModels\EntityComponentViewModel.cs" />
     <Compile Include="ViewModels\EntityViewModel.cs" />
-    <Compile Include="Views\ExtendedTabView.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ExtendedTabView.xaml.cs">
+      <DependentUpon>ExtendedTabView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Properties\PropertyMemberTemplate.xaml.cs">
       <DependentUpon>PropertyMemberTemplate.xaml</DependentUpon>
@@ -214,6 +216,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\ExtendedTabView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Properties\PropertyMemberTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -243,7 +249,7 @@
       <Version>5.1.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.2.190702001-prerelease</Version>
+      <Version>2.2.190731001-prerelease</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

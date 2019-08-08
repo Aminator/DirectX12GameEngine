@@ -16,13 +16,13 @@ namespace DirectX12GameEngine.Editor.Views
         {
             InitializeComponent();
 
-            SharedShadow.Receivers.Add(swapChainPanel);
+            SharedShadow.Receivers.Add(SwapChainPanel);
 
-            treeView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
+            EntityTreeView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
 
             ((StandardUICommand)Resources["OpenCommand"]).KeyboardAccelerators.Clear();
 
-            EditorGame game = new EditorGame(new XamlGameContext(swapChainPanel), rootFolder.Model);
+            EditorGame game = new EditorGame(new XamlGameContext(SwapChainPanel), rootFolder.Model);
             game.Run();
 
             ViewModel = new SceneViewModel(game);
