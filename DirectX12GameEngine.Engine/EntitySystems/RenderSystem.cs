@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
-using SharpDX.Direct3D12;
 
 using Buffer = DirectX12GameEngine.Graphics.Buffer;
 using CommandList = DirectX12GameEngine.Graphics.CommandList;
@@ -26,16 +26,16 @@ namespace DirectX12GameEngine.Engine
 
         private readonly Dictionary<Model, (CompiledCommandList[] Bundles, Buffer[] WorldMatrixBuffers)> models = new Dictionary<Model, (CompiledCommandList[], Buffer[])>();
 
-        public unsafe RenderSystem(GraphicsDevice device, SceneSystem sceneSystem) : base(typeof(TransformComponent))
+        public RenderSystem(GraphicsDevice device, SceneSystem sceneSystem) : base(typeof(TransformComponent))
         {
             graphicsDevice = device;
             this.sceneSystem = sceneSystem;
 
             if (graphicsDevice is null) throw new InvalidOperationException();
 
-            DirectionalLightGroupBuffer = Buffer.Constant.New(graphicsDevice, sizeof(int) + sizeof(DirectionalLightData) * MaxLights);
-            GlobalBuffer = Buffer.Constant.New(graphicsDevice, sizeof(GlobalBuffer));
-            ViewProjectionTransformBuffer = Buffer.Constant.New(graphicsDevice, sizeof(StereoViewProjectionTransform));
+            DirectionalLightGroupBuffer = Buffer.Constant.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights);
+            GlobalBuffer = Buffer.Constant.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>());
+            ViewProjectionTransformBuffer = Buffer.Constant.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>());
         }
 
         public Buffer DirectionalLightGroupBuffer { get; }
@@ -140,13 +140,8 @@ namespace DirectX12GameEngine.Engine
                         {
                             for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                             {
-                                unsafe
-                                {
-                                    worldMatrixBuffers[meshIndex].Map(0);
-                                    Matrix4x4 worldMatrix = model.Meshes[meshIndex].WorldMatrix * modelComponent.Entity.Transform.WorldMatrix;
-                                    MemoryHelper.Copy(worldMatrix, worldMatrixBuffers[meshIndex].MappedResource + modelComponentIndex * sizeof(Matrix4x4));
-                                    worldMatrixBuffers[meshIndex].Unmap(0);
-                                }
+                                Matrix4x4 worldMatrix = model.Meshes[meshIndex].WorldMatrix * modelComponent.Entity.Transform.WorldMatrix;
+                                worldMatrixBuffers[meshIndex].SetData(worldMatrix, modelComponentIndex * Unsafe.SizeOf<Matrix4x4>());
                             }
                         }
 
@@ -254,6 +249,7 @@ namespace DirectX12GameEngine.Engine
                 commandList.SetVertexBuffers(0, mesh.MeshDraw.VertexBufferViews);
 
                 commandList.SetPipelineState(materialPass.PipelineState);
+                commandList.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.TriangleList;
 
                 int rootParameterIndex = 0;
 
@@ -301,7 +297,7 @@ namespace DirectX12GameEngine.Engine
             GlobalBuffer.SetData(globalBuffer);
         }
 
-        private unsafe void UpdateLights()
+        private void UpdateLights()
         {
             LightSystem? lightSystem = EntityManager?.Systems.Get<LightSystem>();
 
@@ -319,10 +315,8 @@ namespace DirectX12GameEngine.Engine
                 lightIndex++;
             }
 
-            DirectionalLightGroupBuffer.Map(0);
-            MemoryHelper.Copy(lightCount, DirectionalLightGroupBuffer.MappedResource);
-            MemoryHelper.Copy(lightData.AsSpan(), DirectionalLightGroupBuffer.MappedResource + sizeof(Vector4));
-            DirectionalLightGroupBuffer.Unmap(0);
+            DirectionalLightGroupBuffer.SetData(lightCount);
+            DirectionalLightGroupBuffer.SetData(lightData.AsSpan(), Unsafe.SizeOf<Vector4>());
         }
 
         private void UpdateViewProjectionMatrices()

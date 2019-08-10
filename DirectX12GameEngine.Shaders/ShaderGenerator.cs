@@ -344,8 +344,11 @@ namespace DirectX12GameEngine.Shaders
                 case SamplerResourceAttribute _:
                     WriteSampler(memberInfo, memberType, bindingTracker.Sampler++);
                     break;
-                case Texture2DResourceAttribute _:
-                    WriteTexture2D(memberInfo, memberType, bindingTracker.Texture++);
+                case TextureResourceAttribute _:
+                    WriteTexture(memberInfo, memberType, bindingTracker.Texture++);
+                    break;
+                case UnorderedAccessViewResourceAttribute _:
+                    WriteUnorderedAccessView(memberInfo, memberType, bindingTracker.UnorderedAccessView++);
                     break;
                 case StaticResourceAttribute _:
                     WriteStaticResource(memberInfo, memberType);
@@ -379,11 +382,20 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine();
         }
 
-        private void WriteTexture2D(MemberInfo memberInfo, Type memberType, int binding)
+        private void WriteTexture(MemberInfo memberInfo, Type memberType, int binding)
         {
             writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
             writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
             writer.Write($" : register(t{binding})");
+            writer.WriteLine(";");
+            writer.WriteLine();
+        }
+
+        private void WriteUnorderedAccessView(MemberInfo memberInfo, Type memberType, int binding)
+        {
+            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.Write($" : register(u{binding})");
             writer.WriteLine(";");
             writer.WriteLine();
         }
@@ -422,20 +434,23 @@ namespace DirectX12GameEngine.Shaders
 
         private static string GetArrayString(int arrayCount) => arrayCount > 0 ? $"[{arrayCount}]" : "";
 
-        private static string GetHlslSemantic(ShaderSemanticAttribute? semanticType) => semanticType switch
+        private static string GetHlslSemantic(ShaderSemanticAttribute? semanticAttribute)
         {
-            PositionSemanticAttribute a => " : Position" + a.Index,
-            NormalSemanticAttribute a => " : Normal" + a.Index,
-            TextureCoordinateSemanticAttribute a => " : TexCoord" + a.Index,
-            ColorSemanticAttribute a => " : Color" + a.Index,
-            TangentSemanticAttribute a => " : Tangent" + a.Index,
-            SystemTargetSemanticAttribute a => " : SV_Target" + a.Index,
-            SystemIsFrontFaceSemanticAttribute _ => " : SV_IsFrontFace",
-            SystemInstanceIdSemanticAttribute _ => " : SV_InstanceId",
-            SystemPositionSemanticAttribute _ => " : SV_Position",
-            SystemRenderTargetArrayIndexSemanticAttribute _ => " : SV_RenderTargetArrayIndex",
-            _ => ""
-        };
+            if (semanticAttribute is null) return "";
+
+            Type semanticType = semanticAttribute.GetType();
+
+            if (HlslKnownSemantics.ContainsKey(semanticType))
+            {
+                string semanticName = HlslKnownSemantics.GetMappedName(semanticType);
+
+                return semanticAttribute is ShaderSemanticWithIndexAttribute semanticAttributeWithIndex
+                    ? " : " + semanticName + semanticAttributeWithIndex.Index
+                    : " : " + semanticName;
+            }
+
+            throw new NotSupportedException();
+        }
 
         private void CollectTopLevelMethod(MethodInfo methodInfo)
         {
@@ -573,6 +588,59 @@ namespace DirectX12GameEngine.Shaders
             return new CSharpDecompiler(assemblyPath, resolver, decompilerSettings);
         }
 
+        internal static class HlslKnownAttributes
+        {
+            private static readonly HashSet<string> allowedAttributes = new HashSet<string>()
+            {
+                typeof(NumThreadsAttribute).FullName,
+                typeof(ShaderAttribute).FullName
+            };
+
+            public static bool Contains(string name)
+            {
+                return HlslKnownSemantics.ContainsKey(name) || allowedAttributes.Contains(name);
+            }
+        }
+
+        internal static class HlslKnownSemantics
+        {
+            private static readonly Dictionary<string, string> knownSemantics = new Dictionary<string, string>()
+            {
+                { typeof(PositionSemanticAttribute).FullName, "Position" },
+                { typeof(NormalSemanticAttribute).FullName, "Normal" },
+                { typeof(TextureCoordinateSemanticAttribute).FullName, "TexCoord" },
+                { typeof(ColorSemanticAttribute).FullName, "Color" },
+                { typeof(TangentSemanticAttribute).FullName, "Tangent" },
+
+                { typeof(SystemTargetSemanticAttribute).FullName, "SV_Target" },
+                { typeof(SystemDispatchThreadIdSemanticAttribute).FullName, "SV_DispatchThreadId" },
+                { typeof(SystemIsFrontFaceSemanticAttribute).FullName, "SV_IsFrontFace" },
+                { typeof(SystemInstanceIdSemanticAttribute).FullName, "SV_InstanceId" },
+                { typeof(SystemPositionSemanticAttribute).FullName, "SV_Position" },
+                { typeof(SystemRenderTargetArrayIndexSemanticAttribute).FullName, "SV_RenderTargetArrayIndex" }
+            };
+
+            public static bool ContainsKey(Type type)
+            {
+                return knownSemantics.ContainsKey(type.GetElementOrDeclaredType().FullName);
+            }
+
+            public static bool ContainsKey(string name)
+            {
+                return knownSemantics.ContainsKey(name);
+            }
+
+            public static string GetMappedName(Type type)
+            {
+                return knownSemantics[type.GetElementOrDeclaredType().FullName];
+            }
+
+            public static string GetMappedName(string name)
+            {
+                return knownSemantics[name];
+            }
+        }
+
         internal static class HlslKnownTypes
         {
             private static readonly Dictionary<string, string> knownTypes = new Dictionary<string, string>()
@@ -587,34 +655,54 @@ namespace DirectX12GameEngine.Shaders
                 { typeof(Vector3).FullName, "float3" },
                 { typeof(Vector4).FullName, "float4" },
                 { typeof(Numerics.Vector4).FullName, "float4" },
+                { typeof(Numerics.UInt2).FullName, "uint2" },
+                { typeof(Numerics.UInt3).FullName, "uint3" },
                 { typeof(Matrix4x4).FullName, "float4x4" },
                 { typeof(SamplerResource).FullName, "SamplerState" },
                 { typeof(SamplerComparisonResource).FullName, "SamplerComparisonState" },
                 { typeof(Texture2DResource).FullName, "Texture2D" },
                 { typeof(Texture2DArrayResource).FullName, "Texture2DArray" },
-                { typeof(TextureCubeResource).FullName, "TextureCube" }
+                { typeof(TextureCubeResource).FullName, "TextureCube" },
+                { typeof(RWBufferResource<>).FullName, "RWBuffer" },
+                { typeof(RWTexture2DResource<>).FullName, "RWTexture2D" },
             };
 
             public static bool ContainsKey(Type type)
             {
-                return knownTypes.ContainsKey(type.GetElementOrDeclaredType().FullName);
+                type = type.GetElementOrDeclaredType();
+                string typeFullName = type.Namespace + Type.Delimiter + type.Name;
+
+                return knownTypes.ContainsKey(typeFullName);
             }
 
             public static bool ContainsKey(string name)
             {
+                int indexOfOpenBracket = name.IndexOf('<');
+                name = indexOfOpenBracket >= 0 ? name.Remove(indexOfOpenBracket) + "`1" : name;
+
                 return knownTypes.ContainsKey(name);
             }
 
             public static string GetMappedName(Type type)
             {
-                string typeFullName = type.GetElementOrDeclaredType().FullName;
-                string typeName = type.GetElementOrDeclaredType().Name;
-                return knownTypes.TryGetValue(typeFullName, out string mapped) ? mapped : typeName;
+                type = type.GetElementOrDeclaredType();
+                string typeFullName = type.Namespace + Type.Delimiter + type.Name;
+
+                string mappedName = knownTypes.TryGetValue(typeFullName, out string mapped) ? mapped : type.Name;
+
+                return type.IsGenericType ? mappedName + $"<{GetMappedName(type.GetGenericArguments()[0])}>" : mappedName;
             }
 
             public static string GetMappedName(string name)
             {
-                return knownTypes.TryGetValue(name, out string mapped) ? mapped : Regex.Match(name, @"[^\.]+$").Value;
+                int indexOfOpenBracket = name.IndexOf('<');
+
+                string genericArguments = indexOfOpenBracket >= 0 ? name.Substring(indexOfOpenBracket) : "";
+                name = indexOfOpenBracket >= 0 ? name.Remove(indexOfOpenBracket) + "`1" : name;
+
+                string mappedName = knownTypes.TryGetValue(name, out string mapped) ? mapped : Regex.Match(name, @"[^\.]+$").Value;
+
+                return mappedName + genericArguments;
             }
         }
 
@@ -633,6 +721,14 @@ namespace DirectX12GameEngine.Shaders
                 { "System.MathF.PI", "3.14159274f" },
 
                 { "DirectX12GameEngine.Shaders.Numerics.Vector2.Length", "length" },
+
+                { "DirectX12GameEngine.Shaders.Numerics.UInt2.X", ".x" },
+                { "DirectX12GameEngine.Shaders.Numerics.UInt2.Y", ".y" },
+
+                { "DirectX12GameEngine.Shaders.Numerics.UInt3.X", ".x" },
+                { "DirectX12GameEngine.Shaders.Numerics.UInt3.Y", ".y" },
+                { "DirectX12GameEngine.Shaders.Numerics.UInt3.Z", ".z" },
+                { "DirectX12GameEngine.Shaders.Numerics.UInt3.XY", ".xy" },
 
                 { "System.Numerics.Vector3.X", ".x" },
                 { "System.Numerics.Vector3.Y", ".y" },
@@ -718,8 +814,13 @@ namespace DirectX12GameEngine.Shaders
         private class HlslBindingTracker
         {
             public int ConstantBuffer { get; set; }
+
             public int Sampler { get; set; }
+
             public int Texture { get; set; }
+
+            public int UnorderedAccessView { get; set; }
+
             public int StaticResource { get; set; }
         }
 

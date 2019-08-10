@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     public class ComputeScalar : IComputeScalar
     {
         private float scalarValue;
-        private Buffer? valueBuffer;
+        private Buffer<float>? valueBuffer;
 
         public ComputeScalar()
         {

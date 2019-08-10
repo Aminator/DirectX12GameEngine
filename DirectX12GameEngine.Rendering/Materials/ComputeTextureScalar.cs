@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     public class ComputeTextureScalar : IComputeScalar
     {
         private ColorChannel channel;
-        private Buffer? colorChannelBuffer;
+        private Buffer<ColorChannel>? colorChannelBuffer;
 
         public ComputeTextureScalar()
         {

@@ -4,12 +4,14 @@ namespace DirectX12GameEngine.Shaders
 {
     public abstract class ShaderBase
     {
+        [ShaderMethod]
         [Shader("vertex")]
         public virtual VSOutput VSMain(VSInput input)
         {
             return default;
         }
 
+        [ShaderMethod]
         [Shader("pixel")]
         public virtual PSOutput PSMain(PSInput input)
         {

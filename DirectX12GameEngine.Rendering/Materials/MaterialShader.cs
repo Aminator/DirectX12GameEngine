@@ -18,6 +18,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderResource] public readonly SamplerResource Sampler;
 #nullable enable
 
+        [ShaderMethod]
         [Shader("vertex")]
         public override VSOutput VSMain(VSInput input)
         {
@@ -44,6 +45,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             return output;
         }
 
+        [ShaderMethod]
         [Shader("pixel")]
         public override PSOutput PSMain(PSInput input)
         {

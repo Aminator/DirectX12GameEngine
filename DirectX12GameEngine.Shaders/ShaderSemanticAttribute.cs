@@ -59,6 +59,10 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
+    public class SystemDispatchThreadIdSemanticAttribute : ShaderSemanticAttribute
+    {
+    }
+
     public class SystemInstanceIdSemanticAttribute : ShaderSemanticAttribute
     {
     }

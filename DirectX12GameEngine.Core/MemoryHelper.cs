@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DirectX12GameEngine.Core
 {
@@ -6,23 +7,27 @@ namespace DirectX12GameEngine.Core
     {
         public static unsafe void Copy(IntPtr source, IntPtr destination, int sizeInBytesToCopy)
         {
-            Buffer.MemoryCopy(source.ToPointer(), destination.ToPointer(), sizeInBytesToCopy, sizeInBytesToCopy);
+            Copy(new Span<byte>(source.ToPointer(), sizeInBytesToCopy), destination);
         }
 
         public static unsafe void Copy<T>(Span<T> source, IntPtr destination) where T : unmanaged
         {
-            fixed (T* pointer = source)
-            {
-                Copy((IntPtr)pointer, destination, source.Length * sizeof(T));
-            }
+            source.CopyTo(new Span<T>(destination.ToPointer(), source.Length));
+        }
+
+        public static unsafe void Copy<T>(IntPtr source, Span<T> destination) where T : unmanaged
+        {
+            new Span<T>(source.ToPointer(), destination.Length).CopyTo(destination);
         }
 
         public static unsafe void Copy<T>(in T source, IntPtr destination) where T : unmanaged
         {
-            fixed (T* pointer = &source)
-            {
-                Copy((IntPtr)pointer, destination, sizeof(T));
-            }
+            Unsafe.Copy(destination.ToPointer(), ref Unsafe.AsRef(source));
+        }
+
+        public static unsafe void Copy<T>(IntPtr source, ref T destination) where T : unmanaged
+        {
+            Unsafe.Copy(ref destination, source.ToPointer());
         }
     }
 }

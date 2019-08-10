@@ -30,8 +30,6 @@ namespace DirectX12GameEngine.Shaders
                 node = node.ReplaceToken(node.Identifier, SyntaxFactory.Identifier($"Base_{depth}_{node.Identifier.ValueText}"));
             }
 
-            node = node.WithAttributeLists(default);
-
             SyntaxTokenList modifiers = new SyntaxTokenList();
 
             if (node.Modifiers.Any(SyntaxKind.StaticKeyword))
@@ -44,14 +42,38 @@ namespace DirectX12GameEngine.Shaders
 
         public override SyntaxNode VisitParameter(ParameterSyntax node)
         {
+            string? attributeName = node.AttributeLists.FirstOrDefault()?.Attributes.FirstOrDefault()?.Name.ToString();
+
             node = (ParameterSyntax)base.VisitParameter(node);
-            return node.ReplaceType(node.Type);
+            node = node.WithAttributeLists(default);
+            node = node.ReplaceType(node.Type);
+
+            if (attributeName != null)
+            {
+                node = node.ReplaceToken(node.Identifier, SyntaxFactory.Identifier($"{node.Identifier.ValueText} : {ShaderGenerator.HlslKnownSemantics.GetMappedName(attributeName + "Attribute")}"));
+            }
+
+            return node;
         }
 
         public override SyntaxNode VisitAttribute(AttributeSyntax node)
         {
             node = (AttributeSyntax)base.VisitAttribute(node);
             return node.ReplaceType(node.Name);
+        }
+
+        public override SyntaxNode VisitAttributeList(AttributeListSyntax node)
+        {
+            var knownAttributes = node.Attributes.Where(n => ShaderGenerator.HlslKnownAttributes.Contains(n.Name + "Attribute"));
+
+            if (knownAttributes.Count() == 0) return null;
+
+            var list = new SeparatedSyntaxList<AttributeSyntax>();
+            list = list.AddRange(knownAttributes);
+
+            node = node.WithAttributes(list);
+
+            return base.VisitAttributeList(node);
         }
 
         public override SyntaxNode VisitCastExpression(CastExpressionSyntax node)

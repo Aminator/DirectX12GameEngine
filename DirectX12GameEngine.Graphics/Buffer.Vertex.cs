@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using SharpDX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
@@ -7,19 +8,19 @@ namespace DirectX12GameEngine.Graphics
     {
         public static class Vertex
         {
-            public static unsafe Buffer New(GraphicsDevice device, int size, GraphicsResourceUsage usage = GraphicsResourceUsage.Default)
+            public static unsafe Buffer New(GraphicsDevice device, int size, GraphicsHeapType heapType = GraphicsHeapType.Default)
             {
-                return Buffer.New(device, size, BufferFlags.VertexBuffer, usage);
+                return Buffer.New(device, size, BufferFlags.VertexBuffer, heapType);
             }
 
-            public static unsafe Buffer New<T>(GraphicsDevice device, in T data, GraphicsResourceUsage usage = GraphicsResourceUsage.Default) where T : unmanaged
+            public static unsafe Buffer<T> New<T>(GraphicsDevice device, in T data, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
             {
-                return Buffer.New(device, data, BufferFlags.VertexBuffer, usage);
+                return Buffer.New(device, data, BufferFlags.VertexBuffer, heapType);
             }
 
-            public static unsafe Buffer New<T>(GraphicsDevice device, Span<T> data, GraphicsResourceUsage usage = GraphicsResourceUsage.Default) where T : unmanaged
+            public static unsafe Buffer<T> New<T>(GraphicsDevice device, Span<T> data, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
             {
-                return Buffer.New(device, data, BufferFlags.VertexBuffer, usage);
+                return Buffer.New(device, data, BufferFlags.VertexBuffer, heapType);
             }
 
             public static VertexBufferView CreateVertexBufferView(Buffer vertexBuffer, int size, int stride)
@@ -34,7 +35,7 @@ namespace DirectX12GameEngine.Graphics
 
             public static unsafe VertexBufferView CreateVertexBufferView<T>(Buffer vertexBuffer, int size) where T : unmanaged
             {
-                return CreateVertexBufferView(vertexBuffer, size, sizeof(T));
+                return CreateVertexBufferView(vertexBuffer, size, Unsafe.SizeOf<T>());
             }
         }
     }

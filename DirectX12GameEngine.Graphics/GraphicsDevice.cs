@@ -13,28 +13,34 @@ namespace DirectX12GameEngine.Graphics
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
         private SharpDX.Direct3D11.Device? nativeDirect3D11Device;
 
-        public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level_11_0)
+        public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level_11_0, bool enableDebugLayer = false)
         {
 #if DEBUG
-            //DebugInterface.Get().EnableDebugLayer();
+            if (enableDebugLayer)
+            {
+                DebugInterface.Get().EnableDebugLayer();
+            }
 #endif
             FeatureLevel = minFeatureLevel < FeatureLevel.Level_11_0 ? FeatureLevel.Level_11_0 : minFeatureLevel;
 
             NativeDevice = new Device(null, FeatureLevel);
 
-            NativeCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(CommandListType.Direct));
-            NativeCopyCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(CommandListType.Copy));
+            NativeComputeCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(SharpDX.Direct3D12.CommandListType.Compute));
+            NativeCopyCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(SharpDX.Direct3D12.CommandListType.Copy));
+            NativeDirectCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(SharpDX.Direct3D12.CommandListType.Direct));
 
             BundleAllocatorPool = new CommandAllocatorPool(this, CommandListType.Bundle);
+            ComputeAllocatorPool = new CommandAllocatorPool(this, CommandListType.Compute);
             CopyAllocatorPool = new CommandAllocatorPool(this, CommandListType.Copy);
             DirectAllocatorPool = new CommandAllocatorPool(this, CommandListType.Direct);
+
+            NativeComputeFence = NativeDevice.CreateFence(0, FenceFlags.None);
+            NativeCopyFence = NativeDevice.CreateFence(0, FenceFlags.None);
+            NativeDirectFence = NativeDevice.CreateFence(0, FenceFlags.None);
 
             DepthStencilViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.DepthStencilView, descriptorCount: 1);
             RenderTargetViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.RenderTargetView, descriptorCount: 2);
             ShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, DescriptorHeapFlags.ShaderVisible);
-
-            NativeCopyFence = NativeDevice.CreateFence(0, FenceFlags.None);
-            NativeFence = NativeDevice.CreateFence(0, FenceFlags.None);
 
             CommandList = new CommandList(this, CommandListType.Direct);
             CommandList.Close();
@@ -48,11 +54,12 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsPresenter? Presenter { get; set; }
 
-        internal CommandAllocatorPool BundleAllocatorPool { get; }
+        internal Queue<CommandList> CopyCommandLists { get; } = new Queue<CommandList>();
 
-        internal CommandAllocatorPool CopyAllocatorPool { get; }
+        internal Device NativeDevice { get; }
 
-        internal CommandAllocatorPool DirectAllocatorPool { get; }
+        internal SharpDX.Direct3D11.Device NativeDirect3D11Device => NativeDirect3D11Device ?? (nativeDirect3D11Device = SharpDX.Direct3D11.Device.CreateFromDirect3D12(
+                NativeDevice, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport, null, null, NativeDirectCommandQueue));
 
         internal DescriptorAllocator DepthStencilViewAllocator { get; set; }
 
@@ -60,24 +67,31 @@ namespace DirectX12GameEngine.Graphics
 
         internal DescriptorAllocator ShaderResourceViewAllocator { get; set; }
 
-        internal CommandQueue NativeCommandQueue { get; }
+        internal CommandAllocatorPool BundleAllocatorPool { get; }
+
+        internal CommandAllocatorPool ComputeAllocatorPool { get; }
+
+        internal CommandAllocatorPool CopyAllocatorPool { get; }
+
+        internal CommandAllocatorPool DirectAllocatorPool { get; }
+
+        internal CommandQueue NativeComputeCommandQueue { get; }
 
         internal CommandQueue NativeCopyCommandQueue { get; }
 
-        internal Queue<CommandList> CopyCommandLists { get; } = new Queue<CommandList>();
+        internal CommandQueue NativeDirectCommandQueue { get; }
 
-        internal Device NativeDevice { get; }
-
-        internal SharpDX.Direct3D11.Device NativeDirect3D11Device => NativeDirect3D11Device ?? (nativeDirect3D11Device = SharpDX.Direct3D11.Device.CreateFromDirect3D12(
-                NativeDevice, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport, null, null, NativeCommandQueue));
+        internal Fence NativeComputeFence { get; }
 
         internal Fence NativeCopyFence { get; }
 
-        internal Fence NativeFence { get; }
+        internal Fence NativeDirectFence { get; }
+
+        internal long NextComputeFenceValue { get; private set; } = 1;
 
         internal long NextCopyFenceValue { get; private set; } = 1;
 
-        internal long NextFenceValue { get; private set; } = 1;
+        internal long NextDirectFenceValue { get; private set; } = 1;
 
         public void CopyDescriptors(int numDestDescriptorRanges, CpuDescriptorHandle[] destDescriptorRangeStartsRef, int[] destDescriptorRangeSizesRef, int numSrcDescriptorRanges, CpuDescriptorHandle[] srcDescriptorRangeStartsRef, int[] srcDescriptorRangeSizesRef, DescriptorHeapType descriptorHeapsType)
         {
@@ -123,18 +137,27 @@ namespace DirectX12GameEngine.Graphics
 
         public void Dispose()
         {
-            NativeCommandQueue.Signal(NativeFence, NextFenceValue);
-            NativeCommandQueue.Wait(NativeFence, NextFenceValue);
+            NativeDirectCommandQueue.Signal(NativeDirectFence, NextDirectFenceValue);
+            NativeDirectCommandQueue.Wait(NativeDirectFence, NextDirectFenceValue);
 
             CommandList.Dispose();
-            BundleAllocatorPool.Dispose();
-            DirectAllocatorPool.Dispose();
-            NativeCopyCommandQueue.Dispose();
-            NativeCommandQueue.Dispose();
-            NativeFence.Dispose();
+
             DepthStencilViewAllocator.Dispose();
-            ShaderResourceViewAllocator.Dispose();
             RenderTargetViewAllocator.Dispose();
+            ShaderResourceViewAllocator.Dispose();
+
+            BundleAllocatorPool.Dispose();
+            ComputeAllocatorPool.Dispose();
+            CopyAllocatorPool.Dispose();
+            DirectAllocatorPool.Dispose();
+
+            NativeComputeCommandQueue.Dispose();
+            NativeCopyCommandQueue.Dispose();
+            NativeDirectCommandQueue.Dispose();
+
+            NativeComputeFence.Dispose();
+            NativeDirectFence.Dispose();
+            NativeDirectFence.Dispose();
 
             foreach (CommandList commandList in CopyCommandLists)
             {
@@ -146,14 +169,17 @@ namespace DirectX12GameEngine.Graphics
                 disposable.Dispose();
             }
 
+            nativeDirect3D11Device?.Dispose();
+
             NativeDevice.Dispose();
         }
 
         public void ExecuteCommandLists(bool wait, params CompiledCommandList[] commandLists)
         {
-            Fence fence = commandLists[0].NativeCommandList.TypeInfo switch
+            Fence fence = commandLists[0].Builder.CommandListType switch
             {
-                CommandListType.Direct => NativeFence,
+                CommandListType.Direct => NativeDirectFence,
+                CommandListType.Compute => NativeComputeFence,
                 CommandListType.Copy => NativeCopyFence,
                 _ => throw new NotSupportedException("This command list type is not supported.")
             };
@@ -173,15 +199,15 @@ namespace DirectX12GameEngine.Graphics
             Fence fence;
             long fenceValue;
 
-            switch (commandLists[0].NativeCommandList.TypeInfo)
+            switch (commandLists[0].Builder.CommandListType)
             {
-                case CommandListType.Direct:
-                    commandAllocatorPool = DirectAllocatorPool;
-                    commandQueue = NativeCommandQueue;
+                case CommandListType.Compute:
+                    commandAllocatorPool = ComputeAllocatorPool;
+                    commandQueue = NativeComputeCommandQueue;
 
-                    fence = NativeFence;
-                    fenceValue = NextFenceValue;
-                    NextFenceValue++;
+                    fence = NativeComputeFence;
+                    fenceValue = NextComputeFenceValue;
+                    NextDirectFenceValue++;
                     break;
                 case CommandListType.Copy:
                     commandAllocatorPool = CopyAllocatorPool;
@@ -190,6 +216,14 @@ namespace DirectX12GameEngine.Graphics
                     fence = NativeCopyFence;
                     fenceValue = NextCopyFenceValue;
                     NextCopyFenceValue++;
+                    break;
+                case CommandListType.Direct:
+                    commandAllocatorPool = DirectAllocatorPool;
+                    commandQueue = NativeDirectCommandQueue;
+
+                    fence = NativeDirectFence;
+                    fenceValue = NextDirectFenceValue;
+                    NextDirectFenceValue++;
                     break;
                 default:
                     throw new NotSupportedException("This command list type is not supported.");
@@ -209,7 +243,7 @@ namespace DirectX12GameEngine.Graphics
             return fenceValue;
         }
 
-        internal CommandList GetOrCreateCopyCommandList()
+        public CommandList GetOrCreateCopyCommandList()
         {
             CommandList commandList;
 
@@ -229,7 +263,7 @@ namespace DirectX12GameEngine.Graphics
             return commandList;
         }
 
-        internal void EnqueueCopyCommandList(CommandList commandList)
+        public void EnqueueCopyCommandList(CommandList commandList)
         {
             lock (CopyCommandLists)
             {

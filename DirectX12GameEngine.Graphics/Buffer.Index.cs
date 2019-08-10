@@ -8,19 +8,19 @@ namespace DirectX12GameEngine.Graphics
     {
         public static class Index
         {
-            public static unsafe Buffer New(GraphicsDevice device, int size, GraphicsResourceUsage usage = GraphicsResourceUsage.Default)
+            public static unsafe Buffer New(GraphicsDevice device, int size, GraphicsHeapType heapType = GraphicsHeapType.Default)
             {
-                return Buffer.New(device, size, BufferFlags.IndexBuffer, usage);
+                return Buffer.New(device, size, BufferFlags.IndexBuffer, heapType);
             }
 
-            public static unsafe Buffer New<T>(GraphicsDevice device, in T data, GraphicsResourceUsage usage = GraphicsResourceUsage.Default) where T : unmanaged
+            public static unsafe Buffer<T> New<T>(GraphicsDevice device, in T data, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
             {
-                return Buffer.New(device, data, BufferFlags.IndexBuffer, usage);
+                return Buffer.New(device, data, BufferFlags.IndexBuffer, heapType);
             }
 
-            public static unsafe Buffer New<T>(GraphicsDevice device, Span<T> data, GraphicsResourceUsage usage = GraphicsResourceUsage.Default) where T : unmanaged
+            public static unsafe Buffer<T> New<T>(GraphicsDevice device, Span<T> data, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
             {
-                return Buffer.New(device, data, BufferFlags.IndexBuffer, usage);
+                return Buffer.New(device, data, BufferFlags.IndexBuffer, heapType);
             }
 
             public static IndexBufferView CreateIndexBufferView(Buffer indexBuffer, PixelFormat format, int size)

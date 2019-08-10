@@ -33,7 +33,7 @@ namespace DirectX12GameEngine.Graphics
 
             using Factory4 factory = new Factory4();
             using ComObject window = new ComObject(coreWindow);
-            using SwapChain1 tempSwapChain = new SwapChain1(factory, device.NativeCommandQueue, window, ref swapChainDescription);
+            using SwapChain1 tempSwapChain = new SwapChain1(factory, device.NativeDirectCommandQueue, window, ref swapChainDescription);
 
             return tempSwapChain.QueryInterface<SwapChain3>();
         }

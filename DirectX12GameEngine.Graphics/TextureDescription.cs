@@ -18,11 +18,11 @@
 
         public int MultisampleCount;
 
-        public GraphicsResourceUsage Usage;
+        public GraphicsHeapType HeapType;
 
         public TextureFlags Flags;
 
-        public static TextureDescription New2D(int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsResourceUsage usage = GraphicsResourceUsage.Default)
+        public static TextureDescription New2D(int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
             return new TextureDescription
             {
@@ -35,7 +35,7 @@
                 Flags = textureFlags,
                 Format = format,
                 MipLevels = mipCount,
-                Usage = usage,
+                HeapType = heapType,
             };
         }
 
@@ -52,7 +52,7 @@
                 Format = description.Format,
                 Flags = TextureFlags.ShaderResource,
                 MultisampleCount = 1,
-                Usage = GraphicsResourceUsage.Default
+                HeapType = GraphicsHeapType.Default
             };
         }
 

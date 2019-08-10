@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
@@ -339,27 +340,27 @@ namespace DirectX12GameEngine.Assets
                 if (hasNormal)
                 {
                     Span<byte> normalBuffer = GetVertexBuffer(gltf, buffers, normalIndex, out int normalStride);
-                    Graphics.Buffer normalVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, normalBuffer).DisposeBy(GraphicsDevice);
+                    Buffer<byte> normalVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, normalBuffer).DisposeBy(GraphicsDevice);
                     vertexBufferViews[1] = Graphics.Buffer.Vertex.CreateVertexBufferView(normalVertexBuffer, normalVertexBuffer.SizeInBytes, normalStride);
                 }
 
                 if (hasTangent)
                 {
                     Span<byte> tangentBuffer = GetVertexBuffer(gltf, buffers, tangentIndex, out int tangentStride);
-                    Graphics.Buffer tangentVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, tangentBuffer).DisposeBy(GraphicsDevice);
+                    Buffer<byte> tangentVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, tangentBuffer).DisposeBy(GraphicsDevice);
                     vertexBufferViews[2] = Graphics.Buffer.Vertex.CreateVertexBufferView(tangentVertexBuffer, tangentVertexBuffer.SizeInBytes, tangentStride);
                 }
 
                 if (hasTexCoord0)
                 {
                     Span<byte> texCoord0Buffer = GetVertexBuffer(gltf, buffers, texCoord0Index, out int texCoord0Stride);
-                    Graphics.Buffer texCoord0VertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, texCoord0Buffer).DisposeBy(GraphicsDevice);
+                    Buffer<byte> texCoord0VertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, texCoord0Buffer).DisposeBy(GraphicsDevice);
                     vertexBufferViews[3] = Graphics.Buffer.Vertex.CreateVertexBufferView(texCoord0VertexBuffer, texCoord0VertexBuffer.SizeInBytes, texCoord0Stride);
 
                     if (!hasTangent)
                     {
                         Span<Vector4> tangentBuffer = GenerateTangents(positionBuffer, texCoord0Buffer, indexBuffer, is32bitIndex);
-                        Graphics.Buffer tangentVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, tangentBuffer).DisposeBy(GraphicsDevice);
+                        Buffer<Vector4> tangentVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, tangentBuffer).DisposeBy(GraphicsDevice);
                         vertexBufferViews[2] = Graphics.Buffer.Vertex.CreateVertexBufferView<Vector4>(tangentVertexBuffer, tangentVertexBuffer.SizeInBytes);
                     }
                 }
@@ -370,7 +371,7 @@ namespace DirectX12GameEngine.Assets
 
         private static unsafe Span<Vector4> GenerateTangents(Span<byte> positionBuffer, Span<byte> texCoordBuffer, Span<byte> indexBuffer = default, bool is32bitIndex = false)
         {
-            Span<Vector4> tangentBuffer = new Vector4[positionBuffer.Length / sizeof(Vector3)];
+            Span<Vector4> tangentBuffer = new Vector4[positionBuffer.Length / Unsafe.SizeOf<Vector3>()];
 
             Span<ushort> indexBuffer16;
             Span<int> indexBuffer32;
@@ -396,7 +397,7 @@ namespace DirectX12GameEngine.Assets
             }
 
             int indexCount = indexBuffer.IsEmpty
-                ? positionBuffer.Length / sizeof(Vector3)
+                ? positionBuffer.Length / Unsafe.SizeOf<Vector3>()
                 : indexBuffer32.IsEmpty ? indexBuffer16.Length : indexBuffer32.Length;
 
             for (int i = 0; i < indexCount; i += 3)

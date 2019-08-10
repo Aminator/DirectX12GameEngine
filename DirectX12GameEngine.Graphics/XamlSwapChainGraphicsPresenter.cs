@@ -46,7 +46,7 @@ namespace DirectX12GameEngine.Graphics
 
             using Factory4 factory = new Factory4();
             using ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(swapChainPanel);
-            using SwapChain1 tempSwapChain = new SwapChain1(factory, device.NativeCommandQueue, ref swapChainDescription);
+            using SwapChain1 tempSwapChain = new SwapChain1(factory, device.NativeDirectCommandQueue, ref swapChainDescription);
 
             SwapChain3 swapChain = tempSwapChain.QueryInterface<SwapChain3>();
             nativePanel.SwapChain = swapChain;

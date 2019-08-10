@@ -30,30 +30,16 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
-    public class SamplerComparisonResourceAttribute : ShaderResourceAttribute
+    public class TextureResourceAttribute : ShaderResourceAttribute
     {
-        public SamplerComparisonResourceAttribute([CallerLineNumber] int order = 0) : base(order)
+        public TextureResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
 
-    public class Texture2DResourceAttribute : ShaderResourceAttribute
+    public class UnorderedAccessViewResourceAttribute : ShaderResourceAttribute
     {
-        public Texture2DResourceAttribute([CallerLineNumber] int order = 0) : base(order)
-        {
-        }
-    }
-
-    public class Texture2DArrayResourceAttribute : ShaderResourceAttribute
-    {
-        public Texture2DArrayResourceAttribute([CallerLineNumber] int order = 0) : base(order)
-        {
-        }
-    }
-
-    public class TextureCubeResourceAttribute : ShaderResourceAttribute
-    {
-        public TextureCubeResourceAttribute([CallerLineNumber] int order = 0) : base(order)
+        public UnorderedAccessViewResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
@@ -63,5 +49,22 @@ namespace DirectX12GameEngine.Shaders
         public StaticResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
+    }
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public class NumThreadsAttribute : Attribute
+    {
+        public NumThreadsAttribute(int x, int y, int z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        public int X { get; }
+
+        public int Y { get; }
+
+        public int Z { get; }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using SharpDX.Direct3D12;
 using SharpDX.DXGI;
-using SharpDX.WIC;
 
 using Resource = SharpDX.Direct3D12.Resource;
 
@@ -42,55 +42,27 @@ namespace DirectX12GameEngine.Graphics
             return new Texture(device).InitializeFrom(description);
         }
 
-        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsResourceUsage usage = GraphicsResourceUsage.Default)
+        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
-            return New(device, TextureDescription.New2D(width, height, format, textureFlags, mipCount, arraySize, multisampleCount, usage));
+            return New(device, TextureDescription.New2D(width, height, format, textureFlags, mipCount, arraySize, multisampleCount, heapType));
         }
 
-        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format) where T : unmanaged
+        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            Texture texture = New2D(device, width, height, format);
+            Texture texture = New2D(device, width, height, format, textureFlags, mipCount, arraySize, multisampleCount, heapType);
             texture.Recreate(data);
 
             return texture;
         }
 
-        public Texture InitializeFrom(TextureDescription description)
-        {
-            NativeResource ??= GraphicsDevice.NativeDevice.CreateCommittedResource(
-                new HeapProperties((HeapType)description.Usage), HeapFlags.None,
-                ConvertToNativeDescription(description), ResourceStates.GenericRead);
-
-            Description = description;
-
-            (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = description.Flags switch
-            {
-                TextureFlags.ShaderResource => CreateShaderResourceView(),
-                TextureFlags.RenderTarget => CreateRenderTargetView(),
-                TextureFlags.DepthStencil => CreateDepthStencilView(),
-                _ => default
-            };
-
-            return this;
-        }
-
         public unsafe void Recreate<T>(Span<T> data) where T : unmanaged
         {
-            int texturePixelSize = Description.Format switch
-            {
-                PixelFormat.R8G8B8A8_UNorm => 4,
-                PixelFormat.B8G8R8A8_UNorm => 4,
-                PixelFormat.R8G8B8A8_UNorm_SRgb => 4,
-                PixelFormat.B8G8R8A8_UNorm_SRgb => 4,
-                _ => throw new NotSupportedException("This format is not supported.")
-            };
-
             Resource uploadResource = GraphicsDevice.NativeDevice.CreateCommittedResource(new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), HeapFlags.None, NativeResource.Description, ResourceStates.CopyDestination);
             using Texture textureUploadBuffer = new Texture(GraphicsDevice).InitializeFrom(uploadResource);
 
             fixed (T* pointer = data)
             {
-                textureUploadBuffer.NativeResource.WriteToSubresource(0, null, (IntPtr)pointer, texturePixelSize * Width, data.Length * sizeof(T));
+                textureUploadBuffer.NativeResource.WriteToSubresource(0, null, (IntPtr)pointer, ((Format)Description.Format).SizeOfInBytes() * Width, data.Length * Unsafe.SizeOf<T>());
             }
 
             CommandList copyCommandList = GraphicsDevice.GetOrCreateCopyCommandList();
@@ -99,6 +71,37 @@ namespace DirectX12GameEngine.Graphics
             copyCommandList.Flush(true);
 
             GraphicsDevice.EnqueueCopyCommandList(copyCommandList);
+        }
+
+        public Texture InitializeFrom(TextureDescription description)
+        {
+            ResourceStates resourceStates = ResourceStates.Common;
+
+            if (description.HeapType == GraphicsHeapType.Upload)
+            {
+                resourceStates = ResourceStates.GenericRead;
+            }
+            else if (description.HeapType == GraphicsHeapType.Readback)
+            {
+                resourceStates = ResourceStates.CopyDestination;
+            }
+
+            NativeResource ??= GraphicsDevice.NativeDevice.CreateCommittedResource(
+                new HeapProperties((HeapType)description.HeapType), HeapFlags.None,
+                ConvertToNativeDescription(description), resourceStates);
+
+            Description = description;
+
+            (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = description.Flags switch
+            {
+                TextureFlags.DepthStencil => CreateDepthStencilView(),
+                TextureFlags.RenderTarget => CreateRenderTargetView(),
+                TextureFlags.ShaderResource => CreateShaderResourceView(),
+                TextureFlags.UnorderedAccess => CreateUnorderedAccessView(),
+                _ => default
+            };
+
+            return this;
         }
 
         internal Texture InitializeFrom(Resource resource)
@@ -112,7 +115,7 @@ namespace DirectX12GameEngine.Graphics
 
         internal static ResourceFlags GetBindFlagsFromTextureFlags(TextureFlags flags)
         {
-            var result = ResourceFlags.None;
+            ResourceFlags result = ResourceFlags.None;
 
             if (flags.HasFlag(TextureFlags.RenderTarget))
             {
@@ -122,6 +125,7 @@ namespace DirectX12GameEngine.Graphics
             if (flags.HasFlag(TextureFlags.UnorderedAccess))
             {
                 result |= ResourceFlags.AllowUnorderedAccess;
+                //result |= ResourceFlags.AllowSimultaneousAccess;
             }
 
             if (flags.HasFlag(TextureFlags.DepthStencil))
@@ -148,7 +152,7 @@ namespace DirectX12GameEngine.Graphics
                 MultisampleCount = description.SampleDescription.Count,
                 Format = (PixelFormat)description.Format,
                 MipLevels = description.MipLevels,
-                Usage = GraphicsResourceUsage.Default,
+                HeapType = GraphicsHeapType.Default,
                 ArraySize = description.DepthOrArraySize,
                 Flags = TextureFlags.None
             };
@@ -205,6 +209,15 @@ namespace DirectX12GameEngine.Graphics
         {
             (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
             GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, null, cpuHandle);
+
+            return (cpuHandle, gpuHandle);
+        }
+
+        private (CpuDescriptorHandle, GpuDescriptorHandle) CreateUnorderedAccessView()
+        {
+            (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+
+            GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, null, cpuHandle);
 
             return (cpuHandle, gpuHandle);
         }

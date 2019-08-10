@@ -9,7 +9,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     public class ComputeColor : IComputeColor
     {
         private Vector4 color;
-        private Buffer? colorBuffer;
+        private Buffer<Vector4>? colorBuffer;
 
         public ComputeColor()
         {

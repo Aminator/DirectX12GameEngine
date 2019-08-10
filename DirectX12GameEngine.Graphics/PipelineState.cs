@@ -30,8 +30,6 @@ namespace DirectX12GameEngine.Graphics
         {
         }
 
-        public PrimitiveTopology PrimitiveTopology { get; } = PrimitiveTopology.TriangleList;
-
         public RootSignature RootSignature { get; }
 
         internal bool IsCompute { get; }

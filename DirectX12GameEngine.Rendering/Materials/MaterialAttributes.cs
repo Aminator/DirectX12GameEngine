@@ -63,6 +63,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             MaterialPixelShadingStream.ShadingColorAlpha = materialDiffuse.W;
         }
 
+        [ShaderMethod]
         [Shader("pixel")]
         public override PSOutput PSMain(PSInput input)
         {

@@ -2,17 +2,17 @@
 {
     public struct BufferDescription
     {
-        public BufferDescription(int sizeInBytes, BufferFlags bufferFlags, GraphicsResourceUsage usage)
+        public BufferDescription(int sizeInBytes, BufferFlags bufferFlags, GraphicsHeapType heapType)
         {
             SizeInBytes = sizeInBytes;
             Flags = bufferFlags;
-            Usage = usage;
+            HeapType = heapType;
         }
 
         public int SizeInBytes;
 
         public BufferFlags Flags;
 
-        public GraphicsResourceUsage Usage;
+        public GraphicsHeapType HeapType;
     }
 }

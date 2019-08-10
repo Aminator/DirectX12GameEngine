@@ -49,9 +49,10 @@ namespace DirectX12GameEngine.Graphics
 
                     long completedValue = CommandListType switch
                     {
-                        CommandListType.Direct => GraphicsDevice.NativeFence.CompletedValue,
-                        CommandListType.Bundle => GraphicsDevice.NativeFence.CompletedValue,
+                        CommandListType.Bundle => GraphicsDevice.NativeDirectFence.CompletedValue,
+                        CommandListType.Compute => GraphicsDevice.NativeComputeFence.CompletedValue,
                         CommandListType.Copy => GraphicsDevice.NativeCopyFence.CompletedValue,
+                        CommandListType.Direct => GraphicsDevice.NativeDirectFence.CompletedValue,
                         _ => throw new NotSupportedException("This command list type is not supported.")
                     };
 
@@ -64,7 +65,7 @@ namespace DirectX12GameEngine.Graphics
                     }
                 }
 
-                return GraphicsDevice.NativeDevice.CreateCommandAllocator(CommandListType);
+                return GraphicsDevice.NativeDevice.CreateCommandAllocator((SharpDX.Direct3D12.CommandListType)CommandListType);
             }
         }
     }

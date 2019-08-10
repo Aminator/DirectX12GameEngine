@@ -1,6 +1,6 @@
 ﻿namespace DirectX12GameEngine.Graphics
 {
-    public enum GraphicsResourceUsage
+    public enum GraphicsHeapType
     {
         Default = 1,
         Upload = 2,

@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     public class MaterialRoughnessMapFeature : IMaterialMicroSurfaceFeature
     {
         private bool invert;
-        private Buffer? invertBuffer;
+        private Buffer<bool>? invertBuffer;
 
         public MaterialRoughnessMapFeature()
         {

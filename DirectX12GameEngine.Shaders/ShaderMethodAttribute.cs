@@ -11,9 +11,10 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
-    public class ShaderAttribute : ShaderMethodAttribute
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public class ShaderAttribute : Attribute
     {
-        public ShaderAttribute(string name, [CallerLineNumber] int order = 0) : base(order)
+        public ShaderAttribute(string name)
         {
             Name = name;
         }

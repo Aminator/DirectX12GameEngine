@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using SharpDX.Direct3D;
 using SharpDX.Direct3D12;
 using SharpDX.Mathematics.Interop;
 
@@ -19,7 +20,7 @@ namespace DirectX12GameEngine.Graphics
 
             CommandAllocator commandAllocator = GetCommandAllocator();
 
-            GraphicsCommandList nativeCommandList = GraphicsDevice.NativeDevice.CreateCommandList(CommandListType, commandAllocator, null);
+            GraphicsCommandList nativeCommandList = GraphicsDevice.NativeDevice.CreateCommandList((SharpDX.Direct3D12.CommandListType)CommandListType, commandAllocator, null);
             currentCommandList = new CompiledCommandList(this, commandAllocator, nativeCommandList);
 
             SetDescriptorHeaps(GraphicsDevice.ShaderResourceViewAllocator.DescriptorHeap);
@@ -36,6 +37,8 @@ namespace DirectX12GameEngine.Graphics
         public RawRectangle[] ScissorRectangles { get; private set; } = Array.Empty<RawRectangle>();
 
         public RawViewportF[] Viewports { get; private set; } = Array.Empty<RawViewportF>();
+
+        public PrimitiveTopology PrimitiveTopology { set => currentCommandList.NativeCommandList.PrimitiveTopology = value; }
 
         public void BeginRenderPass()
         {
@@ -156,15 +159,23 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.CopyTextureRegion(destination, 0, 0, 0, source, null);
         }
 
+        public void Dispatch(int threadGroupCountX, int threadGroupCountY, int threadGroupCountZ)
+        {
+            currentCommandList.NativeCommandList.Dispatch(threadGroupCountX, threadGroupCountY, threadGroupCountZ);
+        }
+
         public void Dispose()
         {
             switch (CommandListType)
             {
-                case CommandListType.Direct:
-                    GraphicsDevice.DirectAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextFenceValue - 1);
-                    break;
                 case CommandListType.Bundle:
-                    GraphicsDevice.BundleAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextFenceValue - 1);
+                    GraphicsDevice.BundleAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextDirectFenceValue - 1);
+                    break;
+                case CommandListType.Direct:
+                    GraphicsDevice.DirectAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextDirectFenceValue - 1);
+                    break;
+                case CommandListType.Compute:
+                    GraphicsDevice.ComputeAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextComputeFenceValue - 1);
                     break;
                 case CommandListType.Copy:
                     GraphicsDevice.CopyAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextCopyFenceValue - 1);
@@ -229,7 +240,7 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetGraphicsRootDescriptorTable(int rootParameterIndex, GraphicsResource resource)
         {
-            currentCommandList.NativeCommandList.SetGraphicsRootDescriptorTable(rootParameterIndex, resource.NativeGpuDescriptorHandle);
+            SetGraphicsRootDescriptorTable(rootParameterIndex, resource.NativeGpuDescriptorHandle);
         }
 
         public void SetGraphicsRootDescriptorTable(int rootParameterIndex, GpuDescriptorHandle baseDescriptor)
@@ -237,14 +248,34 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.SetGraphicsRootDescriptorTable(rootParameterIndex, baseDescriptor);
         }
 
+        public void SetGraphicsRootSignature(RootSignature rootSignature)
+        {
+            currentCommandList.NativeCommandList.SetGraphicsRootSignature(rootSignature);
+        }
+
+        public void SetComputeRoot32BitConstant(int rootParameterIndex, int srcData, int destOffsetIn32BitValues)
+        {
+            currentCommandList.NativeCommandList.SetComputeRoot32BitConstant(rootParameterIndex, srcData, destOffsetIn32BitValues);
+        }
+
+        public void SetComputeRootDescriptorTable(int rootParameterIndex, GraphicsResource resource)
+        {
+            SetComputeRootDescriptorTable(rootParameterIndex, resource.NativeGpuDescriptorHandle);
+        }
+
+        public void SetComputeRootDescriptorTable(int rootParameterIndex, GpuDescriptorHandle baseDescriptor)
+        {
+            currentCommandList.NativeCommandList.SetComputeRootDescriptorTable(rootParameterIndex, baseDescriptor);
+        }
+
         public void SetComputeRootSignature(RootSignature rootSignature)
         {
             currentCommandList.NativeCommandList.SetComputeRootSignature(rootSignature);
         }
 
-        public void SetGraphicsRootSignature(RootSignature rootSignature)
+        public void SetComputeRootUnorderedAccessView(int rootParameterIndex, GraphicsResource resource)
         {
-            currentCommandList.NativeCommandList.SetGraphicsRootSignature(rootSignature);
+            currentCommandList.NativeCommandList.SetComputeRootUnorderedAccessView(rootParameterIndex, resource.NativeResource.GPUVirtualAddress);
         }
 
         public void SetIndexBuffer(IndexBufferView? indexBufferView)
@@ -264,7 +295,6 @@ namespace DirectX12GameEngine.Graphics
             }
 
             currentCommandList.NativeCommandList.PipelineState = pipelineState.NativePipelineState;
-            currentCommandList.NativeCommandList.PrimitiveTopology = pipelineState.PrimitiveTopology;
         }
 
         public void SetRenderTargets(Texture? depthStencilView, params Texture[] renderTargetViews)
@@ -333,15 +363,13 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.SetViewports(viewports);
         }
 
-        private CommandAllocator GetCommandAllocator()
+        private CommandAllocator GetCommandAllocator() => CommandListType switch
         {
-            return CommandListType switch
-            {
-                CommandListType.Direct => GraphicsDevice.DirectAllocatorPool.GetCommandAllocator(),
-                CommandListType.Bundle => GraphicsDevice.BundleAllocatorPool.GetCommandAllocator(),
-                CommandListType.Copy => GraphicsDevice.CopyAllocatorPool.GetCommandAllocator(),
-                _ => throw new NotSupportedException("This command list type is not supported.")
-            };
-        }
+            CommandListType.Bundle => GraphicsDevice.BundleAllocatorPool.GetCommandAllocator(),
+            CommandListType.Compute => GraphicsDevice.ComputeAllocatorPool.GetCommandAllocator(),
+            CommandListType.Copy => GraphicsDevice.CopyAllocatorPool.GetCommandAllocator(),
+            CommandListType.Direct => GraphicsDevice.DirectAllocatorPool.GetCommandAllocator(),
+            _ => throw new NotSupportedException("This command list type is not supported.")
+        };
     }
 }
