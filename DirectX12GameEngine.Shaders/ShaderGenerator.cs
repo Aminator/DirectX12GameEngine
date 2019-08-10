@@ -94,7 +94,6 @@ namespace DirectX12GameEngine.Shaders
             if (result != null) return result;
 
             Type shaderType = shader.GetType();
-            result = GetEntryPoints(shaderType, bindingAttr);
 
             var memberInfos = shaderType.GetMembersInTypeHierarchyInOrder(bindingAttr).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
 
@@ -142,15 +141,14 @@ namespace DirectX12GameEngine.Shaders
             stringWriter.GetStringBuilder().TrimEnd();
             writer.WriteLine();
 
-            result.ShaderSource = stringWriter.ToString();
+            result = new ShaderGenerationResult(stringWriter.ToString());
+            GetEntryPoints(result, shaderType, bindingAttr);
 
             return result;
         }
 
-        public static ShaderGenerationResult GetEntryPoints(Type shaderType, BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+        public static ShaderGenerationResult GetEntryPoints(ShaderGenerationResult result, Type shaderType, BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
         {
-            ShaderGenerationResult result = new ShaderGenerationResult();
-
             foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingAttr).Where(m => m.IsDefined(typeof(ShaderAttribute))))
             {
                 ShaderAttribute shaderAttribute = shaderMethodInfo.GetCustomAttribute<ShaderAttribute>();

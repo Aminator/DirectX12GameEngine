@@ -273,10 +273,6 @@
       <Project>{6d3387fc-c108-4ec0-ae82-66184570cf6c}</Project>
       <Name>DirectX12GameEngine.Games</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DirectX12GameEngine.Graphics.Holographic\DirectX12GameEngine.Graphics.Holographic.csproj">
-      <Project>{c4b65186-87b3-4219-8d84-1ac29a81266a}</Project>
-      <Name>DirectX12GameEngine.Graphics.Holographic</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DirectX12GameEngine.Graphics\DirectX12GameEngine.Graphics.csproj">
       <Project>{107a527c-2d40-44b5-805f-092b9b614947}</Project>
       <Name>DirectX12GameEngine.Graphics</Name>

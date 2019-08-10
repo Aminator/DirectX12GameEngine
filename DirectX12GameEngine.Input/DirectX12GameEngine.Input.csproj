@@ -5,7 +5,6 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
-    <DefineConstants>WINDOWS_UWP</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

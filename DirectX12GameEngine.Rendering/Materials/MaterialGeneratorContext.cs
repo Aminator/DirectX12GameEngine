@@ -95,7 +95,7 @@ namespace DirectX12GameEngine.Rendering.Materials
                 ShaderGenerator shaderGenerator = new ShaderGenerator(MaterialDescriptor.Attributes);
                 ShaderGenerationResult result = await Task.Run(() => shaderGenerator.GenerateShader());
 
-                string shaderSource = result.ShaderSource ?? throw new Exception();
+                string shaderSource = result.ShaderSource;
 
                 compiledShader.VertexShader = result.VertexShader is null ? throw new Exception("Vertex shader must be present.") : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.VertexShader, result.VertexShader);
                 compiledShader.PixelShader = result.PixelShader is null ? throw new Exception("Pixel shader must be present.") : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.PixelShader, result.PixelShader);

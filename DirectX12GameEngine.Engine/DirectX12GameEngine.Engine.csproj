@@ -6,16 +6,10 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
-    <DefineConstants>WINDOWS_UWP</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine.Games\DirectX12GameEngine.Games.csproj" />
-    <ProjectReference Include="..\DirectX12GameEngine.Graphics.Holographic\DirectX12GameEngine.Graphics.Holographic.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Input\DirectX12GameEngine.Input.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj" />
   </ItemGroup>

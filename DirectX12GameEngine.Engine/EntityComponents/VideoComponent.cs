@@ -1,5 +1,4 @@
-﻿#if WINDOWS_UWP
-using DirectX12GameEngine.Graphics;
+﻿using DirectX12GameEngine.Graphics;
 using System;
 using System.Threading;
 using Windows.Media.Core;
@@ -36,4 +35,3 @@ namespace DirectX12GameEngine.Engine
         public Texture? Target { get; set; }
     }
 }
-#endif

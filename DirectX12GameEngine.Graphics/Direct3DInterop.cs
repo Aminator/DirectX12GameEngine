@@ -1,11 +1,10 @@
-﻿#if WINDOWS_UWP
-using SharpDX;
+﻿using SharpDX;
 using SharpDX.DXGI;
 using System;
 using System.Runtime.InteropServices;
 using Windows.Graphics.DirectX.Direct3D11;
 
-namespace DirectX12GameEngine.Graphics.Holographic
+namespace DirectX12GameEngine.Graphics
 {
     internal static class Direct3DInterop
     {
@@ -69,4 +68,3 @@ namespace DirectX12GameEngine.Graphics.Holographic
         private static extern Result CreateDirect3D11SurfaceFromDXGISurface(IntPtr dxgiSurface, out IntPtr graphicsSurface);
     }
 }
-#endif

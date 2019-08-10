@@ -1,5 +1,4 @@
-﻿#if WINDOWS_UWP
-using System;
+﻿using System;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Graphics.Holographic;
 using DirectX12GameEngine.Input;
@@ -70,4 +69,3 @@ namespace DirectX12GameEngine.Games
         }
     }
 }
-#endif

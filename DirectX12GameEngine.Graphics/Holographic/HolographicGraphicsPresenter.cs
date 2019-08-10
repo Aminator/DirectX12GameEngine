@@ -1,5 +1,4 @@
-﻿#if WINDOWS_UWP
-using SharpDX;
+﻿using SharpDX;
 using SharpDX.Direct3D12;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Holographic;
@@ -134,4 +133,3 @@ namespace DirectX12GameEngine.Graphics.Holographic
         }
     }
 }
-#endif

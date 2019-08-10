@@ -325,7 +325,6 @@ namespace DirectX12GameEngine.Engine
 
             if (currentCamera != null && currentCamera.Entity != null)
             {
-#if WINDOWS_UWP
                 if (graphicsDevice?.Presenter is Graphics.Holographic.HolographicGraphicsPresenter graphicsPresenter)
                 {
                     var cameraPose = graphicsPresenter.HolographicFrame.CurrentPrediction.CameraPoses[0];
@@ -364,7 +363,6 @@ namespace DirectX12GameEngine.Engine
                     ViewProjectionTransformBuffer.SetData(stereoViewProjectionTransform);
                 }
                 else
-#endif
                 {
                     Matrix4x4.Invert(currentCamera.ViewMatrix, out Matrix4x4 inverseViewMatrix);
 

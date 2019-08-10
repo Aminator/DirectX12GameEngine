@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Renderi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Engine", "DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj", "{693635ED-FC5E-43FF-A869-B37A2D601ED3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Graphics.Holographic", "DirectX12GameEngine.Graphics.Holographic\DirectX12GameEngine.Graphics.Holographic.csproj", "{C4B65186-87B3-4219-8D84-1AC29A81266A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Core.Assets", "DirectX12GameEngine.Core.Assets\DirectX12GameEngine.Core.Assets.csproj", "{83CAAFFE-6C8E-4B1E-A595-D7B3B0CF1AE5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Assets", "DirectX12GameEngine.Assets\DirectX12GameEngine.Assets.csproj", "{1E0E861D-2635-4B57-AFC1-73AEECD56018}"
@@ -33,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectX12GameEngine.Editor"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Input", "DirectX12GameEngine.Input\DirectX12GameEngine.Input.csproj", "{DB93C2C6-419A-4D51-AD9A-12556771C28D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectX12ComputeShaderSample", "DirectX12ComputeShaderSample\DirectX12ComputeShaderSample.csproj", "{58B5605A-0D6E-4212-B1B7-C1D9DADFF95E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12ComputeShaderSample", "DirectX12ComputeShaderSample\DirectX12ComputeShaderSample.csproj", "{58B5605A-0D6E-4212-B1B7-C1D9DADFF95E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -259,26 +257,6 @@ Global
 		{693635ED-FC5E-43FF-A869-B37A2D601ED3}.Release|x64.Build.0 = Release|Any CPU
 		{693635ED-FC5E-43FF-A869-B37A2D601ED3}.Release|x86.ActiveCfg = Release|Any CPU
 		{693635ED-FC5E-43FF-A869-B37A2D601ED3}.Release|x86.Build.0 = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|ARM.Build.0 = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|x64.Build.0 = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Debug|x86.Build.0 = Debug|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|ARM.ActiveCfg = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|ARM.Build.0 = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|ARM64.Build.0 = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|x64.ActiveCfg = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|x64.Build.0 = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|x86.ActiveCfg = Release|Any CPU
-		{C4B65186-87B3-4219-8D84-1AC29A81266A}.Release|x86.Build.0 = Release|Any CPU
 		{83CAAFFE-6C8E-4B1E-A595-D7B3B0CF1AE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{83CAAFFE-6C8E-4B1E-A595-D7B3B0CF1AE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83CAAFFE-6C8E-4B1E-A595-D7B3B0CF1AE5}.Debug|ARM.ActiveCfg = Debug|Any CPU

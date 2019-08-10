@@ -5,7 +5,6 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
-    <DefineConstants>WINDOWS_UWP</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,15 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine.Assets\DirectX12GameEngine.Assets.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Assets\Scenes\Scene1.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Update="Assets\Scenes\Scene1Saved.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
   </ItemGroup>
 
 </Project>

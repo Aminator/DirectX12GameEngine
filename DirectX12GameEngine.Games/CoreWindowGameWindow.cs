@@ -1,5 +1,4 @@
-﻿#if WINDOWS_UWP
-using System;
+﻿using System;
 using System.Drawing;
 using Windows.Graphics.Display;
 using Windows.UI.Core;
@@ -43,4 +42,3 @@ namespace DirectX12GameEngine.Games
         }
     }
 }
-#endif
