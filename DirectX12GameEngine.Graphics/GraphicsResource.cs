@@ -14,11 +14,15 @@ namespace DirectX12GameEngine.Graphics
             AttachToGraphicsDevice(device);
         }
 
-        public GraphicsDevice? GraphicsDevice { get; private set; }
+#nullable disable
+        public GraphicsDevice GraphicsDevice { get; private set; }
+#nullable restore
 
         public IntPtr MappedResource { get; private set; }
 
-        protected internal Resource? NativeResource { get; set; }
+#nullable disable
+        protected internal Resource NativeResource { get; set; }
+#nullable restore
 
         protected internal CpuDescriptorHandle NativeCpuDescriptorHandle { get; protected set; }
 
