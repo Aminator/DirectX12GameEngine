@@ -34,7 +34,7 @@ namespace DirectX12GameEngine.Graphics
         public static async Task<Texture> LoadAsync(GraphicsDevice device, Stream stream)
         {
             using Image image = await Image.LoadAsync(stream);
-            return New2D(device, image.Data.Span, image.Width, image.Height, image.Description.Format); ;
+            return New2D(device, image.Data.Span, image.Width, image.Height, image.Description.Format);
         }
 
         public static Texture New(GraphicsDevice device, TextureDescription description)
@@ -50,19 +50,21 @@ namespace DirectX12GameEngine.Graphics
         public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             Texture texture = New2D(device, width, height, format, textureFlags, mipCount, arraySize, multisampleCount, heapType);
-            texture.Recreate(data);
+            texture.SetData(data);
 
             return texture;
         }
 
-        public unsafe void Recreate<T>(Span<T> data) where T : unmanaged
+        public unsafe void SetData<T>(Span<T> data) where T : unmanaged
         {
+            if (NativeResource is null) throw new InvalidOperationException();
+
             Resource uploadResource = GraphicsDevice.NativeDevice.CreateCommittedResource(new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), HeapFlags.None, NativeResource.Description, ResourceStates.CopyDestination);
             using Texture textureUploadBuffer = new Texture(GraphicsDevice).InitializeFrom(uploadResource);
 
             fixed (T* pointer = data)
             {
-                textureUploadBuffer.NativeResource.WriteToSubresource(0, null, (IntPtr)pointer, ((Format)Description.Format).SizeOfInBytes() * Width, data.Length * Unsafe.SizeOf<T>());
+                textureUploadBuffer.NativeResource!.WriteToSubresource(0, null, (IntPtr)pointer, ((Format)Description.Format).SizeOfInBytes() * Width, data.Length * Unsafe.SizeOf<T>());
             }
 
             using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
@@ -84,9 +86,25 @@ namespace DirectX12GameEngine.Graphics
                 resourceStates = ResourceStates.CopyDestination;
             }
 
-            NativeResource ??= GraphicsDevice.NativeDevice.CreateCommittedResource(
+            Resource resource = GraphicsDevice.NativeDevice.CreateCommittedResource(
                 new HeapProperties((HeapType)description.HeapType), HeapFlags.None,
                 ConvertToNativeDescription(description), resourceStates);
+
+            return InitializeFrom(resource, description);
+        }
+
+        internal Texture InitializeFrom(Resource resource)
+        {
+            resource.GetHeapProperties(out HeapProperties heapProperties, out _);
+
+            TextureDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type);
+
+            return InitializeFrom(resource, description);
+        }
+
+        private Texture InitializeFrom(Resource resource, TextureDescription description)
+        {
+            NativeResource = resource;
 
             Description = description;
 
@@ -102,15 +120,6 @@ namespace DirectX12GameEngine.Graphics
             return this;
         }
 
-        internal Texture InitializeFrom(Resource resource)
-        {
-            NativeResource = resource;
-
-            TextureDescription description = ConvertFromNativeDescription(resource.Description);
-
-            return InitializeFrom(description);
-        }
-
         internal static ResourceFlags GetBindFlagsFromTextureFlags(TextureFlags flags)
         {
             ResourceFlags result = ResourceFlags.None;
@@ -123,7 +132,6 @@ namespace DirectX12GameEngine.Graphics
             if (flags.HasFlag(TextureFlags.UnorderedAccess))
             {
                 result |= ResourceFlags.AllowUnorderedAccess;
-                //result |= ResourceFlags.AllowSimultaneousAccess;
             }
 
             if (flags.HasFlag(TextureFlags.DepthStencil))
@@ -139,19 +147,18 @@ namespace DirectX12GameEngine.Graphics
             return result;
         }
 
-        private static TextureDescription ConvertFromNativeDescription(ResourceDescription description, bool isShaderResource = false)
+        private static TextureDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType, bool isShaderResource = false)
         {
-            TextureDescription textureDescription = new TextureDescription()
+            TextureDescription textureDescription = new TextureDescription
             {
                 Dimension = TextureDimension.Texture2D,
                 Width = (int)description.Width,
                 Height = description.Height,
-                Depth = 1,
                 MultisampleCount = description.SampleDescription.Count,
                 Format = (PixelFormat)description.Format,
                 MipLevels = description.MipLevels,
-                HeapType = GraphicsHeapType.Default,
-                ArraySize = description.DepthOrArraySize,
+                HeapType = heapType,
+                DepthOrArraySize = description.DepthOrArraySize,
                 Flags = TextureFlags.None
             };
 
@@ -182,7 +189,7 @@ namespace DirectX12GameEngine.Graphics
         {
             return description.Dimension switch
             {
-                TextureDimension.Texture2D => ResourceDescription.Texture2D((Format)description.Format, description.Width, description.Height, (short)description.ArraySize, (short)description.MipLevels, description.MultisampleCount, 0, GetBindFlagsFromTextureFlags(description.Flags)),
+                TextureDimension.Texture2D => ResourceDescription.Texture2D((Format)description.Format, description.Width, description.Height, (short)description.DepthOrArraySize, (short)description.MipLevels, description.MultisampleCount, 0, GetBindFlagsFromTextureFlags(description.Flags)),
                 _ => throw new NotSupportedException()
             };
         }

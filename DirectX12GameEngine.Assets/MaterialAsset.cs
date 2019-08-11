@@ -50,6 +50,8 @@ namespace DirectX12GameEngine.Assets
                 }
             }
 
+            material.Passes.Clear();
+
             material.Descriptor = descriptor;
 
             MaterialGeneratorContext context = new MaterialGeneratorContext(device, material, shaderContentManager);

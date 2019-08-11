@@ -8,9 +8,7 @@
 
         public int Height;
 
-        public int Depth;
-
-        public int ArraySize;
+        public int DepthOrArraySize;
 
         public int MipLevels;
 
@@ -29,8 +27,7 @@
                 Dimension = TextureDimension.Texture2D,
                 Width = width,
                 Height = height,
-                Depth = 1,
-                ArraySize = arraySize,
+                DepthOrArraySize = arraySize,
                 MultisampleCount = multisampleCount,
                 Flags = textureFlags,
                 Format = format,
@@ -46,8 +43,7 @@
                 Dimension = description.Dimension,
                 Width = description.Width,
                 Height = description.Height,
-                Depth = description.Depth,
-                ArraySize = description.ArraySize,
+                DepthOrArraySize = description.DepthOrArraySize,
                 MipLevels = description.MipLevels,
                 Format = description.Format,
                 Flags = TextureFlags.ShaderResource,
@@ -63,8 +59,7 @@
                 Dimension = description.Dimension,
                 Width = description.Width,
                 Height = description.Height,
-                Depth = description.Depth,
-                ArraySize = description.ArraySize,
+                DepthOrArraySize = description.DepthOrArraySize,
                 MipLevels = description.MipLevels,
                 Format = description.Format,
             };

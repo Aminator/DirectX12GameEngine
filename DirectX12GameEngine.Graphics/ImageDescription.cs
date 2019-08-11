@@ -8,9 +8,7 @@
 
         public int Height;
 
-        public int Depth;
-
-        public int ArraySize;
+        public int DepthOrArraySize;
 
         public int MipLevels;
 
@@ -23,10 +21,9 @@
                 Dimension = TextureDimension.Texture2D,
                 Width = width,
                 Height = height,
-                Depth = 1,
-                ArraySize = arraySize,
+                DepthOrArraySize = arraySize,
                 Format = format,
-                MipLevels = mipCount,
+                MipLevels = mipCount
             };
         }
     }

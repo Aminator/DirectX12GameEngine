@@ -25,6 +25,9 @@ namespace DirectX12GameEngine.Assets
 
             if (extension == ".glb")
             {
+                model.Materials.Clear();
+                model.Meshes.Clear();
+
                 using (Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source))
                 {
                     var meshes = await new GltfModelLoader(device).LoadMeshesAsync(stream);

@@ -11,7 +11,7 @@ namespace DirectX12GameEngine.Graphics
         {
         }
 
-        protected Buffer(GraphicsDevice device) : base(device)
+        public Buffer(GraphicsDevice device) : base(device)
         {
         }
 
@@ -24,6 +24,39 @@ namespace DirectX12GameEngine.Graphics
         public GraphicsHeapType Usage => Description.HeapType;
 
         public int ElementCount { get; protected set; }
+
+        public static Buffer New(GraphicsDevice device, BufferDescription description)
+        {
+            return new Buffer(device).InitializeFrom(description);
+        }
+
+        public static Buffer New(GraphicsDevice device, int size, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        {
+            return New(device, new BufferDescription(size, bufferFlags, heapType));
+        }
+
+        public static Buffer<T> New<T>(GraphicsDevice device, int elementCount, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        {
+            int size = elementCount * Unsafe.SizeOf<T>();
+
+            return new Buffer<T>(device, new BufferDescription(size, bufferFlags, heapType));
+        }
+
+        public static unsafe Buffer<T> New<T>(GraphicsDevice device, in T data, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        {
+            fixed (T* pointer = &data)
+            {
+                return New(device, new Span<T>(pointer, 1), bufferFlags, heapType);
+            }
+        }
+
+        public static Buffer<T> New<T>(GraphicsDevice device, Span<T> data, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        {
+            Buffer<T> buffer = New<T>(device, data.Length, bufferFlags, heapType);
+            buffer.SetData(data);
+
+            return buffer;
+        }
 
         public T[] GetData<T>() where T : unmanaged
         {
@@ -87,49 +120,7 @@ namespace DirectX12GameEngine.Graphics
             }
         }
 
-        public Buffer ToReadback()
-        {
-            BufferDescription description = Description;
-            description.HeapType = GraphicsHeapType.Readback;
-            description.Flags = BufferFlags.None;
-
-            return New(GraphicsDevice, description);
-        }
-
-        public static Buffer New(GraphicsDevice device, BufferDescription description)
-        {
-            return new Buffer(device).InitializeFrom(description);
-        }
-
-        public static Buffer New(GraphicsDevice device, int size, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
-        {
-            return New(device, new BufferDescription(size, bufferFlags, heapType));
-        }
-
-        public static Buffer<T> New<T>(GraphicsDevice device, int elementCount, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
-        {
-            int bufferSize = elementCount * Unsafe.SizeOf<T>();
-
-            return new Buffer<T>(device, bufferSize, bufferFlags, heapType);
-        }
-
-        public static unsafe Buffer<T> New<T>(GraphicsDevice device, in T data, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
-        {
-            fixed (T* pointer = &data)
-            {
-                return New(device, new Span<T>(pointer, 1), bufferFlags, heapType);
-            }
-        }
-
-        public static Buffer<T> New<T>(GraphicsDevice device, Span<T> data, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
-        {
-            Buffer<T> buffer = New<T>(device, data.Length, bufferFlags, heapType);
-            buffer.SetData(data);
-
-            return buffer;
-        }
-
-        protected internal Buffer InitializeFrom(BufferDescription description)
+        public Buffer InitializeFrom(BufferDescription description)
         {
             ResourceStates resourceStates = ResourceStates.Common;
 
@@ -142,9 +133,25 @@ namespace DirectX12GameEngine.Graphics
                 resourceStates = ResourceStates.CopyDestination;
             }
 
-            NativeResource ??= GraphicsDevice.NativeDevice.CreateCommittedResource(
+            Resource resource = GraphicsDevice.NativeDevice.CreateCommittedResource(
                 new HeapProperties((HeapType)description.HeapType), HeapFlags.None,
                 ConvertToNativeDescription(description), resourceStates);
+
+            return InitializeFrom(resource, description);
+        }
+
+        internal Buffer InitializeFrom(Resource resource)
+        {
+            resource.GetHeapProperties(out HeapProperties heapProperties, out _);
+
+            BufferDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type);
+
+            return InitializeFrom(resource, description);
+        }
+
+        private Buffer InitializeFrom(Resource resource, BufferDescription description)
+        {
+            NativeResource = resource;
 
             Description = description;
 
@@ -159,6 +166,28 @@ namespace DirectX12GameEngine.Graphics
             return this;
         }
 
+        private static BufferDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType, bool isShaderResource = false)
+        {
+            BufferDescription bufferDescription = new BufferDescription
+            {
+                SizeInBytes = (int)description.Width * description.Height * description.DepthOrArraySize,
+                HeapType = heapType,
+                Flags = BufferFlags.None
+            };
+
+            if (description.Flags.HasFlag(ResourceFlags.AllowUnorderedAccess))
+            {
+                bufferDescription.Flags |= BufferFlags.UnorderedAccess;
+            }
+
+            if (!description.Flags.HasFlag(ResourceFlags.DenyShaderResource) && isShaderResource)
+            {
+                bufferDescription.Flags |= BufferFlags.ShaderResource;
+            }
+
+            return bufferDescription;
+        }
+
         private static ResourceDescription ConvertToNativeDescription(BufferDescription description)
         {
             int size = description.SizeInBytes;
@@ -167,7 +196,6 @@ namespace DirectX12GameEngine.Graphics
             if (description.Flags.HasFlag(BufferFlags.UnorderedAccess))
             {
                 flags |= ResourceFlags.AllowUnorderedAccess;
-                //flags |= ResourceFlags.AllowSimultaneousAccess;
             }
 
             return ResourceDescription.Buffer(size, flags);
@@ -181,7 +209,7 @@ namespace DirectX12GameEngine.Graphics
 
             ConstantBufferViewDescription cbvDescription = new ConstantBufferViewDescription
             {
-                BufferLocation = NativeResource.GPUVirtualAddress,
+                BufferLocation = NativeResource!.GPUVirtualAddress,
                 SizeInBytes = constantBufferSize
             };
 
@@ -220,12 +248,12 @@ namespace DirectX12GameEngine.Graphics
 
     public class Buffer<T> : Buffer where T : unmanaged
     {
-        protected internal Buffer(GraphicsDevice device, int size, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) : base(device)
+        protected internal Buffer(GraphicsDevice device, BufferDescription description) : base(device)
         {
             ElementSize = Unsafe.SizeOf<T>();
-            ElementCount = size / ElementSize;
+            ElementCount = description.SizeInBytes / ElementSize;
 
-            InitializeFrom(new BufferDescription(size, bufferFlags, heapType));
+            InitializeFrom(description);
         }
 
         public int ElementSize { get; }

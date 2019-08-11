@@ -5,49 +5,42 @@ namespace DirectX12GameEngine.Graphics
 {
     public abstract class GraphicsResource : IDisposable
     {
+#nullable disable
         protected GraphicsResource()
         {
         }
+#nullable restore
 
         protected GraphicsResource(GraphicsDevice device)
         {
-            AttachToGraphicsDevice(device);
+            GraphicsDevice = device;
         }
 
-#nullable disable
-        public GraphicsDevice GraphicsDevice { get; private set; }
-#nullable restore
+        public GraphicsDevice GraphicsDevice { get; set; }
 
         public IntPtr MappedResource { get; private set; }
 
-#nullable disable
-        protected internal Resource NativeResource { get; set; }
-#nullable restore
+        protected internal Resource? NativeResource { get; set; }
 
         protected internal CpuDescriptorHandle NativeCpuDescriptorHandle { get; protected set; }
 
         protected internal GpuDescriptorHandle NativeGpuDescriptorHandle { get; protected set; }
 
-        public void AttachToGraphicsDevice(GraphicsDevice device)
-        {
-            GraphicsDevice = device;
-        }
-
         public virtual void Dispose()
         {
-            NativeResource.Dispose();
+            NativeResource?.Dispose();
         }
 
         public IntPtr Map(int subresource)
         {
-            IntPtr mappedResource = NativeResource.Map(subresource);
+            IntPtr mappedResource = NativeResource?.Map(subresource) ?? throw new InvalidOperationException();
             MappedResource = mappedResource;
             return mappedResource;
         }
 
         public void Unmap(int subresource)
         {
-            NativeResource.Unmap(subresource);
+            NativeResource?.Unmap(subresource);
             MappedResource = IntPtr.Zero;
         }
     }

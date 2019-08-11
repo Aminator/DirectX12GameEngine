@@ -24,9 +24,10 @@ namespace DirectX12GameEngine.Assets
                 using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source);
                 using Image image = await Image.LoadAsync(stream);
 
-                texture.AttachToGraphicsDevice(device);
+                texture.Dispose();
+                texture.GraphicsDevice = device;
                 texture.InitializeFrom(image.Description);
-                texture.Recreate(image.Data.Span);
+                texture.SetData(image.Data.Span);
             }
             else
             {
