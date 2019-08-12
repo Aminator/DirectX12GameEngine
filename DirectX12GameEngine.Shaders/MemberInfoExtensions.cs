@@ -32,22 +32,22 @@ namespace DirectX12GameEngine.Shaders
             return methodInfos;
         }
 
-        public static IEnumerable<Type> GetNestedTypesInTypeHierarchy(this Type type, BindingFlags bindingAttr)
+        public static IEnumerable<Type> GetNestedTypesInTypeHierarchy(this Type type, BindingFlags bindingFlags)
         {
-            IEnumerable<Type> nestedTypes = type.GetNestedTypes(bindingAttr);
+            IEnumerable<Type> nestedTypes = type.GetNestedTypes(bindingFlags);
 
             Type parent = type.BaseType;
 
             while (parent != null)
             {
-                nestedTypes = parent.GetNestedTypes(bindingAttr).Concat(nestedTypes);
+                nestedTypes = parent.GetNestedTypes(bindingFlags).Concat(nestedTypes);
                 parent = parent.BaseType;
             }
 
             return nestedTypes;
         }
 
-        public static IEnumerable<MemberInfo> GetMembersInTypeHierarchy(this Type type, BindingFlags bindingAttr)
+        public static IEnumerable<MemberInfo> GetMembersInTypeHierarchy(this Type type, BindingFlags bindingFlags)
         {
             Dictionary<Type, int> lookup = new Dictionary<Type, int>();
 
@@ -63,20 +63,20 @@ namespace DirectX12GameEngine.Shaders
                 parent = parent.BaseType;
             }
 
-            return type.GetMembers(bindingAttr).OrderByDescending(prop => lookup[prop.DeclaringType]);
+            return type.GetMembers(bindingFlags).OrderByDescending(prop => lookup[prop.DeclaringType]);
         }
 
-        public static IEnumerable<MemberInfo> GetMembersInTypeHierarchyInOrder(this Type type, BindingFlags bindingAttr)
+        public static IEnumerable<MemberInfo> GetMembersInTypeHierarchyInOrder(this Type type, BindingFlags bindingFlags)
         {
-            return type.GetMembersInTypeHierarchy(bindingAttr)
+            return type.GetMembersInTypeHierarchy(bindingFlags)
                 .GroupBy(m => m.DeclaringType)
                 .Select(g => g.OrderBy(m => m.GetCustomAttribute<ShaderResourceAttribute>()?.Order))
                 .SelectMany(m => m);
         }
 
-        public static IEnumerable<MemberInfo> GetMembersInOrder(this Type type, BindingFlags bindingAttr)
+        public static IEnumerable<MemberInfo> GetMembersInOrder(this Type type, BindingFlags bindingFlags)
         {
-            return type.GetMembers(bindingAttr)
+            return type.GetMembers(bindingFlags)
                 .OrderBy(m => m.GetCustomAttribute<ShaderResourceAttribute>()?.Order);
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading.Tasks;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D12;
 using SharpDX.Mathematics.Interop;
@@ -207,7 +208,17 @@ namespace DirectX12GameEngine.Graphics
 
         public void Flush(bool wait = false)
         {
-            GraphicsDevice.ExecuteCommandLists(wait, Close());
+            Task task = FlushAsync();
+
+            if (wait)
+            {
+                task.Wait();
+            }
+        }
+
+        public Task FlushAsync()
+        {
+            return GraphicsDevice.ExecuteCommandListsAsync(Close());
         }
 
         public void Reset()
@@ -271,11 +282,6 @@ namespace DirectX12GameEngine.Graphics
         public void SetComputeRootSignature(RootSignature rootSignature)
         {
             currentCommandList.NativeCommandList.SetComputeRootSignature(rootSignature);
-        }
-
-        public void SetComputeRootUnorderedAccessView(int rootParameterIndex, GraphicsResource resource)
-        {
-            currentCommandList.NativeCommandList.SetComputeRootUnorderedAccessView(rootParameterIndex, resource.NativeResource.GPUVirtualAddress);
         }
 
         public void SetIndexBuffer(IndexBufferView? indexBufferView)

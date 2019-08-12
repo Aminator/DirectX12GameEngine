@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Nito.AsyncEx" Version="5.0.0" />
     <PackageReference Include="SharpDX.Direct2D1" Version="4.2.1-beta0-gab36f12303" />
     <PackageReference Include="SharpDX.Direct3D11" Version="4.2.1-beta0-gab36f12303" />
     <PackageReference Include="SharpDX.Direct3D12" Version="4.2.1-beta0-gab36f12303" />

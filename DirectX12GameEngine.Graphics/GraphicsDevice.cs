@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
+using Nito.AsyncEx.Interop;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D12;
 
@@ -173,7 +175,7 @@ namespace DirectX12GameEngine.Graphics
             NativeDevice.Dispose();
         }
 
-        public void ExecuteCommandLists(bool wait, params CompiledCommandList[] commandLists)
+        public Task ExecuteCommandListsAsync(params CompiledCommandList[] commandLists)
         {
             Fence fence = commandLists[0].Builder.CommandListType switch
             {
@@ -185,10 +187,7 @@ namespace DirectX12GameEngine.Graphics
 
             long fenceValue = ExecuteCommandLists(commandLists);
 
-            if (wait)
-            {
-                WaitForFence(fence, fenceValue);
-            }
+            return WaitForFenceAsync(fence, fenceValue);
         }
 
         public long ExecuteCommandLists(params CompiledCommandList[] commandLists)
@@ -244,17 +243,18 @@ namespace DirectX12GameEngine.Graphics
 
         internal bool IsFenceComplete(Fence fence, long fenceValue)
         {
-            return fenceValue <= fence.CompletedValue;
+            return fence.CompletedValue >= fenceValue;
         }
 
-        internal void WaitForFence(Fence fence, long fenceValue)
+        internal Task WaitForFenceAsync(Fence fence, long fenceValue)
         {
-            if (IsFenceComplete(fence, fenceValue)) return;
+            if (IsFenceComplete(fence, fenceValue)) return Task.CompletedTask;
 
             lock (fence)
             {
                 fence.SetEventOnCompletion(fenceValue, fenceEvent.SafeWaitHandle.DangerousGetHandle());
-                fenceEvent.WaitOne();
+
+                return WaitHandleAsyncFactory.FromWaitHandle(fenceEvent);
             }
         }
     }

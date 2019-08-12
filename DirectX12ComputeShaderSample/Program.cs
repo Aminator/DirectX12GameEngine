@@ -3,7 +3,7 @@ using DirectX12GameEngine.Shaders;
 using DirectX12GameEngine.Shaders.Numerics;
 using System;
 using System.Linq;
-
+using System.Threading.Tasks;
 using Buffer = DirectX12GameEngine.Graphics.Buffer;
 
 namespace DirectX12ComputeShaderSample
@@ -25,7 +25,7 @@ namespace DirectX12ComputeShaderSample
 
     public class Program
     {
-        private static void Main()
+        private static async Task Main()
         {
             // Generate computer shader
 
@@ -76,7 +76,7 @@ namespace DirectX12ComputeShaderSample
                 commandList.SetComputeRootDescriptorTable(1, gpuBuffer);
 
                 commandList.Dispatch(2, 2, 1);
-                commandList.Flush(true);
+                await commandList.FlushAsync();
             }
 
             // Print matrix

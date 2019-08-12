@@ -25,7 +25,7 @@ namespace DirectX12GameEngine.Shaders
         private static Compilation compilation;
 
         private readonly List<ShaderTypeDefinition> collectedTypes = new List<ShaderTypeDefinition>();
-        private readonly BindingFlags bindingAttr;
+        private readonly BindingFlags bindingFlags;
         private readonly HlslBindingTracker bindingTracker = new HlslBindingTracker();
         private readonly object shader;
         private readonly StringWriter stringWriter = new StringWriter();
@@ -74,10 +74,10 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        public ShaderGenerator(object shader, BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+        public ShaderGenerator(object shader, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
         {
             this.shader = shader;
-            this.bindingAttr = bindingAttr;
+            this.bindingFlags = bindingFlags;
 
             writer = new IndentedTextWriter(stringWriter);
         }
@@ -95,7 +95,7 @@ namespace DirectX12GameEngine.Shaders
 
             Type shaderType = shader.GetType();
 
-            var memberInfos = shaderType.GetMembersInTypeHierarchyInOrder(bindingAttr).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
+            var memberInfos = shaderType.GetMembersInTypeHierarchyInOrder(bindingFlags).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
 
             // Collecting stage
 
@@ -142,14 +142,14 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine();
 
             result = new ShaderGenerationResult(stringWriter.ToString());
-            GetEntryPoints(result, shaderType, bindingAttr);
+            GetEntryPoints(result, shaderType, bindingFlags);
 
             return result;
         }
 
-        public static ShaderGenerationResult GetEntryPoints(ShaderGenerationResult result, Type shaderType, BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+        public static ShaderGenerationResult GetEntryPoints(ShaderGenerationResult result, Type shaderType, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
         {
-            foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingAttr).Where(m => m.IsDefined(typeof(ShaderAttribute))))
+            foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingFlags).Where(m => m.IsDefined(typeof(ShaderAttribute))))
             {
                 ShaderAttribute shaderAttribute = shaderMethodInfo.GetCustomAttribute<ShaderAttribute>();
                 result.SetShader(shaderAttribute.Name, shaderMethodInfo.Name);
@@ -185,7 +185,7 @@ namespace DirectX12GameEngine.Shaders
                 CollectStructure(interfaceType, obj);
             }
 
-            var memberInfos = type.GetMembersInOrder(bindingAttr);
+            var memberInfos = type.GetMembersInOrder(bindingFlags);
 
             if (!type.IsInterface)
             {
@@ -252,8 +252,8 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine("{");
             writer.Indent++;
 
-            var fieldAndPropertyInfos = type.GetMembersInOrder(bindingAttr | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
-            var methodInfos = type.GetMembersInTypeHierarchyInOrder(bindingAttr).Where(m => m is MethodInfo);
+            var fieldAndPropertyInfos = type.GetMembersInOrder(bindingFlags | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
+            var methodInfos = type.GetMembersInTypeHierarchyInOrder(bindingFlags).Where(m => m is MethodInfo);
             var memberInfos = fieldAndPropertyInfos.Concat(methodInfos);
 
             if (!type.IsInterface && !type.IsEnum)
