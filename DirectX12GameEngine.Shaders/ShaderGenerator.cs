@@ -19,8 +19,6 @@ namespace DirectX12GameEngine.Shaders
     {
         private static readonly object compilationLock = new object();
         private static readonly Dictionary<string, CSharpDecompiler> decompilers = new Dictionary<string, CSharpDecompiler>();
-        private static readonly IEnumerable<PEFile> peFiles;
-        private static readonly Dictionary<Type, (PEFile PEFile, TypeDefinition TypeDefinition)> typeDefinitions = new Dictionary<Type, (PEFile, TypeDefinition)>();
 
         private static Compilation compilation;
 
@@ -45,20 +43,11 @@ namespace DirectX12GameEngine.Shaders
             {
                 assemblyPaths = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.dll").Where(p =>
                 {
-                    try
-                    {
-                        PEFile peFile = new PEFile(p);
-                        return true;
-                    }
-                    catch
-                    {
-                        return false;
-                    }
+                    try { PEFile peFile = new PEFile(p); return true; } catch { return false; }
                 });
             }
 
             var metadataReferences = assemblyPaths.Select(p => MetadataReference.CreateFromFile(p));
-            peFiles = assemblyPaths.Select(p => new PEFile(p));
 
             compilation = CSharpCompilation.Create("ShaderAssembly").WithReferences(metadataReferences);
 
@@ -776,40 +765,6 @@ namespace DirectX12GameEngine.Shaders
             public static string GetMappedName(string name)
             {
                 return knownMethods[name];
-            }
-
-            public static bool Contains(ISymbol containingMemberSymbol, ISymbol memberSymbol)
-            {
-                string fullTypeName = containingMemberSymbol.IsStatic ? containingMemberSymbol.ToString() : memberSymbol.ContainingType.ToString();
-
-                if (knownMethods.ContainsKey(fullTypeName + Type.Delimiter + memberSymbol.Name))
-                {
-                    return true;
-                }
-
-                return false;
-            }
-
-            public static string? GetMappedName(ISymbol containingMemberSymbol, ISymbol memberSymbol)
-            {
-                string fullTypeName = containingMemberSymbol.IsStatic ? containingMemberSymbol.ToString() : memberSymbol.ContainingType.ToString();
-
-                if (knownMethods.TryGetValue(fullTypeName + Type.Delimiter + memberSymbol.Name, out string mapped))
-                {
-                    if (!memberSymbol.IsStatic)
-                    {
-                        return containingMemberSymbol.Name + mapped;
-                    }
-
-                    return mapped;
-                }
-
-                if (memberSymbol.IsStatic)
-                {
-                    return fullTypeName.Replace(".", "::") + "::" + memberSymbol.Name;
-                }
-
-                return null;
             }
         }
 

@@ -57,10 +57,8 @@ namespace DirectX12GameEngine.Rendering.Materials
                 directLightingContribution += SpecularModel.ComputeDirectLightContribution();
             }
 
-            Vector4 materialDiffuse = MaterialPixelStream.MaterialDiffuse;
-
             MaterialPixelShadingStream.ShadingColor += directLightingContribution * (float)Math.PI;
-            MaterialPixelShadingStream.ShadingColorAlpha = materialDiffuse.W;
+            MaterialPixelShadingStream.ShadingColorAlpha = MaterialPixelStream.MaterialDiffuse.W;
         }
 
         [ShaderMethod]

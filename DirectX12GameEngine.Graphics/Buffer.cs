@@ -236,7 +236,7 @@ namespace DirectX12GameEngine.Graphics
                 Dimension = UnorderedAccessViewDimension.Buffer,
                 Buffer =
                 {
-                    ElementCount = ElementCount,
+                    ElementCount = ElementCount
                 }
             };
 

@@ -22,51 +22,49 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        public static SyntaxNode ReplaceMember(this MemberAccessExpressionSyntax node, SemanticModel semanticModel)
+        public static bool TryGetMappedMemberName(this MemberAccessExpressionSyntax node, SemanticModel semanticModel, out ISymbol? containingSymbol, out ISymbol? memberSymbol, out string? mappedName)
         {
             SymbolInfo containingMemberSymbolInfo = semanticModel.GetSymbolInfo(node.Expression);
             SymbolInfo memberSymbolInfo = semanticModel.GetSymbolInfo(node.Name);
 
-            ISymbol? memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
+            memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
+
+            containingSymbol = null;
+            mappedName = null;
 
             if (memberSymbol is null)
             {
                 ISymbol? containingMemberSymbol = containingMemberSymbolInfo.Symbol ?? containingMemberSymbolInfo.CandidateSymbols.FirstOrDefault();
 
-                ITypeSymbol? typeSymbol = containingMemberSymbol switch
+                if (containingMemberSymbol != null)
                 {
-                    IFieldSymbol fieldSymbol => fieldSymbol.Type,
-                    IPropertySymbol propertySymbol => propertySymbol.Type,
-                    IMethodSymbol methodSymbol => methodSymbol.ContainingType,
-                    _ => null
-                };
-
-                if (typeSymbol != null)
-                {
-                    string memberName = typeSymbol.ToString() + Type.Delimiter + node.Name.Identifier.ValueText;
-
-                    if (ShaderGenerator.HlslKnownMethods.ContainsKey(memberName))
+                    containingSymbol = containingMemberSymbol switch
                     {
-                        string mappedName = containingMemberSymbol.Name + ShaderGenerator.HlslKnownMethods.GetMappedName(memberName);
-                        return SyntaxFactory.IdentifierName(mappedName).WithTriviaFrom(node);
-                    }
+                        IFieldSymbol fieldSymbol => fieldSymbol.Type,
+                        IPropertySymbol propertySymbol => propertySymbol.Type,
+                        IMethodSymbol methodSymbol => methodSymbol.ContainingType,
+                        _ => null
+                    };
                 }
-            }
-
-            if (memberSymbol is null || containingMemberSymbolInfo.Symbol is null || (memberSymbol.Kind != SymbolKind.Field && memberSymbol.Kind != SymbolKind.Property && memberSymbol.Kind != SymbolKind.Method))
-            {
-                return node;
-            }
-
-            string? value = ShaderGenerator.HlslKnownMethods.GetMappedName(containingMemberSymbolInfo.Symbol, memberSymbol);
-
-            if (value is null)
-            {
-                return node;
             }
             else
             {
-                return SyntaxFactory.IdentifierName(value).WithTriviaFrom(node);
+                containingSymbol = memberSymbol.ContainingSymbol;
+            }
+
+
+            if (containingSymbol is null) return false;
+
+            string fullMemberName = containingSymbol.ToString() + Type.Delimiter + node.Name.Identifier.ValueText;
+
+            if (ShaderGenerator.HlslKnownMethods.ContainsKey(fullMemberName))
+            {
+                mappedName = ShaderGenerator.HlslKnownMethods.GetMappedName(fullMemberName);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }

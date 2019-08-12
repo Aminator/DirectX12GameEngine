@@ -12,6 +12,7 @@ namespace DirectX12GameEngine.Rendering.Core
     public struct GlobalBuffer
     {
         [ShaderResource] public float ElapsedTime { get; set; }
+
         [ShaderResource] public float TotalTime { get; set; }
     }
 }

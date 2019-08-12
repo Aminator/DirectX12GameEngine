@@ -93,7 +93,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             if (!await Content.ExistsAsync(fileName))
             {
                 ShaderGenerator shaderGenerator = new ShaderGenerator(MaterialDescriptor.Attributes);
-                ShaderGenerationResult result = await Task.Run(() => shaderGenerator.GenerateShader());
+                ShaderGenerationResult result = shaderGenerator.GenerateShader();
 
                 string shaderSource = result.ShaderSource;
 

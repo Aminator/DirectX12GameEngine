@@ -125,13 +125,15 @@ namespace DirectX12GameEngine.Shaders
 
         public override SyntaxNode VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
         {
-            node = (MemberAccessExpressionSyntax)base.VisitMemberAccessExpression(node);
+            MemberAccessExpressionSyntax newBaseNode = (MemberAccessExpressionSyntax)base.VisitMemberAccessExpression(node);
+
+            SyntaxNode? newNode = null;
 
             if (node.Expression is BaseExpressionSyntax)
             {
                 if (isTopLevel)
                 {
-                    return SyntaxFactory.IdentifierName($"Base_{depth + 1}_{node.Name}");
+                    newNode = SyntaxFactory.IdentifierName($"Base_{depth + 1}_{node.Name}");
                 }
                 else
                 {
@@ -140,7 +142,7 @@ namespace DirectX12GameEngine.Shaders
 
                     if (memberSymbol != null)
                     {
-                        return SyntaxFactory.IdentifierName($"{memberSymbol.ContainingType.Name}::{node.Name}");
+                        newNode = SyntaxFactory.IdentifierName($"{memberSymbol.ContainingType.Name}::{node.Name}");
                     }
                     else
                     {
@@ -150,8 +152,27 @@ namespace DirectX12GameEngine.Shaders
             }
             else
             {
-                return node.ReplaceMember(semanticModel);
+                if (node.TryGetMappedMemberName(semanticModel, out ISymbol? containingSymbol, out ISymbol? memberSymbol, out string? mappedName))
+                {
+                    if (memberSymbol is null || !memberSymbol.IsStatic)
+                    {
+                        newNode = SyntaxFactory.IdentifierName($"{newBaseNode.Expression}{mappedName}");
+                    }
+                    else
+                    {
+                        newNode = SyntaxFactory.IdentifierName(mappedName);
+                    }
+                }
+                else
+                {
+                    if ((containingSymbol != null && containingSymbol.IsStatic) || (memberSymbol != null && memberSymbol.IsStatic))
+                    {
+                        newNode = SyntaxFactory.IdentifierName($"{newBaseNode.Expression}::{newBaseNode.Name}");
+                    }
+                }
             }
+
+            return newNode?.WithTriviaFrom(newBaseNode) ?? newBaseNode;
         }
     }
 }
