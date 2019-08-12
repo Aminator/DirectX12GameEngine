@@ -162,7 +162,7 @@ namespace DirectX12GameEngine.Shaders
         {
             type = type.GetElementOrDeclaredType();
 
-            if (HlslKnownTypes.ContainsKey(type) || collectedTypes.Any(d => d.Type == type)) return;
+            if (type.IsAssignableFrom(shader.GetType()) || HlslKnownTypes.ContainsKey(type) || collectedTypes.Any(d => d.Type == type)) return;
 
             ShaderTypeDefinition shaderTypeDefinition = new ShaderTypeDefinition(type, obj);
 
@@ -220,6 +220,17 @@ namespace DirectX12GameEngine.Shaders
 
         private void WriteStructure(Type type, object? obj)
         {
+            string[] namespaces = type.Namespace.Split('.');
+
+            for (int i = 0; i < namespaces.Length - 1; i++)
+            {
+                writer.Write($"namespace {namespaces[i]} {{ ");
+            }
+
+            writer.WriteLine($"namespace {namespaces[namespaces.Length - 1]}");
+            writer.WriteLine("{");
+            writer.Indent++;
+
             if (type.IsEnum)
             {
                 writer.WriteLine($"enum class {type.Name}");
@@ -234,7 +245,7 @@ namespace DirectX12GameEngine.Shaders
 
                 if (type.BaseType != null && type.BaseType != typeof(object) && type.BaseType != typeof(ValueType))
                 {
-                    writer.Write($" : {type.BaseType.Name}, ");
+                    writer.Write($" : {HlslKnownTypes.GetMappedName(type.BaseType)}, ");
 
                     // NOTE: Types might no expose every interface method.
 
@@ -292,6 +303,14 @@ namespace DirectX12GameEngine.Shaders
             writer.Indent--;
             writer.WriteLine();
             writer.WriteLine("};");
+            writer.Indent--;
+
+            for (int i = 0; i < namespaces.Length - 1; i++)
+            {
+                writer.Write("}");
+            }
+
+            writer.WriteLine("}");
             writer.WriteLine();
 
             if (type.IsEnum) return;
@@ -497,6 +516,8 @@ namespace DirectX12GameEngine.Shaders
             shaderSource = shaderSource.Replace("vector", "vec");
             shaderSource = Regex.Replace(shaderSource, @"\d+[fF]", m => m.Value.Replace("f", ""));
 
+            shaderSource = shaderSource.TrimStart(' ');
+
             // Indent every line
             string indent = "";
 
@@ -505,7 +526,7 @@ namespace DirectX12GameEngine.Shaders
                 indent += IndentedTextWriter.DefaultTabString;
             }
 
-            shaderSource = shaderSource.Replace(Environment.NewLine, Environment.NewLine + indent).TrimEnd(' ');
+            shaderSource = shaderSource.Replace(Environment.NewLine + IndentedTextWriter.DefaultTabString, Environment.NewLine + indent).TrimEnd(' ');
 
             writer.WriteLine(shaderSource);
         }
@@ -514,7 +535,8 @@ namespace DirectX12GameEngine.Shaders
         {
             lock (compilationLock)
             {
-                GetMethodHandle(methodInfo, out string assemblyPath, out EntityHandle methodHandle);
+                EntityHandle handle = MetadataTokenHelpers.TryAsEntityHandle(methodInfo.DeclaringType.MetadataToken) ?? throw new InvalidOperationException();
+                string assemblyPath = methodInfo.DeclaringType.Assembly.Location;
 
                 if (!decompilers.TryGetValue(assemblyPath, out CSharpDecompiler decompiler))
                 {
@@ -522,52 +544,14 @@ namespace DirectX12GameEngine.Shaders
                     decompilers.Add(assemblyPath, decompiler);
                 }
 
-                string sourceCode = decompiler.DecompileAsString(methodHandle);
+                string sourceCode = decompiler.DecompileAsString(handle);
 
                 SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
                 root = syntaxTree.GetRoot();
+                root = root.DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>().First(n => n.Identifier.ValueText == methodInfo.Name && n.ParameterList.Parameters.Count == methodInfo.GetParameters().Length);
 
                 compilation = compilation.AddSyntaxTrees(syntaxTree);
                 semanticModel = compilation.GetSemanticModel(syntaxTree);
-            }
-        }
-
-        private static void GetMethodHandle(MethodInfo methodInfo, out string assemblyPath, out EntityHandle methodHandle)
-        {
-            assemblyPath = methodInfo.DeclaringType.Assembly.Location;
-
-            if (!string.IsNullOrEmpty(assemblyPath))
-            {
-                methodHandle = MetadataTokenHelpers.TryAsEntityHandle(methodInfo.MetadataToken) ?? throw new InvalidOperationException();
-            }
-            else
-            {
-                if (!typeDefinitions.TryGetValue(methodInfo.DeclaringType, out var tuple))
-                {
-                    foreach (PEFile peFile in peFiles)
-                    {
-                        TypeDefinitionHandle typeDefinitionHandle = peFile.Metadata.TypeDefinitions.FirstOrDefault(t => t.GetFullTypeName(peFile.Metadata).ToString() == methodInfo.DeclaringType.FullName);
-
-                        if (!typeDefinitionHandle.IsNil)
-                        {
-                            tuple = (peFile, peFile.Metadata.GetTypeDefinition(typeDefinitionHandle));
-                            typeDefinitions.Add(methodInfo.DeclaringType, tuple);
-
-                            break;
-                        }
-                    }
-
-                    if (tuple.PEFile is null) throw new InvalidOperationException();
-                }
-
-                PEFile peFileForMethod = tuple.PEFile;
-                TypeDefinition typeDefinition = tuple.TypeDefinition;
-
-                assemblyPath = peFileForMethod.FileName;
-
-                methodHandle = typeDefinition.GetMethods()
-                    .Where(m => peFileForMethod.Metadata.StringComparer.Equals(peFileForMethod.Metadata.GetMethodDefinition(m).Name, methodInfo.Name))
-                    .First(m => peFileForMethod.Metadata.GetMethodDefinition(m).GetParameters().Count == methodInfo.GetParameters().Length);
             }
         }
 
@@ -588,15 +572,25 @@ namespace DirectX12GameEngine.Shaders
 
         internal static class HlslKnownAttributes
         {
-            private static readonly HashSet<string> allowedAttributes = new HashSet<string>()
+            private static readonly Dictionary<string, string> allowedAttributes = new Dictionary<string, string>()
             {
-                typeof(NumThreadsAttribute).FullName,
-                typeof(ShaderAttribute).FullName
+                { typeof(NumThreadsAttribute).FullName, "NumThreads" },
+                { typeof(ShaderAttribute).FullName, "Shader" }
             };
 
-            public static bool Contains(string name)
+            public static bool ContainsKey(string name)
             {
-                return HlslKnownSemantics.ContainsKey(name) || allowedAttributes.Contains(name);
+                return allowedAttributes.ContainsKey(name) || HlslKnownSemantics.ContainsKey(name);
+            }
+
+            public static string GetMappedName(string name)
+            {
+                if (!allowedAttributes.TryGetValue(name, out string mappedName))
+                {
+                    mappedName = HlslKnownSemantics.GetMappedName(name);
+                }
+
+                return mappedName;
             }
         }
 
@@ -684,9 +678,9 @@ namespace DirectX12GameEngine.Shaders
             public static string GetMappedName(Type type)
             {
                 type = type.GetElementOrDeclaredType();
-                string typeFullName = type.Namespace + Type.Delimiter + type.Name;
+                string fullTypeName = type.Namespace + Type.Delimiter + type.Name;
 
-                string mappedName = knownTypes.TryGetValue(typeFullName, out string mapped) ? mapped : type.Name;
+                string mappedName = knownTypes.TryGetValue(fullTypeName, out string mapped) ? mapped : fullTypeName.Replace(".", "::");
 
                 return type.IsGenericType ? mappedName + $"<{GetMappedName(type.GetGenericArguments()[0])}>" : mappedName;
             }
@@ -698,7 +692,7 @@ namespace DirectX12GameEngine.Shaders
                 string genericArguments = indexOfOpenBracket >= 0 ? name.Substring(indexOfOpenBracket) : "";
                 name = indexOfOpenBracket >= 0 ? name.Remove(indexOfOpenBracket) + "`1" : name;
 
-                string mappedName = knownTypes.TryGetValue(name, out string mapped) ? mapped : Regex.Match(name, @"[^\.]+$").Value;
+                string mappedName = knownTypes.TryGetValue(name, out string mapped) ? mapped : name.Replace(".", "::");
 
                 return mappedName + genericArguments;
             }
@@ -774,6 +768,16 @@ namespace DirectX12GameEngine.Shaders
                 { "System.Numerics.Matrix4x4.M44", "[3][3]" }
             };
 
+            public static bool ContainsKey(string name)
+            {
+                return knownMethods.ContainsKey(name);
+            }
+
+            public static string GetMappedName(string name)
+            {
+                return knownMethods[name];
+            }
+
             public static bool Contains(ISymbol containingMemberSymbol, ISymbol memberSymbol)
             {
                 string fullTypeName = containingMemberSymbol.IsStatic ? containingMemberSymbol.ToString() : memberSymbol.ContainingType.ToString();
@@ -802,7 +806,7 @@ namespace DirectX12GameEngine.Shaders
 
                 if (memberSymbol.IsStatic)
                 {
-                    return containingMemberSymbol.Name + "::" + memberSymbol.Name;
+                    return fullTypeName.Replace(".", "::") + "::" + memberSymbol.Name;
                 }
 
                 return null;

@@ -39,16 +39,44 @@ namespace DirectX12GameEngine.Shaders
 
             ISymbol? memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
 
-            if (memberSymbol is null || (memberSymbol.Kind != SymbolKind.Field && memberSymbol.Kind != SymbolKind.Property && memberSymbol.Kind != SymbolKind.Method))
+            if (memberSymbol is null)
+            {
+                ISymbol? containingMemberSymbol = containingMemberSymbolInfo.Symbol ?? containingMemberSymbolInfo.CandidateSymbols.FirstOrDefault();
+
+                ITypeSymbol? typeSymbol = containingMemberSymbol switch
+                {
+                    IFieldSymbol fieldSymbol => fieldSymbol.Type,
+                    IPropertySymbol propertySymbol => propertySymbol.Type,
+                    IMethodSymbol methodSymbol => methodSymbol.ContainingType,
+                    _ => null
+                };
+
+                if (typeSymbol != null)
+                {
+                    string memberName = typeSymbol.ToString() + Type.Delimiter + node.Name.Identifier.ValueText;
+
+                    if (ShaderGenerator.HlslKnownMethods.ContainsKey(memberName))
+                    {
+                        string fullTypeName = typeSymbol.ToDisplayString(
+                            new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces))
+                            + ", " + typeSymbol.ContainingAssembly.Identity.ToString();
+
+                        shaderGenerator.AddType(Type.GetType(fullTypeName));
+                        return;
+                    }
+                }
+            }
+
+            if (memberSymbol is null || containingMemberSymbolInfo.Symbol is null || (memberSymbol.Kind != SymbolKind.Field && memberSymbol.Kind != SymbolKind.Property && memberSymbol.Kind != SymbolKind.Method))
             {
                 return;
             }
 
-            ISymbol containingMemberSymbol = containingMemberSymbolInfo.Symbol;
-
-            if (!ShaderGenerator.HlslKnownMethods.Contains(containingMemberSymbol, memberSymbol))
+            if (!ShaderGenerator.HlslKnownMethods.Contains(containingMemberSymbolInfo.Symbol, memberSymbol))
             {
-                ISymbol symbol = containingMemberSymbol.IsStatic ? containingMemberSymbol : memberSymbol.ContainingType;
+                ITypeSymbol? symbol = containingMemberSymbolInfo.Symbol.IsStatic ? containingMemberSymbolInfo.Symbol as ITypeSymbol : memberSymbol.ContainingType;
+
+                if (symbol is null) return;
 
                 string fullTypeName = symbol.ToDisplayString(
                     new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces))

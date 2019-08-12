@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,7 +18,7 @@ namespace DirectX12GameEngine.Shaders
             }
             else
             {
-                return node.ReplaceNode(type, SyntaxFactory.ParseTypeName(value).WithLeadingTrivia(type.GetLeadingTrivia()).WithTrailingTrivia(type.GetTrailingTrivia()));
+                return node.ReplaceNode(type, SyntaxFactory.ParseTypeName(value).WithTriviaFrom(type));
             }
         }
 
@@ -28,7 +29,31 @@ namespace DirectX12GameEngine.Shaders
 
             ISymbol? memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
 
-            if (memberSymbol is null || (memberSymbol.Kind != SymbolKind.Field && memberSymbol.Kind != SymbolKind.Property && memberSymbol.Kind != SymbolKind.Method))
+            if (memberSymbol is null)
+            {
+                ISymbol? containingMemberSymbol = containingMemberSymbolInfo.Symbol ?? containingMemberSymbolInfo.CandidateSymbols.FirstOrDefault();
+
+                ITypeSymbol? typeSymbol = containingMemberSymbol switch
+                {
+                    IFieldSymbol fieldSymbol => fieldSymbol.Type,
+                    IPropertySymbol propertySymbol => propertySymbol.Type,
+                    IMethodSymbol methodSymbol => methodSymbol.ContainingType,
+                    _ => null
+                };
+
+                if (typeSymbol != null)
+                {
+                    string memberName = typeSymbol.ToString() + Type.Delimiter + node.Name.Identifier.ValueText;
+
+                    if (ShaderGenerator.HlslKnownMethods.ContainsKey(memberName))
+                    {
+                        string mappedName = containingMemberSymbol.Name + ShaderGenerator.HlslKnownMethods.GetMappedName(memberName);
+                        return SyntaxFactory.IdentifierName(mappedName).WithTriviaFrom(node);
+                    }
+                }
+            }
+
+            if (memberSymbol is null || containingMemberSymbolInfo.Symbol is null || (memberSymbol.Kind != SymbolKind.Field && memberSymbol.Kind != SymbolKind.Property && memberSymbol.Kind != SymbolKind.Method))
             {
                 return node;
             }
@@ -41,7 +66,7 @@ namespace DirectX12GameEngine.Shaders
             }
             else
             {
-                return SyntaxFactory.IdentifierName(value).WithLeadingTrivia(node.GetLeadingTrivia()).WithTrailingTrivia(node.GetTrailingTrivia());
+                return SyntaxFactory.IdentifierName(value).WithTriviaFrom(node);
             }
         }
     }

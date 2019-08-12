@@ -28,11 +28,8 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderMethod]
         public static void PrepareMaterialForLightingAndShading()
         {
-            Vector4 materialDiffuse = MaterialDiffuse;
-            Vector3 materialSpecular = MaterialSpecular;
-
-            MaterialDiffuseVisible = new Vector3(materialDiffuse.X, materialDiffuse.Y, materialDiffuse.Z);
-            MaterialSpecularVisible = materialSpecular;
+            MaterialDiffuseVisible = new Vector3(MaterialDiffuse.X, MaterialDiffuse.Y, MaterialDiffuse.Z);
+            MaterialSpecularVisible = MaterialSpecular;
 
             NDotV = Math.Max(Vector3.Dot(NormalStream.NormalWS, ViewWS), 0.0001f);
 

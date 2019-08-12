@@ -30,6 +30,8 @@ namespace DirectX12GameEngine.Shaders
                 node = node.ReplaceToken(node.Identifier, SyntaxFactory.Identifier($"Base_{depth}_{node.Identifier.ValueText}"));
             }
 
+            SyntaxTriviaList trivia = node.Modifiers.FirstOrDefault().LeadingTrivia;
+
             SyntaxTokenList modifiers = new SyntaxTokenList();
 
             if (node.Modifiers.Any(SyntaxKind.StaticKeyword))
@@ -37,7 +39,14 @@ namespace DirectX12GameEngine.Shaders
                 modifiers = modifiers.Add(SyntaxFactory.Token(default, SyntaxKind.StaticKeyword, SyntaxFactory.TriviaList(SyntaxFactory.SyntaxTrivia(SyntaxKind.WhitespaceTrivia, " "))));
             }
 
-            return node.ReplaceType(node.ReturnType).WithModifiers(modifiers);
+            if (modifiers.Count == 0)
+            {
+                node = node.WithReturnType(node.ReturnType.WithLeadingTrivia(trivia));
+            }
+
+            node = node.ReplaceType(node.ReturnType).WithModifiers(modifiers);
+
+            return node;
         }
 
         public override SyntaxNode VisitParameter(ParameterSyntax node)
@@ -62,14 +71,18 @@ namespace DirectX12GameEngine.Shaders
             return node.ReplaceType(node.Name);
         }
 
-        public override SyntaxNode VisitAttributeList(AttributeListSyntax node)
+        public override SyntaxNode? VisitAttributeList(AttributeListSyntax node)
         {
-            var knownAttributes = node.Attributes.Where(n => ShaderGenerator.HlslKnownAttributes.Contains(n.Name + "Attribute"));
+            var knownAttributes = node.Attributes.Where(n => ShaderGenerator.HlslKnownAttributes.ContainsKey(n.Name + "Attribute"));
 
             if (knownAttributes.Count() == 0) return null;
 
-            var list = new SeparatedSyntaxList<AttributeSyntax>();
-            list = list.AddRange(knownAttributes);
+            SeparatedSyntaxList<AttributeSyntax> list = new SeparatedSyntaxList<AttributeSyntax>();
+
+            foreach (AttributeSyntax attribute in knownAttributes)
+            {
+                list = list.Add(attribute.WithName(SyntaxFactory.ParseName(ShaderGenerator.HlslKnownAttributes.GetMappedName(attribute.Name + "Attribute"))));
+            }
 
             node = node.WithAttributes(list);
 
