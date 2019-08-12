@@ -4,15 +4,15 @@ namespace DirectX12GameEngine.Rendering.Core
 {
     public static class Global
     {
-        [ShaderResource] public static float ElapsedTime;
+        [ShaderMember] public static float ElapsedTime;
 
-        [ShaderResource] public static float TotalTime;
+        [ShaderMember] public static float TotalTime;
     }
 
     public struct GlobalBuffer
     {
-        [ShaderResource] public float ElapsedTime { get; set; }
+        [ShaderMember] public float ElapsedTime { get; set; }
 
-        [ShaderResource] public float TotalTime { get; set; }
+        [ShaderMember] public float TotalTime { get; set; }
     }
 }

@@ -17,9 +17,9 @@ namespace DirectX12Game
 
         #region Shader
 
-        [ShaderResource] public IComputeScalar WobbleStrength { get; set; } = new ComputeScalar(2.0f);
+        [ShaderMember] public IComputeScalar WobbleStrength { get; set; } = new ComputeScalar(2.0f);
 
-        [ShaderMethod]
+        [ShaderMember]
         [Shader("vertex")]
         public override VSOutput VSMain(VSInput input)
         {

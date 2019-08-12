@@ -11,7 +11,7 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
 
         #region Shader
 
-        [ShaderMethod]
+        [ShaderMember]
         public float Compute()
         {
             return BrdfMicrofacet.NormalDistributionGgx(MaterialPixelStream.AlphaRoughness, MaterialPixelShadingStream.NDotH);

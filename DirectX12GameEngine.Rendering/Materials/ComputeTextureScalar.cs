@@ -6,6 +6,7 @@ using DirectX12GameEngine.Shaders.Numerics;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
+    [ShaderContract]
     [StaticResource]
     public class ComputeTextureScalar : IComputeScalar
     {
@@ -42,7 +43,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         #region Shader
 
 #nullable disable
-        [ShaderResource] public Texture2DResource ScalarTexture;
+        [ShaderMember] public Texture2DResource ScalarTexture;
 #nullable enable
 
         [ConstantBufferResource] public ColorChannel Channel
@@ -55,7 +56,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             }
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         public float Compute()
         {
             Vector4 color = ScalarTexture.Sample(Texturing.Sampler, Texturing.TexCoord);

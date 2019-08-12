@@ -18,13 +18,13 @@ namespace DirectX12Game
 
         #region Shader
 
-        [ShaderResource] public IComputeScalar Amplitude { get; set; } = new ComputeScalar(1.0f);
+        [ShaderMember] public IComputeScalar Amplitude { get; set; } = new ComputeScalar(1.0f);
 
-        [ShaderResource] public IComputeScalar Frequency { get; set; } = new ComputeScalar(10.0f);
+        [ShaderMember] public IComputeScalar Frequency { get; set; } = new ComputeScalar(10.0f);
 
-        [ShaderResource] public IComputeScalar Speed { get; set; } = new ComputeScalar(0.05f);
+        [ShaderMember] public IComputeScalar Speed { get; set; } = new ComputeScalar(0.05f);
 
-        [ShaderMethod]
+        [ShaderMember]
         public Vector4 Compute()
         {
             float phase = DirectX12GameEngine.Shaders.Numerics.Vector2.Length(Texturing.TexCoord - new Vector2(0.5f, 0.5f));

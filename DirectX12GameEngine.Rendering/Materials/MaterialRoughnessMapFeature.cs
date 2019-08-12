@@ -30,7 +30,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public IComputeScalar RoughnessMap { get; set; } = new ComputeScalar();
+        [ShaderMember] public IComputeScalar RoughnessMap { get; set; } = new ComputeScalar();
 
         [ConstantBufferResource] public bool Invert
         {
@@ -42,7 +42,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             }
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         public void Compute()
         {
             float roughness = RoughnessMap.Compute();

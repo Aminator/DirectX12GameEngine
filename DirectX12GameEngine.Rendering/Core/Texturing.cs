@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Rendering.Core
 #nullable disable
         [StaticResource(Override = true)] public static SamplerResource Sampler;
 
-        [ShaderResource] [TextureCoordinateSemantic] public static Vector2 TexCoord;
+        [ShaderMember] [TextureCoordinateSemantic] public static Vector2 TexCoord;
 #nullable enable
     }
 }

@@ -3,10 +3,20 @@ using System.Runtime.CompilerServices;
 
 namespace DirectX12GameEngine.Shaders
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public class ShaderResourceAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
+    public class ShaderContractAttribute : Attribute
     {
-        public ShaderResourceAttribute([CallerLineNumber] int order = 0)
+    }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public class IgnoreShaderMemberAttribute : Attribute
+    {
+    }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    public class ShaderMemberAttribute : Attribute
+    {
+        public ShaderMemberAttribute([CallerLineNumber] int order = 0)
         {
             Order = order;
         }
@@ -16,35 +26,35 @@ namespace DirectX12GameEngine.Shaders
         public bool Override { get; set; }
     }
 
-    public class ConstantBufferResourceAttribute : ShaderResourceAttribute
+    public class ConstantBufferResourceAttribute : ShaderMemberAttribute
     {
         public ConstantBufferResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
 
-    public class SamplerResourceAttribute : ShaderResourceAttribute
+    public class SamplerResourceAttribute : ShaderMemberAttribute
     {
         public SamplerResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
 
-    public class TextureResourceAttribute : ShaderResourceAttribute
+    public class TextureResourceAttribute : ShaderMemberAttribute
     {
         public TextureResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
 
-    public class UnorderedAccessViewResourceAttribute : ShaderResourceAttribute
+    public class UnorderedAccessViewResourceAttribute : ShaderMemberAttribute
     {
         public UnorderedAccessViewResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
 
-    public class StaticResourceAttribute : ShaderResourceAttribute
+    public class StaticResourceAttribute : ShaderMemberAttribute
     {
         public StaticResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {

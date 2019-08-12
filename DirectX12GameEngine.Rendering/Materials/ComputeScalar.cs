@@ -4,6 +4,7 @@ using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
+    [ShaderContract]
     [ConstantBufferResource]
     public class ComputeScalar : IComputeScalar
     {
@@ -27,7 +28,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource]
+        [ShaderMember]
         public float Value
         {
             get => scalarValue;
@@ -38,7 +39,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             }
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         public float Compute()
         {
             return Value;

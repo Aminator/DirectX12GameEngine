@@ -23,7 +23,8 @@ namespace DirectX12GameEngine.Shaders
         private static Compilation compilation;
 
         private readonly List<ShaderTypeDefinition> collectedTypes = new List<ShaderTypeDefinition>();
-        private readonly BindingFlags bindingFlags;
+        private readonly BindingFlags bindingFlagsWithContract;
+        private readonly BindingFlags bindingFlagsWithoutContract;
         private readonly HlslBindingTracker bindingTracker = new HlslBindingTracker();
         private readonly object shader;
         private readonly StringWriter stringWriter = new StringWriter();
@@ -63,10 +64,11 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        public ShaderGenerator(object shader, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+        public ShaderGenerator(object shader, BindingFlags bindingFlagsWithContract = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance, BindingFlags bindingFlagsWithoutContract = BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)
         {
             this.shader = shader;
-            this.bindingFlags = bindingFlags;
+            this.bindingFlagsWithContract = bindingFlagsWithContract;
+            this.bindingFlagsWithoutContract = bindingFlagsWithoutContract;
 
             writer = new IndentedTextWriter(stringWriter);
         }
@@ -78,13 +80,18 @@ namespace DirectX12GameEngine.Shaders
             CollectStructure(type, null);
         }
 
+        public BindingFlags GetBindingFlagsForType(Type type)
+        {
+            return type.IsDefined(typeof(ShaderContractAttribute)) ? bindingFlagsWithContract : bindingFlagsWithoutContract;
+        }
+
         public ShaderGenerationResult GenerateShader()
         {
             if (result != null) return result;
 
             Type shaderType = shader.GetType();
 
-            var memberInfos = shaderType.GetMembersInTypeHierarchyInOrder(bindingFlags).Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
+            var memberInfos = shaderType.GetMembersInTypeHierarchyInOrder(GetBindingFlagsForType(shaderType));
 
             // Collecting stage
 
@@ -97,9 +104,7 @@ namespace DirectX12GameEngine.Shaders
                     CollectStructure(memberType, memberInfo.GetMemberValue(shader));
                 }
 
-                ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
-
-                if (resourceType is ShaderMethodAttribute && memberInfo is MethodInfo methodInfo)
+                if (memberInfo is MethodInfo methodInfo && memberInfo.IsDefined(typeof(ShaderMemberAttribute)))
                 {
                     CollectTopLevelMethod(methodInfo);
                 }
@@ -115,9 +120,9 @@ namespace DirectX12GameEngine.Shaders
             foreach (MemberInfo memberInfo in memberInfos)
             {
                 Type? memberType = memberInfo.GetMemberType(shader);
-                ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
+                ShaderMemberAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
 
-                if (resourceType is ShaderMethodAttribute && memberInfo is MethodInfo methodInfo)
+                if (memberInfo is MethodInfo methodInfo && memberInfo.IsDefined(typeof(ShaderMemberAttribute)))
                 {
                     WriteTopLevelMethod(methodInfo);
                 }
@@ -131,7 +136,7 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine();
 
             result = new ShaderGenerationResult(stringWriter.ToString());
-            GetEntryPoints(result, shaderType, bindingFlags);
+            GetEntryPoints(result, shaderType, GetBindingFlagsForType(shaderType));
 
             return result;
         }
@@ -174,24 +179,16 @@ namespace DirectX12GameEngine.Shaders
                 CollectStructure(interfaceType, obj);
             }
 
-            var memberInfos = type.GetMembersInOrder(bindingFlags);
-
-            if (!type.IsInterface)
-            {
-                memberInfos = memberInfos.Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
-            }
+            var memberInfos = type.GetMembersInOrder(GetBindingFlagsForType(type));
 
             foreach (MemberInfo memberInfo in memberInfos)
             {
                 Type? memberType = memberInfo.GetMemberType(obj);
-                ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
+                ShaderMemberAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
 
-                if (memberInfo is MethodInfo methodInfo)
+                if (memberInfo is MethodInfo methodInfo && (memberInfo.IsDefined(typeof(ShaderMemberAttribute)) || type.IsInterface))
                 {
-                    if (type.IsInterface || resourceType is ShaderMethodAttribute)
-                    {
-                        CollectMethod(methodInfo);
-                    }
+                    CollectMethod(methodInfo);
                 }
                 else if (memberType != null && memberType != type)
                 {
@@ -252,28 +249,19 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine("{");
             writer.Indent++;
 
-            var fieldAndPropertyInfos = type.GetMembersInOrder(bindingFlags | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
-            var methodInfos = type.GetMembersInTypeHierarchyInOrder(bindingFlags).Where(m => m is MethodInfo);
+            var fieldAndPropertyInfos = type.GetMembersInOrder(GetBindingFlagsForType(type) | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
+            var methodInfos = type.GetMembersInTypeHierarchyInOrder(GetBindingFlagsForType(type)).Where(m => m is MethodInfo);
             var memberInfos = fieldAndPropertyInfos.Concat(methodInfos);
-
-            if (!type.IsInterface && !type.IsEnum)
-            {
-                memberInfos = memberInfos.Where(m => m.IsDefined(typeof(ShaderResourceAttribute)));
-            }
 
             foreach (MemberInfo memberInfo in memberInfos)
             {
                 Type? memberType = memberInfo.GetMemberType(obj);
-                ShaderResourceAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
 
-                if (memberInfo is MethodInfo methodInfo)
+                if (memberInfo is MethodInfo methodInfo && (memberInfo.IsDefined(typeof(ShaderMemberAttribute)) || type.IsInterface))
                 {
-                    if (type.IsInterface || resourceType is ShaderMethodAttribute)
-                    {
-                        WriteMethod(methodInfo);
-                    }
+                    WriteMethod(methodInfo);
                 }
-                else if (memberType != null && resourceType != null)
+                else if (memberType != null)
                 {
                     if (type.IsEnum)
                     {
@@ -340,7 +328,7 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine();
         }
 
-        private void WriteResource(MemberInfo memberInfo, Type memberType, ShaderResourceAttribute resourceType)
+        private void WriteResource(MemberInfo memberInfo, Type memberType, ShaderMemberAttribute resourceType)
         {
             switch (resourceType)
             {
@@ -798,7 +786,7 @@ namespace DirectX12GameEngine.Shaders
 
         private class ResourceDefinition
         {
-            public ResourceDefinition(Type memberType, ShaderResourceAttribute resourceType)
+            public ResourceDefinition(Type memberType, ShaderMemberAttribute resourceType)
             {
                 MemberType = memberType;
                 ResourceType = resourceType;
@@ -806,7 +794,7 @@ namespace DirectX12GameEngine.Shaders
 
             public Type MemberType { get; }
 
-            public ShaderResourceAttribute ResourceType { get; }
+            public ShaderMemberAttribute ResourceType { get; }
         }
 
         private class FakeMemberInfo : MemberInfo

@@ -24,9 +24,9 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public IComputeColor NormalMap { get; set; } = new ComputeColor(DefaultNormalColor);
+        [ShaderMember] public IComputeColor NormalMap { get; set; } = new ComputeColor(DefaultNormalColor);
 
-        [ShaderMethod]
+        [ShaderMember]
         public void Compute()
         {
             Vector4 normal = NormalMap.Compute();

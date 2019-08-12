@@ -7,16 +7,16 @@ namespace DirectX12GameEngine.Rendering.Materials
 {
     public static class MaterialPixelShadingStream
     {
-        [ShaderResource] public static Vector3 ShadingColor;
-        [ShaderResource] public static float ShadingColorAlpha;
+        [ShaderMember] public static Vector3 ShadingColor;
+        [ShaderMember] public static float ShadingColorAlpha;
 
-        [ShaderResource] public static Vector3 H;
+        [ShaderMember] public static Vector3 H;
 
-        [ShaderResource] public static float NDotH;
-        [ShaderResource] public static float LDotH;
-        [ShaderResource] public static float VDotH;
+        [ShaderMember] public static float NDotH;
+        [ShaderMember] public static float LDotH;
+        [ShaderMember] public static float VDotH;
 
-        [ShaderMethod]
+        [ShaderMember]
         public static void PrepareMaterialPerDirectLight()
         {
             H = Vector3.Normalize(MaterialPixelStream.ViewWS + LightStream.LightDirectionWS);
@@ -25,7 +25,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             VDotH = LDotH;
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         public static void Reset()
         {
             ShadingColorAlpha = 1.0f;

@@ -5,6 +5,7 @@ using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
+    [ShaderContract]
     [StaticResource]
     public class ComputeTextureColor : IComputeColor
     {
@@ -30,10 +31,10 @@ namespace DirectX12GameEngine.Rendering.Materials
         #region Shader
 
 #nullable disable
-        [ShaderResource] public Texture2DResource ColorTexture;
+        [ShaderMember] public Texture2DResource ColorTexture;
 #nullable enable
 
-        [ShaderMethod]
+        [ShaderMember]
         public Vector4 Compute()
         {
             return ColorTexture.Sample(Texturing.Sampler, Texturing.TexCoord);

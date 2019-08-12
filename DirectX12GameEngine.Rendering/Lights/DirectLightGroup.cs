@@ -5,15 +5,16 @@ using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Lights
 {
+    [ShaderContract]
     [ConstantBufferResource]
     public abstract class DirectLightGroup
     {
-        [ShaderResource] public int LightCount;
+        [ShaderMember] public int LightCount;
 
         /// <summary>
         /// Compute the light color/direction for the specified index within this group.
         /// </summary>
-        [ShaderMethod]
+        [ShaderMember]
         public void PrepareDirectLight(int lightIndex)
         {
             PrepareDirectLightCore(lightIndex);
@@ -24,7 +25,7 @@ namespace DirectX12GameEngine.Rendering.Lights
             LightStream.LightSpecularColorNDotL = LightStream.LightColorNDotL;
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         protected virtual void PrepareDirectLightCore(int lightIndex)
         {
         }

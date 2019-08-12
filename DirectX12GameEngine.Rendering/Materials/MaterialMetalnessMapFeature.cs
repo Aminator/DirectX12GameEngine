@@ -22,9 +22,9 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public IComputeScalar MetalnessMap { get; set; } = new ComputeScalar();
+        [ShaderMember] public IComputeScalar MetalnessMap { get; set; } = new ComputeScalar();
 
-        [ShaderMethod]
+        [ShaderMember]
         public void Compute()
         {
             float metalness = MetalnessMap.Compute();

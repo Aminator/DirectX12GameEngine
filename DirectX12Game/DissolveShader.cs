@@ -16,13 +16,13 @@ namespace DirectX12Game
 
         #region Shader
 
-        [ShaderResource] public IComputeColor MainTexture { get; set; } = new ComputeColor(Vector4.One);
+        [ShaderMember] public IComputeColor MainTexture { get; set; } = new ComputeColor(Vector4.One);
 
-        [ShaderResource] public IComputeScalar DissolveTexture { get; set; } = new ComputeScalar(1.0f);
+        [ShaderMember] public IComputeScalar DissolveTexture { get; set; } = new ComputeScalar(1.0f);
 
-        [ShaderResource] public IComputeScalar DissolveStrength { get; set; } = new ComputeScalar(0.5f);
+        [ShaderMember] public IComputeScalar DissolveStrength { get; set; } = new ComputeScalar(0.5f);
 
-        [ShaderMethod]
+        [ShaderMember]
         public Vector4 Compute()
         {
             Vector4 colorBase = MainTexture.Compute();

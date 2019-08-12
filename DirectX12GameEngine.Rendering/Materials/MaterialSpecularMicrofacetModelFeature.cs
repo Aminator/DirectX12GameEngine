@@ -17,13 +17,13 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public IMaterialSpecularMicrofacetFresnelFunction Fresnel { get; set; } = new MaterialSpecularMicrofacetFresnelSchlick();
+        [ShaderMember] public IMaterialSpecularMicrofacetFresnelFunction Fresnel { get; set; } = new MaterialSpecularMicrofacetFresnelSchlick();
 
-        [ShaderResource] public IMaterialSpecularMicrofacetVisibilityFunction Visibility { get; set; } = new MaterialSpecularMicrofacetVisibilitySmithSchlickGgx();
+        [ShaderMember] public IMaterialSpecularMicrofacetVisibilityFunction Visibility { get; set; } = new MaterialSpecularMicrofacetVisibilitySmithSchlickGgx();
 
-        [ShaderResource] public IMaterialSpecularMicrofacetNormalDistributionFunction NormalDistribution { get; set; } = new MaterialSpecularMicrofacetNormalDistributionGgx();
+        [ShaderMember] public IMaterialSpecularMicrofacetNormalDistributionFunction NormalDistribution { get; set; } = new MaterialSpecularMicrofacetNormalDistributionGgx();
 
-        [ShaderMethod]
+        [ShaderMember]
         public Vector3 ComputeDirectLightContribution()
         {
             Vector3 specularColor = MaterialPixelStream.MaterialSpecularVisible;
@@ -37,7 +37,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             return reflected * LightStream.LightSpecularColorNDotL;
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         public Vector3 ComputeEnvironmentLightContribution()
         {
             return default;

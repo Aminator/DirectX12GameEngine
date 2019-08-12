@@ -12,9 +12,9 @@ namespace DirectX12ComputeShaderSample
     {
         [ConstantBufferResource] public uint Width;
 
-        [ShaderResource] public RWBufferResource<float> Data;
+        [ShaderMember] public RWBufferResource<float> Data;
 
-        [ShaderMethod]
+        [ShaderMember]
         [Shader("compute")]
         [NumThreads(5, 5, 1)]
         public void CSMain([SystemDispatchThreadIdSemantic] UInt3 id)

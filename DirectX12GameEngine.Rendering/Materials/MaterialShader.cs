@@ -13,12 +13,12 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ConstantBufferResource] public readonly ViewProjectionTransform[] ViewProjectionTransforms;
         [ConstantBufferResource] public Matrix4x4[] WorldMatrices;
 
-        [ShaderResource] public readonly DirectionalLightGroup DirectionalLights;
+        [ShaderMember] public readonly DirectionalLightGroup DirectionalLights;
 
-        [ShaderResource] public readonly SamplerResource Sampler;
+        [ShaderMember] public readonly SamplerResource Sampler;
 #nullable enable
 
-        [ShaderMethod]
+        [ShaderMember]
         [Shader("vertex")]
         public override VSOutput VSMain(VSInput input)
         {
@@ -45,7 +45,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             return output;
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         [Shader("pixel")]
         public override PSOutput PSMain(PSInput input)
         {

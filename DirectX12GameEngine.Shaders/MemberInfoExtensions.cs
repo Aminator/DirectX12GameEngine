@@ -63,21 +63,42 @@ namespace DirectX12GameEngine.Shaders
                 parent = parent.BaseType;
             }
 
-            return type.GetMembers(bindingFlags).OrderByDescending(prop => lookup[prop.DeclaringType]);
+            return type.GetShaderMembers(bindingFlags).OrderByDescending(prop => lookup[prop.DeclaringType]);
         }
 
         public static IEnumerable<MemberInfo> GetMembersInTypeHierarchyInOrder(this Type type, BindingFlags bindingFlags)
         {
             return type.GetMembersInTypeHierarchy(bindingFlags)
                 .GroupBy(m => m.DeclaringType)
-                .Select(g => g.OrderBy(m => m.GetCustomAttribute<ShaderResourceAttribute>()?.Order))
+                .Select(g => g.OrderBy(m => m.GetCustomAttribute<ShaderMemberAttribute>()?.Order))
                 .SelectMany(m => m);
         }
 
         public static IEnumerable<MemberInfo> GetMembersInOrder(this Type type, BindingFlags bindingFlags)
         {
-            return type.GetMembers(bindingFlags)
-                .OrderBy(m => m.GetCustomAttribute<ShaderResourceAttribute>()?.Order);
+            IEnumerable<MemberInfo> members = type.GetShaderMembers(bindingFlags).OrderBy(m => m.GetCustomAttribute<ShaderMemberAttribute>()?.Order);
+
+            if (type.IsDefined(typeof(ShaderContractAttribute)))
+            {
+                members = members.Where(m => m.IsDefined(typeof(ShaderMemberAttribute)));
+            }
+
+            return members;
+        }
+
+        private static IEnumerable<MemberInfo> GetShaderMembers(this Type type, BindingFlags bindingFlags)
+        {
+            IEnumerable<MemberInfo> members = type.GetMembers(bindingFlags)
+                .Where(m => !m.IsDefined(typeof(IgnoreShaderMemberAttribute)))
+                .Where(m => !(m as MethodInfo)?.IsSpecialName ?? true)
+                .Where(m => !((m as PropertyInfo)?.GetIndexParameters().Length > 0));
+
+            if (type.IsDefined(typeof(ShaderContractAttribute)))
+            {
+                members = members.Where(m => m.IsDefined(typeof(ShaderMemberAttribute)));
+            }
+
+            return members;
         }
 
         public static object? GetMemberValue(this MemberInfo memberInfo, object? obj) => memberInfo switch
@@ -87,29 +108,20 @@ namespace DirectX12GameEngine.Shaders
             _ => null
         };
 
-        public static Type? GetMemberType(this MemberInfo memberInfo, object? obj) => memberInfo switch
+        public static Type? GetMemberType(this MemberInfo memberInfo, object? obj = null) => memberInfo switch
         {
             FieldInfo fieldInfo => obj is null ? fieldInfo.FieldType : fieldInfo.GetValue(obj)?.GetType() ?? fieldInfo.FieldType,
             PropertyInfo propertyInfo => obj is null ? propertyInfo.PropertyType : propertyInfo.GetValue(obj)?.GetType() ?? propertyInfo.PropertyType,
             _ => null
         };
 
-        public static Type? GetMemberType(this MemberInfo memberInfo) => memberInfo switch
+        public static ShaderMemberAttribute? GetResourceAttribute(this MemberInfo memberInfo, Type? memberType)
         {
-            FieldInfo fieldInfo => fieldInfo.FieldType,
-            PropertyInfo propertyInfo => propertyInfo.PropertyType,
-            _ => null
-        };
+            ShaderMemberAttribute? resourceType = memberInfo.GetCustomAttribute<ShaderMemberAttribute>();
 
-        public static ShaderResourceAttribute? GetResourceAttribute(this MemberInfo memberInfo, Type? memberType)
-        {
-            ShaderResourceAttribute? resourceType = memberInfo.GetCustomAttribute<ShaderResourceAttribute>();
-
-            if (resourceType is null) return null;
-
-            return resourceType.Override
+            return resourceType != null && resourceType.Override
                 ? resourceType
-                : memberType?.GetCustomAttribute<ShaderResourceAttribute>() ?? resourceType;
+                : memberType?.GetCustomAttribute<ShaderMemberAttribute>() ?? resourceType;
         }
 
         public static bool IsStatic(this MemberInfo memberInfo) => memberInfo switch

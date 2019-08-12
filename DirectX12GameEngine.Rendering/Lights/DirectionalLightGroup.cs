@@ -2,17 +2,18 @@
 
 namespace DirectX12GameEngine.Rendering.Lights
 {
+    [ShaderContract]
     [ConstantBufferResource]
     public class DirectionalLightGroup : DirectLightGroup
     {
 #nullable disable
-        [ShaderResource] public DirectionalLightData[] Lights;
+        [ShaderMember] public DirectionalLightData[] Lights;
 #nullable enable
 
         /// <summary>
         /// Compute the light color/direction for the specified index within this group.
         /// </summary>
-        [ShaderMethod]
+        [ShaderMember]
         protected override void PrepareDirectLightCore(int lightIndex)
         {
             LightStream.LightColor = Lights[lightIndex].Color;

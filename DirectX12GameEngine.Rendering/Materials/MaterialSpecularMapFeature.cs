@@ -22,9 +22,9 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public IComputeColor SpecularMap { get; set; } = new ComputeColor();
+        [ShaderMember] public IComputeColor SpecularMap { get; set; } = new ComputeColor();
 
-        [ShaderMethod]
+        [ShaderMember]
         public void Compute()
         {
             Vector4 specular = SpecularMap.Compute();

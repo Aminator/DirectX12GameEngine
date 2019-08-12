@@ -20,19 +20,19 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource] public IMaterialSurfaceFeature Surface { get; set; } = new MaterialNormalMapFeature();
+        [ShaderMember] public IMaterialSurfaceFeature Surface { get; set; } = new MaterialNormalMapFeature();
 
-        [ShaderResource] public IMaterialMicroSurfaceFeature MicroSurface { get; set; } = new MaterialRoughnessMapFeature();
+        [ShaderMember] public IMaterialMicroSurfaceFeature MicroSurface { get; set; } = new MaterialRoughnessMapFeature();
 
-        [ShaderResource] public IMaterialDiffuseFeature Diffuse { get; set; } = new MaterialDiffuseMapFeature();
+        [ShaderMember] public IMaterialDiffuseFeature Diffuse { get; set; } = new MaterialDiffuseMapFeature();
 
-        [ShaderResource] public IMaterialDiffuseModelFeature DiffuseModel { get; set; } = new MaterialDiffuseLambertModelFeature();
+        [ShaderMember] public IMaterialDiffuseModelFeature DiffuseModel { get; set; } = new MaterialDiffuseLambertModelFeature();
 
-        [ShaderResource] public IMaterialSpecularFeature Specular { get; set; } = new MaterialMetalnessMapFeature();
+        [ShaderMember] public IMaterialSpecularFeature Specular { get; set; } = new MaterialMetalnessMapFeature();
 
-        [ShaderResource] public IMaterialSpecularModelFeature SpecularModel { get; set; } = new MaterialSpecularMicrofacetModelFeature();
+        [ShaderMember] public IMaterialSpecularModelFeature SpecularModel { get; set; } = new MaterialSpecularMicrofacetModelFeature();
 
-        [ShaderMethod]
+        [ShaderMember]
         public void ComputeSurfaceLightingAndShading()
         {
             Vector3 materialNormal = Vector3.Normalize(MaterialPixelStream.MaterialNormal);
@@ -61,7 +61,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             MaterialPixelShadingStream.ShadingColorAlpha = MaterialPixelStream.MaterialDiffuse.W;
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         [Shader("pixel")]
         public override PSOutput PSMain(PSInput input)
         {

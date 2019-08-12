@@ -7,25 +7,25 @@ namespace DirectX12GameEngine.Rendering.Materials
 {
     public static class MaterialPixelStream
     {
-        [ShaderResource] public static Vector3 MaterialNormal;
+        [ShaderMember] public static Vector3 MaterialNormal;
 
-        [ShaderResource] public static float MaterialRoughness;
+        [ShaderMember] public static float MaterialRoughness;
 
-        [ShaderResource] public static Vector4 MaterialColorBase;
+        [ShaderMember] public static Vector4 MaterialColorBase;
 
-        [ShaderResource] public static Vector4 MaterialDiffuse;
-        [ShaderResource] public static Vector3 MaterialSpecular;
+        [ShaderMember] public static Vector4 MaterialDiffuse;
+        [ShaderMember] public static Vector3 MaterialSpecular;
 
-        [ShaderResource] public static Vector3 ViewWS;
+        [ShaderMember] public static Vector3 ViewWS;
 
-        [ShaderResource] public static Vector3 MaterialDiffuseVisible;
-        [ShaderResource] public static Vector3 MaterialSpecularVisible;
+        [ShaderMember] public static Vector3 MaterialDiffuseVisible;
+        [ShaderMember] public static Vector3 MaterialSpecularVisible;
 
-        [ShaderResource] public static float NDotV;
+        [ShaderMember] public static float NDotV;
 
-        [ShaderResource] public static float AlphaRoughness;
+        [ShaderMember] public static float AlphaRoughness;
 
-        [ShaderMethod]
+        [ShaderMember]
         public static void PrepareMaterialForLightingAndShading()
         {
             MaterialDiffuseVisible = new Vector3(MaterialDiffuse.X, MaterialDiffuse.Y, MaterialDiffuse.Z);
@@ -36,7 +36,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             AlphaRoughness = Math.Max(MaterialRoughness * MaterialRoughness, 0.001f);
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         public static void Reset()
         {
             MaterialNormal = Vector3.UnitZ;

@@ -5,6 +5,7 @@ using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
+    [ShaderContract]
     [ConstantBufferResource]
     public class ComputeColor : IComputeColor
     {
@@ -28,7 +29,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         #region Shader
 
-        [ShaderResource]
+        [ShaderMember]
         public Vector4 Color
         {
             get => color;
@@ -39,7 +40,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             }
         }
 
-        [ShaderMethod]
+        [ShaderMember]
         public Vector4 Compute()
         {
             return Color;
