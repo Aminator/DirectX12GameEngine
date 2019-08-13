@@ -12,6 +12,7 @@ using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.Metadata;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DirectX12GameEngine.Shaders
 {
@@ -179,7 +180,7 @@ namespace DirectX12GameEngine.Shaders
                 CollectStructure(interfaceType, obj);
             }
 
-            var memberInfos = type.GetMembersInOrder(GetBindingFlagsForType(type));
+            var memberInfos = type.GetMembersInOrder(GetBindingFlagsForType(type) | BindingFlags.DeclaredOnly);
 
             foreach (MemberInfo memberInfo in memberInfos)
             {
@@ -409,7 +410,7 @@ namespace DirectX12GameEngine.Shaders
             writer.Write($"static {HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
             writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
 
-            if (generatedMemberInfos.Count != 0)
+            if (generatedMemberInfos.Count > 0)
             {
                 writer.Write(" = { ");
 
@@ -418,6 +419,8 @@ namespace DirectX12GameEngine.Shaders
                     writer.Write(generatedMemberInfo.Name);
                     writer.Write(", ");
                 }
+
+                stringWriter.GetStringBuilder().Length -= 2;
 
                 writer.Write("}");
             }
@@ -459,10 +462,10 @@ namespace DirectX12GameEngine.Shaders
 
         private void CollectMethod(MethodInfo methodInfo)
         {
-            GetSyntaxTree(methodInfo, out SyntaxNode root, out SemanticModel semanticModel);
+            MethodDeclarationSyntax methodNode = GetSyntaxTree(methodInfo);
 
-            ShaderSyntaxCollector syntaxCollector = new ShaderSyntaxCollector(this, semanticModel);
-            syntaxCollector.Visit(root);
+            ShaderSyntaxCollector syntaxCollector = new ShaderSyntaxCollector(compilation, this);
+            syntaxCollector.Visit(methodNode.Body);
         }
 
         private void WriteTopLevelMethod(MethodInfo methodInfo)
@@ -478,12 +481,101 @@ namespace DirectX12GameEngine.Shaders
 
         private void WriteMethod(MethodInfo methodInfo, int depth = 0)
         {
-            GetSyntaxTree(methodInfo, out SyntaxNode root, out SemanticModel semanticModel);
+            WriteAttributes(methodInfo);
 
-            ShaderSyntaxRewriter syntaxRewriter = new ShaderSyntaxRewriter(this, semanticModel, true, depth);
-            root = syntaxRewriter.Visit(root);
+            if (methodInfo.IsStatic) writer.Write("static ");
 
-            string shaderSource = root.ToFullString();
+            string methodName = depth > 0 ? $"Base_{depth}_{methodInfo.Name}" : methodInfo.Name;
+
+            writer.Write(HlslKnownTypes.GetMappedName(methodInfo.ReturnType));
+            writer.Write(" ");
+            writer.Write(methodName);
+
+            WriteParameters(methodInfo);
+
+            if (methodInfo.GetMethodBody() != null)
+            {
+                MethodDeclarationSyntax methodNode = GetSyntaxTree(methodInfo);
+                string methodBody = GetMethodBody(methodNode, depth);
+                writer.WriteLine();
+                writer.WriteLine(methodBody);
+            }
+            else
+            {
+                writer.WriteLine(";");
+            }
+        }
+
+        private void WriteAttributes(MemberInfo memberInfo)
+        {
+            foreach (Attribute attribute in memberInfo.GetCustomAttributes())
+            {
+                Type attributeType = attribute.GetType();
+
+                if (HlslKnownAttributes.ContainsKey(attributeType))
+                {
+                    writer.Write("[");
+                    writer.Write(HlslKnownAttributes.GetMappedName(attributeType));
+
+                    var fieldAndPropertyInfos = attributeType.GetMembersInOrder(GetBindingFlagsForType(attributeType) | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
+                    IEnumerable<object> attributeMemberValues = fieldAndPropertyInfos.Where(m => m.GetMemberValue(attribute) != null).Select(m => m.GetMemberValue(attribute))!;
+
+                    if (attributeMemberValues.Count() > 0)
+                    {
+                        writer.Write("(");
+
+                        foreach (object memberValue in attributeMemberValues)
+                        {
+                            string valueString = memberValue is string ? $"\"{memberValue}\"" : memberValue.ToString();
+
+                            writer.Write(valueString);
+                            writer.Write(", ");
+                        }
+
+                        stringWriter.GetStringBuilder().Length -= 2;
+
+                        writer.Write(")");
+                    }
+
+                    writer.WriteLine("]");
+                }
+            }
+        }
+
+        private void WriteParameters(MethodInfo methodInfo)
+        {
+            writer.Write("(");
+
+            ParameterInfo[] parameterInfos = methodInfo.GetParameters();
+
+            if (parameterInfos.Length > 0)
+            {
+                foreach (ParameterInfo parameterInfo in parameterInfos)
+                {
+                    if (parameterInfo.ParameterType.IsByRef)
+                    {
+                        string refString = parameterInfo.IsIn ? "in" : parameterInfo.IsOut ? "out" : "inout";
+                        writer.Write(refString);
+                        writer.Write(" ");
+                    }
+
+                    writer.Write($"{HlslKnownTypes.GetMappedName(parameterInfo.ParameterType)} {parameterInfo.Name}");
+
+                    writer.Write(", ");
+                }
+
+                stringWriter.GetStringBuilder().Length -= 2;
+            }
+
+            writer.Write(")");
+        }
+
+        private string GetMethodBody(MethodDeclarationSyntax methodNode, int depth = 0)
+        {
+            ShaderSyntaxRewriter syntaxRewriter = new ShaderSyntaxRewriter(compilation, this, true, depth);
+            SyntaxNode newBody = syntaxRewriter.Visit(methodNode.Body);
+
+            string shaderSource = newBody.ToFullString();
 
             // TODO: See why the System namespace in System.Math is not present in UWP projects.
             shaderSource = shaderSource.Replace("Math.Max", "max");
@@ -503,12 +595,10 @@ namespace DirectX12GameEngine.Shaders
                 indent += IndentedTextWriter.DefaultTabString;
             }
 
-            shaderSource = shaderSource.Replace(Environment.NewLine + IndentedTextWriter.DefaultTabString, Environment.NewLine + indent).TrimEnd(' ');
-
-            writer.WriteLine(shaderSource);
+            return shaderSource.Replace(Environment.NewLine + IndentedTextWriter.DefaultTabString, Environment.NewLine + indent).TrimEnd(' ');
         }
 
-        private static void GetSyntaxTree(MethodInfo methodInfo, out SyntaxNode root, out SemanticModel semanticModel)
+        private static MethodDeclarationSyntax GetSyntaxTree(MethodInfo methodInfo)
         {
             lock (compilationLock)
             {
@@ -524,11 +614,12 @@ namespace DirectX12GameEngine.Shaders
                 string sourceCode = decompiler.DecompileAsString(handle);
 
                 SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
-                root = syntaxTree.GetRoot();
-                root = root.DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>().First(n => n.Identifier.ValueText == methodInfo.Name && n.ParameterList.Parameters.Count == methodInfo.GetParameters().Length);
+                SyntaxNode root = syntaxTree.GetRoot();
+                MethodDeclarationSyntax methodNode = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First(n => n.Identifier.ValueText == methodInfo.Name && n.ParameterList.Parameters.Count == methodInfo.GetParameters().Length);
 
                 compilation = compilation.AddSyntaxTrees(syntaxTree);
-                semanticModel = compilation.GetSemanticModel(syntaxTree);
+
+                return methodNode;
             }
         }
 
@@ -545,215 +636,6 @@ namespace DirectX12GameEngine.Shaders
             decompilerSettings.CSharpFormattingOptions.IndentationString = IndentedTextWriter.DefaultTabString;
 
             return new CSharpDecompiler(assemblyPath, resolver, decompilerSettings);
-        }
-
-        internal static class HlslKnownAttributes
-        {
-            private static readonly Dictionary<string, string> allowedAttributes = new Dictionary<string, string>()
-            {
-                { typeof(NumThreadsAttribute).FullName, "NumThreads" },
-                { typeof(ShaderAttribute).FullName, "Shader" }
-            };
-
-            public static bool ContainsKey(string name)
-            {
-                return allowedAttributes.ContainsKey(name) || HlslKnownSemantics.ContainsKey(name);
-            }
-
-            public static string GetMappedName(string name)
-            {
-                if (!allowedAttributes.TryGetValue(name, out string mappedName))
-                {
-                    mappedName = HlslKnownSemantics.GetMappedName(name);
-                }
-
-                return mappedName;
-            }
-        }
-
-        internal static class HlslKnownSemantics
-        {
-            private static readonly Dictionary<string, string> knownSemantics = new Dictionary<string, string>()
-            {
-                { typeof(PositionSemanticAttribute).FullName, "Position" },
-                { typeof(NormalSemanticAttribute).FullName, "Normal" },
-                { typeof(TextureCoordinateSemanticAttribute).FullName, "TexCoord" },
-                { typeof(ColorSemanticAttribute).FullName, "Color" },
-                { typeof(TangentSemanticAttribute).FullName, "Tangent" },
-
-                { typeof(SystemTargetSemanticAttribute).FullName, "SV_Target" },
-                { typeof(SystemDispatchThreadIdSemanticAttribute).FullName, "SV_DispatchThreadId" },
-                { typeof(SystemIsFrontFaceSemanticAttribute).FullName, "SV_IsFrontFace" },
-                { typeof(SystemInstanceIdSemanticAttribute).FullName, "SV_InstanceId" },
-                { typeof(SystemPositionSemanticAttribute).FullName, "SV_Position" },
-                { typeof(SystemRenderTargetArrayIndexSemanticAttribute).FullName, "SV_RenderTargetArrayIndex" }
-            };
-
-            public static bool ContainsKey(Type type)
-            {
-                return knownSemantics.ContainsKey(type.GetElementOrDeclaredType().FullName);
-            }
-
-            public static bool ContainsKey(string name)
-            {
-                return knownSemantics.ContainsKey(name);
-            }
-
-            public static string GetMappedName(Type type)
-            {
-                return knownSemantics[type.GetElementOrDeclaredType().FullName];
-            }
-
-            public static string GetMappedName(string name)
-            {
-                return knownSemantics[name];
-            }
-        }
-
-        internal static class HlslKnownTypes
-        {
-            private static readonly Dictionary<string, string> knownTypes = new Dictionary<string, string>()
-            {
-                { typeof(void).FullName, "void" },
-                { typeof(bool).FullName, "bool" },
-                { typeof(uint).FullName, "uint" },
-                { typeof(int).FullName, "int" },
-                { typeof(double).FullName, "double" },
-                { typeof(float).FullName, "float" },
-                { typeof(Vector2).FullName, "float2" },
-                { typeof(Vector3).FullName, "float3" },
-                { typeof(Vector4).FullName, "float4" },
-                { typeof(Numerics.Vector4).FullName, "float4" },
-                { typeof(Numerics.UInt2).FullName, "uint2" },
-                { typeof(Numerics.UInt3).FullName, "uint3" },
-                { typeof(Matrix4x4).FullName, "float4x4" },
-                { typeof(SamplerResource).FullName, "SamplerState" },
-                { typeof(SamplerComparisonResource).FullName, "SamplerComparisonState" },
-                { typeof(Texture2DResource).FullName, "Texture2D" },
-                { typeof(Texture2DArrayResource).FullName, "Texture2DArray" },
-                { typeof(TextureCubeResource).FullName, "TextureCube" },
-                { typeof(RWBufferResource<>).FullName, "RWBuffer" },
-                { typeof(RWTexture2DResource<>).FullName, "RWTexture2D" },
-            };
-
-            public static bool ContainsKey(Type type)
-            {
-                type = type.GetElementOrDeclaredType();
-                string typeFullName = type.Namespace + Type.Delimiter + type.Name;
-
-                return knownTypes.ContainsKey(typeFullName);
-            }
-
-            public static bool ContainsKey(string name)
-            {
-                int indexOfOpenBracket = name.IndexOf('<');
-                name = indexOfOpenBracket >= 0 ? name.Remove(indexOfOpenBracket) + "`1" : name;
-
-                return knownTypes.ContainsKey(name);
-            }
-
-            public static string GetMappedName(Type type)
-            {
-                type = type.GetElementOrDeclaredType();
-                string fullTypeName = type.Namespace + Type.Delimiter + type.Name;
-
-                string mappedName = knownTypes.TryGetValue(fullTypeName, out string mapped) ? mapped : fullTypeName.Replace(".", "::");
-
-                return type.IsGenericType ? mappedName + $"<{GetMappedName(type.GetGenericArguments()[0])}>" : mappedName;
-            }
-
-            public static string GetMappedName(string name)
-            {
-                int indexOfOpenBracket = name.IndexOf('<');
-
-                string genericArguments = indexOfOpenBracket >= 0 ? name.Substring(indexOfOpenBracket) : "";
-                name = indexOfOpenBracket >= 0 ? name.Remove(indexOfOpenBracket) + "`1" : name;
-
-                string mappedName = knownTypes.TryGetValue(name, out string mapped) ? mapped : name.Replace(".", "::");
-
-                return mappedName + genericArguments;
-            }
-        }
-
-        internal static class HlslKnownMethods
-        {
-            private static readonly Dictionary<string, string> knownMethods = new Dictionary<string, string>()
-            {
-                { "System.Math.Cos", "cos" },
-                { "System.MathF.Cos", "cos" },
-                { "System.Math.Max", "max" },
-                { "System.Math.Pow", "pow" },
-                { "System.MathF.Pow", "pow" },
-                { "System.Math.Sin", "sin" },
-                { "System.MathF.Sin", "sin" },
-                { "System.Math.PI", "3.1415926535897931" },
-                { "System.MathF.PI", "3.14159274f" },
-
-                { "DirectX12GameEngine.Shaders.Numerics.Vector2.Length", "length" },
-
-                { "DirectX12GameEngine.Shaders.Numerics.UInt2.X", ".x" },
-                { "DirectX12GameEngine.Shaders.Numerics.UInt2.Y", ".y" },
-
-                { "DirectX12GameEngine.Shaders.Numerics.UInt3.X", ".x" },
-                { "DirectX12GameEngine.Shaders.Numerics.UInt3.Y", ".y" },
-                { "DirectX12GameEngine.Shaders.Numerics.UInt3.Z", ".z" },
-                { "DirectX12GameEngine.Shaders.Numerics.UInt3.XY", ".xy" },
-
-                { "System.Numerics.Vector3.X", ".x" },
-                { "System.Numerics.Vector3.Y", ".y" },
-                { "System.Numerics.Vector3.Z", ".z" },
-                { "System.Numerics.Vector3.Cross", "cross" },
-                { "System.Numerics.Vector3.Dot", "dot" },
-                { "System.Numerics.Vector3.Lerp", "lerp" },
-                { "System.Numerics.Vector3.Transform", "mul" },
-                { "System.Numerics.Vector3.TransformNormal", "mul" },
-                { "System.Numerics.Vector3.Normalize", "normalize" },
-                { "System.Numerics.Vector3.Zero", "(float3)0" },
-                { "System.Numerics.Vector3.One", "float3(1.0f, 1.0f, 1.0f)" },
-                { "System.Numerics.Vector3.UnitX", "float3(1.0f, 0.0f, 0.0f)" },
-                { "System.Numerics.Vector3.UnitY", "float3(0.0f, 1.0f, 0.0f)" },
-                { "System.Numerics.Vector3.UnitZ", "float3(0.0f, 0.0f, 1.0f)" },
-
-                { "System.Numerics.Vector4.X", ".x" },
-                { "System.Numerics.Vector4.Y", ".y" },
-                { "System.Numerics.Vector4.Z", ".z" },
-                { "System.Numerics.Vector4.W", ".w" },
-                { "System.Numerics.Vector4.Lerp", "lerp" },
-                { "System.Numerics.Vector4.Transform", "mul" },
-                { "System.Numerics.Vector4.Normalize", "normalize" },
-                { "System.Numerics.Vector4.Zero", "(float4)0" },
-                { "System.Numerics.Vector4.One", "float4(1.0f, 1.0f, 1.0f, 1.0f)" },
-
-                { "System.Numerics.Matrix4x4.Multiply", "mul" },
-                { "System.Numerics.Matrix4x4.Transpose", "transpose" },
-                { "System.Numerics.Matrix4x4.Translation", "[3].xyz" },
-                { "System.Numerics.Matrix4x4.M11", "[0][0]" },
-                { "System.Numerics.Matrix4x4.M12", "[0][1]" },
-                { "System.Numerics.Matrix4x4.M13", "[0][2]" },
-                { "System.Numerics.Matrix4x4.M14", "[0][3]" },
-                { "System.Numerics.Matrix4x4.M21", "[1][0]" },
-                { "System.Numerics.Matrix4x4.M22", "[1][1]" },
-                { "System.Numerics.Matrix4x4.M23", "[1][2]" },
-                { "System.Numerics.Matrix4x4.M24", "[1][3]" },
-                { "System.Numerics.Matrix4x4.M31", "[2][0]" },
-                { "System.Numerics.Matrix4x4.M32", "[2][1]" },
-                { "System.Numerics.Matrix4x4.M33", "[2][2]" },
-                { "System.Numerics.Matrix4x4.M34", "[2][3]" },
-                { "System.Numerics.Matrix4x4.M41", "[3][0]" },
-                { "System.Numerics.Matrix4x4.M42", "[3][1]" },
-                { "System.Numerics.Matrix4x4.M43", "[3][2]" },
-                { "System.Numerics.Matrix4x4.M44", "[3][3]" }
-            };
-
-            public static bool ContainsKey(string name)
-            {
-                return knownMethods.ContainsKey(name);
-            }
-
-            public static string GetMappedName(string name)
-            {
-                return knownMethods[name];
-            }
         }
 
         private class HlslBindingTracker

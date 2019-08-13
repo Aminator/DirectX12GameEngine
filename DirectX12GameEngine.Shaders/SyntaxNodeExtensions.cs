@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Shaders
     {
         public static TRoot ReplaceType<TRoot>(this TRoot node, TypeSyntax type) where TRoot : SyntaxNode
         {
-            string value = ShaderGenerator.HlslKnownTypes.GetMappedName(type.ToString());
+            string value = HlslKnownTypes.GetMappedName(type.ToString());
 
             if (value == type.ToString())
             {
@@ -57,9 +57,9 @@ namespace DirectX12GameEngine.Shaders
 
             string fullMemberName = containingSymbol.ToString() + Type.Delimiter + node.Name.Identifier.ValueText;
 
-            if (ShaderGenerator.HlslKnownMethods.ContainsKey(fullMemberName))
+            if (HlslKnownMethods.ContainsKey(fullMemberName))
             {
-                mappedName = ShaderGenerator.HlslKnownMethods.GetMappedName(fullMemberName);
+                mappedName = HlslKnownMethods.GetMappedName(fullMemberName);
                 return true;
             }
             else

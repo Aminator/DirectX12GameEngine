@@ -10,84 +10,18 @@ namespace DirectX12GameEngine.Shaders
     {
         private readonly int depth;
         private readonly bool isTopLevel;
-        private readonly SemanticModel semanticModel;
+        private readonly Compilation compilation;
         private readonly ShaderGenerator shaderGenerator;
 
-        public ShaderSyntaxRewriter(ShaderGenerator shaderGenerator, SemanticModel semanticModel, bool isTopLevel = false, int depth = 0)
+        public ShaderSyntaxRewriter(Compilation compilation, ShaderGenerator shaderGenerator, bool isTopLevel = false, int depth = 0)
         {
+            this.compilation = compilation;
             this.shaderGenerator = shaderGenerator;
-            this.semanticModel = semanticModel;
             this.isTopLevel = isTopLevel;
             this.depth = depth;
         }
 
-        public override SyntaxNode VisitMethodDeclaration(MethodDeclarationSyntax node)
-        {
-            node = (MethodDeclarationSyntax)base.VisitMethodDeclaration(node);
-
-            if (isTopLevel && depth > 0)
-            {
-                node = node.ReplaceToken(node.Identifier, SyntaxFactory.Identifier($"Base_{depth}_{node.Identifier.ValueText}"));
-            }
-
-            SyntaxTriviaList trivia = node.Modifiers.FirstOrDefault().LeadingTrivia;
-
-            SyntaxTokenList modifiers = new SyntaxTokenList();
-
-            if (node.Modifiers.Any(SyntaxKind.StaticKeyword))
-            {
-                modifiers = modifiers.Add(SyntaxFactory.Token(default, SyntaxKind.StaticKeyword, SyntaxFactory.TriviaList(SyntaxFactory.SyntaxTrivia(SyntaxKind.WhitespaceTrivia, " "))));
-            }
-
-            if (modifiers.Count == 0)
-            {
-                node = node.WithReturnType(node.ReturnType.WithLeadingTrivia(trivia));
-            }
-
-            node = node.ReplaceType(node.ReturnType).WithModifiers(modifiers);
-
-            return node;
-        }
-
-        public override SyntaxNode VisitParameter(ParameterSyntax node)
-        {
-            string? attributeName = node.AttributeLists.FirstOrDefault()?.Attributes.FirstOrDefault()?.Name.ToString();
-
-            node = (ParameterSyntax)base.VisitParameter(node);
-            node = node.WithAttributeLists(default);
-            node = node.ReplaceType(node.Type);
-
-            if (attributeName != null)
-            {
-                node = node.ReplaceToken(node.Identifier, SyntaxFactory.Identifier($"{node.Identifier.ValueText} : {ShaderGenerator.HlslKnownSemantics.GetMappedName(attributeName + "Attribute")}"));
-            }
-
-            return node;
-        }
-
-        public override SyntaxNode VisitAttribute(AttributeSyntax node)
-        {
-            node = (AttributeSyntax)base.VisitAttribute(node);
-            return node.ReplaceType(node.Name);
-        }
-
-        public override SyntaxNode? VisitAttributeList(AttributeListSyntax node)
-        {
-            var knownAttributes = node.Attributes.Where(n => ShaderGenerator.HlslKnownAttributes.ContainsKey(n.Name + "Attribute"));
-
-            if (knownAttributes.Count() == 0) return null;
-
-            SeparatedSyntaxList<AttributeSyntax> list = new SeparatedSyntaxList<AttributeSyntax>();
-
-            foreach (AttributeSyntax attribute in knownAttributes)
-            {
-                list = list.Add(attribute.WithName(SyntaxFactory.ParseName(ShaderGenerator.HlslKnownAttributes.GetMappedName(attribute.Name + "Attribute"))));
-            }
-
-            node = node.WithAttributes(list);
-
-            return base.VisitAttributeList(node);
-        }
+        private SemanticModel GetSemanticModel(SyntaxNode node) => compilation.GetSemanticModel(node.SyntaxTree);
 
         public override SyntaxNode VisitCastExpression(CastExpressionSyntax node)
         {
@@ -137,7 +71,7 @@ namespace DirectX12GameEngine.Shaders
                 }
                 else
                 {
-                    SymbolInfo memberSymbolInfo = semanticModel.GetSymbolInfo(node.Name);
+                    SymbolInfo memberSymbolInfo = GetSemanticModel(node.Name).GetSymbolInfo(node.Name);
                     ISymbol? memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
 
                     if (memberSymbol != null)
@@ -152,7 +86,7 @@ namespace DirectX12GameEngine.Shaders
             }
             else
             {
-                if (node.TryGetMappedMemberName(semanticModel, out ISymbol? containingSymbol, out ISymbol? memberSymbol, out string? mappedName))
+                if (node.TryGetMappedMemberName(GetSemanticModel(node), out ISymbol? containingSymbol, out ISymbol? memberSymbol, out string? mappedName))
                 {
                     if (memberSymbol is null || !memberSymbol.IsStatic)
                     {
