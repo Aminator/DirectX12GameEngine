@@ -20,7 +20,7 @@ namespace DirectX12GameEngine.Games
             base.ConfigureServices(services);
 
             services.AddSingleton<GameWindow>(new WinFormsGameWindow(Control));
-            services.AddSingleton<GraphicsPresenter>(new HwndSwapChainGraphicsPresenter(GraphicsDevice, PresentationParameters, new WindowHandle(Control.Handle)));
+            services.AddSingleton<GraphicsPresenter>(new HwndSwapChainGraphicsPresenter(GraphicsDevice, PresentationParameters, Control.Handle));
             services.AddSingleton<IInputSourceConfiguration>(new WinFormsInputSourceConfiguration(Control));
         }
     }

@@ -481,7 +481,10 @@ namespace DirectX12GameEngine.Shaders
 
         private void WriteMethod(MethodInfo methodInfo, int depth = 0)
         {
-            WriteAttributes(methodInfo);
+            foreach (Attribute attribute in methodInfo.GetCustomAttributes())
+            {
+                WriteAttribute(attribute);
+            }
 
             if (methodInfo.IsStatic) writer.Write("static ");
 
@@ -492,6 +495,11 @@ namespace DirectX12GameEngine.Shaders
             writer.Write(methodName);
 
             WriteParameters(methodInfo);
+
+            if (methodInfo.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(ShaderSemanticAttribute), true).FirstOrDefault(a => HlslKnownSemantics.ContainsKey(a.GetType())) is ShaderSemanticAttribute returnTypeAttribute)
+            {
+                writer.Write(GetHlslSemantic(returnTypeAttribute));
+            }
 
             if (methodInfo.GetMethodBody() != null)
             {
@@ -506,39 +514,36 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        private void WriteAttributes(MemberInfo memberInfo)
+        private void WriteAttribute(Attribute attribute)
         {
-            foreach (Attribute attribute in memberInfo.GetCustomAttributes())
+            Type attributeType = attribute.GetType();
+
+            if (HlslKnownAttributes.ContainsKey(attributeType))
             {
-                Type attributeType = attribute.GetType();
+                writer.Write("[");
+                writer.Write(HlslKnownAttributes.GetMappedName(attributeType));
 
-                if (HlslKnownAttributes.ContainsKey(attributeType))
+                var fieldAndPropertyInfos = attributeType.GetMembersInOrder(GetBindingFlagsForType(attributeType) | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
+                IEnumerable<object> attributeMemberValues = fieldAndPropertyInfos.Where(m => m.GetMemberValue(attribute) != null).Select(m => m.GetMemberValue(attribute))!;
+
+                if (attributeMemberValues.Count() > 0)
                 {
-                    writer.Write("[");
-                    writer.Write(HlslKnownAttributes.GetMappedName(attributeType));
+                    writer.Write("(");
 
-                    var fieldAndPropertyInfos = attributeType.GetMembersInOrder(GetBindingFlagsForType(attributeType) | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
-                    IEnumerable<object> attributeMemberValues = fieldAndPropertyInfos.Where(m => m.GetMemberValue(attribute) != null).Select(m => m.GetMemberValue(attribute))!;
-
-                    if (attributeMemberValues.Count() > 0)
+                    foreach (object memberValue in attributeMemberValues)
                     {
-                        writer.Write("(");
+                        string valueString = memberValue is string ? $"\"{memberValue}\"" : memberValue.ToString();
 
-                        foreach (object memberValue in attributeMemberValues)
-                        {
-                            string valueString = memberValue is string ? $"\"{memberValue}\"" : memberValue.ToString();
-
-                            writer.Write(valueString);
-                            writer.Write(", ");
-                        }
-
-                        stringWriter.GetStringBuilder().Length -= 2;
-
-                        writer.Write(")");
+                        writer.Write(valueString);
+                        writer.Write(", ");
                     }
 
-                    writer.WriteLine("]");
+                    stringWriter.GetStringBuilder().Length -= 2;
+
+                    writer.Write(")");
                 }
+
+                writer.WriteLine("]");
             }
         }
 
@@ -560,6 +565,11 @@ namespace DirectX12GameEngine.Shaders
                     }
 
                     writer.Write($"{HlslKnownTypes.GetMappedName(parameterInfo.ParameterType)} {parameterInfo.Name}");
+
+                    if (parameterInfo.GetCustomAttributes<ShaderSemanticAttribute>().FirstOrDefault(a => HlslKnownSemantics.ContainsKey(a.GetType())) is ShaderSemanticAttribute parameterAttribute)
+                    {
+                        writer.Write(GetHlslSemantic(parameterAttribute));
+                    }
 
                     writer.Write(", ");
                 }
