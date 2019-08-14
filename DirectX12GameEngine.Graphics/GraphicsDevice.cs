@@ -170,6 +170,8 @@ namespace DirectX12GameEngine.Graphics
                 disposable.Dispose();
             }
 
+            fenceEvent.Dispose();
+
             nativeDirect3D11Device?.Dispose();
 
             NativeDevice.Dispose();
@@ -205,7 +207,7 @@ namespace DirectX12GameEngine.Graphics
 
                     fence = NativeComputeFence;
                     fenceValue = NextComputeFenceValue;
-                    NextDirectFenceValue++;
+                    NextComputeFenceValue++;
                     break;
                 case CommandListType.Copy:
                     commandAllocatorPool = CopyAllocatorPool;

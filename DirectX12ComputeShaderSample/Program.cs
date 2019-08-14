@@ -1,25 +1,40 @@
-﻿using DirectX12GameEngine.Graphics;
-using DirectX12GameEngine.Shaders;
-using DirectX12GameEngine.Shaders.Numerics;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Shaders;
+using DirectX12GameEngine.Shaders.Numerics;
+using SharpDX.Direct3D12;
+
 using Buffer = DirectX12GameEngine.Graphics.Buffer;
+using CommandList = DirectX12GameEngine.Graphics.CommandList;
+using CommandListType = DirectX12GameEngine.Graphics.CommandListType;
+using PipelineState = DirectX12GameEngine.Graphics.PipelineState;
 
 namespace DirectX12ComputeShaderSample
 {
+    namespace Test
+    {
+        public class MyClass
+        {
+            public static readonly int MyStaticInt;
+        }
+    }
+
     public class MyComputeShader
     {
-        [ConstantBufferResource] public uint Width;
+        [ConstantBuffer]
+        public float[] Source;
 
-        [ShaderMember] public RWBufferResource<float> Data;
+        [ShaderMember]
+        public RWBufferResource<float> Data;
 
         [ShaderMember]
         [Shader("compute")]
-        [NumThreads(5, 5, 1)]
+        [NumThreads(100, 1, 1)]
         public void CSMain([SystemDispatchThreadIdSemantic] UInt3 id)
         {
-            Data[id.X + id.Y * Width] *= 2;
+            Data[id.X] = Source[id.X];
         }
     }
 
@@ -37,17 +52,15 @@ namespace DirectX12ComputeShaderSample
 
             // Create graphics device and pipeline state
 
-            using GraphicsDevice device = new GraphicsDevice(SharpDX.Direct3D.FeatureLevel.Level_12_1, true);
+            using GraphicsDevice device = new GraphicsDevice(SharpDX.Direct3D.FeatureLevel.Level_12_1);
 
-            SharpDX.Direct3D12.RootParameter[] rootParameters = new SharpDX.Direct3D12.RootParameter[]
+            RootParameter[] rootParameters = new RootParameter[]
             {
-                new SharpDX.Direct3D12.RootParameter(SharpDX.Direct3D12.ShaderVisibility.All,
-                    new SharpDX.Direct3D12.RootConstants(0, 0, 1)),
-                new SharpDX.Direct3D12.RootParameter(SharpDX.Direct3D12.ShaderVisibility.All,
-                    new SharpDX.Direct3D12.DescriptorRange(SharpDX.Direct3D12.DescriptorRangeType.UnorderedAccessView, 1, 0))
+                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 0)),
+                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.UnorderedAccessView, 1, 0))
             };
 
-            var rootSignatureDescription = new SharpDX.Direct3D12.RootSignatureDescription(SharpDX.Direct3D12.RootSignatureFlags.None, rootParameters);
+            var rootSignatureDescription = new RootSignatureDescription(RootSignatureFlags.None, rootParameters);
             var rootSignature = device.CreateRootSignature(rootSignatureDescription);
 
             PipelineState pipelineState = new PipelineState(device, rootSignature, shaderBytecode);
@@ -57,14 +70,17 @@ namespace DirectX12ComputeShaderSample
             int width = 10;
             int height = 10;
 
-            float[] array = new float[width * height];
+            float[] array = new float[width * height * 4];
 
-            for (int i = 0; i < array.Length; i++)
+            for (int i = 0, j = 0; i < width * height; i++, j += 4)
             {
-                array[i] = i + 1;
+                array[j] = i;
             }
 
-            using Buffer<float> gpuBuffer = Buffer.UnorderedAccess.New(device, array.AsSpan());
+            float[] outputArray = new float[width * height];
+
+            using Buffer<float> sourceBuffer = Buffer.Constant.New(device, array.AsSpan());
+            using Buffer<float> destinationBuffer = Buffer.UnorderedAccess.New<float>(device, array.Length);
 
             // Execute computer shader
 
@@ -72,10 +88,10 @@ namespace DirectX12ComputeShaderSample
             {
                 commandList.SetPipelineState(pipelineState);
 
-                commandList.SetComputeRoot32BitConstant(0, width, 0);
-                commandList.SetComputeRootDescriptorTable(1, gpuBuffer);
+                commandList.SetComputeRootDescriptorTable(0, sourceBuffer);
+                commandList.SetComputeRootDescriptorTable(1, destinationBuffer);
 
-                commandList.Dispatch(2, 2, 1);
+                commandList.Dispatch(1, 1, 1);
                 await commandList.FlushAsync();
             }
 
@@ -84,11 +100,11 @@ namespace DirectX12ComputeShaderSample
             Console.WriteLine("Before:");
             PrintMatrix(array, width, height);
 
-            gpuBuffer.GetData(array.AsSpan());
+            destinationBuffer.GetData(outputArray.AsSpan());
 
             Console.WriteLine();
             Console.WriteLine("After:");
-            PrintMatrix(array, width, height);
+            PrintMatrix(outputArray, width, height);
         }
 
         private static void PrintMatrix(float[] array, int width, int height)

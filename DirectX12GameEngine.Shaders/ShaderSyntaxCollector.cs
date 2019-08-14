@@ -22,19 +22,20 @@ namespace DirectX12GameEngine.Shaders
         {
             base.VisitMemberAccessExpression(node);
 
-            if (!node.TryGetMappedMemberName(GetSemanticModel(node), out ISymbol? containingSymbol, out _, out _))
+            if (!node.TryGetMappedMemberName(GetSemanticModel(node), out ISymbol memberSymbol, out _))
             {
-                if (!(containingSymbol is ITypeSymbol)) return;
-
-                string fullTypeName = containingSymbol.ToDisplayString(
-                    new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces))
-                    + ", " + containingSymbol.ContainingAssembly.Identity.ToString();
-
-                Type? type = Type.GetType(fullTypeName);
-
-                if (type != null)
+                if (memberSymbol.ContainingType != null)
                 {
-                    shaderGenerator.AddType(type);
+                    string fullTypeName = memberSymbol.ContainingType.ToDisplayString(
+                        new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces))
+                        + ", " + memberSymbol.ContainingType.ContainingAssembly.Identity.ToString();
+
+                    Type? type = Type.GetType(fullTypeName);
+
+                    if (type != null)
+                    {
+                        shaderGenerator.AddType(type);
+                    }
                 }
             }
         }

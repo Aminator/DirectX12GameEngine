@@ -6,7 +6,7 @@ using DirectX12GameEngine.Shaders;
 namespace DirectX12GameEngine.Rendering.Materials
 {
     [ShaderContract]
-    [ConstantBufferResource]
+    [ConstantBuffer]
     public class ComputeColor : IComputeColor
     {
         private Vector4 color;

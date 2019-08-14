@@ -26,30 +26,30 @@ namespace DirectX12GameEngine.Shaders
         public bool Override { get; set; }
     }
 
-    public class ConstantBufferResourceAttribute : ShaderMemberAttribute
+    public class ConstantBufferAttribute : ShaderMemberAttribute
     {
-        public ConstantBufferResourceAttribute([CallerLineNumber] int order = 0) : base(order)
+        public ConstantBufferAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
 
-    public class SamplerResourceAttribute : ShaderMemberAttribute
+    public class SamplerAttribute : ShaderMemberAttribute
     {
-        public SamplerResourceAttribute([CallerLineNumber] int order = 0) : base(order)
+        public SamplerAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
 
-    public class TextureResourceAttribute : ShaderMemberAttribute
+    public class TextureAttribute : ShaderMemberAttribute
     {
-        public TextureResourceAttribute([CallerLineNumber] int order = 0) : base(order)
+        public TextureAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
 
-    public class UnorderedAccessViewResourceAttribute : ShaderMemberAttribute
+    public class UnorderedAccessViewAttribute : ShaderMemberAttribute
     {
-        public UnorderedAccessViewResourceAttribute([CallerLineNumber] int order = 0) : base(order)
+        public UnorderedAccessViewAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
@@ -59,22 +59,5 @@ namespace DirectX12GameEngine.Shaders
         public StaticResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
-    }
-
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class NumThreadsAttribute : Attribute
-    {
-        public NumThreadsAttribute(int x, int y, int z)
-        {
-            X = x;
-            Y = y;
-            Z = z;
-        }
-
-        public int X { get; }
-
-        public int Y { get; }
-
-        public int Z { get; }
     }
 }

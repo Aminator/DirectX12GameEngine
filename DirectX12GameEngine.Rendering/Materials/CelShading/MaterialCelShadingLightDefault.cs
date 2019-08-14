@@ -16,7 +16,7 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
             context.ConstantBuffers.Add(isBlackAndWhiteBuffer);
         }
 
-        [ConstantBufferResource] public bool IsBlackAndWhite { get; set; }
+        [ConstantBuffer] public bool IsBlackAndWhite { get; set; }
 
         [ShaderMember]
         public Vector3 Compute(float LightIn)

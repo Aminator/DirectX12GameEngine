@@ -3,7 +3,6 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
@@ -20,6 +19,7 @@ namespace DirectX12GameEngine.Shaders
     {
         private static readonly object compilationLock = new object();
         private static readonly Dictionary<string, CSharpDecompiler> decompilers = new Dictionary<string, CSharpDecompiler>();
+        private static readonly Dictionary<Type, SyntaxTree> decompiledTypes = new Dictionary<Type, SyntaxTree>();
 
         private static Compilation compilation;
 
@@ -142,15 +142,13 @@ namespace DirectX12GameEngine.Shaders
             return result;
         }
 
-        public static ShaderGenerationResult GetEntryPoints(ShaderGenerationResult result, Type shaderType, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+        public static void GetEntryPoints(ShaderGenerationResult result, Type shaderType, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
         {
             foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingFlags).Where(m => m.IsDefined(typeof(ShaderAttribute))))
             {
                 ShaderAttribute shaderAttribute = shaderMethodInfo.GetCustomAttribute<ShaderAttribute>();
                 result.SetShader(shaderAttribute.Name, shaderMethodInfo.Name);
             }
-
-            return result;
         }
 
         private void CollectStructure(Type type, object? obj)
@@ -333,16 +331,16 @@ namespace DirectX12GameEngine.Shaders
         {
             switch (resourceType)
             {
-                case ConstantBufferResourceAttribute _:
+                case ConstantBufferAttribute _:
                     WriteConstantBuffer(memberInfo, memberType, bindingTracker.ConstantBuffer++);
                     break;
-                case SamplerResourceAttribute _:
+                case SamplerAttribute _:
                     WriteSampler(memberInfo, memberType, bindingTracker.Sampler++);
                     break;
-                case TextureResourceAttribute _:
+                case TextureAttribute _:
                     WriteTexture(memberInfo, memberType, bindingTracker.Texture++);
                     break;
-                case UnorderedAccessViewResourceAttribute _:
+                case UnorderedAccessViewAttribute _:
                     WriteUnorderedAccessView(memberInfo, memberType, bindingTracker.UnorderedAccessView++);
                     break;
                 case StaticResourceAttribute _:
@@ -610,26 +608,32 @@ namespace DirectX12GameEngine.Shaders
 
         private static MethodDeclarationSyntax GetSyntaxTree(MethodInfo methodInfo)
         {
+            Type type = methodInfo.DeclaringType;
+
             lock (compilationLock)
             {
-                EntityHandle handle = MetadataTokenHelpers.TryAsEntityHandle(methodInfo.DeclaringType.MetadataToken) ?? throw new InvalidOperationException();
-                string assemblyPath = methodInfo.DeclaringType.Assembly.Location;
-
-                if (!decompilers.TryGetValue(assemblyPath, out CSharpDecompiler decompiler))
+                if (!decompiledTypes.TryGetValue(type, out SyntaxTree syntaxTree))
                 {
-                    decompiler = CreateDecompiler(assemblyPath);
-                    decompilers.Add(assemblyPath, decompiler);
+                    EntityHandle handle = MetadataTokenHelpers.TryAsEntityHandle(type.MetadataToken) ?? throw new InvalidOperationException();
+                    string assemblyPath = methodInfo.DeclaringType.Assembly.Location;
+
+                    if (!decompilers.TryGetValue(assemblyPath, out CSharpDecompiler decompiler))
+                    {
+                        decompiler = CreateDecompiler(assemblyPath);
+                        decompilers.Add(assemblyPath, decompiler);
+                    }
+
+                    string sourceCode = decompiler.DecompileAsString(handle);
+
+                    syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, CSharpParseOptions.Default.WithLanguageVersion(Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp8));
+                    compilation = compilation.AddSyntaxTrees(syntaxTree);
+
+                    decompiledTypes.Add(type, syntaxTree);
                 }
 
-                string sourceCode = decompiler.DecompileAsString(handle);
-
-                SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
                 SyntaxNode root = syntaxTree.GetRoot();
-                MethodDeclarationSyntax methodNode = root.DescendantNodes().OfType<MethodDeclarationSyntax>().First(n => n.Identifier.ValueText == methodInfo.Name && n.ParameterList.Parameters.Count == methodInfo.GetParameters().Length);
 
-                compilation = compilation.AddSyntaxTrees(syntaxTree);
-
-                return methodNode;
+                return root.DescendantNodes().OfType<MethodDeclarationSyntax>().First(n => n.Identifier.ValueText == methodInfo.Name && n.ParameterList.Parameters.Count == methodInfo.GetParameters().Length);
             }
         }
 
@@ -637,7 +641,7 @@ namespace DirectX12GameEngine.Shaders
         {
             UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(assemblyPath, false, "netstandard");
 
-            DecompilerSettings decompilerSettings = new DecompilerSettings(ICSharpCode.Decompiler.CSharp.LanguageVersion.Latest)
+            DecompilerSettings decompilerSettings = new DecompilerSettings(ICSharpCode.Decompiler.CSharp.LanguageVersion.CSharp8_0)
             {
                 ObjectOrCollectionInitializers = false,
                 UsingDeclarations = false

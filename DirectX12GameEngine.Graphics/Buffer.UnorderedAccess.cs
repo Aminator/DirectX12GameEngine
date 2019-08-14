@@ -11,6 +11,11 @@ namespace DirectX12GameEngine.Graphics
                 return Buffer.New(device, size, BufferFlags.UnorderedAccess, heapType);
             }
 
+            public static unsafe Buffer<T> New<T>(GraphicsDevice device, int elementCount, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+            {
+                return Buffer.New<T>(device, elementCount, BufferFlags.UnorderedAccess, heapType);
+            }
+
             public static unsafe Buffer<T> New<T>(GraphicsDevice device, in T data, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
             {
                 return Buffer.New(device, data, BufferFlags.UnorderedAccess, heapType);

@@ -46,7 +46,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderMember] public Texture2DResource ScalarTexture;
 #nullable enable
 
-        [ConstantBufferResource] public ColorChannel Channel
+        [ConstantBuffer] public ColorChannel Channel
         {
             get => channel;
             set

@@ -6,7 +6,7 @@ using DirectX12GameEngine.Shaders;
 namespace DirectX12GameEngine.Rendering.Lights
 {
     [ShaderContract]
-    [ConstantBufferResource]
+    [ConstantBuffer]
     public abstract class DirectLightGroup
     {
         [ShaderMember] public int LightCount;

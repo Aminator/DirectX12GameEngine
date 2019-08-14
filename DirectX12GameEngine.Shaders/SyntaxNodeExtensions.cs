@@ -22,50 +22,27 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        public static bool TryGetMappedMemberName(this MemberAccessExpressionSyntax node, SemanticModel semanticModel, out ISymbol? containingSymbol, out ISymbol? memberSymbol, out string? mappedName)
+        public static bool TryGetMappedMemberName(this MemberAccessExpressionSyntax node, SemanticModel semanticModel, out ISymbol memberSymbol, out string? mappedName)
         {
-            SymbolInfo containingMemberSymbolInfo = semanticModel.GetSymbolInfo(node.Expression);
             SymbolInfo memberSymbolInfo = semanticModel.GetSymbolInfo(node.Name);
 
-            memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
+            memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault() ?? throw new InvalidOperationException();
+            INamedTypeSymbol containingTypeSymbol = memberSymbol.ContainingType;
 
-            containingSymbol = null;
             mappedName = null;
 
-            if (memberSymbol is null)
+            if (containingTypeSymbol != null)
             {
-                ISymbol? containingMemberSymbol = containingMemberSymbolInfo.Symbol ?? containingMemberSymbolInfo.CandidateSymbols.FirstOrDefault();
+                string fullMemberName = containingTypeSymbol.ToString() + Type.Delimiter + node.Name.Identifier.ValueText;
 
-                if (containingMemberSymbol != null)
+                if (HlslKnownMethods.ContainsKey(fullMemberName))
                 {
-                    containingSymbol = containingMemberSymbol switch
-                    {
-                        IFieldSymbol fieldSymbol => fieldSymbol.Type,
-                        IPropertySymbol propertySymbol => propertySymbol.Type,
-                        IMethodSymbol methodSymbol => methodSymbol.ContainingType,
-                        _ => null
-                    };
+                    mappedName = HlslKnownMethods.GetMappedName(fullMemberName);
+                    return true;
                 }
             }
-            else
-            {
-                containingSymbol = memberSymbol.ContainingSymbol;
-            }
 
-
-            if (containingSymbol is null) return false;
-
-            string fullMemberName = containingSymbol.ToString() + Type.Delimiter + node.Name.Identifier.ValueText;
-
-            if (HlslKnownMethods.ContainsKey(fullMemberName))
-            {
-                mappedName = HlslKnownMethods.GetMappedName(fullMemberName);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return false;
         }
     }
 }

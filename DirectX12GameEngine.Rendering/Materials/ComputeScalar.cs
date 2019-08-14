@@ -5,7 +5,7 @@ using DirectX12GameEngine.Shaders;
 namespace DirectX12GameEngine.Rendering.Materials
 {
     [ShaderContract]
-    [ConstantBufferResource]
+    [ConstantBuffer]
     public class ComputeScalar : IComputeScalar
     {
         private float scalarValue;

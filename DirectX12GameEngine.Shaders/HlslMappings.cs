@@ -85,9 +85,12 @@ namespace DirectX12GameEngine.Shaders
             { typeof(Vector2).FullName, "float2" },
             { typeof(Vector3).FullName, "float3" },
             { typeof(Vector4).FullName, "float4" },
+            { typeof(Numerics.Vector2).FullName, "float2" },
+            { typeof(Numerics.Vector3).FullName, "float3" },
             { typeof(Numerics.Vector4).FullName, "float4" },
             { typeof(Numerics.UInt2).FullName, "uint2" },
             { typeof(Numerics.UInt3).FullName, "uint3" },
+            { typeof(Numerics.UInt4).FullName, "uint4" },
             { typeof(Matrix4x4).FullName, "float4x4" },
             { typeof(SamplerResource).FullName, "SamplerState" },
             { typeof(SamplerComparisonResource).FullName, "SamplerComparisonState" },
@@ -152,6 +155,8 @@ namespace DirectX12GameEngine.Shaders
             { "System.MathF.PI", "3.14159274f" },
 
             { "DirectX12GameEngine.Shaders.Numerics.Vector2.Length", "length" },
+            { "DirectX12GameEngine.Shaders.Numerics.Vector3.Length", "length" },
+            { "DirectX12GameEngine.Shaders.Numerics.Vector4.Length", "length" },
 
             { "DirectX12GameEngine.Shaders.Numerics.UInt2.X", ".x" },
             { "DirectX12GameEngine.Shaders.Numerics.UInt2.Y", ".y" },
@@ -159,7 +164,11 @@ namespace DirectX12GameEngine.Shaders
             { "DirectX12GameEngine.Shaders.Numerics.UInt3.X", ".x" },
             { "DirectX12GameEngine.Shaders.Numerics.UInt3.Y", ".y" },
             { "DirectX12GameEngine.Shaders.Numerics.UInt3.Z", ".z" },
-            { "DirectX12GameEngine.Shaders.Numerics.UInt3.XY", ".xy" },
+
+            { "DirectX12GameEngine.Shaders.Numerics.UInt4.X", ".x" },
+            { "DirectX12GameEngine.Shaders.Numerics.UInt4.Y", ".y" },
+            { "DirectX12GameEngine.Shaders.Numerics.UInt4.Z", ".z" },
+            { "DirectX12GameEngine.Shaders.Numerics.UInt4.W", ".w" },
 
             { "System.Numerics.Vector2.X", ".x" },
             { "System.Numerics.Vector2.Y", ".y" },

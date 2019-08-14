@@ -7,45 +7,45 @@ namespace DirectX12GameEngine.Shaders
     {
     }
 
-    [SamplerResource]
+    [Sampler]
     public class SamplerResource : ShaderResource
     {
     }
 
-    [SamplerResource]
+    [Sampler]
     public class SamplerComparisonResource : ShaderResource
     {
     }
 
-    [TextureResource]
+    [Texture]
     public class Texture2DResource : ShaderResource
     {
         public Vector4 Sample(SamplerResource sampler, Vector2 texCoord) => throw new NotImplementedException();
     }
 
-    [TextureResource]
+    [Texture]
     public class Texture2DResource<T> : ShaderResource where T : unmanaged
     {
         public T Sample(SamplerResource sampler, Vector2 texCoord) => throw new NotImplementedException();
     }
 
-    [TextureResource]
+    [Texture]
     public class Texture2DArrayResource : ShaderResource
     {
     }
 
-    [TextureResource]
+    [Texture]
     public class TextureCubeResource : ShaderResource
     {
     }
 
-    [UnorderedAccessViewResource]
+    [UnorderedAccessView]
     public class RWBufferResource<T> : ShaderResource
     {
         public T this[uint index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 
-    [UnorderedAccessViewResource]
+    [UnorderedAccessView]
     public class RWTexture2DResource<T> : ShaderResource where T : unmanaged
     {
         public T this[Numerics.UInt2 index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }

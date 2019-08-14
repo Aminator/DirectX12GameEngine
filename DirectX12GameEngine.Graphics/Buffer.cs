@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using DirectX12GameEngine.Core;
 using SharpDX.Direct3D12;
@@ -7,11 +8,12 @@ namespace DirectX12GameEngine.Graphics
 {
     public partial class Buffer : GraphicsResource
     {
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public Buffer()
         {
         }
 
-        public Buffer(GraphicsDevice device) : base(device)
+        protected internal Buffer(GraphicsDevice device) : base(device)
         {
         }
 

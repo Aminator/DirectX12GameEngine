@@ -32,7 +32,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         [ShaderMember] public IComputeScalar RoughnessMap { get; set; } = new ComputeScalar();
 
-        [ConstantBufferResource] public bool Invert
+        [ConstantBuffer] public bool Invert
         {
             get => invert;
             set
