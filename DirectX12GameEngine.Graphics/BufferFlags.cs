@@ -9,11 +9,7 @@ namespace DirectX12GameEngine.Graphics
         ConstantBuffer = 1,
         IndexBuffer = 2,
         VertexBuffer = 4,
-        RenderTarget = 8,
-        ShaderResource = 16,
-        UnorderedAccess = 32,
-        StructuredBuffer = 64,
-        RawBuffer = 512,
-        ArgumentBuffer = 1024
+        ShaderResource = 8,
+        UnorderedAccess = 16,
     }
 }

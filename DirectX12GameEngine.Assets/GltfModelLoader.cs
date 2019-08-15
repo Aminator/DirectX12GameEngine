@@ -278,7 +278,7 @@ namespace DirectX12GameEngine.Assets
                 indexBuffer = GetIndexBuffer(gltf, buffers, mesh, out PixelFormat format);
                 is32bitIndex = format == PixelFormat.R32_UInt;
                 Graphics.Buffer indexBufferResource = Graphics.Buffer.Index.New(GraphicsDevice, indexBuffer).DisposeBy(GraphicsDevice);
-                indexBufferView = Graphics.Buffer.Index.CreateIndexBufferView(indexBufferResource, format, indexBufferResource.SizeInBytes);
+                indexBufferView = Graphics.Buffer.Index.CreateIndexBufferView(indexBufferResource, indexBufferResource.SizeInBytes, format);
             }
 
             VertexBufferView[] vertexBufferViews = GetVertexBufferViews(gltf, buffers, mesh, indexBuffer, is32bitIndex);

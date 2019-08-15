@@ -23,7 +23,9 @@ namespace DirectX12GameEngine.Graphics
 
         public BufferFlags Flags => Description.Flags;
 
-        public GraphicsHeapType Usage => Description.HeapType;
+        public GraphicsHeapType HeapType => Description.HeapType;
+
+        public int StructuredByteStride => Description.StructuredByteStride;
 
         public int ElementCount { get; protected set; }
 
@@ -39,9 +41,10 @@ namespace DirectX12GameEngine.Graphics
 
         public static Buffer<T> New<T>(GraphicsDevice device, int elementCount, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            int size = elementCount * Unsafe.SizeOf<T>();
+            int structuredByteStride = Unsafe.SizeOf<T>();
+            int size = structuredByteStride * elementCount;
 
-            return new Buffer<T>(device, new BufferDescription(size, bufferFlags, heapType));
+            return new Buffer<T>(device, new BufferDescription(size, bufferFlags, heapType, structuredByteStride));
         }
 
         public static unsafe Buffer<T> New<T>(GraphicsDevice device, in T data, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
@@ -78,7 +81,7 @@ namespace DirectX12GameEngine.Graphics
 
         public void GetData<T>(Span<T> data, int offsetInBytes = 0) where T : unmanaged
         {
-            if (Usage == GraphicsHeapType.Default)
+            if (HeapType == GraphicsHeapType.Default)
             {
                 using Buffer<T> readbackBaffer = New<T>(GraphicsDevice, data.Length, BufferFlags.None, GraphicsHeapType.Readback);
                 using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
@@ -106,7 +109,7 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetData<T>(Span<T> data, int offsetInBytes = 0) where T : unmanaged
         {
-            if (Usage == GraphicsHeapType.Default)
+            if (HeapType == GraphicsHeapType.Default)
             {
                 using Buffer<T> uploadBuffer = New(GraphicsDevice, data, BufferFlags.None, GraphicsHeapType.Upload);
                 using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
@@ -142,11 +145,11 @@ namespace DirectX12GameEngine.Graphics
             return InitializeFrom(resource, description);
         }
 
-        internal Buffer InitializeFrom(Resource resource)
+        internal Buffer InitializeFrom(Resource resource, bool isShaderResource = false)
         {
             resource.GetHeapProperties(out HeapProperties heapProperties, out _);
 
-            BufferDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type);
+            BufferDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type, isShaderResource);
 
             return InitializeFrom(resource, description);
         }
@@ -154,7 +157,6 @@ namespace DirectX12GameEngine.Graphics
         private Buffer InitializeFrom(Resource resource, BufferDescription description)
         {
             NativeResource = resource;
-
             Description = description;
 
             (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = description.Flags switch
@@ -172,7 +174,7 @@ namespace DirectX12GameEngine.Graphics
         {
             BufferDescription bufferDescription = new BufferDescription
             {
-                SizeInBytes = (int)description.Width * description.Height * description.DepthOrArraySize,
+                SizeInBytes = (int)description.Width,
                 HeapType = heapType,
                 Flags = BufferFlags.None
             };
@@ -223,7 +225,19 @@ namespace DirectX12GameEngine.Graphics
         private (CpuDescriptorHandle, GpuDescriptorHandle) CreateShaderResourceView()
         {
             (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
-            GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, null, cpuHandle);
+
+            ShaderResourceViewDescription description = new ShaderResourceViewDescription
+            {
+                Shader4ComponentMapping = D3DXUtilities.DefaultComponentMapping(),
+                Dimension = ShaderResourceViewDimension.Buffer,
+                Buffer =
+                {
+                    ElementCount = ElementCount,
+                    StructureByteStride = StructuredByteStride
+                }
+            };
+
+            GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, description, cpuHandle);
 
             return (cpuHandle, gpuHandle);
         }
@@ -232,13 +246,13 @@ namespace DirectX12GameEngine.Graphics
         {
             (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
 
-            var description = new UnorderedAccessViewDescription
+            UnorderedAccessViewDescription description = new UnorderedAccessViewDescription
             {
-                Format = SharpDX.DXGI.Format.R32_Float,
                 Dimension = UnorderedAccessViewDimension.Buffer,
                 Buffer =
                 {
-                    ElementCount = ElementCount
+                    ElementCount = ElementCount,
+                    StructureByteStride = StructuredByteStride
                 }
             };
 
@@ -252,14 +266,39 @@ namespace DirectX12GameEngine.Graphics
     {
         protected internal Buffer(GraphicsDevice device, BufferDescription description) : base(device)
         {
-            ElementSize = Unsafe.SizeOf<T>();
-            ElementCount = description.SizeInBytes / ElementSize;
+            ElementCount = description.SizeInBytes / description.StructuredByteStride;
 
             InitializeFrom(description);
         }
 
-        public int ElementSize { get; }
-
         public T[] GetData() => GetData<T>();
+    }
+
+    internal class D3DXUtilities
+    {
+        public const int ComponentMappingMask = 0x7;
+
+        public const int ComponentMappingShift = 3;
+
+        public const int ComponentMappingAlwaysSetBitAvoidingZeromemMistakes = 1 << (ComponentMappingShift * 4);
+
+        public static int ComponentMapping(int src0, int src1, int src2, int src3)
+        {
+            return ((src0) & ComponentMappingMask)
+                | (((src1) & ComponentMappingMask) << ComponentMappingShift)
+                | (((src2) & ComponentMappingMask) << (ComponentMappingShift * 2))
+                | (((src3) & ComponentMappingMask) << (ComponentMappingShift * 3))
+                | ComponentMappingAlwaysSetBitAvoidingZeromemMistakes;
+        }
+
+        public static int DefaultComponentMapping()
+        {
+            return ComponentMapping(0, 1, 2, 3);
+        }
+
+        public static int ComponentMapping(int ComponentToExtract, int Mapping)
+        {
+            return (Mapping >> (ComponentMappingShift * ComponentToExtract)) & ComponentMappingMask;
+        }
     }
 }

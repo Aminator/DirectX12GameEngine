@@ -10,29 +10,29 @@ namespace DirectX12GameEngine.Graphics
         {
             public static unsafe Buffer New(GraphicsDevice device, int size, GraphicsHeapType heapType = GraphicsHeapType.Default)
             {
-                return Buffer.New(device, size, BufferFlags.VertexBuffer, heapType);
+                return Buffer.New(device, size, BufferFlags.VertexBuffer, heapType: heapType);
             }
 
             public static unsafe Buffer<T> New<T>(GraphicsDevice device, int elementCount, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
             {
-                return Buffer.New<T>(device, elementCount, BufferFlags.VertexBuffer, heapType);
+                return Buffer.New<T>(device, elementCount, BufferFlags.VertexBuffer, heapType: heapType);
             }
 
             public static unsafe Buffer<T> New<T>(GraphicsDevice device, in T data, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
             {
-                return Buffer.New(device, data, BufferFlags.VertexBuffer, heapType);
+                return Buffer.New(device, data, BufferFlags.VertexBuffer, heapType: heapType);
             }
 
             public static unsafe Buffer<T> New<T>(GraphicsDevice device, Span<T> data, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
             {
-                return Buffer.New(device, data, BufferFlags.VertexBuffer, heapType);
+                return Buffer.New(device, data, BufferFlags.VertexBuffer, heapType: heapType);
             }
 
             public static VertexBufferView CreateVertexBufferView(Buffer vertexBuffer, int size, int stride)
             {
                 return new VertexBufferView
                 {
-                    BufferLocation = vertexBuffer.NativeResource.GPUVirtualAddress,
+                    BufferLocation = vertexBuffer.NativeResource!.GPUVirtualAddress,
                     StrideInBytes = stride,
                     SizeInBytes = size
                 };

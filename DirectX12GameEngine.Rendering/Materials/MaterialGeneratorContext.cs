@@ -97,11 +97,11 @@ namespace DirectX12GameEngine.Rendering.Materials
 
                 string shaderSource = result.ShaderSource;
 
-                compiledShader.VertexShader = result.VertexShader is null ? throw new Exception("Vertex shader must be present.") : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.VertexShader, result.VertexShader);
-                compiledShader.PixelShader = result.PixelShader is null ? throw new Exception("Pixel shader must be present.") : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.PixelShader, result.PixelShader);
-                compiledShader.HullShader = result.HullShader is null ? default : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.HullShader, result.HullShader);
-                compiledShader.DomainShader = result.DomainShader is null ? default : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.DomainShader, result.DomainShader);
-                compiledShader.GeometryShader = result.GeometryShader is null ? default : ShaderCompiler.CompileShader(shaderSource, SharpDX.D3DCompiler.ShaderVersion.GeometryShader, result.GeometryShader);
+                compiledShader.VertexShader = result.VertexShader is null ? throw new Exception("Vertex shader must be present.") : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.VertexShader, Shaders.ShaderModel.Model6_1, result.VertexShader);
+                compiledShader.PixelShader = result.PixelShader is null ? throw new Exception("Pixel shader must be present.") : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.PixelShader, Shaders.ShaderModel.Model6_1, result.PixelShader);
+                compiledShader.HullShader = result.HullShader is null ? default : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.HullShader, Shaders.ShaderModel.Model6_1, result.HullShader);
+                compiledShader.DomainShader = result.DomainShader is null ? default : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.DomainShader, Shaders.ShaderModel.Model6_1, result.DomainShader);
+                compiledShader.GeometryShader = result.GeometryShader is null ? default : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.GeometryShader, Shaders.ShaderModel.Model6_1, result.GeometryShader);
 
                 CompiledShaderAsset shaderAsset = new CompiledShaderAsset
                 {

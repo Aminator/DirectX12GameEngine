@@ -10,31 +10,22 @@ using Buffer = DirectX12GameEngine.Graphics.Buffer;
 using CommandList = DirectX12GameEngine.Graphics.CommandList;
 using CommandListType = DirectX12GameEngine.Graphics.CommandListType;
 using PipelineState = DirectX12GameEngine.Graphics.PipelineState;
+using ShaderModel = DirectX12GameEngine.Shaders.ShaderModel;
 
 namespace DirectX12ComputeShaderSample
 {
-    namespace Test
-    {
-        public class MyClass
-        {
-            public static readonly int MyStaticInt;
-        }
-    }
-
     public class MyComputeShader
     {
-        [ConstantBuffer]
-        public float[] Source;
+        public StructuredBufferResource<float> Source;
 
-        [ShaderMember]
-        public RWBufferResource<float> Data;
+        public RWStructuredBufferResource<float> Destination;
 
         [ShaderMember]
         [Shader("compute")]
         [NumThreads(100, 1, 1)]
         public void CSMain([SystemDispatchThreadIdSemantic] UInt3 id)
         {
-            Data[id.X] = Source[id.X];
+            Destination[id.X] = Source[id.X];
         }
     }
 
@@ -42,21 +33,48 @@ namespace DirectX12ComputeShaderSample
     {
         private static async Task Main()
         {
+            // Create graphics device
+
+            using GraphicsDevice device = new GraphicsDevice(SharpDX.Direct3D.FeatureLevel.Level_12_1);
+
+            // Create graphics buffer
+
+            int width = 10;
+            int height = 10;
+
+            float[] array = new float[width * height];
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = i;
+            }
+
+            float[] outputArray = new float[width * height];
+
+            using Buffer<float> sourceBuffer = Buffer.ShaderResource.New(device, array.AsSpan());
+            using Buffer<float> destinationBuffer = Buffer.UnorderedAccess.New<float>(device, array.Length);
+
             // Generate computer shader
+
+            //Action<UInt3> action = id =>
+            //{
+            //    destinationBuffer[id.X] = sourceBuffer[id.X];
+            //};
+
+            //ShaderGenerator shaderGenerator = new ShaderGenerator(action);
+            //ShaderGenerationResult result = shaderGenerator.GenerateShader();
 
             MyComputeShader myComputeShader = new MyComputeShader();
             ShaderGenerator shaderGenerator = new ShaderGenerator(myComputeShader);
             ShaderGenerationResult result = shaderGenerator.GenerateShader();
 
-            byte[] shaderBytecode = ShaderCompiler.CompileShader(result.ShaderSource, SharpDX.D3DCompiler.ShaderVersion.ComputeShader, result.ComputeShader);
+            byte[] shaderBytecode = ShaderCompiler.CompileShader(result.ShaderSource, ShaderProfile.ComputeShader, ShaderModel.Model6_1, result.ComputeShader);
 
-            // Create graphics device and pipeline state
-
-            using GraphicsDevice device = new GraphicsDevice(SharpDX.Direct3D.FeatureLevel.Level_12_1);
+            // Create pipeline state
 
             RootParameter[] rootParameters = new RootParameter[]
             {
-                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 0)),
+                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0)),
                 new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.UnorderedAccessView, 1, 0))
             };
 
@@ -64,23 +82,6 @@ namespace DirectX12ComputeShaderSample
             var rootSignature = device.CreateRootSignature(rootSignatureDescription);
 
             PipelineState pipelineState = new PipelineState(device, rootSignature, shaderBytecode);
-
-            // Create graphics buffer
-
-            int width = 10;
-            int height = 10;
-
-            float[] array = new float[width * height * 4];
-
-            for (int i = 0, j = 0; i < width * height; i++, j += 4)
-            {
-                array[j] = i;
-            }
-
-            float[] outputArray = new float[width * height];
-
-            using Buffer<float> sourceBuffer = Buffer.Constant.New(device, array.AsSpan());
-            using Buffer<float> destinationBuffer = Buffer.UnorderedAccess.New<float>(device, array.Length);
 
             // Execute computer shader
 

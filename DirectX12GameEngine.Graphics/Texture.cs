@@ -95,11 +95,11 @@ namespace DirectX12GameEngine.Graphics
             return InitializeFrom(resource, description);
         }
 
-        internal Texture InitializeFrom(Resource resource)
+        internal Texture InitializeFrom(Resource resource, bool isShaderResource = false)
         {
             resource.GetHeapProperties(out HeapProperties heapProperties, out _);
 
-            TextureDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type);
+            TextureDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type, isShaderResource);
 
             return InitializeFrom(resource, description);
         }
@@ -223,7 +223,6 @@ namespace DirectX12GameEngine.Graphics
         private (CpuDescriptorHandle, GpuDescriptorHandle) CreateUnorderedAccessView()
         {
             (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
-
             GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, null, cpuHandle);
 
             return (cpuHandle, gpuHandle);

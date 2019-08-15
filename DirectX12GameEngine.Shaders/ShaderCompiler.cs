@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using DotNetDxc;
-using SharpDX.D3DCompiler;
 
 namespace DirectX12GameEngine.Shaders
 {
@@ -12,13 +11,13 @@ namespace DirectX12GameEngine.Shaders
             HlslDxcLib.DxcCreateInstanceFn = DefaultDxcLib.GetDxcCreateInstanceFn();
         }
 
-        public static byte[] CompileShaderFile(string filePath, ShaderVersion? version = null, string? entryPoint = null)
+        public static byte[] CompileShaderFile(string filePath, ShaderProfile profile, ShaderModel model = ShaderModel.Model6_1, string? entryPoint = null)
         {
             string shaderSource = File.ReadAllText(filePath);
-            return CompileShader(shaderSource, version, entryPoint, filePath);
+            return CompileShader(shaderSource, profile, model, entryPoint, filePath);
         }
 
-        public static byte[] CompileShader(string shaderSource, ShaderVersion? version = null, string? entryPoint = null, string filePath = "")
+        public static byte[] CompileShader(string shaderSource, ShaderProfile profile, ShaderModel model = ShaderModel.Model6_1, string? entryPoint = null, string filePath = "")
         {
             IDxcCompiler compiler = HlslDxcLib.CreateDxcCompiler();
             IDxcLibrary library = HlslDxcLib.CreateDxcLibrary();
@@ -26,7 +25,7 @@ namespace DirectX12GameEngine.Shaders
             const uint CP_UTF16 = 1200;
 
             IDxcBlobEncoding sourceBlob = library.CreateBlobWithEncodingOnHeapCopy(shaderSource, (uint)(shaderSource.Length * 2), CP_UTF16);
-            IDxcOperationResult result = compiler.Compile(sourceBlob, filePath, entryPoint ?? GetDefaultEntryPoint(version), $"{GetShaderProfile(version)}_6_1", new[] { "-Zpr" }, 1, null, 0, library.CreateIncludeHandler());
+            IDxcOperationResult result = compiler.Compile(sourceBlob, filePath, entryPoint ?? GetDefaultEntryPoint(profile), $"{GetShaderProfile(profile)}_{GetShaderModel(model)}", new[] { "-Zpr" }, 1, null, 0, library.CreateIncludeHandler());
 
             if (result.GetStatus() == 0)
             {
@@ -40,11 +39,6 @@ namespace DirectX12GameEngine.Shaders
                 string resultText = GetStringFromBlob(library, result.GetErrors());
                 throw new Exception(resultText);
             }
-        }
-
-        public static byte[] CompileShaderLegacy(string shaderSource, ShaderVersion? version = null, string? entryPoint = null)
-        {
-            return ShaderBytecode.Compile(shaderSource, entryPoint ?? GetDefaultEntryPoint(version), $"{GetShaderProfile(version)}_5_1", ShaderFlags.PackMatrixRowMajor);
         }
 
         public static unsafe byte[] GetBytesFromBlob(IDxcBlob blob)
@@ -70,26 +64,37 @@ namespace DirectX12GameEngine.Shaders
             return new string(blob.GetBufferPointer(), 0, (int)(blob.GetBufferSize() / 2));
         }
 
-        private static string GetDefaultEntryPoint(ShaderVersion? version) => version switch
+        private static string GetDefaultEntryPoint(ShaderProfile profile) => profile switch
         {
-            ShaderVersion.ComputeShader => "CSMain",
-            ShaderVersion.VertexShader => "VSMain",
-            ShaderVersion.PixelShader => "PSMain",
-            ShaderVersion.HullShader => "HSMain",
-            ShaderVersion.DomainShader => "DSMain",
-            ShaderVersion.GeometryShader => "GSMain",
+            ShaderProfile.ComputeShader => "CSMain",
+            ShaderProfile.VertexShader => "VSMain",
+            ShaderProfile.PixelShader => "PSMain",
+            ShaderProfile.HullShader => "HSMain",
+            ShaderProfile.DomainShader => "DSMain",
+            ShaderProfile.GeometryShader => "GSMain",
             _ => ""
         };
 
-        private static string GetShaderProfile(ShaderVersion? version) => version switch
+        private static string GetShaderProfile(ShaderProfile profile) => profile switch
         {
-            ShaderVersion.ComputeShader => "cs",
-            ShaderVersion.VertexShader => "vs",
-            ShaderVersion.PixelShader => "ps",
-            ShaderVersion.HullShader => "hs",
-            ShaderVersion.DomainShader => "ds",
-            ShaderVersion.GeometryShader => "gs",
-            _ => "lib"
+            ShaderProfile.ComputeShader => "cs",
+            ShaderProfile.VertexShader => "vs",
+            ShaderProfile.PixelShader => "ps",
+            ShaderProfile.HullShader => "hs",
+            ShaderProfile.DomainShader => "ds",
+            ShaderProfile.GeometryShader => "gs",
+            ShaderProfile.Library => "lib",
+            _ => throw new NotSupportedException()
+        };
+
+        private static string GetShaderModel(ShaderModel model) => model switch
+        {
+            ShaderModel.Model6_0 => "6_0",
+            ShaderModel.Model6_1 => "6_1",
+            ShaderModel.Model6_2 => "6_2",
+            ShaderModel.Model6_3 => "6_3",
+            ShaderModel.Model6_4 => "6_4",
+            _ => throw new NotSupportedException()
         };
     }
 }

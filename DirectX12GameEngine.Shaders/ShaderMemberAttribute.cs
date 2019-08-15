@@ -40,9 +40,9 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
-    public class TextureAttribute : ShaderMemberAttribute
+    public class ShaderResourceViewAttribute : ShaderMemberAttribute
     {
-        public TextureAttribute([CallerLineNumber] int order = 0) : base(order)
+        public ShaderResourceViewAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }

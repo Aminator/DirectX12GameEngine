@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Graphics
         None = 0,
         RenderTarget = 1,
         DepthStencil = 2,
-        UnorderedAccess = 4,
-        ShaderResource = 8
+        ShaderResource = 4,
+        UnorderedAccess = 8
     }
 }

@@ -172,14 +172,14 @@ namespace DirectX12GameEngine.Graphics
                 case CommandListType.Bundle:
                     GraphicsDevice.BundleAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextDirectFenceValue - 1);
                     break;
-                case CommandListType.Direct:
-                    GraphicsDevice.DirectAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextDirectFenceValue - 1);
-                    break;
                 case CommandListType.Compute:
                     GraphicsDevice.ComputeAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextComputeFenceValue - 1);
                     break;
                 case CommandListType.Copy:
                     GraphicsDevice.CopyAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextCopyFenceValue - 1);
+                    break;
+                case CommandListType.Direct:
+                    GraphicsDevice.DirectAllocatorPool.Enqueue(currentCommandList.NativeCommandAllocator, GraphicsDevice.NextDirectFenceValue - 1);
                     break;
                 default:
                     throw new NotSupportedException("This command list type is not supported.");
@@ -323,7 +323,6 @@ namespace DirectX12GameEngine.Graphics
 
             for (int i = 0; i < renderTargetViews.Length; i++)
             {
-                //ResourceBarrierTransition(renderTargetViews[i], ResourceStates.Present, ResourceStates.RenderTarget);
                 renderTargetDescriptors[i] = renderTargetViews[i].NativeCpuDescriptorHandle;
             }
 

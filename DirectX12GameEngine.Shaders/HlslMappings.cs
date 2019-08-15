@@ -92,13 +92,17 @@ namespace DirectX12GameEngine.Shaders
             { typeof(Numerics.UInt3).FullName, "uint3" },
             { typeof(Numerics.UInt4).FullName, "uint4" },
             { typeof(Matrix4x4).FullName, "float4x4" },
+
             { typeof(SamplerResource).FullName, "SamplerState" },
             { typeof(SamplerComparisonResource).FullName, "SamplerComparisonState" },
             { typeof(Texture2DResource).FullName, "Texture2D" },
             { typeof(Texture2DArrayResource).FullName, "Texture2DArray" },
             { typeof(TextureCubeResource).FullName, "TextureCube" },
+            { typeof(BufferResource<>).FullName, "Buffer" },
             { typeof(RWBufferResource<>).FullName, "RWBuffer" },
-            { typeof(RWTexture2DResource<>).FullName, "RWTexture2D" },
+            { typeof(StructuredBufferResource<>).FullName, "StructuredBuffer" },
+            { typeof(RWStructuredBufferResource<>).FullName, "RWStructuredBuffer" },
+            { typeof(RWTexture2DResource<>).FullName, "RWTexture2D" }
         };
 
         public static bool ContainsKey(Type type)

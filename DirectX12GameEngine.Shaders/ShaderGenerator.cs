@@ -337,8 +337,8 @@ namespace DirectX12GameEngine.Shaders
                 case SamplerAttribute _:
                     WriteSampler(memberInfo, memberType, bindingTracker.Sampler++);
                     break;
-                case TextureAttribute _:
-                    WriteTexture(memberInfo, memberType, bindingTracker.Texture++);
+                case ShaderResourceViewAttribute _:
+                    WriteShaderResourceView(memberInfo, memberType, bindingTracker.ShaderResourceView++);
                     break;
                 case UnorderedAccessViewAttribute _:
                     WriteUnorderedAccessView(memberInfo, memberType, bindingTracker.UnorderedAccessView++);
@@ -375,7 +375,7 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine();
         }
 
-        private void WriteTexture(MemberInfo memberInfo, Type memberType, int binding)
+        private void WriteShaderResourceView(MemberInfo memberInfo, Type memberType, int binding)
         {
             writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
             writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
@@ -658,7 +658,7 @@ namespace DirectX12GameEngine.Shaders
 
             public int Sampler { get; set; }
 
-            public int Texture { get; set; }
+            public int ShaderResourceView { get; set; }
 
             public int UnorderedAccessView { get; set; }
 
