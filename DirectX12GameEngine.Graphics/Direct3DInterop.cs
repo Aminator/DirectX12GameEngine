@@ -1,8 +1,8 @@
-﻿using SharpDX;
-using SharpDX.DXGI;
+﻿using Vortice.DirectX.DXGI;
 using System;
 using System.Runtime.InteropServices;
 using Windows.Graphics.DirectX.Direct3D11;
+using SharpGen.Runtime;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -14,12 +14,21 @@ namespace DirectX12GameEngine.Graphics
         [Guid("A9B3D012-3DF2-4EE3-B8D1-8695F457D3C1")]
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         [ComVisible(true)]
-        private interface IDirect3DDxgiInterfaceAccess : IDisposable
+        internal interface IDirect3DDxgiInterfaceAccess : IDisposable
         {
             IntPtr GetInterface([In] ref Guid iid);
         }
 
-        internal static IDirect3DDevice CreateDirect3DDevice(Device dxgiDevice)
+        [ComImport]
+        [Guid("F92F19D2-3ADE-45A6-A20C-F6F1EA90554B")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        [ComVisible(true)]
+        internal interface ISwapChainPanelNative : IDisposable
+        {
+            Result SetSwapChain([In] IntPtr swapChain);
+        }
+
+        internal static IDirect3DDevice CreateDirect3DDevice(IDXGIDevice dxgiDevice)
         {
             Result result = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.NativePointer, out IntPtr graphicsDevice);
 
@@ -31,7 +40,7 @@ namespace DirectX12GameEngine.Graphics
             return d3DInteropDevice;
         }
 
-        internal static IDirect3DSurface CreateDirect3DSurface(Surface dxgiSurface)
+        internal static IDirect3DSurface CreateDirect3DSurface(IDXGISurface dxgiSurface)
         {
             Result result = CreateDirect3D11SurfaceFromDXGISurface(dxgiSurface.NativePointer, out IntPtr graphicsSurface);
 
@@ -43,20 +52,20 @@ namespace DirectX12GameEngine.Graphics
             return d3DSurface;
         }
 
-        internal static Device CreateDXGIDevice(IDirect3DDevice direct3DDevice)
+        internal static IDXGIDevice CreateDXGIDevice(IDirect3DDevice direct3DDevice)
         {
             IDirect3DDxgiInterfaceAccess dxgiDeviceInterfaceAccess = (IDirect3DDxgiInterfaceAccess)direct3DDevice;
             IntPtr device = dxgiDeviceInterfaceAccess.GetInterface(ID3D11Resource);
 
-            return new Device(device);
+            return new IDXGIDevice(device);
         }
 
-        internal static Surface CreateDXGISurface(IDirect3DSurface direct3DSurface)
+        internal static IDXGISurface CreateDXGISurface(IDirect3DSurface direct3DSurface)
         {
             IDirect3DDxgiInterfaceAccess dxgiSurfaceInterfaceAccess = (IDirect3DDxgiInterfaceAccess)direct3DSurface;
             IntPtr surface = dxgiSurfaceInterfaceAccess.GetInterface(ID3D11Resource);
 
-            return new Surface(surface);
+            return new IDXGISurface(surface);
         }
 
         [DllImport("d3d11.dll", EntryPoint = "CreateDirect3D11DeviceFromDXGIDevice",

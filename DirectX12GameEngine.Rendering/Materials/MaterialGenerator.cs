@@ -1,7 +1,8 @@
-﻿using Nito.AsyncEx;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Graphics;
+using Nito.AsyncEx;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
@@ -22,9 +23,21 @@ namespace DirectX12GameEngine.Rendering.Materials
                     descriptor.Visit(context);
 
                     materialPass.PipelineState = await context.CreateGraphicsPipelineStateAsync();
-                    (materialPass.NativeConstantBufferCpuDescriptorHandle, materialPass.NativeConstantBufferGpuDescriptorHandle) = context.GraphicsDevice.CopyDescriptorsToOneDescriptorHandle(context.ConstantBuffers);
-                    (materialPass.NativeSamplerCpuDescriptorHandle, materialPass.NativeSamplerGpuDescriptorHandle) = context.GraphicsDevice.CopyDescriptorsToOneDescriptorHandle(context.Samplers);
-                    (materialPass.NativeTextureCpuDescriptorHandle, materialPass.NativeTextureGpuDescriptorHandle) = context.GraphicsDevice.CopyDescriptorsToOneDescriptorHandle(context.Textures);
+
+                    if (context.ConstantBuffers.Count > 0)
+                    {
+                        materialPass.ConstantBufferDescriptorSet = new DescriptorSet(context.GraphicsDevice, context.ConstantBuffers);
+                    }
+
+                    if (context.Samplers.Count > 0)
+                    {
+                        materialPass.SamplerDescriptorSet = new DescriptorSet(context.GraphicsDevice, context.Samplers);
+                    }
+
+                    if (context.Textures.Count > 0)
+                    {
+                        materialPass.TextureDescriptorSet = new DescriptorSet(context.GraphicsDevice, context.Textures);
+                    }
 
                     context.PopPass();
                 }

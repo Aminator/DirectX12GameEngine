@@ -5,31 +5,32 @@ using System.Threading;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using Nito.AsyncEx.Interop;
-using SharpDX.Direct3D;
-using SharpDX.Direct3D12;
+using SharpGen.Runtime;
+using Vortice.DirectX.Direct3D;
+using Vortice.DirectX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
     public sealed class GraphicsDevice : IDisposable, ICollector
     {
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
-        private SharpDX.Direct3D11.Device? nativeDirect3D11Device;
+        private Vortice.DirectX.Direct3D11.ID3D11Device? nativeDirect3D11Device;
 
         public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level_11_0, bool enableDebugLayer = false)
         {
 #if DEBUG
             if (enableDebugLayer)
             {
-                DebugInterface.Get().EnableDebugLayer();
             }
 #endif
             FeatureLevel = minFeatureLevel < FeatureLevel.Level_11_0 ? FeatureLevel.Level_11_0 : minFeatureLevel;
 
-            NativeDevice = new Device(null, FeatureLevel);
+            Result result = D3D12.D3D12CreateDevice(null, (Vortice.DirectX.Direct3D.FeatureLevel)FeatureLevel, out ID3D12Device device);
+            NativeDevice = device;
 
-            NativeComputeCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(SharpDX.Direct3D12.CommandListType.Compute));
-            NativeCopyCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(SharpDX.Direct3D12.CommandListType.Copy));
-            NativeDirectCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(SharpDX.Direct3D12.CommandListType.Direct));
+            NativeComputeCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.DirectX.Direct3D12.CommandListType.Compute));
+            NativeCopyCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.DirectX.Direct3D12.CommandListType.Copy));
+            NativeDirectCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.DirectX.Direct3D12.CommandListType.Direct));
 
             BundleAllocatorPool = new CommandAllocatorPool(this, CommandListType.Bundle);
             ComputeAllocatorPool = new CommandAllocatorPool(this, CommandListType.Compute);
@@ -40,9 +41,9 @@ namespace DirectX12GameEngine.Graphics
             NativeCopyFence = NativeDevice.CreateFence(0, FenceFlags.None);
             NativeDirectFence = NativeDevice.CreateFence(0, FenceFlags.None);
 
-            DepthStencilViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.DepthStencilView, descriptorCount: 1);
-            RenderTargetViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.RenderTargetView, descriptorCount: 2);
-            ShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, DescriptorHeapFlags.ShaderVisible);
+            DepthStencilViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.DepthStencilView, 1);
+            RenderTargetViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.RenderTargetView, 2);
+            ShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, descriptorHeapFlags: DescriptorHeapFlags.ShaderVisible);
 
             CommandList = new CommandList(this, CommandListType.Direct);
             CommandList.Close();
@@ -61,10 +62,22 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsPresenter? Presenter { get; set; }
 
-        internal Device NativeDevice { get; }
+        internal ID3D12Device NativeDevice { get; }
 
-        internal SharpDX.Direct3D11.Device NativeDirect3D11Device => NativeDirect3D11Device ?? (nativeDirect3D11Device = SharpDX.Direct3D11.Device.CreateFromDirect3D12(
-                NativeDevice, SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport, null, null, NativeDirectCommandQueue));
+        internal Vortice.DirectX.Direct3D11.ID3D11Device NativeDirect3D11Device
+        {
+            get
+            {
+                if (nativeDirect3D11Device is null)
+                {
+                    Vortice.DirectX.Direct3D11.D3D11.D3D11On12CreateDevice(
+                        NativeDevice, Vortice.DirectX.Direct3D11.DeviceCreationFlags.BgraSupport, null, new[] { NativeDirectCommandQueue }, 0,
+                        out nativeDirect3D11Device, out _, out _);
+                }
+
+                return nativeDirect3D11Device;
+            }
+        }
 
         internal DescriptorAllocator DepthStencilViewAllocator { get; set; }
 
@@ -80,64 +93,27 @@ namespace DirectX12GameEngine.Graphics
 
         internal CommandAllocatorPool DirectAllocatorPool { get; }
 
-        internal CommandQueue NativeComputeCommandQueue { get; }
+        internal ID3D12CommandQueue NativeComputeCommandQueue { get; }
 
-        internal CommandQueue NativeCopyCommandQueue { get; }
+        internal ID3D12CommandQueue NativeCopyCommandQueue { get; }
 
-        internal CommandQueue NativeDirectCommandQueue { get; }
+        internal ID3D12CommandQueue NativeDirectCommandQueue { get; }
 
-        internal Fence NativeComputeFence { get; }
+        internal ID3D12Fence NativeComputeFence { get; }
 
-        internal Fence NativeCopyFence { get; }
+        internal ID3D12Fence NativeCopyFence { get; }
 
-        internal Fence NativeDirectFence { get; }
+        internal ID3D12Fence NativeDirectFence { get; }
 
-        internal long NextComputeFenceValue { get; private set; } = 1;
+        internal ulong NextComputeFenceValue { get; private set; } = 1;
 
-        internal long NextCopyFenceValue { get; private set; } = 1;
+        internal ulong NextCopyFenceValue { get; private set; } = 1;
 
-        internal long NextDirectFenceValue { get; private set; } = 1;
+        internal ulong NextDirectFenceValue { get; private set; } = 1;
 
-        public void CopyDescriptors(int numDestDescriptorRanges, CpuDescriptorHandle[] destDescriptorRangeStartsRef, int[] destDescriptorRangeSizesRef, int numSrcDescriptorRanges, CpuDescriptorHandle[] srcDescriptorRangeStartsRef, int[] srcDescriptorRangeSizesRef, DescriptorHeapType descriptorHeapsType)
+        public ID3D12RootSignature CreateRootSignature(VersionedRootSignatureDescription rootSignatureDescription)
         {
-            NativeDevice.CopyDescriptors(numDestDescriptorRanges, destDescriptorRangeStartsRef, destDescriptorRangeSizesRef, numSrcDescriptorRanges, srcDescriptorRangeStartsRef, srcDescriptorRangeSizesRef, descriptorHeapsType);
-        }
-
-        public (CpuDescriptorHandle, GpuDescriptorHandle) CopyDescriptorsToOneDescriptorHandle(IEnumerable<GraphicsResource> resources)
-        {
-            return CopyDescriptorsToOneDescriptorHandle(resources.Select(t => t.NativeCpuDescriptorHandle).ToArray());
-        }
-
-        public (CpuDescriptorHandle, GpuDescriptorHandle) CopyDescriptorsToOneDescriptorHandle(CpuDescriptorHandle[] descriptors)
-        {
-            if (descriptors.Length == 0) return default;
-
-            int[] srcDescriptorRangeStarts = new int[descriptors.Length];
-            //Array.Fill(srcDescriptorRangeStarts, 1);
-
-            for (int i = 0; i < srcDescriptorRangeStarts.Length; i++)
-            {
-                srcDescriptorRangeStarts[i] = 1;
-            }
-
-            var (cpuDescriptorHandle, gpuDescriptorHandle) = ShaderResourceViewAllocator.Allocate(descriptors.Length);
-
-            CopyDescriptors(
-                1, new[] { cpuDescriptorHandle }, new[] { descriptors.Length },
-                descriptors.Length, descriptors, srcDescriptorRangeStarts,
-                DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
-
-            return (cpuDescriptorHandle, gpuDescriptorHandle);
-        }
-
-        public RootSignature CreateRootSignature(RootSignatureDescription rootSignatureDescription)
-        {
-            return NativeDevice.CreateRootSignature(rootSignatureDescription.Serialize());
-        }
-
-        public RootSignature CreateRootSignature(byte[] bytecode)
-        {
-            return NativeDevice.CreateRootSignature(bytecode);
+            return NativeDevice.CreateRootSignature(rootSignatureDescription);
         }
 
         public void Dispose()
@@ -179,7 +155,7 @@ namespace DirectX12GameEngine.Graphics
 
         public Task ExecuteCommandListsAsync(params CompiledCommandList[] commandLists)
         {
-            Fence fence = commandLists[0].Builder.CommandListType switch
+            ID3D12Fence fence = commandLists[0].Builder.CommandListType switch
             {
                 CommandListType.Direct => NativeDirectFence,
                 CommandListType.Compute => NativeComputeFence,
@@ -187,17 +163,17 @@ namespace DirectX12GameEngine.Graphics
                 _ => throw new NotSupportedException("This command list type is not supported.")
             };
 
-            long fenceValue = ExecuteCommandLists(commandLists);
+            ulong fenceValue = ExecuteCommandLists(commandLists);
 
             return WaitForFenceAsync(fence, fenceValue);
         }
 
-        public long ExecuteCommandLists(params CompiledCommandList[] commandLists)
+        public ulong ExecuteCommandLists(params CompiledCommandList[] commandLists)
         {
             CommandAllocatorPool commandAllocatorPool;
-            CommandQueue commandQueue;
-            Fence fence;
-            long fenceValue;
+            ID3D12CommandQueue commandQueue;
+            ID3D12Fence fence;
+            ulong fenceValue;
 
             switch (commandLists[0].Builder.CommandListType)
             {
@@ -229,7 +205,7 @@ namespace DirectX12GameEngine.Graphics
                     throw new NotSupportedException("This command list type is not supported.");
             }
 
-            SharpDX.Direct3D12.CommandList[] nativeCommandLists = new SharpDX.Direct3D12.CommandList[commandLists.Length];
+            ID3D12CommandList[] nativeCommandLists = new ID3D12CommandList[commandLists.Length];
 
             for (int i = 0; i < commandLists.Length; i++)
             {
@@ -243,12 +219,12 @@ namespace DirectX12GameEngine.Graphics
             return fenceValue;
         }
 
-        internal bool IsFenceComplete(Fence fence, long fenceValue)
+        internal bool IsFenceComplete(ID3D12Fence fence, ulong fenceValue)
         {
             return fence.CompletedValue >= fenceValue;
         }
 
-        internal Task WaitForFenceAsync(Fence fence, long fenceValue)
+        internal Task WaitForFenceAsync(ID3D12Fence fence, ulong fenceValue)
         {
             if (IsFenceComplete(fence, fenceValue)) return Task.CompletedTask;
 
@@ -258,6 +234,33 @@ namespace DirectX12GameEngine.Graphics
 
                 return WaitHandleAsyncFactory.FromWaitHandle(fenceEvent);
             }
+        }
+
+        internal CpuDescriptorHandle CopyDescriptorsToOneDescriptorHandle(DescriptorAllocator descriptorAllocator, IEnumerable<GraphicsResource> resources)
+        {
+            return CopyDescriptorsToOneDescriptorHandle(descriptorAllocator, resources.Select(t => t.NativeCpuDescriptorHandle).ToArray());
+        }
+
+        internal CpuDescriptorHandle CopyDescriptorsToOneDescriptorHandle(DescriptorAllocator descriptorAllocator, CpuDescriptorHandle[] descriptors)
+        {
+            if (descriptors.Length == 0) return default;
+
+            int[] srcDescriptorRangeStarts = new int[descriptors.Length];
+            //Array.Fill(srcDescriptorRangeStarts, 1);
+
+            for (int i = 0; i < srcDescriptorRangeStarts.Length; i++)
+            {
+                srcDescriptorRangeStarts[i] = 1;
+            }
+
+            CpuDescriptorHandle cpuDescriptorHandle = descriptorAllocator.Allocate(descriptors.Length);
+
+            NativeDevice.CopyDescriptors(
+                1, new[] { cpuDescriptorHandle }, new[] { descriptors.Length },
+                descriptors.Length, descriptors, srcDescriptorRangeStarts,
+                descriptorAllocator.DescriptorHeap.Description.Type);
+
+            return cpuDescriptorHandle;
         }
     }
 }

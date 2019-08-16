@@ -1,5 +1,6 @@
-﻿using SharpDX.DXGI;
+﻿using Vortice.DirectX.DXGI;
 using System;
+using Vortice.DirectX;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -13,7 +14,7 @@ namespace DirectX12GameEngine.Graphics
             this.windowHandle = windowHandle;
         }
 
-        private static SwapChain3 CreateSwapChain(GraphicsDevice device, PresentationParameters presentationParameters, IntPtr windowHandle)
+        private static IDXGISwapChain3 CreateSwapChain(GraphicsDevice device, PresentationParameters presentationParameters, IntPtr windowHandle)
         {
             SwapChainDescription1 swapChainDescription = new SwapChainDescription1
             {
@@ -30,10 +31,11 @@ namespace DirectX12GameEngine.Graphics
                 AlphaMode = AlphaMode.Unspecified
             };
 
-            using Factory4 factory = new Factory4();
-            using SwapChain1 tempSwapChain = new SwapChain1(factory, device.NativeDirectCommandQueue, windowHandle, ref swapChainDescription);
+            DXGI.CreateDXGIFactory2(false, out IDXGIFactory2 factory);
+            using IDXGISwapChain1 tempSwapChain = factory.CreateSwapChainForHwnd(device.NativeDirectCommandQueue, windowHandle, swapChainDescription);
+            factory.Dispose();
 
-            return tempSwapChain.QueryInterface<SwapChain3>();
+            return tempSwapChain.QueryInterface<IDXGISwapChain3>();
         }
     }
 }

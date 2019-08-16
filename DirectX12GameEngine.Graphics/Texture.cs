@@ -1,12 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using SharpDX.Direct3D12;
-using SharpDX.DXGI;
-
-using Resource = SharpDX.Direct3D12.Resource;
+using Vortice.DirectX.Direct3D12;
+using Vortice.DirectX.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -61,13 +58,10 @@ namespace DirectX12GameEngine.Graphics
         {
             if (NativeResource is null) throw new InvalidOperationException();
 
-            Resource uploadResource = GraphicsDevice.NativeDevice.CreateCommittedResource(new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), HeapFlags.None, NativeResource.Description, ResourceStates.CopyDestination);
+            ID3D12Resource uploadResource = GraphicsDevice.NativeDevice.CreateCommittedResource(new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), HeapFlags.None, NativeResource.Description, ResourceStates.CopyDestination);
             using Texture textureUploadBuffer = new Texture(GraphicsDevice).InitializeFrom(uploadResource);
 
-            fixed (T* pointer = data)
-            {
-                textureUploadBuffer.NativeResource!.WriteToSubresource(0, null, (IntPtr)pointer, ((Format)Description.Format).SizeOfInBytes() * Width, data.Length * Unsafe.SizeOf<T>());
-            }
+            textureUploadBuffer.NativeResource!.WriteToSubresource(0, data, Width * 4, Width * Height * 4);
 
             using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
 
@@ -88,14 +82,14 @@ namespace DirectX12GameEngine.Graphics
                 resourceStates = ResourceStates.CopyDestination;
             }
 
-            Resource resource = GraphicsDevice.NativeDevice.CreateCommittedResource(
+            ID3D12Resource resource = GraphicsDevice.NativeDevice.CreateCommittedResource(
                 new HeapProperties((HeapType)description.HeapType), HeapFlags.None,
                 ConvertToNativeDescription(description), resourceStates);
 
             return InitializeFrom(resource, description);
         }
 
-        internal Texture InitializeFrom(Resource resource, bool isShaderResource = false)
+        internal Texture InitializeFrom(ID3D12Resource resource, bool isShaderResource = false)
         {
             resource.GetHeapProperties(out HeapProperties heapProperties, out _);
 
@@ -104,13 +98,13 @@ namespace DirectX12GameEngine.Graphics
             return InitializeFrom(resource, description);
         }
 
-        private Texture InitializeFrom(Resource resource, TextureDescription description)
+        private Texture InitializeFrom(ID3D12Resource resource, TextureDescription description)
         {
             NativeResource = resource;
 
             Description = description;
 
-            (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = description.Flags switch
+            NativeCpuDescriptorHandle = description.Flags switch
             {
                 TextureFlags.DepthStencil => CreateDepthStencilView(),
                 TextureFlags.RenderTarget => CreateRenderTargetView(),
@@ -191,41 +185,41 @@ namespace DirectX12GameEngine.Graphics
         {
             return description.Dimension switch
             {
-                TextureDimension.Texture2D => ResourceDescription.Texture2D((Format)description.Format, description.Width, description.Height, (short)description.DepthOrArraySize, (short)description.MipLevels, description.MultisampleCount, 0, GetBindFlagsFromTextureFlags(description.Flags)),
+                TextureDimension.Texture2D => ResourceDescription.Texture2D((Format)description.Format, (ulong)description.Width, description.Height, (ushort)description.DepthOrArraySize, (ushort)description.MipLevels, description.MultisampleCount, 0, GetBindFlagsFromTextureFlags(description.Flags)),
                 _ => throw new NotSupportedException()
             };
         }
 
-        private (CpuDescriptorHandle, GpuDescriptorHandle) CreateDepthStencilView()
+        private CpuDescriptorHandle CreateDepthStencilView()
         {
-            (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.DepthStencilViewAllocator.Allocate(1);
+            CpuDescriptorHandle cpuHandle = GraphicsDevice.DepthStencilViewAllocator.Allocate(1);
             GraphicsDevice.NativeDevice.CreateDepthStencilView(NativeResource, null, cpuHandle);
 
-            return (cpuHandle, gpuHandle);
+            return cpuHandle;
         }
 
-        private (CpuDescriptorHandle, GpuDescriptorHandle) CreateRenderTargetView()
+        private CpuDescriptorHandle CreateRenderTargetView()
         {
-            (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.RenderTargetViewAllocator.Allocate(1);
+            CpuDescriptorHandle cpuHandle = GraphicsDevice.RenderTargetViewAllocator.Allocate(1);
             GraphicsDevice.NativeDevice.CreateRenderTargetView(NativeResource, null, cpuHandle);
 
-            return (cpuHandle, gpuHandle);
+            return cpuHandle;
         }
 
-        private (CpuDescriptorHandle, GpuDescriptorHandle) CreateShaderResourceView()
+        private CpuDescriptorHandle CreateShaderResourceView()
         {
-            (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
             GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, null, cpuHandle);
 
-            return (cpuHandle, gpuHandle);
+            return cpuHandle;
         }
 
-        private (CpuDescriptorHandle, GpuDescriptorHandle) CreateUnorderedAccessView()
+        private CpuDescriptorHandle CreateUnorderedAccessView()
         {
-            (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
             GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, null, cpuHandle);
 
-            return (cpuHandle, gpuHandle);
+            return cpuHandle;
         }
     }
 }

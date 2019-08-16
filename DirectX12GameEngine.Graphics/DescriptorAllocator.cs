@@ -1,5 +1,5 @@
 ﻿using System;
-using SharpDX.Direct3D12;
+using Vortice.DirectX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -11,10 +11,9 @@ namespace DirectX12GameEngine.Graphics
         private readonly int descriptorSize;
 
         private CpuDescriptorHandle currentCpuHandle;
-        private GpuDescriptorHandle currentGpuHandle;
         private int remainingHandles;
 
-        public DescriptorAllocator(GraphicsDevice device, DescriptorHeapType descriptorHeapType, DescriptorHeapFlags descriptorHeapFlags = DescriptorHeapFlags.None, int descriptorCount = DescriptorsPerHeap)
+        public DescriptorAllocator(GraphicsDevice device, DescriptorHeapType descriptorHeapType, int descriptorCount = DescriptorsPerHeap, DescriptorHeapFlags descriptorHeapFlags = DescriptorHeapFlags.None)
         {
             if (descriptorCount < 1 || descriptorCount > DescriptorsPerHeap)
             {
@@ -23,23 +22,17 @@ namespace DirectX12GameEngine.Graphics
 
             descriptorSize = device.NativeDevice.GetDescriptorHandleIncrementSize(descriptorHeapType);
 
-            DescriptorHeapDescription rtvHeapDescription = new DescriptorHeapDescription
-            {
-                DescriptorCount = descriptorCount,
-                Flags = descriptorHeapFlags,
-                Type = descriptorHeapType
-            };
+            DescriptorHeapDescription descriptorHeapDescription = new DescriptorHeapDescription(descriptorHeapType, descriptorCount, descriptorHeapFlags);
 
-            DescriptorHeap = device.NativeDevice.CreateDescriptorHeap(rtvHeapDescription);
+            DescriptorHeap = device.NativeDevice.CreateDescriptorHeap(descriptorHeapDescription);
 
             remainingHandles = descriptorCount;
-            currentCpuHandle = DescriptorHeap.CPUDescriptorHandleForHeapStart;
-            currentGpuHandle = DescriptorHeap.GPUDescriptorHandleForHeapStart;
+            currentCpuHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart();
         }
 
-        public DescriptorHeap DescriptorHeap { get; }
+        public ID3D12DescriptorHeap DescriptorHeap { get; }
 
-        public (CpuDescriptorHandle, GpuDescriptorHandle) Allocate(int count)
+        public CpuDescriptorHandle Allocate(int count)
         {
             if (count < 1 || (count > remainingHandles && remainingHandles != 0))
             {
@@ -51,22 +44,19 @@ namespace DirectX12GameEngine.Graphics
                 if (remainingHandles == 0)
                 {
                     remainingHandles = DescriptorHeap.Description.DescriptorCount;
-                    currentCpuHandle = DescriptorHeap.CPUDescriptorHandleForHeapStart;
-                    currentGpuHandle = DescriptorHeap.GPUDescriptorHandleForHeapStart;
+                    currentCpuHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart();
                 }
 
                 CpuDescriptorHandle cpuDescriptorHandle = currentCpuHandle;
-                GpuDescriptorHandle gpuDescriptorHandle = currentGpuHandle;
 
                 currentCpuHandle += descriptorSize * count;
-                currentGpuHandle += descriptorSize * count;
                 remainingHandles -= count;
 
-                return (cpuDescriptorHandle, gpuDescriptorHandle);
+                return cpuDescriptorHandle;
             }
         }
 
-        public (CpuDescriptorHandle, GpuDescriptorHandle) AllocateSlot(int slot)
+        public CpuDescriptorHandle AllocateSlot(int slot)
         {
             if (slot < 0 || slot > DescriptorHeap.Description.DescriptorCount - 1)
             {
@@ -75,10 +65,9 @@ namespace DirectX12GameEngine.Graphics
 
             lock (allocatorLock)
             {
-                CpuDescriptorHandle cpuDescriptorHandle = DescriptorHeap.CPUDescriptorHandleForHeapStart + descriptorSize * slot;
-                GpuDescriptorHandle gpuDescriptorHandle = DescriptorHeap.GPUDescriptorHandleForHeapStart + descriptorSize * slot;
+                CpuDescriptorHandle cpuDescriptorHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart() + descriptorSize * slot;
 
-                return (cpuDescriptorHandle, gpuDescriptorHandle);
+                return cpuDescriptorHandle;
             }
         }
 

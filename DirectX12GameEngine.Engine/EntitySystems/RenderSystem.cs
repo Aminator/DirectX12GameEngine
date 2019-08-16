@@ -249,7 +249,7 @@ namespace DirectX12GameEngine.Engine
                 commandList.SetVertexBuffers(0, mesh.MeshDraw.VertexBufferViews);
 
                 commandList.SetPipelineState(materialPass.PipelineState);
-                commandList.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.TriangleList;
+                commandList.SetPrimitiveTopology(PrimitiveTopology.TriangleList);
 
                 int rootParameterIndex = 0;
 
@@ -260,28 +260,28 @@ namespace DirectX12GameEngine.Engine
 
                 commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, DirectionalLightGroupBuffer);
 
-                if (materialPass.NativeConstantBufferGpuDescriptorHandle.Ptr != 0)
+                if (materialPass.ConstantBufferDescriptorSet != null)
                 {
-                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.NativeConstantBufferGpuDescriptorHandle);
+                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.ConstantBufferDescriptorSet);
                 }
 
-                if (materialPass.NativeSamplerGpuDescriptorHandle.Ptr != 0)
+                if (materialPass.SamplerDescriptorSet != null)
                 {
-                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.NativeSamplerGpuDescriptorHandle);
+                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.SamplerDescriptorSet);
                 }
 
-                if (materialPass.NativeTextureGpuDescriptorHandle.Ptr != 0)
+                if (materialPass.TextureDescriptorSet != null)
                 {
-                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.NativeTextureGpuDescriptorHandle);
+                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.TextureDescriptorSet);
                 }
 
-                if (mesh.MeshDraw.IndexBufferView.HasValue)
+                if (mesh.MeshDraw.IndexBufferView != null)
                 {
-                    commandList.DrawIndexedInstanced(mesh.MeshDraw.IndexBufferView.Value.SizeInBytes / SharpDX.DXGI.FormatHelper.SizeOfInBytes(mesh.MeshDraw.IndexBufferView.Value.Format), instanceCount);
+                    commandList.DrawIndexedInstanced(mesh.MeshDraw.IndexBufferView.SizeInBytes / mesh.MeshDraw.IndexBufferView.StructuredByteStride, instanceCount);
                 }
                 else
                 {
-                    commandList.DrawInstanced(mesh.MeshDraw.VertexBufferViews[0].SizeInBytes / mesh.MeshDraw.VertexBufferViews[0].StrideInBytes, instanceCount);
+                    commandList.DrawInstanced(mesh.MeshDraw.VertexBufferViews[0].SizeInBytes / mesh.MeshDraw.VertexBufferViews[0].StructuredByteStride, instanceCount);
                 }
             }
         }

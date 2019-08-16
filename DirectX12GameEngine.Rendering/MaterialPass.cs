@@ -1,5 +1,4 @@
-﻿using SharpDX.Direct3D12;
-
+﻿using DirectX12GameEngine.Graphics;
 using PipelineState = DirectX12GameEngine.Graphics.PipelineState;
 
 namespace DirectX12GameEngine.Rendering
@@ -8,20 +7,12 @@ namespace DirectX12GameEngine.Rendering
     {
         public int PassIndex { get; set; }
 
-#nullable disable
-        public PipelineState PipelineState { get; set; }
-#nullable enable
+        public PipelineState? PipelineState { get; set; }
 
-        public CpuDescriptorHandle NativeConstantBufferCpuDescriptorHandle { get; set; }
+        public DescriptorSet? ConstantBufferDescriptorSet { get; set; }
 
-        public GpuDescriptorHandle NativeConstantBufferGpuDescriptorHandle { get; set; }
+        public DescriptorSet? SamplerDescriptorSet { get; set; }
 
-        public CpuDescriptorHandle NativeSamplerCpuDescriptorHandle { get; set; }
-
-        public GpuDescriptorHandle NativeSamplerGpuDescriptorHandle { get; set; }
-
-        public CpuDescriptorHandle NativeTextureCpuDescriptorHandle { get; set; }
-
-        public GpuDescriptorHandle NativeTextureGpuDescriptorHandle { get; set; }
+        public DescriptorSet? TextureDescriptorSet { get; set; }
     }
 }

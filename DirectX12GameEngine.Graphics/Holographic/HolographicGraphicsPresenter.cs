@@ -1,5 +1,6 @@
-﻿using SharpDX;
-using SharpDX.Direct3D12;
+﻿using Vortice.DirectX.Direct3D11;
+using Vortice.DirectX.Direct3D12;
+using Vortice.DirectX.DXGI;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Holographic;
 using Windows.Perception.Spatial;
@@ -11,7 +12,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
         private const int BufferCount = 1;
 
         private Texture renderTarget;
-        private SharpDX.Direct3D11.Resource direct3D11RenderTarget;
+        private ID3D11Resource direct3D11RenderTarget;
 
         public HolographicGraphicsPresenter(GraphicsDevice device, PresentationParameters presentationParameters, HolographicSpace holographicSpace)
             : base(device, presentationParameters)
@@ -22,7 +23,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
                 GraphicsDevice.RenderTargetViewAllocator = new DescriptorAllocator(GraphicsDevice, DescriptorHeapType.RenderTargetView, descriptorCount: BufferCount);
             }
 
-            using (SharpDX.DXGI.Device dxgiDevice = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.DXGI.Device>())
+            using (IDXGIDevice dxgiDevice = GraphicsDevice.NativeDirect3D11Device.QueryInterface<IDXGIDevice>())
             {
                 IDirect3DDevice direct3DInteropDevice = Direct3DInterop.CreateDirect3DDevice(dxgiDevice);
 
@@ -55,7 +56,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
         public HolographicFrame HolographicFrame { get; private set; }
 
-        internal SharpDX.Direct3D11.Texture2D HolographicBackBuffer { get; set; }
+        internal ID3D11Texture2D HolographicBackBuffer { get; set; }
 
         internal IDirect3DSurface HolographicSurface { get; set; }
 
@@ -93,19 +94,15 @@ namespace DirectX12GameEngine.Graphics.Holographic
             DepthStencilBuffer = CreateDepthStencilBuffer();
         }
 
-        private SharpDX.Direct3D11.Resource CreateDirect3D11RenderTarget()
+        private ID3D11Resource CreateDirect3D11RenderTarget()
         {
-            using SharpDX.Direct3D11.Device11On12 device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.Direct3D11.Device11On12>();
+            using ID3D11On12Device device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<ID3D11On12Device>();
 
-            device11On12.CreateWrappedResource(
+            return device11On12.CreateWrappedResource(
                 BackBuffer.NativeResource,
-                new SharpDX.Direct3D11.D3D11ResourceFlags { BindFlags = (int)Direct3DBindings.RenderTarget },
+                new Vortice.DirectX.Direct3D11.ResourceFlags { BindFlags = (int)Direct3DBindings.RenderTarget },
                 (int)ResourceStates.RenderTarget,
-                (int)ResourceStates.Present,
-                Utilities.GetGuidFromType(typeof(SharpDX.Direct3D11.Resource)),
-                out SharpDX.Direct3D11.Resource direct3D11RenderTarget);
-
-            return direct3D11RenderTarget;
+                (int)ResourceStates.Present);
         }
 
         private Texture CreateRenderTarget()
@@ -120,10 +117,12 @@ namespace DirectX12GameEngine.Graphics.Holographic
                 HolographicBufferCount);
         }
 
-        private SharpDX.Direct3D11.Texture2D GetHolographicBackBuffer()
+        private ID3D11Texture2D GetHolographicBackBuffer()
         {
             HolographicSurface = HolographicFrame.GetRenderingParameters(HolographicFrame.CurrentPrediction.CameraPoses[0]).Direct3D11BackBuffer;
-            SharpDX.Direct3D11.Texture2D d3DBackBuffer = new SharpDX.Direct3D11.Texture2D(Direct3DInterop.CreateDXGISurface(HolographicSurface).NativePointer);
+            using IDXGISurface surface = Direct3DInterop.CreateDXGISurface(HolographicSurface);
+
+            ID3D11Texture2D d3DBackBuffer = new ID3D11Texture2D(surface.NativePointer);
 
             PresentationParameters.BackBufferFormat = (PixelFormat)d3DBackBuffer.Description.Format;
             PresentationParameters.BackBufferWidth = d3DBackBuffer.Description.Width;

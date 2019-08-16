@@ -1,5 +1,7 @@
-﻿using SharpDX;
-using SharpDX.DXGI;
+﻿using SharpGen.Runtime;
+using System.Numerics;
+using Vortice.DirectX;
+using Vortice.DirectX.DXGI;
 using Windows.UI.Xaml.Controls;
 
 namespace DirectX12GameEngine.Graphics
@@ -16,7 +18,7 @@ namespace DirectX12GameEngine.Graphics
 
         protected override void ResizeBackBuffer(int width, int height)
         {
-            MatrixTransform = new System.Numerics.Matrix3x2
+            MatrixTransform = new Matrix3x2
             {
                 M11 = 1.0f / swapChainPanel.CompositionScaleX,
                 M22 = 1.0f / swapChainPanel.CompositionScaleY
@@ -25,7 +27,7 @@ namespace DirectX12GameEngine.Graphics
             base.ResizeBackBuffer(width, height);
         }
 
-        private static SwapChain3 CreateSwapChain(GraphicsDevice device, PresentationParameters presentationParameters, SwapChainPanel swapChainPanel)
+        private static IDXGISwapChain3 CreateSwapChain(GraphicsDevice device, PresentationParameters presentationParameters, SwapChainPanel swapChainPanel)
         {
             SwapChainDescription1 swapChainDescription = new SwapChainDescription1
             {
@@ -44,14 +46,15 @@ namespace DirectX12GameEngine.Graphics
 
             swapChainDescription.AlphaMode = AlphaMode.Premultiplied;
 
-            using Factory4 factory = new Factory4();
-            using ISwapChainPanelNative nativePanel = ComObject.As<ISwapChainPanelNative>(swapChainPanel);
-            using SwapChain1 tempSwapChain = new SwapChain1(factory, device.NativeDirectCommandQueue, ref swapChainDescription);
+            DXGI.CreateDXGIFactory2(false, out IDXGIFactory2 factory);
+            Direct3DInterop.ISwapChainPanelNative nativePanel = (Direct3DInterop.ISwapChainPanelNative)swapChainPanel;
+            using IDXGISwapChain1 tempSwapChain = factory.CreateSwapChainForComposition(device.NativeDirectCommandQueue, swapChainDescription);
+            factory.Dispose();
 
-            SwapChain3 swapChain = tempSwapChain.QueryInterface<SwapChain3>();
-            nativePanel.SwapChain = swapChain;
+            IDXGISwapChain3 swapChain = tempSwapChain.QueryInterface<IDXGISwapChain3>();
+            nativePanel.SetSwapChain(swapChain.NativePointer);
 
-            swapChain.MatrixTransform = new SharpDX.Mathematics.Interop.RawMatrix3x2
+            swapChain.MatrixTransform = new Matrix3x2
             {
                 M11 = 1.0f / swapChainPanel.CompositionScaleX,
                 M22 = 1.0f / swapChainPanel.CompositionScaleY

@@ -1,6 +1,5 @@
-﻿using SharpDX.Direct3D;
-using SharpDX.Direct3D12;
-using SharpDX.DXGI;
+﻿using Vortice.DirectX.Direct3D12;
+using Vortice.DirectX.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -9,11 +8,11 @@ namespace DirectX12GameEngine.Graphics
         public PipelineState(GraphicsDevice device, ComputePipelineStateDescription pipelineStateDescription)
         {
             IsCompute = true;
-            RootSignature = pipelineStateDescription.RootSignaturePointer;
+            RootSignature = pipelineStateDescription.RootSignature;
             NativePipelineState = device.NativeDevice.CreateComputePipelineState(pipelineStateDescription);
         }
 
-        public PipelineState(GraphicsDevice device, RootSignature rootSignature, ShaderBytecode computeShader)
+        public PipelineState(GraphicsDevice device, ID3D12RootSignature rootSignature, byte[] computeShader)
             : this(device, CreateComputePipelineStateDescription(rootSignature, computeShader))
         {
         }
@@ -25,43 +24,32 @@ namespace DirectX12GameEngine.Graphics
             NativePipelineState = device.NativeDevice.CreateGraphicsPipelineState(pipelineStateDescription);
         }
 
-        public PipelineState(GraphicsDevice device, InputElement[] inputElements, RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode hullShader = default, ShaderBytecode domainShader = default, ShaderBytecode geometryShader = default, RasterizerStateDescription? rasterizerStateDescription = null)
-            : this(device, CreateGraphicsPipelineStateDescription(device, inputElements, rootSignature, vertexShader, pixelShader, hullShader, domainShader, geometryShader, rasterizerStateDescription))
+        public PipelineState(GraphicsDevice device, InputElementDescription[] inputElements, ID3D12RootSignature rootSignature, byte[] vertexShader, byte[] pixelShader, byte[]? hullShader = default, byte[]? domainShader = default, byte[]? geometryShader = default)
+            : this(device, CreateGraphicsPipelineStateDescription(device, inputElements, rootSignature, vertexShader, pixelShader, hullShader, domainShader, geometryShader))
         {
         }
 
-        public RootSignature RootSignature { get; }
+        public ID3D12RootSignature RootSignature { get; }
 
         internal bool IsCompute { get; }
 
-        internal SharpDX.Direct3D12.PipelineState NativePipelineState { get; }
+        internal ID3D12PipelineState NativePipelineState { get; }
 
-        private static ComputePipelineStateDescription CreateComputePipelineStateDescription(RootSignature rootSignature, ShaderBytecode computeShader)
+        private static ComputePipelineStateDescription CreateComputePipelineStateDescription(ID3D12RootSignature rootSignature, ShaderBytecode computeShader)
         {
             return new ComputePipelineStateDescription
             {
-                RootSignaturePointer = rootSignature,
+                RootSignature = rootSignature,
                 ComputeShader = computeShader
             };
         }
 
-        private static GraphicsPipelineStateDescription CreateGraphicsPipelineStateDescription(GraphicsDevice device, InputElement[] inputElements, RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode hullShader, ShaderBytecode domainShader, ShaderBytecode geometryShader, RasterizerStateDescription? rasterizerStateDescription)
+        private static GraphicsPipelineStateDescription CreateGraphicsPipelineStateDescription(GraphicsDevice device, InputElementDescription[] inputElements, ID3D12RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode hullShader, ShaderBytecode domainShader, ShaderBytecode geometryShader)
         {
-            RasterizerStateDescription rasterizerDescription = rasterizerStateDescription ?? RasterizerStateDescription.Default();
-            rasterizerDescription.IsFrontCounterClockwise = true;
-            rasterizerDescription.CullMode = CullMode.None;
+            RasterizerDescription rasterizerDescription = RasterizerDescription.CullNone;
+            rasterizerDescription.FrontCounterClockwise = true;
 
-            BlendStateDescription blendStateDescription = BlendStateDescription.Default();
-            RenderTargetBlendDescription[] renderTargetDescriptions = blendStateDescription.RenderTarget;
-
-            for (int i = 0; i < renderTargetDescriptions.Length; i++)
-            {
-                renderTargetDescriptions[i].IsBlendEnabled = true;
-                renderTargetDescriptions[i].SourceBlend = BlendOption.SourceAlpha;
-                renderTargetDescriptions[i].DestinationBlend = BlendOption.InverseSourceAlpha;
-            }
-
-            DepthStencilStateDescription depthStencilStateDescription = DepthStencilStateDescription.Default();
+            BlendDescription blendDescription = BlendDescription.AlphaBlend;
 
             GraphicsPipelineStateDescription pipelineStateDescription = new GraphicsPipelineStateDescription
             {
@@ -73,12 +61,8 @@ namespace DirectX12GameEngine.Graphics
                 DomainShader = domainShader,
                 GeometryShader = geometryShader,
                 RasterizerState = rasterizerDescription,
-                BlendState = blendStateDescription,
-                DepthStencilState = depthStencilStateDescription,
-                SampleMask = int.MaxValue,
+                BlendState = blendDescription,
                 PrimitiveTopologyType = PrimitiveTopologyType.Triangle,
-                RenderTargetCount = 1,
-                SampleDescription = new SampleDescription(1, 0),
                 StreamOutput = new StreamOutputDescription()
             };
 
@@ -89,10 +73,14 @@ namespace DirectX12GameEngine.Graphics
                 pipelineStateDescription.DepthStencilFormat = (Format)depthStencilBuffer.Description.Format;
             }
 
-            for (int i = 0; i < device.CommandList.RenderTargets.Length; i++)
+            Format[] renderTargetFormats = new Format[device.CommandList.RenderTargets.Length];
+
+            for (int i = 0; i < renderTargetFormats.Length; i++)
             {
-                pipelineStateDescription.RenderTargetFormats[i] = (Format)device.CommandList.RenderTargets[i].Description.Format;
+                renderTargetFormats[i] = (Format)device.CommandList.RenderTargets[i].Description.Format;
             }
+
+            pipelineStateDescription.RenderTargetFormats = renderTargetFormats;
 
             return pipelineStateDescription;
         }

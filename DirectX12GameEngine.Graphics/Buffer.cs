@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using DirectX12GameEngine.Core;
-using SharpDX.Direct3D12;
+using Vortice.DirectX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -39,12 +39,21 @@ namespace DirectX12GameEngine.Graphics
             return New(device, new BufferDescription(size, bufferFlags, heapType));
         }
 
-        public static Buffer<T> New<T>(GraphicsDevice device, int elementCount, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static Buffer New(GraphicsDevice device, int size, int structuredByteStride, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
-            int structuredByteStride = Unsafe.SizeOf<T>();
+            return New(device, new BufferDescription(size, bufferFlags, heapType, structuredByteStride));
+        }
+
+        public static Buffer<T> New<T>(GraphicsDevice device, int elementCount, int structuredByteStride, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        {
             int size = structuredByteStride * elementCount;
 
             return new Buffer<T>(device, new BufferDescription(size, bufferFlags, heapType, structuredByteStride));
+        }
+
+        public static Buffer<T> New<T>(GraphicsDevice device, int elementCount, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        {
+            return New<T>(device, elementCount, Unsafe.SizeOf<T>(), bufferFlags, heapType);
         }
 
         public static unsafe Buffer<T> New<T>(GraphicsDevice device, in T data, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
@@ -57,7 +66,12 @@ namespace DirectX12GameEngine.Graphics
 
         public static Buffer<T> New<T>(GraphicsDevice device, Span<T> data, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            Buffer<T> buffer = New<T>(device, data.Length, bufferFlags, heapType);
+            return New(device, data, Unsafe.SizeOf<T>(), bufferFlags, heapType);
+        }
+
+        public static Buffer<T> New<T>(GraphicsDevice device, Span<T> data, int structuredByteStride, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        {
+            Buffer<T> buffer = New<T>(device, data.Length, structuredByteStride, bufferFlags, heapType);
             buffer.SetData(data);
 
             return buffer;
@@ -138,14 +152,14 @@ namespace DirectX12GameEngine.Graphics
                 resourceStates = ResourceStates.CopyDestination;
             }
 
-            Resource resource = GraphicsDevice.NativeDevice.CreateCommittedResource(
+            ID3D12Resource resource = GraphicsDevice.NativeDevice.CreateCommittedResource(
                 new HeapProperties((HeapType)description.HeapType), HeapFlags.None,
                 ConvertToNativeDescription(description), resourceStates);
 
             return InitializeFrom(resource, description);
         }
 
-        internal Buffer InitializeFrom(Resource resource, bool isShaderResource = false)
+        internal Buffer InitializeFrom(ID3D12Resource resource, bool isShaderResource = false)
         {
             resource.GetHeapProperties(out HeapProperties heapProperties, out _);
 
@@ -154,12 +168,12 @@ namespace DirectX12GameEngine.Graphics
             return InitializeFrom(resource, description);
         }
 
-        private Buffer InitializeFrom(Resource resource, BufferDescription description)
+        private Buffer InitializeFrom(ID3D12Resource resource, BufferDescription description)
         {
             NativeResource = resource;
             Description = description;
 
-            (NativeCpuDescriptorHandle, NativeGpuDescriptorHandle) = description.Flags switch
+            NativeCpuDescriptorHandle = description.Flags switch
             {
                 BufferFlags.ConstantBuffer => CreateConstantBufferView(),
                 BufferFlags.ShaderResource => CreateShaderResourceView(),
@@ -202,12 +216,12 @@ namespace DirectX12GameEngine.Graphics
                 flags |= ResourceFlags.AllowUnorderedAccess;
             }
 
-            return ResourceDescription.Buffer(size, flags);
+            return ResourceDescription.Buffer((ulong)size, flags);
         }
 
-        private (CpuDescriptorHandle, GpuDescriptorHandle) CreateConstantBufferView()
+        private CpuDescriptorHandle CreateConstantBufferView()
         {
-            (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
 
             int constantBufferSize = (SizeInBytes + 255) & ~255;
 
@@ -219,46 +233,46 @@ namespace DirectX12GameEngine.Graphics
 
             GraphicsDevice.NativeDevice.CreateConstantBufferView(cbvDescription, cpuHandle);
 
-            return (cpuHandle, gpuHandle);
+            return cpuHandle;
         }
 
-        private (CpuDescriptorHandle, GpuDescriptorHandle) CreateShaderResourceView()
+        private CpuDescriptorHandle CreateShaderResourceView()
         {
-            (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
 
             ShaderResourceViewDescription description = new ShaderResourceViewDescription
             {
                 Shader4ComponentMapping = D3DXUtilities.DefaultComponentMapping(),
-                Dimension = ShaderResourceViewDimension.Buffer,
+                ViewDimension = ShaderResourceViewDimension.Buffer,
                 Buffer =
                 {
-                    ElementCount = ElementCount,
+                    NumElements = ElementCount,
                     StructureByteStride = StructuredByteStride
                 }
             };
 
             GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, description, cpuHandle);
 
-            return (cpuHandle, gpuHandle);
+            return cpuHandle;
         }
 
-        private (CpuDescriptorHandle, GpuDescriptorHandle) CreateUnorderedAccessView()
+        private CpuDescriptorHandle CreateUnorderedAccessView()
         {
-            (CpuDescriptorHandle cpuHandle, GpuDescriptorHandle gpuHandle) = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
 
             UnorderedAccessViewDescription description = new UnorderedAccessViewDescription
             {
-                Dimension = UnorderedAccessViewDimension.Buffer,
+                ViewDimension = UnorderedAccessViewDimension.Buffer,
                 Buffer =
                 {
-                    ElementCount = ElementCount,
+                    NumElements = ElementCount,
                     StructureByteStride = StructuredByteStride
                 }
             };
 
             GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, description, cpuHandle);
 
-            return (cpuHandle, gpuHandle);
+            return cpuHandle;
         }
     }
 

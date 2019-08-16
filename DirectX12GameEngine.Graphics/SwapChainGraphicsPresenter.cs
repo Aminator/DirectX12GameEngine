@@ -1,8 +1,7 @@
 ﻿using System.Numerics;
-using SharpDX.Direct3D12;
-using SharpDX.DXGI;
-
-using Resource = SharpDX.Direct3D12.Resource;
+using Vortice.DirectX;
+using Vortice.DirectX.Direct3D12;
+using Vortice.DirectX.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -12,7 +11,7 @@ namespace DirectX12GameEngine.Graphics
 
         private readonly Texture[] renderTargets = new Texture[BufferCount];
 
-        public SwapChainGraphicsPresenter(GraphicsDevice device, PresentationParameters presentationParameters, SwapChain3 swapChain)
+        public SwapChainGraphicsPresenter(GraphicsDevice device, PresentationParameters presentationParameters, IDXGISwapChain3 swapChain)
             : base(device, presentationParameters)
         {
             SwapChain = swapChain;
@@ -20,19 +19,19 @@ namespace DirectX12GameEngine.Graphics
             if (GraphicsDevice.RenderTargetViewAllocator.DescriptorHeap.Description.DescriptorCount != BufferCount)
             {
                 GraphicsDevice.RenderTargetViewAllocator.Dispose();
-                GraphicsDevice.RenderTargetViewAllocator = new DescriptorAllocator(GraphicsDevice, DescriptorHeapType.RenderTargetView, descriptorCount: BufferCount);
+                GraphicsDevice.RenderTargetViewAllocator = new DescriptorAllocator(GraphicsDevice, DescriptorHeapType.RenderTargetView, BufferCount);
             }
 
             CreateRenderTargets();
         }
 
-        public override Texture BackBuffer => renderTargets[SwapChain.CurrentBackBufferIndex];
+        public override Texture BackBuffer => renderTargets[SwapChain.GetCurrentBackBufferIndex()];
 
-        public Matrix3x2 MatrixTransform { get => SwapChain.MatrixTransform.ToMatrix3x2(); set => SwapChain.MatrixTransform = value.ToMatrix3x2(); }
+        public Matrix3x2 MatrixTransform { get => SwapChain.MatrixTransform; set => SwapChain.MatrixTransform = value; }
 
         public override object NativePresenter => SwapChain;
 
-        protected SwapChain3 SwapChain { get; }
+        protected IDXGISwapChain3 SwapChain { get; }
 
         public override void Dispose()
         {
@@ -73,21 +72,8 @@ namespace DirectX12GameEngine.Graphics
         {
             for (int i = 0; i < BufferCount; i++)
             {
-                renderTargets[i] = new Texture(GraphicsDevice).InitializeFrom(SwapChain.GetBackBuffer<Resource>(i));
+                renderTargets[i] = new Texture(GraphicsDevice).InitializeFrom(SwapChain.GetBuffer<ID3D12Resource>(i));
             }
-        }
-    }
-
-    internal static class MatrixExtensions
-    {
-        public static unsafe SharpDX.Mathematics.Interop.RawMatrix3x2 ToMatrix3x2(this Matrix3x2 value)
-        {
-            return *(SharpDX.Mathematics.Interop.RawMatrix3x2*)&value;
-        }
-
-        public static unsafe Matrix3x2 ToMatrix3x2(this SharpDX.Mathematics.Interop.RawMatrix3x2 value)
-        {
-            return *(Matrix3x2*)&value;
         }
     }
 }

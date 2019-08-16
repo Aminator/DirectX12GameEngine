@@ -1,7 +1,5 @@
 ﻿using System;
 using DirectX12GameEngine.Games;
-using SharpDX;
-using SharpDX.Direct3D12;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Media.Playback;
 

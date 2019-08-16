@@ -10,7 +10,6 @@ using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering.Materials;
 using GltfLoader;
 using GltfLoader.Schema;
-using SharpDX.Direct3D12;
 
 using Mesh = DirectX12GameEngine.Rendering.Mesh;
 using MeshDraw = DirectX12GameEngine.Rendering.MeshDraw;
@@ -270,18 +269,17 @@ namespace DirectX12GameEngine.Assets
             GltfLoader.Schema.Mesh mesh = gltf.Meshes[meshIndex];
 
             Span<byte> indexBuffer = Span<byte>.Empty;
-            IndexBufferView? indexBufferView = null;
+            Buffer<byte>? indexBufferView = null;
             bool is32bitIndex = false;
 
             if (mesh.Primitives[0].Indices.HasValue)
             {
-                indexBuffer = GetIndexBuffer(gltf, buffers, mesh, out PixelFormat format);
-                is32bitIndex = format == PixelFormat.R32_UInt;
-                Graphics.Buffer indexBufferResource = Graphics.Buffer.Index.New(GraphicsDevice, indexBuffer).DisposeBy(GraphicsDevice);
-                indexBufferView = Graphics.Buffer.Index.CreateIndexBufferView(indexBufferResource, indexBufferResource.SizeInBytes, format);
+                indexBuffer = GetIndexBuffer(gltf, buffers, mesh, out int stride);
+                is32bitIndex = stride == sizeof(int);
+                indexBufferView = Graphics.Buffer.Index.New(GraphicsDevice, indexBuffer, stride).DisposeBy(GraphicsDevice);
             }
 
-            VertexBufferView[] vertexBufferViews = GetVertexBufferViews(gltf, buffers, mesh, indexBuffer, is32bitIndex);
+            Graphics.Buffer[] vertexBufferViews = GetVertexBufferViews(gltf, buffers, mesh, indexBuffer, is32bitIndex);
 
             int materialIndex = 0;
 
@@ -320,9 +318,9 @@ namespace DirectX12GameEngine.Assets
             return Task.FromResult(new Mesh(meshDraw) { MaterialIndex = materialIndex, WorldMatrix = worldMatrix });
         }
 
-        private VertexBufferView[] GetVertexBufferViews(Gltf gltf, IList<byte[]> buffers, GltfLoader.Schema.Mesh mesh, Span<byte> indexBuffer = default, bool is32bitIndex = false)
+        private Graphics.Buffer[] GetVertexBufferViews(Gltf gltf, IList<byte[]> buffers, GltfLoader.Schema.Mesh mesh, Span<byte> indexBuffer = default, bool is32bitIndex = false)
         {
-            VertexBufferView[] vertexBufferViews = new VertexBufferView[4];
+            Graphics.Buffer[] vertexBufferViews = new Graphics.Buffer[4];
 
             Dictionary<string, int> attributes = mesh.Primitives[0].Attributes;
 
@@ -334,34 +332,29 @@ namespace DirectX12GameEngine.Assets
             if (hasPosition)
             {
                 Span<byte> positionBuffer = GetVertexBuffer(gltf, buffers, positionIndex, out int positionStride);
-                Graphics.Buffer positionVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, positionBuffer).DisposeBy(GraphicsDevice);
-                vertexBufferViews[0] = Graphics.Buffer.Vertex.CreateVertexBufferView(positionVertexBuffer, positionVertexBuffer.SizeInBytes, positionStride);
+                vertexBufferViews[0] = Graphics.Buffer.Vertex.New(GraphicsDevice, positionBuffer, positionStride).DisposeBy(GraphicsDevice);
 
                 if (hasNormal)
                 {
                     Span<byte> normalBuffer = GetVertexBuffer(gltf, buffers, normalIndex, out int normalStride);
-                    Buffer<byte> normalVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, normalBuffer).DisposeBy(GraphicsDevice);
-                    vertexBufferViews[1] = Graphics.Buffer.Vertex.CreateVertexBufferView(normalVertexBuffer, normalVertexBuffer.SizeInBytes, normalStride);
+                    vertexBufferViews[1] = Graphics.Buffer.Vertex.New(GraphicsDevice, normalBuffer, normalStride).DisposeBy(GraphicsDevice);
                 }
 
                 if (hasTangent)
                 {
                     Span<byte> tangentBuffer = GetVertexBuffer(gltf, buffers, tangentIndex, out int tangentStride);
-                    Buffer<byte> tangentVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, tangentBuffer).DisposeBy(GraphicsDevice);
-                    vertexBufferViews[2] = Graphics.Buffer.Vertex.CreateVertexBufferView(tangentVertexBuffer, tangentVertexBuffer.SizeInBytes, tangentStride);
+                    vertexBufferViews[2] = Graphics.Buffer.Vertex.New(GraphicsDevice, tangentBuffer, tangentStride).DisposeBy(GraphicsDevice);
                 }
 
                 if (hasTexCoord0)
                 {
                     Span<byte> texCoord0Buffer = GetVertexBuffer(gltf, buffers, texCoord0Index, out int texCoord0Stride);
-                    Buffer<byte> texCoord0VertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, texCoord0Buffer).DisposeBy(GraphicsDevice);
-                    vertexBufferViews[3] = Graphics.Buffer.Vertex.CreateVertexBufferView(texCoord0VertexBuffer, texCoord0VertexBuffer.SizeInBytes, texCoord0Stride);
+                    vertexBufferViews[3] = Graphics.Buffer.Vertex.New(GraphicsDevice, texCoord0Buffer, texCoord0Stride).DisposeBy(GraphicsDevice);
 
                     if (!hasTangent)
                     {
                         Span<Vector4> tangentBuffer = GenerateTangents(positionBuffer, texCoord0Buffer, indexBuffer, is32bitIndex);
-                        Buffer<Vector4> tangentVertexBuffer = Graphics.Buffer.Vertex.New(GraphicsDevice, tangentBuffer).DisposeBy(GraphicsDevice);
-                        vertexBufferViews[2] = Graphics.Buffer.Vertex.CreateVertexBufferView<Vector4>(tangentVertexBuffer, tangentVertexBuffer.SizeInBytes);
+                        vertexBufferViews[2] = Graphics.Buffer.Vertex.New(GraphicsDevice, tangentBuffer).DisposeBy(GraphicsDevice);
                     }
                 }
             }
@@ -456,7 +449,7 @@ namespace DirectX12GameEngine.Assets
             return tangentBuffer;
         }
 
-        private static Span<byte> GetIndexBuffer(Gltf gltf, IList<byte[]> buffers, GltfLoader.Schema.Mesh mesh, out PixelFormat format)
+        private static Span<byte> GetIndexBuffer(Gltf gltf, IList<byte[]> buffers, GltfLoader.Schema.Mesh mesh, out int stride)
         {
             int indicesIndex = mesh.Primitives[0].Indices ?? throw new Exception();
             Accessor accessor = gltf.Accessors[indicesIndex];
@@ -465,12 +458,11 @@ namespace DirectX12GameEngine.Assets
             BufferView bufferView = gltf.BufferViews[bufferViewIndex];
 
             int offset = bufferView.ByteOffset + accessor.ByteOffset;
-            int stride;
 
-            (format, stride) = accessor.ComponentType switch
+            stride = accessor.ComponentType switch
             {
-                Accessor.ComponentTypeEnum.UInt16 => (PixelFormat.R16_UInt, GetCountOfAccessorType(accessor.Type) * sizeof(ushort)),
-                Accessor.ComponentTypeEnum.UInt32 => (PixelFormat.R32_UInt, GetCountOfAccessorType(accessor.Type) * sizeof(uint)),
+                Accessor.ComponentTypeEnum.UInt16 => GetCountOfAccessorType(accessor.Type) * sizeof(ushort),
+                Accessor.ComponentTypeEnum.UInt32 => GetCountOfAccessorType(accessor.Type) * sizeof(uint),
                 _ => throw new NotSupportedException("This component type is not supported.")
             };
 

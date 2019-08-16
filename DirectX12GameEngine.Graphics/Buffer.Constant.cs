@@ -8,22 +8,22 @@ namespace DirectX12GameEngine.Graphics
         {
             public static unsafe Buffer New(GraphicsDevice device, int size, GraphicsHeapType heapType = GraphicsHeapType.Upload)
             {
-                return Buffer.New(device, size, BufferFlags.ConstantBuffer, heapType: heapType);
+                return Buffer.New(device, size, BufferFlags.ConstantBuffer, heapType);
             }
 
             public static unsafe Buffer<T> New<T>(GraphicsDevice device, int elementCount, GraphicsHeapType heapType = GraphicsHeapType.Upload) where T : unmanaged
             {
-                return Buffer.New<T>(device, elementCount, BufferFlags.ConstantBuffer, heapType: heapType);
+                return Buffer.New<T>(device, elementCount, BufferFlags.ConstantBuffer, heapType);
             }
 
             public static unsafe Buffer<T> New<T>(GraphicsDevice device, in T data, GraphicsHeapType heapType = GraphicsHeapType.Upload) where T : unmanaged
             {
-                return Buffer.New(device, data, BufferFlags.ConstantBuffer, heapType: heapType);
+                return Buffer.New(device, data, BufferFlags.ConstantBuffer, heapType);
             }
 
             public static unsafe Buffer<T> New<T>(GraphicsDevice device, Span<T> data, GraphicsHeapType heapType = GraphicsHeapType.Upload) where T : unmanaged
             {
-                return Buffer.New(device, data, BufferFlags.ConstantBuffer, heapType: heapType);
+                return Buffer.New(device, data, BufferFlags.ConstantBuffer, heapType);
             }
         }
     }

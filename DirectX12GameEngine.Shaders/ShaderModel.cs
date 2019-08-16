@@ -2,6 +2,7 @@
 {
     public enum ShaderModel
     {
+        Model5_1,
         Model6_0,
         Model6_1,
         Model6_2,

@@ -1,4 +1,4 @@
-﻿using SharpDX.DXGI;
+﻿using Vortice.DirectX.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {

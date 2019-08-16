@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using SharpDX.DXGI;
 using Windows.Graphics.Imaging;
 
 namespace DirectX12GameEngine.Graphics

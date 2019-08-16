@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using SharpDX.Direct3D12;
+using Vortice.DirectX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
     internal sealed class CommandAllocatorPool : IDisposable
     {
-        private readonly Queue<(CommandAllocator, long)> commandAllocatorQueue = new Queue<(CommandAllocator, long)>();
+        private readonly Queue<(ID3D12CommandAllocator, ulong)> commandAllocatorQueue = new Queue<(ID3D12CommandAllocator, ulong)>();
 
         public CommandAllocatorPool(GraphicsDevice device, CommandListType commandListType)
         {
@@ -22,7 +22,7 @@ namespace DirectX12GameEngine.Graphics
         {
             lock (commandAllocatorQueue)
             {
-                foreach ((CommandAllocator commandAllocator, long _) in commandAllocatorQueue)
+                foreach ((ID3D12CommandAllocator commandAllocator, ulong _) in commandAllocatorQueue)
                 {
                     commandAllocator.Dispose();
                 }
@@ -31,7 +31,7 @@ namespace DirectX12GameEngine.Graphics
             }
         }
 
-        public void Enqueue(CommandAllocator commandAllocator, long fenceValue)
+        public void Enqueue(ID3D12CommandAllocator commandAllocator, ulong fenceValue)
         {
             lock (commandAllocatorQueue)
             {
@@ -39,15 +39,15 @@ namespace DirectX12GameEngine.Graphics
             }
         }
 
-        public CommandAllocator GetCommandAllocator()
+        public ID3D12CommandAllocator GetCommandAllocator()
         {
             lock (commandAllocatorQueue)
             {
                 if (commandAllocatorQueue.Count > 0)
                 {
-                    (CommandAllocator commandAllocator, long fenceValue) = commandAllocatorQueue.Peek();
+                    (ID3D12CommandAllocator commandAllocator, ulong fenceValue) = commandAllocatorQueue.Peek();
 
-                    long completedValue = CommandListType switch
+                    ulong completedValue = CommandListType switch
                     {
                         CommandListType.Bundle => GraphicsDevice.NativeDirectFence.CompletedValue,
                         CommandListType.Compute => GraphicsDevice.NativeComputeFence.CompletedValue,
@@ -65,7 +65,7 @@ namespace DirectX12GameEngine.Graphics
                     }
                 }
 
-                return GraphicsDevice.NativeDevice.CreateCommandAllocator((SharpDX.Direct3D12.CommandListType)CommandListType);
+                return GraphicsDevice.NativeDevice.CreateCommandAllocator((Vortice.DirectX.Direct3D12.CommandListType)CommandListType);
             }
         }
     }

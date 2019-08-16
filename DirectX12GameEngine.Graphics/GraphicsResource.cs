@@ -1,5 +1,5 @@
 ﻿using System;
-using SharpDX.Direct3D12;
+using Vortice.DirectX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -20,11 +20,9 @@ namespace DirectX12GameEngine.Graphics
 
         public IntPtr MappedResource { get; private set; }
 
-        protected internal Resource? NativeResource { get; set; }
+        protected internal ID3D12Resource? NativeResource { get; set; }
 
         protected internal CpuDescriptorHandle NativeCpuDescriptorHandle { get; protected set; }
-
-        protected internal GpuDescriptorHandle NativeGpuDescriptorHandle { get; protected set; }
 
         public virtual void Dispose()
         {

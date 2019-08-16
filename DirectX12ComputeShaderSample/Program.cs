@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
 using DirectX12GameEngine.Shaders.Numerics;
-using SharpDX.Direct3D12;
-
+using Vortice.DirectX.Direct3D12;
+using Vortice.DirectX.DXGI;
 using Buffer = DirectX12GameEngine.Graphics.Buffer;
 using CommandList = DirectX12GameEngine.Graphics.CommandList;
 using CommandListType = DirectX12GameEngine.Graphics.CommandListType;
@@ -25,7 +25,7 @@ namespace DirectX12ComputeShaderSample
         [NumThreads(100, 1, 1)]
         public void CSMain([SystemDispatchThreadIdSemantic] UInt3 id)
         {
-            Destination[id.X] = Source[id.X];
+            Destination[id.X] = Source[id.X] * 2;
         }
     }
 
@@ -35,7 +35,7 @@ namespace DirectX12ComputeShaderSample
         {
             // Create graphics device
 
-            using GraphicsDevice device = new GraphicsDevice(SharpDX.Direct3D.FeatureLevel.Level_12_1);
+            using GraphicsDevice device = new GraphicsDevice(FeatureLevel.Level_12_1);
 
             // Create graphics buffer
 
@@ -70,15 +70,14 @@ namespace DirectX12ComputeShaderSample
 
             byte[] shaderBytecode = ShaderCompiler.CompileShader(result.ShaderSource, ShaderProfile.ComputeShader, ShaderModel.Model6_1, result.ComputeShader);
 
-            // Create pipeline state
 
             RootParameter[] rootParameters = new RootParameter[]
             {
-                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0)),
-                new RootParameter(ShaderVisibility.All, new DescriptorRange(DescriptorRangeType.UnorderedAccessView, 1, 0))
+                new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0)) },
+                new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.UnorderedAccessView, 1, 0)) }
             };
 
-            var rootSignatureDescription = new RootSignatureDescription(RootSignatureFlags.None, rootParameters);
+            var rootSignatureDescription = new VersionedRootSignatureDescription(new RootSignatureDescription(RootSignatureFlags.None, rootParameters));
             var rootSignature = device.CreateRootSignature(rootSignatureDescription);
 
             PipelineState pipelineState = new PipelineState(device, rootSignature, shaderBytecode);

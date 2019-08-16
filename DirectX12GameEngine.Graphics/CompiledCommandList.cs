@@ -1,10 +1,10 @@
-﻿using SharpDX.Direct3D12;
+﻿using Vortice.DirectX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
     public sealed class CompiledCommandList
     {
-        internal CompiledCommandList(CommandList builder, CommandAllocator nativeCommandAllocator, GraphicsCommandList nativeCommandList)
+        internal CompiledCommandList(CommandList builder, ID3D12CommandAllocator nativeCommandAllocator, ID3D12GraphicsCommandList nativeCommandList)
         {
             Builder = builder;
             NativeCommandAllocator = nativeCommandAllocator;
@@ -13,8 +13,8 @@ namespace DirectX12GameEngine.Graphics
 
         internal CommandList Builder { get; set; }
 
-        internal CommandAllocator NativeCommandAllocator { get; set; }
+        internal ID3D12CommandAllocator NativeCommandAllocator { get; set; }
 
-        internal GraphicsCommandList NativeCommandList { get; set; }
+        internal ID3D12GraphicsCommandList NativeCommandList { get; set; }
     }
 }
