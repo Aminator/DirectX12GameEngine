@@ -43,7 +43,8 @@ namespace DirectX12GameEngine.Graphics
 
             DepthStencilViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.DepthStencilView, 1);
             RenderTargetViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.RenderTargetView, 2);
-            ShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, descriptorHeapFlags: DescriptorHeapFlags.ShaderVisible);
+            ShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, 4096, DescriptorHeapFlags.ShaderVisible);
+            SamplerAllocator = new DescriptorAllocator(this, DescriptorHeapType.Sampler, 256, DescriptorHeapFlags.ShaderVisible);
 
             CommandList = new CommandList(this, CommandListType.Direct);
             CommandList.Close();
@@ -85,6 +86,9 @@ namespace DirectX12GameEngine.Graphics
 
         internal DescriptorAllocator ShaderResourceViewAllocator { get; set; }
 
+        internal DescriptorAllocator SamplerAllocator { get; set; }
+
+
         internal CommandAllocatorPool BundleAllocatorPool { get; }
 
         internal CommandAllocatorPool ComputeAllocatorPool { get; }
@@ -93,17 +97,20 @@ namespace DirectX12GameEngine.Graphics
 
         internal CommandAllocatorPool DirectAllocatorPool { get; }
 
+
         internal ID3D12CommandQueue NativeComputeCommandQueue { get; }
 
         internal ID3D12CommandQueue NativeCopyCommandQueue { get; }
 
         internal ID3D12CommandQueue NativeDirectCommandQueue { get; }
 
+
         internal ID3D12Fence NativeComputeFence { get; }
 
         internal ID3D12Fence NativeCopyFence { get; }
 
         internal ID3D12Fence NativeDirectFence { get; }
+
 
         internal ulong NextComputeFenceValue { get; private set; } = 1;
 
@@ -234,33 +241,6 @@ namespace DirectX12GameEngine.Graphics
 
                 return WaitHandleAsyncFactory.FromWaitHandle(fenceEvent);
             }
-        }
-
-        internal CpuDescriptorHandle CopyDescriptorsToOneDescriptorHandle(DescriptorAllocator descriptorAllocator, IEnumerable<GraphicsResource> resources)
-        {
-            return CopyDescriptorsToOneDescriptorHandle(descriptorAllocator, resources.Select(t => t.NativeCpuDescriptorHandle).ToArray());
-        }
-
-        internal CpuDescriptorHandle CopyDescriptorsToOneDescriptorHandle(DescriptorAllocator descriptorAllocator, CpuDescriptorHandle[] descriptors)
-        {
-            if (descriptors.Length == 0) return default;
-
-            int[] srcDescriptorRangeStarts = new int[descriptors.Length];
-            //Array.Fill(srcDescriptorRangeStarts, 1);
-
-            for (int i = 0; i < srcDescriptorRangeStarts.Length; i++)
-            {
-                srcDescriptorRangeStarts[i] = 1;
-            }
-
-            CpuDescriptorHandle cpuDescriptorHandle = descriptorAllocator.Allocate(descriptors.Length);
-
-            NativeDevice.CopyDescriptors(
-                1, new[] { cpuDescriptorHandle }, new[] { descriptors.Length },
-                descriptors.Length, descriptors, srcDescriptorRangeStarts,
-                descriptorAllocator.DescriptorHeap.Description.Type);
-
-            return cpuDescriptorHandle;
         }
     }
 }

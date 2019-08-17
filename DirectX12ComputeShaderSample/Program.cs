@@ -5,7 +5,6 @@ using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
 using DirectX12GameEngine.Shaders.Numerics;
 using Vortice.DirectX.Direct3D12;
-using Vortice.DirectX.DXGI;
 using Buffer = DirectX12GameEngine.Graphics.Buffer;
 using CommandList = DirectX12GameEngine.Graphics.CommandList;
 using CommandListType = DirectX12GameEngine.Graphics.CommandListType;
@@ -25,7 +24,7 @@ namespace DirectX12ComputeShaderSample
         [NumThreads(100, 1, 1)]
         public void CSMain([SystemDispatchThreadIdSemantic] UInt3 id)
         {
-            Destination[id.X] = Source[id.X] * 2;
+            Destination[id.X] = Math.Max(Source[id.X], 45);
         }
     }
 
@@ -69,7 +68,6 @@ namespace DirectX12ComputeShaderSample
             ShaderGenerationResult result = shaderGenerator.GenerateShader();
 
             byte[] shaderBytecode = ShaderCompiler.CompileShader(result.ShaderSource, ShaderProfile.ComputeShader, ShaderModel.Model6_1, result.ComputeShader);
-
 
             RootParameter[] rootParameters = new RootParameter[]
             {

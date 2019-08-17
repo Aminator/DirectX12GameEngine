@@ -26,17 +26,17 @@ namespace DirectX12GameEngine.Rendering.Materials
 
                     if (context.ConstantBuffers.Count > 0)
                     {
-                        materialPass.ConstantBufferDescriptorSet = new DescriptorSet(context.GraphicsDevice, context.ConstantBuffers);
+                        materialPass.ConstantBufferDescriptorSet = new DescriptorSet(context.GraphicsDevice, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, context.ConstantBuffers);
                     }
 
                     if (context.Samplers.Count > 0)
                     {
-                        materialPass.SamplerDescriptorSet = new DescriptorSet(context.GraphicsDevice, context.Samplers);
+                        materialPass.SamplerDescriptorSet = new DescriptorSet(context.GraphicsDevice, DescriptorHeapType.Sampler, context.Samplers);
                     }
 
                     if (context.Textures.Count > 0)
                     {
-                        materialPass.TextureDescriptorSet = new DescriptorSet(context.GraphicsDevice, context.Textures);
+                        materialPass.TextureDescriptorSet = new DescriptorSet(context.GraphicsDevice, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, context.Textures);
                     }
 
                     context.PopPass();

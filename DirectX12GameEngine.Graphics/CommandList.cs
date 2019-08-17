@@ -17,6 +17,9 @@ namespace DirectX12GameEngine.Graphics
 
         private readonly CompiledCommandList currentCommandList;
 
+        private ID3D12DescriptorHeap? srvDescriptorHeap;
+        private ID3D12DescriptorHeap? samplerDescriptorHeap;
+
         private ID3D12DescriptorHeap[] descriptorHeaps = Array.Empty<ID3D12DescriptorHeap>();
 
         public CommandList(GraphicsDevice device, CommandListType commandListType)
@@ -29,7 +32,8 @@ namespace DirectX12GameEngine.Graphics
             ID3D12GraphicsCommandList nativeCommandList = GraphicsDevice.NativeDevice.CreateCommandList((Vortice.DirectX.Direct3D12.CommandListType)CommandListType, commandAllocator, null);
             currentCommandList = new CompiledCommandList(this, commandAllocator, nativeCommandList);
 
-            SetDescriptorHeaps(GraphicsDevice.ShaderResourceViewAllocator.DescriptorHeap);
+            // TODO: Setting a sampler descriptor heap throws an exception when closing the command list.
+            SetDescriptorHeaps(GraphicsDevice.ShaderResourceViewAllocator.DescriptorHeap/*, GraphicsDevice.SamplerAllocator.DescriptorHeap*/);
         }
 
         public CommandListType CommandListType { get; }
@@ -247,6 +251,10 @@ namespace DirectX12GameEngine.Graphics
             if (CommandListType != CommandListType.Copy)
             {
                 currentCommandList.NativeCommandList.SetDescriptorHeaps(descriptorHeaps.Length, descriptorHeaps);
+
+                srvDescriptorHeap = descriptorHeaps.FirstOrDefault(d => d.Description.Type == Vortice.DirectX.Direct3D12.DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
+                samplerDescriptorHeap = descriptorHeaps.FirstOrDefault(d => d.Description.Type == Vortice.DirectX.Direct3D12.DescriptorHeapType.Sampler);
+
                 this.descriptorHeaps = descriptorHeaps;
             }
         }
@@ -258,16 +266,20 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetComputeRootDescriptorTable(int rootParameterIndex, GraphicsResource resource)
         {
-            SetComputeRootDescriptorTable(rootParameterIndex, descriptorHeaps[0], resource.NativeCpuDescriptorHandle);
+            if (srvDescriptorHeap is null) throw new InvalidOperationException();
+
+            SetComputeRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, resource.NativeCpuDescriptorHandle);
         }
 
         public void SetComputeRootDescriptorTable(int rootParameterIndex, DescriptorSet descriptorSet)
         {
-            SetComputeRootDescriptorTable(rootParameterIndex, descriptorSet.DescriptorAllocator.DescriptorHeap, descriptorSet.NativeCpuDescriptorHandle);
+            SetComputeRootDescriptorTable(rootParameterIndex, descriptorSet.DescriptorAllocator.DescriptorHeap, descriptorSet.StartCpuDescriptorHandle);
         }
 
         private void SetComputeRootDescriptorTable(int rootParameterIndex, ID3D12DescriptorHeap descriptorHeap, CpuDescriptorHandle baseDescriptor)
         {
+            if (!descriptorHeaps.Contains(descriptorHeap)) throw new InvalidOperationException();
+
             var offset = baseDescriptor.Ptr - descriptorHeap.GetCPUDescriptorHandleForHeapStart().Ptr;
             GpuDescriptorHandle gpuDescriptorHandle = descriptorHeap.GetGPUDescriptorHandleForHeapStart() + offset;
 
@@ -281,16 +293,20 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetGraphicsRootDescriptorTable(int rootParameterIndex, GraphicsResource resource)
         {
-            SetGraphicsRootDescriptorTable(rootParameterIndex, descriptorHeaps[0], resource.NativeCpuDescriptorHandle);
+            if (srvDescriptorHeap is null) throw new InvalidOperationException();
+
+            SetGraphicsRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, resource.NativeCpuDescriptorHandle);
         }
 
         public void SetGraphicsRootDescriptorTable(int rootParameterIndex, DescriptorSet descriptorSet)
         {
-            SetGraphicsRootDescriptorTable(rootParameterIndex, descriptorSet.DescriptorAllocator.DescriptorHeap, descriptorSet.NativeCpuDescriptorHandle);
+            SetGraphicsRootDescriptorTable(rootParameterIndex, descriptorSet.DescriptorAllocator.DescriptorHeap, descriptorSet.StartCpuDescriptorHandle);
         }
 
         private void SetGraphicsRootDescriptorTable(int rootParameterIndex, ID3D12DescriptorHeap descriptorHeap, CpuDescriptorHandle baseDescriptor)
         {
+            if (!descriptorHeaps.Contains(descriptorHeap)) throw new InvalidOperationException();
+
             var offset = baseDescriptor.Ptr - descriptorHeap.GetCPUDescriptorHandleForHeapStart().Ptr;
             GpuDescriptorHandle gpuDescriptorHandle = descriptorHeap.GetGPUDescriptorHandleForHeapStart() + offset;
 

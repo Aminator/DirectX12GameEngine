@@ -8,8 +8,6 @@ namespace DirectX12GameEngine.Graphics
         private const int DescriptorsPerHeap = 4096;
 
         private readonly object allocatorLock = new object();
-        private readonly int descriptorSize;
-
         private CpuDescriptorHandle currentCpuHandle;
         private int remainingHandles;
 
@@ -20,9 +18,9 @@ namespace DirectX12GameEngine.Graphics
                 throw new ArgumentOutOfRangeException(nameof(descriptorCount), $"Descriptor count must be between 1 and {DescriptorsPerHeap}.");
             }
 
-            descriptorSize = device.NativeDevice.GetDescriptorHandleIncrementSize(descriptorHeapType);
+            DescriptorIncrementSize = device.NativeDevice.GetDescriptorHandleIncrementSize((Vortice.DirectX.Direct3D12.DescriptorHeapType)descriptorHeapType);
 
-            DescriptorHeapDescription descriptorHeapDescription = new DescriptorHeapDescription(descriptorHeapType, descriptorCount, descriptorHeapFlags);
+            DescriptorHeapDescription descriptorHeapDescription = new DescriptorHeapDescription((Vortice.DirectX.Direct3D12.DescriptorHeapType)descriptorHeapType, descriptorCount, descriptorHeapFlags);
 
             DescriptorHeap = device.NativeDevice.CreateDescriptorHeap(descriptorHeapDescription);
 
@@ -31,6 +29,8 @@ namespace DirectX12GameEngine.Graphics
         }
 
         public ID3D12DescriptorHeap DescriptorHeap { get; }
+
+        internal int DescriptorIncrementSize { get; }
 
         public CpuDescriptorHandle Allocate(int count)
         {
@@ -49,7 +49,7 @@ namespace DirectX12GameEngine.Graphics
 
                 CpuDescriptorHandle cpuDescriptorHandle = currentCpuHandle;
 
-                currentCpuHandle += descriptorSize * count;
+                currentCpuHandle += DescriptorIncrementSize * count;
                 remainingHandles -= count;
 
                 return cpuDescriptorHandle;
@@ -65,7 +65,7 @@ namespace DirectX12GameEngine.Graphics
 
             lock (allocatorLock)
             {
-                CpuDescriptorHandle cpuDescriptorHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart() + descriptorSize * slot;
+                CpuDescriptorHandle cpuDescriptorHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart() + DescriptorIncrementSize * slot;
 
                 return cpuDescriptorHandle;
             }
