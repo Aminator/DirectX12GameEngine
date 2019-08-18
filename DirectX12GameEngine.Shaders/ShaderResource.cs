@@ -29,6 +29,12 @@ namespace DirectX12GameEngine.Shaders
         public T Sample(SamplerResource sampler, Vector2 texCoord) => throw new NotImplementedException();
     }
 
+    [UnorderedAccessView]
+    public class RWTexture2DResource<T> : ShaderResource where T : unmanaged
+    {
+        public T this[Numerics.UInt2 index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    }
+
     [ShaderResourceView]
     public class Texture2DArrayResource : ShaderResource
     {
@@ -61,11 +67,5 @@ namespace DirectX12GameEngine.Shaders
     public class RWStructuredBufferResource<T> : ShaderResource
     {
         public T this[uint index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-    }
-
-    [UnorderedAccessView]
-    public class RWTexture2DResource<T> : ShaderResource where T : unmanaged
-    {
-        public T this[Numerics.UInt2 index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

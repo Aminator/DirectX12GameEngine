@@ -167,7 +167,7 @@ namespace DirectX12GameEngine.Shaders
 
             Type parentType = type.BaseType;
 
-            while (parentType != null)
+            while (parentType != null && parentType != typeof(object) && parentType != typeof(ValueType))
             {
                 CollectStructure(parentType, obj);
                 parentType = parentType.BaseType;
@@ -312,8 +312,7 @@ namespace DirectX12GameEngine.Shaders
 
             writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
 
-            int arrayCount = memberType.IsArray ? 2 : 0;
-            writer.Write(GetArrayString(arrayCount));
+            if (memberType.IsArray) writer.Write("[2]");
 
             writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
             writer.WriteLine(";");
@@ -331,17 +330,17 @@ namespace DirectX12GameEngine.Shaders
         {
             switch (resourceType)
             {
-                case ConstantBufferAttribute _:
-                    WriteConstantBuffer(memberInfo, memberType, bindingTracker.ConstantBuffer++);
-                    break;
-                case SamplerAttribute _:
-                    WriteSampler(memberInfo, memberType, bindingTracker.Sampler++);
+                case ConstantBufferViewAttribute _:
+                    WriteConstantBufferView(memberInfo, memberType, bindingTracker.ConstantBuffer++);
                     break;
                 case ShaderResourceViewAttribute _:
                     WriteShaderResourceView(memberInfo, memberType, bindingTracker.ShaderResourceView++);
                     break;
                 case UnorderedAccessViewAttribute _:
                     WriteUnorderedAccessView(memberInfo, memberType, bindingTracker.UnorderedAccessView++);
+                    break;
+                case SamplerAttribute _:
+                    WriteSampler(memberInfo, memberType, bindingTracker.Sampler++);
                     break;
                 case StaticResourceAttribute _:
                     WriteStaticResource(memberInfo, memberType);
@@ -351,27 +350,18 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        private void WriteConstantBuffer(MemberInfo memberInfo, Type memberType, int binding)
+        private void WriteConstantBufferView(MemberInfo memberInfo, Type memberType, int binding)
         {
-            int arrayCount = memberType.IsArray ? 2 : 0;
-
             writer.Write($"cbuffer {memberInfo.Name}Buffer");
             writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
             writer.WriteLine($" : register(b{binding})");
             writer.WriteLine("{");
             writer.Indent++;
-            writer.WriteLine($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}{GetArrayString(arrayCount)};");
+            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
+            if (memberType.IsArray) writer.Write("[2]");
+            writer.WriteLine(";");
             writer.Indent--;
             writer.WriteLine("}");
-            writer.WriteLine();
-        }
-
-        private void WriteSampler(MemberInfo memberInfo, Type memberType, int binding)
-        {
-            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
-            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
-            writer.Write($" : register(s{binding})");
-            writer.WriteLine(";");
             writer.WriteLine();
         }
 
@@ -389,6 +379,15 @@ namespace DirectX12GameEngine.Shaders
             writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
             writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
             writer.Write($" : register(u{binding})");
+            writer.WriteLine(";");
+            writer.WriteLine();
+        }
+
+        private void WriteSampler(MemberInfo memberInfo, Type memberType, int binding)
+        {
+            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberInfo.Name}");
+            writer.Write(GetHlslSemantic(memberInfo.GetCustomAttribute<ShaderSemanticAttribute>()));
+            writer.Write($" : register(s{binding})");
             writer.WriteLine(";");
             writer.WriteLine();
         }
@@ -420,14 +419,12 @@ namespace DirectX12GameEngine.Shaders
 
                 stringWriter.GetStringBuilder().Length -= 2;
 
-                writer.Write("}");
+                writer.Write(" }");
             }
 
             writer.WriteLine(";");
             writer.WriteLine();
         }
-
-        private static string GetArrayString(int arrayCount) => arrayCount > 0 ? $"[{arrayCount}]" : "";
 
         private static string GetHlslSemantic(ShaderSemanticAttribute? semanticAttribute)
         {

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using Nito.AsyncEx.Interop;
 using SharpGen.Runtime;
-using Vortice.DirectX.Direct3D;
 using Vortice.DirectX.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
@@ -16,14 +14,14 @@ namespace DirectX12GameEngine.Graphics
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
         private Vortice.DirectX.Direct3D11.ID3D11Device? nativeDirect3D11Device;
 
-        public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level_11_0, bool enableDebugLayer = false)
+        public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level11_0, bool enableDebugLayer = false)
         {
 #if DEBUG
             if (enableDebugLayer)
             {
             }
 #endif
-            FeatureLevel = minFeatureLevel < FeatureLevel.Level_11_0 ? FeatureLevel.Level_11_0 : minFeatureLevel;
+            FeatureLevel = minFeatureLevel < FeatureLevel.Level11_0 ? FeatureLevel.Level11_0 : minFeatureLevel;
 
             Result result = D3D12.D3D12CreateDevice(null, (Vortice.DirectX.Direct3D.FeatureLevel)FeatureLevel, out ID3D12Device device);
             NativeDevice = device;

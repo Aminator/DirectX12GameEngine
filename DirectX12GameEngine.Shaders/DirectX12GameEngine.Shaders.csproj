@@ -11,8 +11,8 @@
     <PackageReference Include="DotNetDxc" Version="1.2.0-alpha">
       <ExcludeAssets>native</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="ICSharpCode.Decompiler" Version="5.0.0.4861-preview3" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.3.0-beta1-final" />
+    <PackageReference Include="ICSharpCode.Decompiler" Version="5.0.0.5066-preview4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.3.0-beta2-final" />
   </ItemGroup>
 
   <ItemGroup>

@@ -33,11 +33,11 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             if (Texture != null)
             {
-                context.Textures.Add(Texture);
+                context.ShaderResourceViews.Add(Texture);
             }
 
             colorChannelBuffer ??= Buffer.Constant.New(context.GraphicsDevice, Channel).DisposeBy(context.GraphicsDevice);
-            context.ConstantBuffers.Add(colorChannelBuffer);
+            context.ConstantBufferViews.Add(colorChannelBuffer);
         }
 
         #region Shader
@@ -46,7 +46,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderMember] public Texture2DResource ScalarTexture;
 #nullable enable
 
-        [ConstantBuffer] public ColorChannel Channel
+        [ConstantBufferView] public ColorChannel Channel
         {
             get => channel;
             set

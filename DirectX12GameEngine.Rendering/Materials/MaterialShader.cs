@@ -8,10 +8,10 @@ namespace DirectX12GameEngine.Rendering.Materials
     public class MaterialShader : ShaderBase
     {
 #nullable disable
-        [ConstantBuffer] public readonly uint RenderTargetCount;
-        [ConstantBuffer] public readonly GlobalBuffer Globals;
-        [ConstantBuffer] public readonly ViewProjectionTransform[] ViewProjectionTransforms;
-        [ConstantBuffer] public Matrix4x4[] WorldMatrices;
+        [ConstantBufferView] public readonly uint RenderTargetCount;
+        [ConstantBufferView] public readonly GlobalBuffer Globals;
+        [ConstantBufferView] public readonly ViewProjectionTransform[] ViewProjectionTransforms;
+        [ConstantBufferView] public Matrix4x4[] WorldMatrices;
 
         [ShaderMember] public readonly DirectionalLightGroup DirectionalLights;
 

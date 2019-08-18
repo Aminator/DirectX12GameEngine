@@ -25,14 +25,14 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             invertBuffer ??= Buffer.Constant.New(context.GraphicsDevice, Invert).DisposeBy(context.GraphicsDevice);
 
-            context.ConstantBuffers.Add(invertBuffer);
+            context.ConstantBufferViews.Add(invertBuffer);
         }
 
         #region Shader
 
         [ShaderMember] public IComputeScalar RoughnessMap { get; set; } = new ComputeScalar();
 
-        [ConstantBuffer] public bool Invert
+        [ConstantBufferView] public bool Invert
         {
             get => invert;
             set

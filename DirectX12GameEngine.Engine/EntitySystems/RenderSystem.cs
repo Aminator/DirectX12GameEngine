@@ -260,19 +260,14 @@ namespace DirectX12GameEngine.Engine
 
                 commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, DirectionalLightGroupBuffer);
 
-                if (materialPass.ConstantBufferDescriptorSet != null)
+                if (materialPass.ShaderResourceDescriptorSet != null)
                 {
-                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.ConstantBufferDescriptorSet);
+                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.ShaderResourceDescriptorSet);
                 }
 
                 if (materialPass.SamplerDescriptorSet != null)
                 {
                     commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.SamplerDescriptorSet);
-                }
-
-                if (materialPass.TextureDescriptorSet != null)
-                {
-                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.TextureDescriptorSet);
                 }
 
                 if (mesh.MeshDraw.IndexBufferView != null)

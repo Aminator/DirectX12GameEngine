@@ -3,7 +3,7 @@
 namespace DirectX12GameEngine.Rendering.Lights
 {
     [ShaderContract]
-    [ConstantBuffer]
+    [ConstantBufferView]
     public class DirectionalLightGroup : DirectLightGroup
     {
 #nullable disable

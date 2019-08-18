@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
 using Nito.AsyncEx;
@@ -24,19 +25,16 @@ namespace DirectX12GameEngine.Rendering.Materials
 
                     materialPass.PipelineState = await context.CreateGraphicsPipelineStateAsync();
 
-                    if (context.ConstantBuffers.Count > 0)
+                    var shaderResources = context.ConstantBufferViews.Concat(context.ShaderResourceViews).Concat(context.UnorderedAccessViews);
+
+                    if (shaderResources.Count() > 0)
                     {
-                        materialPass.ConstantBufferDescriptorSet = new DescriptorSet(context.GraphicsDevice, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, context.ConstantBuffers);
+                        materialPass.SamplerDescriptorSet = new DescriptorSet(context.GraphicsDevice, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, shaderResources);
                     }
 
                     if (context.Samplers.Count > 0)
                     {
                         materialPass.SamplerDescriptorSet = new DescriptorSet(context.GraphicsDevice, DescriptorHeapType.Sampler, context.Samplers);
-                    }
-
-                    if (context.Textures.Count > 0)
-                    {
-                        materialPass.TextureDescriptorSet = new DescriptorSet(context.GraphicsDevice, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, context.Textures);
                     }
 
                     context.PopPass();

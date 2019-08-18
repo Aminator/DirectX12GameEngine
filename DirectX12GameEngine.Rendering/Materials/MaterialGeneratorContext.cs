@@ -26,11 +26,13 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public ShaderContentManager Content { get; }
 
-        public IList<Graphics.Buffer> ConstantBuffers { get; } = new List<Graphics.Buffer>();
+        public IList<GraphicsResource> ConstantBufferViews { get; } = new List<GraphicsResource>();
+
+        public IList<GraphicsResource> ShaderResourceViews { get; } = new List<GraphicsResource>();
+
+        public IList<GraphicsResource> UnorderedAccessViews { get; } = new List<GraphicsResource>();
 
         public IList<GraphicsResource> Samplers { get; } = new List<GraphicsResource>();
-
-        public IList<Texture> Textures { get; } = new List<Texture>();
 
         public IMaterialDescriptor? MaterialDescriptor => materialDescriptorStack.Count > 0 ? materialDescriptorStack.Peek() : null;
 
@@ -67,7 +69,9 @@ namespace DirectX12GameEngine.Rendering.Materials
             MaterialPass? materialPass = MaterialPass;
             MaterialPass = null;
 
-            Textures.Clear();
+            ConstantBufferViews.Clear();
+            ShaderResourceViews.Clear();
+            UnorderedAccessViews.Clear();
 
             return materialPass;
         }
@@ -131,28 +135,42 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public ID3D12RootSignature CreateRootSignature()
         {
-            List<RootParameter> rootParameters = new List<RootParameter>
+            int cbvShaderRegister = 0;
+
+            List<RootParameter1> rootParameters = new List<RootParameter1>
             {
-                new RootParameter { ParameterType = RootParameterType.Constant32Bits, Constants = new RootConstants(0, 0, 1) },
-                new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 1)) },
-                new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 2)) },
-                new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 3)) },
-                new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, 4)) }
+                new RootParameter1 { ParameterType = RootParameterType.Constant32Bits, Constants = new RootConstants(cbvShaderRegister++, 0, 1) },
+                new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)) },
+                new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)) },
+                new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)) },
+                new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)) }
             };
 
-            if (ConstantBuffers.Count > 0)
+            List<DescriptorRange1> shaderResourceRootDescriptorRanges = new List<DescriptorRange1>();
+
+            if (ConstantBufferViews.Count > 0)
             {
-                rootParameters.Add(new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ConstantBufferView, ConstantBuffers.Count, 5)) });
+                shaderResourceRootDescriptorRanges.Add(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, ConstantBufferViews.Count, cbvShaderRegister));
+            }
+
+            if (ShaderResourceViews.Count > 0)
+            {
+                shaderResourceRootDescriptorRanges.Add(new DescriptorRange1(DescriptorRangeType.ShaderResourceView, ShaderResourceViews.Count, 0));
+            }
+
+            if (UnorderedAccessViews.Count > 0)
+            {
+                shaderResourceRootDescriptorRanges.Add(new DescriptorRange1(DescriptorRangeType.UnorderedAccessView, UnorderedAccessViews.Count, 1));
+            }
+
+            if (shaderResourceRootDescriptorRanges.Count > 0)
+            {
+                rootParameters.Add(new RootParameter1 { DescriptorTable = new RootDescriptorTable1(shaderResourceRootDescriptorRanges.ToArray()) });
             }
 
             if (Samplers.Count > 0)
             {
-                rootParameters.Add(new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.Sampler, Samplers.Count, 1)) });
-            }
-
-            if (Textures.Count > 0)
-            {
-                rootParameters.Add(new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ShaderResourceView, Textures.Count, 0)) });
+                rootParameters.Add(new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.Sampler, Samplers.Count, 0)) });
             }
 
             StaticSamplerDescription[] staticSamplers = new StaticSamplerDescription[]
@@ -160,7 +178,7 @@ namespace DirectX12GameEngine.Rendering.Materials
                 new StaticSamplerDescription(ShaderVisibility.All, 0, 0)
             };
 
-            RootSignatureDescription rootSignatureDescription = new RootSignatureDescription(
+            RootSignatureDescription1 rootSignatureDescription = new RootSignatureDescription1(
                 RootSignatureFlags.AllowInputAssemblerInputLayout, rootParameters.ToArray(), staticSamplers);
 
             return GraphicsDevice.CreateRootSignature(new VersionedRootSignatureDescription(rootSignatureDescription));

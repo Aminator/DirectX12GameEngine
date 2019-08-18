@@ -5,10 +5,10 @@ using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
 using DirectX12GameEngine.Shaders.Numerics;
 using Vortice.DirectX.Direct3D12;
+
 using Buffer = DirectX12GameEngine.Graphics.Buffer;
-using CommandList = DirectX12GameEngine.Graphics.CommandList;
 using CommandListType = DirectX12GameEngine.Graphics.CommandListType;
-using PipelineState = DirectX12GameEngine.Graphics.PipelineState;
+using DescriptorHeapType = DirectX12GameEngine.Graphics.DescriptorHeapType;
 using ShaderModel = DirectX12GameEngine.Shaders.ShaderModel;
 
 namespace DirectX12ComputeShaderSample
@@ -34,7 +34,7 @@ namespace DirectX12ComputeShaderSample
         {
             // Create graphics device
 
-            using GraphicsDevice device = new GraphicsDevice(FeatureLevel.Level_12_1);
+            using GraphicsDevice device = new GraphicsDevice(FeatureLevel.Level12_1);
 
             // Create graphics buffer
 
@@ -53,6 +53,10 @@ namespace DirectX12ComputeShaderSample
             using Buffer<float> sourceBuffer = Buffer.ShaderResource.New(device, array.AsSpan());
             using Buffer<float> destinationBuffer = Buffer.UnorderedAccess.New<float>(device, array.Length);
 
+            DescriptorSet descriptorSet = new DescriptorSet(device, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, 2);
+            descriptorSet.AddDescriptor(sourceBuffer);
+            descriptorSet.AddDescriptor(destinationBuffer);
+
             // Generate computer shader
 
             //Action<UInt3> action = id =>
@@ -69,13 +73,15 @@ namespace DirectX12ComputeShaderSample
 
             byte[] shaderBytecode = ShaderCompiler.CompileShader(result.ShaderSource, ShaderProfile.ComputeShader, ShaderModel.Model6_1, result.ComputeShader);
 
-            RootParameter[] rootParameters = new RootParameter[]
+            DescriptorRange1[] descriptorRanges = new DescriptorRange1[]
             {
-                new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ShaderResourceView, 1, 0)) },
-                new RootParameter { DescriptorTable = new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.UnorderedAccessView, 1, 0)) }
+                new DescriptorRange1(DescriptorRangeType.ShaderResourceView, 1, 0),
+                new DescriptorRange1(DescriptorRangeType.UnorderedAccessView, 1, 0)
             };
 
-            var rootSignatureDescription = new VersionedRootSignatureDescription(new RootSignatureDescription(RootSignatureFlags.None, rootParameters));
+            RootParameter1 rootParameter = new RootParameter1 { DescriptorTable = new RootDescriptorTable1(descriptorRanges) };
+
+            var rootSignatureDescription = new VersionedRootSignatureDescription(new RootSignatureDescription1(RootSignatureFlags.None, new[] { rootParameter }));
             var rootSignature = device.CreateRootSignature(rootSignatureDescription);
 
             PipelineState pipelineState = new PipelineState(device, rootSignature, shaderBytecode);
@@ -86,8 +92,7 @@ namespace DirectX12ComputeShaderSample
             {
                 commandList.SetPipelineState(pipelineState);
 
-                commandList.SetComputeRootDescriptorTable(0, sourceBuffer);
-                commandList.SetComputeRootDescriptorTable(1, destinationBuffer);
+                commandList.SetComputeRootDescriptorTable(0, descriptorSet);
 
                 commandList.Dispatch(1, 1, 1);
                 await commandList.FlushAsync();

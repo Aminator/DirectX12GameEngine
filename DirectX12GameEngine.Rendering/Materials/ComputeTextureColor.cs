@@ -24,7 +24,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             if (Texture != null)
             {
-                context.Textures.Add(Texture);
+                context.ShaderResourceViews.Add(Texture);
             }
         }
 

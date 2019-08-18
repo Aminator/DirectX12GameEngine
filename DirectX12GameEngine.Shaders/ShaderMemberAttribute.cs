@@ -26,16 +26,9 @@ namespace DirectX12GameEngine.Shaders
         public bool Override { get; set; }
     }
 
-    public class ConstantBufferAttribute : ShaderMemberAttribute
+    public class ConstantBufferViewAttribute : ShaderMemberAttribute
     {
-        public ConstantBufferAttribute([CallerLineNumber] int order = 0) : base(order)
-        {
-        }
-    }
-
-    public class SamplerAttribute : ShaderMemberAttribute
-    {
-        public SamplerAttribute([CallerLineNumber] int order = 0) : base(order)
+        public ConstantBufferViewAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }
@@ -50,6 +43,13 @@ namespace DirectX12GameEngine.Shaders
     public class UnorderedAccessViewAttribute : ShaderMemberAttribute
     {
         public UnorderedAccessViewAttribute([CallerLineNumber] int order = 0) : base(order)
+        {
+        }
+    }
+
+    public class SamplerAttribute : ShaderMemberAttribute
+    {
+        public SamplerAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
     }

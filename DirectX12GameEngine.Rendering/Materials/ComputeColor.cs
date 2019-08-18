@@ -6,7 +6,7 @@ using DirectX12GameEngine.Shaders;
 namespace DirectX12GameEngine.Rendering.Materials
 {
     [ShaderContract]
-    [ConstantBuffer]
+    [ConstantBufferView]
     public class ComputeColor : IComputeColor
     {
         private Vector4 color;
@@ -24,7 +24,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         public void Visit(MaterialGeneratorContext context)
         {
             colorBuffer ??= Buffer.Constant.New(context.GraphicsDevice, Color).DisposeBy(context.GraphicsDevice);
-            context.ConstantBuffers.Add(colorBuffer);
+            context.ConstantBufferViews.Add(colorBuffer);
         }
 
         #region Shader
