@@ -119,7 +119,7 @@ namespace DirectX12GameEngine.Graphics
 
         public unsafe void Clear(Texture renderTarget, Vector4 color)
         {
-            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeCpuDescriptorHandle, *(Color4*)&color);
+            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeCpuDescriptorHandle, new Color4(color));
         }
 
         public void ClearState()
@@ -157,7 +157,7 @@ namespace DirectX12GameEngine.Graphics
 
         public void CopyBufferRegion(GraphicsResource source, long sourceOffset, GraphicsResource destination, long destinationOffset, long numBytes)
         {
-            currentCommandList.NativeCommandList.CopyBufferRegion(destination.NativeResource, (ulong)destinationOffset, source.NativeResource, (ulong)sourceOffset, (ulong)numBytes);
+            currentCommandList.NativeCommandList.CopyBufferRegion(destination.NativeResource, destinationOffset, source.NativeResource, sourceOffset, numBytes);
         }
 
         public void CopyResource(GraphicsResource source, GraphicsResource destination)

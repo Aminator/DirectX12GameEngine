@@ -23,7 +23,7 @@ namespace DirectX12Game
 
             if (GraphicsDevice?.Presenter != null)
             {
-                GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 1;
+                GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 0;
             }
         }
 

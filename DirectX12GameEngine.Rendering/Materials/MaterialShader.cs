@@ -5,7 +5,7 @@ using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    public class MaterialShader : ShaderBase
+    public class MaterialShader : RasterizationShaderBase
     {
 #nullable disable
         [ConstantBufferView] public readonly uint RenderTargetCount;

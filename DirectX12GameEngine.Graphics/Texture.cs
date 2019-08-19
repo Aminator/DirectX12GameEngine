@@ -185,7 +185,7 @@ namespace DirectX12GameEngine.Graphics
         {
             return description.Dimension switch
             {
-                TextureDimension.Texture2D => ResourceDescription.Texture2D((Format)description.Format, (ulong)description.Width, description.Height, (ushort)description.DepthOrArraySize, (ushort)description.MipLevels, description.MultisampleCount, 0, GetBindFlagsFromTextureFlags(description.Flags)),
+                TextureDimension.Texture2D => ResourceDescription.Texture2D((Format)description.Format, description.Width, description.Height, (ushort)description.DepthOrArraySize, (ushort)description.MipLevels, description.MultisampleCount, 0, GetBindFlagsFromTextureFlags(description.Flags)),
                 _ => throw new NotSupportedException()
             };
         }

@@ -13,7 +13,7 @@ using ShaderModel = DirectX12GameEngine.Shaders.ShaderModel;
 
 namespace DirectX12ComputeShaderSample
 {
-    public class MyComputeShader
+    public class MyComputeShader : ComputeShaderBase
     {
         public StructuredBufferResource<float> Source;
 
@@ -22,9 +22,9 @@ namespace DirectX12ComputeShaderSample
         [ShaderMember]
         [Shader("compute")]
         [NumThreads(100, 1, 1)]
-        public void CSMain([SystemDispatchThreadIdSemantic] UInt3 id)
+        public override void CSMain(CSInput input)
         {
-            Destination[id.X] = Math.Max(Source[id.X], 45);
+            Destination[input.DispatchThreadId.X] = Math.Max(Source[input.DispatchThreadId.X], 45);
         }
     }
 
@@ -59,15 +59,19 @@ namespace DirectX12ComputeShaderSample
 
             // Generate computer shader
 
-            //Action<UInt3> action = id =>
+            //StructuredBufferResource<float> source = sourceBuffer.GetStructuredBuffer();
+            //RWStructuredBufferResource<float> destination = destinationBuffer.GetRWStructuredBuffer();
+
+            //Action<CSInput> action = input =>
             //{
-            //    destinationBuffer[id.X] = sourceBuffer[id.X];
+            //    destination[input.DispatchThreadId.X] = source[input.DispatchThreadId.X];
             //};
 
             //ShaderGenerator shaderGenerator = new ShaderGenerator(action);
             //ShaderGenerationResult result = shaderGenerator.GenerateShader();
 
             MyComputeShader myComputeShader = new MyComputeShader();
+
             ShaderGenerator shaderGenerator = new ShaderGenerator(myComputeShader);
             ShaderGenerationResult result = shaderGenerator.GenerateShader();
 

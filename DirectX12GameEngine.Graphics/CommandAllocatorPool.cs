@@ -6,7 +6,7 @@ namespace DirectX12GameEngine.Graphics
 {
     internal sealed class CommandAllocatorPool : IDisposable
     {
-        private readonly Queue<(ID3D12CommandAllocator, ulong)> commandAllocatorQueue = new Queue<(ID3D12CommandAllocator, ulong)>();
+        private readonly Queue<(ID3D12CommandAllocator, long)> commandAllocatorQueue = new Queue<(ID3D12CommandAllocator, long)>();
 
         public CommandAllocatorPool(GraphicsDevice device, CommandListType commandListType)
         {
@@ -22,7 +22,7 @@ namespace DirectX12GameEngine.Graphics
         {
             lock (commandAllocatorQueue)
             {
-                foreach ((ID3D12CommandAllocator commandAllocator, ulong _) in commandAllocatorQueue)
+                foreach ((ID3D12CommandAllocator commandAllocator, long _) in commandAllocatorQueue)
                 {
                     commandAllocator.Dispose();
                 }
@@ -31,7 +31,7 @@ namespace DirectX12GameEngine.Graphics
             }
         }
 
-        public void Enqueue(ID3D12CommandAllocator commandAllocator, ulong fenceValue)
+        public void Enqueue(ID3D12CommandAllocator commandAllocator, long fenceValue)
         {
             lock (commandAllocatorQueue)
             {
@@ -45,9 +45,9 @@ namespace DirectX12GameEngine.Graphics
             {
                 if (commandAllocatorQueue.Count > 0)
                 {
-                    (ID3D12CommandAllocator commandAllocator, ulong fenceValue) = commandAllocatorQueue.Peek();
+                    (ID3D12CommandAllocator commandAllocator, long fenceValue) = commandAllocatorQueue.Peek();
 
-                    ulong completedValue = CommandListType switch
+                    long completedValue = CommandListType switch
                     {
                         CommandListType.Bundle => GraphicsDevice.NativeDirectFence.CompletedValue,
                         CommandListType.Compute => GraphicsDevice.NativeComputeFence.CompletedValue,

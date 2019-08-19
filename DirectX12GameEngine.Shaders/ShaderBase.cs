@@ -2,7 +2,7 @@
 
 namespace DirectX12GameEngine.Shaders
 {
-    public abstract class ShaderBase
+    public abstract class RasterizationShaderBase
     {
         [ShaderMember]
         [Shader("vertex")]
@@ -19,46 +19,60 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
+    public abstract class ComputeShaderBase
+    {
+        [ShaderMember]
+        [Shader("compute")]
+        public virtual void CSMain(CSInput input)
+        {
+        }
+    }
+
+    public struct CSInput
+    {
+        [SystemDispatchThreadIdSemantic] public Numerics.UInt3 DispatchThreadId;
+    }
+
     public struct VSInput
     {
-        [ShaderMember] [PositionSemantic] public Vector3 Position;
-        [ShaderMember] [NormalSemantic] public Vector3 Normal;
-        [ShaderMember] [TangentSemantic] public Vector4 Tangent;
-        [ShaderMember] [TextureCoordinateSemantic] public Vector2 TexCoord;
+        [PositionSemantic] public Vector3 Position;
+        [NormalSemantic] public Vector3 Normal;
+        [TangentSemantic] public Vector4 Tangent;
+        [TextureCoordinateSemantic] public Vector2 TexCoord;
 
-        [ShaderMember] [SystemInstanceIdSemantic] public uint InstanceId;
+        [SystemInstanceIdSemantic] public uint InstanceId;
     }
 
     public struct VSOutput
     {
-        [ShaderMember] [PositionSemantic] public Vector4 PositionWS;
-        [ShaderMember] [NormalSemantic(0)] public Vector3 Normal;
-        [ShaderMember] [NormalSemantic(1)] public Vector3 NormalWS;
-        [ShaderMember] [TangentSemantic] public Vector4 Tangent;
-        [ShaderMember] [TextureCoordinateSemantic] public Vector2 TexCoord;
+        [PositionSemantic] public Vector4 PositionWS;
+        [NormalSemantic(0)] public Vector3 Normal;
+        [NormalSemantic(1)] public Vector3 NormalWS;
+        [TangentSemantic] public Vector4 Tangent;
+        [TextureCoordinateSemantic] public Vector2 TexCoord;
 
-        [ShaderMember] [SystemPositionSemantic] public Vector4 ShadingPosition;
-        [ShaderMember] [SystemInstanceIdSemantic] public uint InstanceId;
-        [ShaderMember] [SystemRenderTargetArrayIndexSemantic] public uint TargetId;
+        [SystemPositionSemantic] public Vector4 ShadingPosition;
+        [SystemInstanceIdSemantic] public uint InstanceId;
+        [SystemRenderTargetArrayIndexSemantic] public uint TargetId;
     }
 
     public struct PSInput
     {
-        [ShaderMember] [PositionSemantic] public Vector4 PositionWS;
-        [ShaderMember] [NormalSemantic(0)] public Vector3 Normal;
-        [ShaderMember] [NormalSemantic(1)] public Vector3 NormalWS;
-        [ShaderMember] [TangentSemantic] public Vector4 Tangent;
-        [ShaderMember] [TextureCoordinateSemantic] public Vector2 TexCoord;
+        [PositionSemantic] public Vector4 PositionWS;
+        [NormalSemantic(0)] public Vector3 Normal;
+        [NormalSemantic(1)] public Vector3 NormalWS;
+        [TangentSemantic] public Vector4 Tangent;
+        [TextureCoordinateSemantic] public Vector2 TexCoord;
 
-        [ShaderMember] [SystemPositionSemantic] public Vector4 ShadingPosition;
-        [ShaderMember] [SystemInstanceIdSemantic] public uint InstanceId;
-        [ShaderMember] [SystemRenderTargetArrayIndexSemantic] public uint TargetId;
+        [SystemPositionSemantic] public Vector4 ShadingPosition;
+        [SystemInstanceIdSemantic] public uint InstanceId;
+        [SystemRenderTargetArrayIndexSemantic] public uint TargetId;
 
-        [ShaderMember] [SystemIsFrontFaceSemantic] public bool IsFrontFace;
+        [SystemIsFrontFaceSemantic] public bool IsFrontFace;
     }
 
     public struct PSOutput
     {
-        [ShaderMember] [SystemTargetSemantic] public Vector4 ColorTarget;
+        [SystemTargetSemantic] public Vector4 ColorTarget;
     }
 }

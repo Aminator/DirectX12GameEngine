@@ -110,11 +110,11 @@ namespace DirectX12GameEngine.Graphics
         internal ID3D12Fence NativeDirectFence { get; }
 
 
-        internal ulong NextComputeFenceValue { get; private set; } = 1;
+        internal long NextComputeFenceValue { get; private set; } = 1;
 
-        internal ulong NextCopyFenceValue { get; private set; } = 1;
+        internal long NextCopyFenceValue { get; private set; } = 1;
 
-        internal ulong NextDirectFenceValue { get; private set; } = 1;
+        internal long NextDirectFenceValue { get; private set; } = 1;
 
         public ID3D12RootSignature CreateRootSignature(VersionedRootSignatureDescription rootSignatureDescription)
         {
@@ -168,17 +168,17 @@ namespace DirectX12GameEngine.Graphics
                 _ => throw new NotSupportedException("This command list type is not supported.")
             };
 
-            ulong fenceValue = ExecuteCommandLists(commandLists);
+            long fenceValue = ExecuteCommandLists(commandLists);
 
             return WaitForFenceAsync(fence, fenceValue);
         }
 
-        public ulong ExecuteCommandLists(params CompiledCommandList[] commandLists)
+        public long ExecuteCommandLists(params CompiledCommandList[] commandLists)
         {
             CommandAllocatorPool commandAllocatorPool;
             ID3D12CommandQueue commandQueue;
             ID3D12Fence fence;
-            ulong fenceValue;
+            long fenceValue;
 
             switch (commandLists[0].Builder.CommandListType)
             {
@@ -224,12 +224,12 @@ namespace DirectX12GameEngine.Graphics
             return fenceValue;
         }
 
-        internal bool IsFenceComplete(ID3D12Fence fence, ulong fenceValue)
+        internal bool IsFenceComplete(ID3D12Fence fence, long fenceValue)
         {
             return fence.CompletedValue >= fenceValue;
         }
 
-        internal Task WaitForFenceAsync(ID3D12Fence fence, ulong fenceValue)
+        internal Task WaitForFenceAsync(ID3D12Fence fence, long fenceValue)
         {
             if (IsFenceComplete(fence, fenceValue)) return Task.CompletedTask;
 

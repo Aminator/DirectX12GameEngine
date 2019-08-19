@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
@@ -364,30 +365,13 @@ namespace DirectX12GameEngine.Assets
 
         private static unsafe Span<Vector4> GenerateTangents(Span<byte> positionBuffer, Span<byte> texCoordBuffer, Span<byte> indexBuffer = default, bool is32bitIndex = false)
         {
-            Span<Vector4> tangentBuffer = new Vector4[positionBuffer.Length / Unsafe.SizeOf<Vector3>()];
+            Span<ushort> indexBuffer16 = !indexBuffer.IsEmpty && !is32bitIndex ? MemoryMarshal.Cast<byte, ushort>(indexBuffer) : default;
+            Span<int> indexBuffer32 = !indexBuffer.IsEmpty && is32bitIndex ? MemoryMarshal.Cast<byte, int>(indexBuffer) : default;
 
-            Span<ushort> indexBuffer16;
-            Span<int> indexBuffer32;
+            Span<Vector3> posBuffer = MemoryMarshal.Cast<byte, Vector3>(positionBuffer);
+            Span<Vector2> uvBuffer = MemoryMarshal.Cast<byte, Vector2>(texCoordBuffer);
 
-            fixed (byte* indexBufferPointer = indexBuffer)
-            {
-                indexBuffer16 = !indexBuffer.IsEmpty && !is32bitIndex ? new Span<ushort>(indexBufferPointer, indexBuffer.Length / sizeof(ushort)) : default;
-                indexBuffer32 = !indexBuffer.IsEmpty && is32bitIndex ? new Span<int>(indexBufferPointer, indexBuffer.Length / sizeof(int)) : default;
-            }
-
-            Span<Vector3> posBuffer;
-
-            fixed (byte* positionBufferPointer = positionBuffer)
-            {
-                posBuffer = new Span<Vector3>(positionBufferPointer, positionBuffer.Length);
-            }
-
-            Span<Vector2> uvBuffer;
-
-            fixed (byte* texCoordBufferPointer = texCoordBuffer)
-            {
-                uvBuffer = new Span<Vector2>(texCoordBufferPointer, texCoordBuffer.Length);
-            }
+            Span<Vector4> tangentBuffer = new Vector4[posBuffer.Length];
 
             int indexCount = indexBuffer.IsEmpty
                 ? positionBuffer.Length / Unsafe.SizeOf<Vector3>()

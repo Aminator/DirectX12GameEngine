@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,8 +12,7 @@ namespace DirectX12GameEngine.Games
         private readonly object tickLock = new object();
 
         private bool isExiting;
-        private DateTime previousTime;
-        private TimeSpan totalTime;
+        private readonly Stopwatch stopwatch = new Stopwatch();
 
         public GameBase(GameContext context)
         {
@@ -70,7 +70,8 @@ namespace DirectX12GameEngine.Games
             Initialize();
             LoadContentAsync();
 
-            previousTime = DateTime.Now;
+            stopwatch.Start();
+            Time.Update(stopwatch.Elapsed, TimeSpan.Zero);
 
             BeginRun();
 
@@ -98,13 +99,8 @@ namespace DirectX12GameEngine.Games
                         return;
                     }
 
-                    DateTime currentTime = DateTime.Now;
-                    TimeSpan elapsedTime = currentTime - previousTime;
-
-                    previousTime = currentTime;
-                    totalTime += elapsedTime;
-
-                    Time.Update(totalTime, elapsedTime);
+                    TimeSpan elapsedTime = stopwatch.Elapsed - Time.Total;
+                    Time.Update(stopwatch.Elapsed, elapsedTime);
 
                     Update(Time);
 
@@ -194,6 +190,7 @@ namespace DirectX12GameEngine.Games
             {
                 EndRun();
                 IsRunning = false;
+                stopwatch.Stop();
             }
         }
     }

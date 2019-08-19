@@ -216,7 +216,7 @@ namespace DirectX12GameEngine.Graphics
                 flags |= ResourceFlags.AllowUnorderedAccess;
             }
 
-            return ResourceDescription.Buffer((ulong)size, flags);
+            return ResourceDescription.Buffer(size, flags);
         }
 
         private CpuDescriptorHandle CreateConstantBufferView()
