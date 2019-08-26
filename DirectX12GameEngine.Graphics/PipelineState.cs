@@ -24,8 +24,8 @@ namespace DirectX12GameEngine.Graphics
             NativePipelineState = device.NativeDevice.CreateGraphicsPipelineState(pipelineStateDescription);
         }
 
-        public PipelineState(GraphicsDevice device, InputElementDescription[] inputElements, ID3D12RootSignature rootSignature, byte[] vertexShader, byte[] pixelShader, byte[]? hullShader = default, byte[]? domainShader = default, byte[]? geometryShader = default)
-            : this(device, CreateGraphicsPipelineStateDescription(device, inputElements, rootSignature, vertexShader, pixelShader, hullShader, domainShader, geometryShader))
+        public PipelineState(GraphicsDevice device, InputElementDescription[] inputElements, ID3D12RootSignature rootSignature, byte[] vertexShader, byte[] pixelShader, byte[]? geometryShader = default, byte[]? hullShader = default, byte[]? domainShader = default)
+            : this(device, CreateGraphicsPipelineStateDescription(device, inputElements, rootSignature, vertexShader, pixelShader, geometryShader, hullShader, domainShader))
         {
         }
 
@@ -44,7 +44,7 @@ namespace DirectX12GameEngine.Graphics
             };
         }
 
-        private static GraphicsPipelineStateDescription CreateGraphicsPipelineStateDescription(GraphicsDevice device, InputElementDescription[] inputElements, ID3D12RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode hullShader, ShaderBytecode domainShader, ShaderBytecode geometryShader)
+        private static GraphicsPipelineStateDescription CreateGraphicsPipelineStateDescription(GraphicsDevice device, InputElementDescription[] inputElements, ID3D12RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode geometryShader, ShaderBytecode hullShader, ShaderBytecode domainShader)
         {
             RasterizerDescription rasterizerDescription = RasterizerDescription.CullNone;
             rasterizerDescription.FrontCounterClockwise = true;
@@ -57,9 +57,9 @@ namespace DirectX12GameEngine.Graphics
                 RootSignature = rootSignature,
                 VertexShader = vertexShader,
                 PixelShader = pixelShader,
+                GeometryShader = geometryShader,
                 HullShader = hullShader,
                 DomainShader = domainShader,
-                GeometryShader = geometryShader,
                 RasterizerState = rasterizerDescription,
                 BlendState = blendDescription,
                 PrimitiveTopologyType = PrimitiveTopologyType.Triangle,

@@ -113,7 +113,6 @@
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
     <Content Include="..\DirectX12Game\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Content Include="..\Libs\runtimes\win-x64\native\*.*" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.12" />

@@ -25,7 +25,7 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsHeapType HeapType => Description.HeapType;
 
-        public int StructuredByteStride => Description.StructuredByteStride;
+        public int StructureByteStride => Description.StructureByteStride;
 
         public int ElementCount { get; protected set; }
 
@@ -39,16 +39,16 @@ namespace DirectX12GameEngine.Graphics
             return New(device, new BufferDescription(size, bufferFlags, heapType));
         }
 
-        public static Buffer New(GraphicsDevice device, int size, int structuredByteStride, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static Buffer New(GraphicsDevice device, int size, int structureByteStride, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
-            return New(device, new BufferDescription(size, bufferFlags, heapType, structuredByteStride));
+            return New(device, new BufferDescription(size, bufferFlags, heapType, structureByteStride));
         }
 
-        public static Buffer<T> New<T>(GraphicsDevice device, int elementCount, int structuredByteStride, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static Buffer<T> New<T>(GraphicsDevice device, int elementCount, int structureByteStride, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            int size = structuredByteStride * elementCount;
+            int size = structureByteStride * elementCount;
 
-            return new Buffer<T>(device, new BufferDescription(size, bufferFlags, heapType, structuredByteStride));
+            return new Buffer<T>(device, new BufferDescription(size, bufferFlags, heapType, structureByteStride));
         }
 
         public static Buffer<T> New<T>(GraphicsDevice device, int elementCount, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
@@ -69,9 +69,9 @@ namespace DirectX12GameEngine.Graphics
             return New(device, data, Unsafe.SizeOf<T>(), bufferFlags, heapType);
         }
 
-        public static Buffer<T> New<T>(GraphicsDevice device, Span<T> data, int structuredByteStride, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static Buffer<T> New<T>(GraphicsDevice device, Span<T> data, int structureByteStride, BufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            Buffer<T> buffer = New<T>(device, data.Length, structuredByteStride, bufferFlags, heapType);
+            Buffer<T> buffer = New<T>(device, data.Length, structureByteStride, bufferFlags, heapType);
             buffer.SetData(data);
 
             return buffer;
@@ -247,7 +247,7 @@ namespace DirectX12GameEngine.Graphics
                 Buffer =
                 {
                     NumElements = ElementCount,
-                    StructureByteStride = StructuredByteStride
+                    StructureByteStride = StructureByteStride
                 }
             };
 
@@ -266,7 +266,7 @@ namespace DirectX12GameEngine.Graphics
                 Buffer =
                 {
                     NumElements = ElementCount,
-                    StructureByteStride = StructuredByteStride
+                    StructureByteStride = StructureByteStride
                 }
             };
 
@@ -280,7 +280,7 @@ namespace DirectX12GameEngine.Graphics
     {
         protected internal Buffer(GraphicsDevice device, BufferDescription description) : base(device)
         {
-            ElementCount = description.SizeInBytes / description.StructuredByteStride;
+            ElementCount = description.SizeInBytes / description.StructureByteStride;
 
             InitializeFrom(description);
         }

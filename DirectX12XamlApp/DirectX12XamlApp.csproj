@@ -136,7 +136,6 @@
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\**" />
     <Content Include="..\DirectX12Game\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Content Include="..\Libs\runtimes\win-x64\native\*.*" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">

@@ -1,6 +1,6 @@
-﻿using Vortice.DirectX.DXGI;
-using System;
+﻿using System;
 using Vortice.DirectX;
+using Vortice.DirectX.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {

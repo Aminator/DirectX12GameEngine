@@ -5,6 +5,7 @@ using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
 using Vortice.DirectX.Direct3D12;
 using Vortice.DirectX.DXGI;
+using Vortice.Dxc;
 using Windows.Storage;
 
 namespace DirectX12GameEngine.Rendering.Materials
@@ -99,26 +100,26 @@ namespace DirectX12GameEngine.Rendering.Materials
 
                 string shaderSource = result.ShaderSource;
 
-                compiledShader.VertexShader = result.VertexShader is null ? throw new Exception("Vertex shader must be present.") : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.VertexShader, Shaders.ShaderModel.Model6_1, result.VertexShader);
-                compiledShader.PixelShader = result.PixelShader is null ? throw new Exception("Pixel shader must be present.") : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.PixelShader, Shaders.ShaderModel.Model6_1, result.PixelShader);
-                compiledShader.HullShader = result.HullShader is null ? default : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.HullShader, Shaders.ShaderModel.Model6_1, result.HullShader);
-                compiledShader.DomainShader = result.DomainShader is null ? default : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.DomainShader, Shaders.ShaderModel.Model6_1, result.DomainShader);
-                compiledShader.GeometryShader = result.GeometryShader is null ? default : ShaderCompiler.CompileShader(shaderSource, ShaderProfile.GeometryShader, Shaders.ShaderModel.Model6_1, result.GeometryShader);
+                compiledShader.VertexShader = !result.EntryPoints.ContainsKey("vertex") ? throw new Exception("Vertex shader must be present.") : ShaderCompiler.Compile(DxcShaderStage.VertexShader, shaderSource, result.EntryPoints["vertex"]);
+                compiledShader.PixelShader = !result.EntryPoints.ContainsKey("pixel") ? throw new Exception("Pixel shader must be present.") : ShaderCompiler.Compile(DxcShaderStage.PixelShader, shaderSource, result.EntryPoints["pixel"]);
+                compiledShader.GeometryShader = !result.EntryPoints.ContainsKey("geometry") ? default : ShaderCompiler.Compile(DxcShaderStage.GeometryShader, shaderSource, result.EntryPoints["geometry"]);
+                compiledShader.HullShader = !result.EntryPoints.ContainsKey("hull") ? default : ShaderCompiler.Compile(DxcShaderStage.HullShader, shaderSource, result.EntryPoints["hull"]);
+                compiledShader.DomainShader = !result.EntryPoints.ContainsKey("domain") ? default : ShaderCompiler.Compile(DxcShaderStage.DomainShader, shaderSource, result.EntryPoints["domain"]);
 
                 CompiledShaderAsset shaderAsset = new CompiledShaderAsset
                 {
                     VertexShaderSource = $"VertexShader_{MaterialDescriptor.MaterialId}.cso",
                     PixelShaderSource = $"PixelShader_{MaterialDescriptor.MaterialId}.cso",
-                    HullShaderSource = result.HullShader is null ? null : $"HullShader_{MaterialDescriptor.MaterialId}.cso",
-                    DomainShaderSource = result.DomainShader is null ? null : $"DomainShader_{MaterialDescriptor.MaterialId}.cso",
-                    GeometryShaderSource = result.GeometryShader is null ? null : $"GeometryShader_{MaterialDescriptor.MaterialId}.cso",
+                    GeometryShaderSource = !result.EntryPoints.ContainsKey("geometry") ? null : $"GeometryShader_{MaterialDescriptor.MaterialId}.cso",
+                    HullShaderSource = !result.EntryPoints.ContainsKey("hull") ? null : $"HullShader_{MaterialDescriptor.MaterialId}.cso",
+                    DomainShaderSource = !result.EntryPoints.ContainsKey("domain") ? null : $"DomainShader_{MaterialDescriptor.MaterialId}.cso",
                 };
 
                 await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.VertexShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.VertexShader);
                 await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.PixelShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.PixelShader);
+                if (shaderAsset.GeometryShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.GeometryShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.GeometryShader);
                 if (shaderAsset.HullShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.HullShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.HullShader);
                 if (shaderAsset.DomainShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.DomainShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.DomainShader);
-                if (shaderAsset.GeometryShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.GeometryShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.GeometryShader);
 
                 await Content.SaveAsync(fileName, shaderAsset);
             }
@@ -130,7 +131,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             ID3D12RootSignature rootSignature = CreateRootSignature();
 
             return new PipelineState(GraphicsDevice, inputElements, rootSignature,
-                compiledShader.VertexShader, compiledShader.PixelShader, compiledShader.HullShader, compiledShader.DomainShader, compiledShader.GeometryShader);
+                compiledShader.VertexShader, compiledShader.PixelShader, compiledShader.GeometryShader, compiledShader.HullShader, compiledShader.DomainShader);
         }
 
         public ID3D12RootSignature CreateRootSignature()

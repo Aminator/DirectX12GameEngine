@@ -272,11 +272,11 @@ namespace DirectX12GameEngine.Engine
 
                 if (mesh.MeshDraw.IndexBufferView != null)
                 {
-                    commandList.DrawIndexedInstanced(mesh.MeshDraw.IndexBufferView.SizeInBytes / mesh.MeshDraw.IndexBufferView.StructuredByteStride, instanceCount);
+                    commandList.DrawIndexedInstanced(mesh.MeshDraw.IndexBufferView.SizeInBytes / mesh.MeshDraw.IndexBufferView.StructureByteStride, instanceCount);
                 }
                 else
                 {
-                    commandList.DrawInstanced(mesh.MeshDraw.VertexBufferViews[0].SizeInBytes / mesh.MeshDraw.VertexBufferViews[0].StructuredByteStride, instanceCount);
+                    commandList.DrawInstanced(mesh.MeshDraw.VertexBufferViews[0].SizeInBytes / mesh.MeshDraw.VertexBufferViews[0].StructureByteStride, instanceCount);
                 }
             }
         }

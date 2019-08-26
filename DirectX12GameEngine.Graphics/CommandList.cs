@@ -325,7 +325,7 @@ namespace DirectX12GameEngine.Graphics
                 {
                     BufferLocation = indexBuffer.NativeResource!.GPUVirtualAddress,
                     SizeInBytes = indexBuffer.SizeInBytes,
-                    Format = indexBuffer.StructuredByteStride == sizeof(int) ? Format.R32_UInt : Format.R16_UInt
+                    Format = indexBuffer.StructureByteStride == sizeof(int) ? Format.R32_UInt : Format.R16_UInt
                 };
 
                 currentCommandList.NativeCommandList.IASetIndexBuffer(indexBufferView);
@@ -400,7 +400,7 @@ namespace DirectX12GameEngine.Graphics
             {
                 BufferLocation = b.NativeResource!.GPUVirtualAddress,
                 SizeInBytes = b.SizeInBytes,
-                StrideInBytes = b.StructuredByteStride
+                StrideInBytes = b.StructureByteStride
             }).ToArray();
 
             currentCommandList.NativeCommandList.IASetVertexBuffers(startSlot, vertexBufferViews);

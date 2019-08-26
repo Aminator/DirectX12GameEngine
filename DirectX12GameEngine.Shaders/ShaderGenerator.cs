@@ -162,7 +162,7 @@ namespace DirectX12GameEngine.Shaders
 
             if (action != null)
             {
-                result.ComputeShader = "Main";
+                result.EntryPoints["compute"] = "Main";
             }
 
             return result;
@@ -173,7 +173,7 @@ namespace DirectX12GameEngine.Shaders
             foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingFlags).Where(m => m.IsDefined(typeof(ShaderAttribute))))
             {
                 ShaderAttribute shaderAttribute = shaderMethodInfo.GetCustomAttribute<ShaderAttribute>();
-                result.SetShader(shaderAttribute.Name, shaderMethodInfo.Name);
+                result.EntryPoints[shaderAttribute.Name] = shaderMethodInfo.Name;
             }
         }
 
@@ -521,7 +521,10 @@ namespace DirectX12GameEngine.Shaders
         {
             foreach (Attribute attribute in methodInfo.GetCustomAttributes())
             {
-                WriteAttribute(attribute);
+                if (depth == 0 || !(attribute is ShaderAttribute))
+                {
+                    WriteAttribute(attribute);
+                }
             }
 
             if (methodInfo.IsStatic) writer.Write("static ");

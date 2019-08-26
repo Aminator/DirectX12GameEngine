@@ -2,12 +2,12 @@
 {
     public struct BufferDescription
     {
-        public BufferDescription(int sizeInBytes, BufferFlags bufferFlags, GraphicsHeapType heapType, int structuredByteStride = 0)
+        public BufferDescription(int sizeInBytes, BufferFlags bufferFlags, GraphicsHeapType heapType, int structureByteStride = 0)
         {
             SizeInBytes = sizeInBytes;
             Flags = bufferFlags;
             HeapType = heapType;
-            StructuredByteStride = structuredByteStride;
+            StructureByteStride = structureByteStride;
         }
 
         public int SizeInBytes;
@@ -16,6 +16,6 @@
 
         public GraphicsHeapType HeapType;
 
-        public int StructuredByteStride;
+        public int StructureByteStride;
     }
 }
