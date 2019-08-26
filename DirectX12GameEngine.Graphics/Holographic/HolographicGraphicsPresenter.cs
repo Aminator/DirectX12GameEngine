@@ -114,7 +114,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
                 PresentationParameters.BackBufferFormat,
                 TextureFlags.RenderTarget,
                 1,
-                HolographicBufferCount);
+                (short)HolographicBufferCount);
         }
 
         private ID3D11Texture2D GetHolographicBackBuffer()

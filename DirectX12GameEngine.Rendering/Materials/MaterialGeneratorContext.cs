@@ -140,11 +140,11 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             List<RootParameter1> rootParameters = new List<RootParameter1>
             {
-                new RootParameter1 { ParameterType = RootParameterType.Constant32Bits, Constants = new RootConstants(cbvShaderRegister++, 0, 1) },
-                new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)) },
-                new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)) },
-                new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)) },
-                new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)) }
+                new RootParameter1(new RootConstants(cbvShaderRegister++, 0, 1), ShaderVisibility.All),
+                new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)), ShaderVisibility.All),
+                new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)), ShaderVisibility.All),
+                new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)), ShaderVisibility.All),
+                new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)), ShaderVisibility.All)
             };
 
             List<DescriptorRange1> shaderResourceRootDescriptorRanges = new List<DescriptorRange1>();
@@ -166,12 +166,12 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             if (shaderResourceRootDescriptorRanges.Count > 0)
             {
-                rootParameters.Add(new RootParameter1 { DescriptorTable = new RootDescriptorTable1(shaderResourceRootDescriptorRanges.ToArray()) });
+                rootParameters.Add(new RootParameter1(new RootDescriptorTable1(shaderResourceRootDescriptorRanges.ToArray()), ShaderVisibility.All));
             }
 
             if (Samplers.Count > 0)
             {
-                rootParameters.Add(new RootParameter1 { DescriptorTable = new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.Sampler, Samplers.Count, 0)) });
+                rootParameters.Add(new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.Sampler, Samplers.Count, 0)), ShaderVisibility.All));
             }
 
             StaticSamplerDescription[] staticSamplers = new StaticSamplerDescription[]

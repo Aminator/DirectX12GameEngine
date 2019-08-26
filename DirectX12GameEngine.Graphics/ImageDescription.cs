@@ -8,13 +8,13 @@
 
         public int Height;
 
-        public int DepthOrArraySize;
+        public short DepthOrArraySize;
 
-        public int MipLevels;
+        public short MipLevels;
 
         public PixelFormat Format;
 
-        public static ImageDescription New2D(int width, int height, PixelFormat format, int mipCount = 1, int arraySize = 1)
+        public static ImageDescription New2D(int width, int height, PixelFormat format, short mipCount = 1, short arraySize = 1)
         {
             return new ImageDescription
             {

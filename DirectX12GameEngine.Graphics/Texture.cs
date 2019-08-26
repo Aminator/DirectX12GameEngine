@@ -41,14 +41,14 @@ namespace DirectX12GameEngine.Graphics
             return new Texture(device).InitializeFrom(description);
         }
 
-        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, short mipCount = 1, short arraySize = 1, int multisampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
             return New(device, TextureDescription.New2D(width, height, format, textureFlags, mipCount, arraySize, multisampleCount, heapType));
         }
 
-        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, short mipCount = 1, short arraySize = 1, int sampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            Texture texture = New2D(device, width, height, format, textureFlags, mipCount, arraySize, multisampleCount, heapType);
+            Texture texture = New2D(device, width, height, format, textureFlags, mipCount, arraySize, sampleCount, heapType);
             texture.SetData(data);
 
             return texture;
@@ -150,7 +150,7 @@ namespace DirectX12GameEngine.Graphics
                 Dimension = TextureDimension.Texture2D,
                 Width = (int)description.Width,
                 Height = description.Height,
-                MultisampleCount = description.SampleDescription.Count,
+                SampleCount = description.SampleDescription.Count,
                 Format = (PixelFormat)description.Format,
                 MipLevels = description.MipLevels,
                 HeapType = heapType,
@@ -185,7 +185,7 @@ namespace DirectX12GameEngine.Graphics
         {
             return description.Dimension switch
             {
-                TextureDimension.Texture2D => ResourceDescription.Texture2D((Format)description.Format, description.Width, description.Height, (ushort)description.DepthOrArraySize, (ushort)description.MipLevels, description.MultisampleCount, 0, GetBindFlagsFromTextureFlags(description.Flags)),
+                TextureDimension.Texture2D => ResourceDescription.Texture2D((Format)description.Format, description.Width, description.Height, description.DepthOrArraySize, description.MipLevels, description.SampleCount, 0, GetBindFlagsFromTextureFlags(description.Flags)),
                 _ => throw new NotSupportedException()
             };
         }

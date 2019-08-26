@@ -3,13 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
-using DirectX12GameEngine.Shaders.Numerics;
 using Vortice.DirectX.Direct3D12;
+using Vortice.Dxc;
 
 using Buffer = DirectX12GameEngine.Graphics.Buffer;
 using CommandListType = DirectX12GameEngine.Graphics.CommandListType;
 using DescriptorHeapType = DirectX12GameEngine.Graphics.DescriptorHeapType;
-using ShaderModel = DirectX12GameEngine.Shaders.ShaderModel;
 
 namespace DirectX12ComputeShaderSample
 {
@@ -75,7 +74,7 @@ namespace DirectX12ComputeShaderSample
             ShaderGenerator shaderGenerator = new ShaderGenerator(myComputeShader);
             ShaderGenerationResult result = shaderGenerator.GenerateShader();
 
-            byte[] shaderBytecode = ShaderCompiler.CompileShader(result.ShaderSource, ShaderProfile.ComputeShader, ShaderModel.Model6_1, result.ComputeShader);
+            byte[] shaderBytecode = ShaderCompiler.Compile(DxcShaderStage.ComputeShader, result.ShaderSource, result.EntryPoints["compute"]);
 
             DescriptorRange1[] descriptorRanges = new DescriptorRange1[]
             {
@@ -83,7 +82,7 @@ namespace DirectX12ComputeShaderSample
                 new DescriptorRange1(DescriptorRangeType.UnorderedAccessView, 1, 0)
             };
 
-            RootParameter1 rootParameter = new RootParameter1 { DescriptorTable = new RootDescriptorTable1(descriptorRanges) };
+            RootParameter1 rootParameter = new RootParameter1(new RootDescriptorTable1(descriptorRanges), ShaderVisibility.All);
 
             var rootSignatureDescription = new VersionedRootSignatureDescription(new RootSignatureDescription1(RootSignatureFlags.None, new[] { rootParameter }));
             var rootSignature = device.CreateRootSignature(rootSignatureDescription);

@@ -3,10 +3,9 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Vortice.DirectX;
 using Vortice.DirectX.Direct3D12;
 using Vortice.DirectX.DXGI;
-using Vortice.Mathematics;
+using Vortice.Interop;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -119,7 +118,7 @@ namespace DirectX12GameEngine.Graphics
 
         public unsafe void Clear(Texture renderTarget, Vector4 color)
         {
-            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeCpuDescriptorHandle, new Color4(color));
+            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeCpuDescriptorHandle, new RawColor4(color.X, color.Y, color.Z, color.W));
         }
 
         public void ClearState()
@@ -391,7 +390,7 @@ namespace DirectX12GameEngine.Graphics
 
             scissorRectangles.CopyTo(ScissorRectangles, 0);
 
-            currentCommandList.NativeCommandList.RSSetScissorRects(scissorRectangles.Select(s => (InteropRect)s).ToArray());
+            currentCommandList.NativeCommandList.RSSetScissorRects(scissorRectangles.Select(s => (RawRectangle)s).ToArray());
         }
 
         public void SetVertexBuffers(int startSlot, params Buffer[] vertexBuffers)
@@ -420,7 +419,7 @@ namespace DirectX12GameEngine.Graphics
 
             viewports.CopyTo(Viewports, 0);
 
-            currentCommandList.NativeCommandList.RSSetViewports(viewports.Select(v => new Viewport(v)).ToArray());
+            currentCommandList.NativeCommandList.RSSetViewports(viewports.Select(v => new RawViewport(v.X, v.Y, v.Width, v.Height)).ToArray());
         }
 
         private ID3D12CommandAllocator GetCommandAllocator() => CommandListType switch

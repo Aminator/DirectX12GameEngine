@@ -8,19 +8,19 @@
 
         public int Height;
 
-        public int DepthOrArraySize;
+        public short DepthOrArraySize;
 
-        public int MipLevels;
+        public short MipLevels;
 
         public PixelFormat Format;
 
-        public int MultisampleCount;
+        public int SampleCount;
 
         public GraphicsHeapType HeapType;
 
         public TextureFlags Flags;
 
-        public static TextureDescription New2D(int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, int mipCount = 1, int arraySize = 1, int multisampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static TextureDescription New2D(int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, short mipCount = 1, short arraySize = 1, int sampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
             return new TextureDescription
             {
@@ -28,7 +28,7 @@
                 Width = width,
                 Height = height,
                 DepthOrArraySize = arraySize,
-                MultisampleCount = multisampleCount,
+                SampleCount = sampleCount,
                 Flags = textureFlags,
                 Format = format,
                 MipLevels = mipCount,
@@ -47,7 +47,7 @@
                 MipLevels = description.MipLevels,
                 Format = description.Format,
                 Flags = TextureFlags.ShaderResource,
-                MultisampleCount = 1,
+                SampleCount = 1,
                 HeapType = GraphicsHeapType.Default
             };
         }
