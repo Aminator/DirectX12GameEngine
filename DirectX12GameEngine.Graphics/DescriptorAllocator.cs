@@ -41,12 +41,12 @@ namespace DirectX12GameEngine.Graphics
         {
             lock (allocatorLock)
             {
-                if (count < 1 || (CurrentDescriptorCount + count > TotalDescriptorCount && CurrentDescriptorCount != TotalDescriptorCount))
+                if (count < 1 || count > TotalDescriptorCount)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(count), "Count must be between 1 and the remaining handles if the remaining handles are not 0.");
+                    throw new ArgumentOutOfRangeException(nameof(count), "Count must be between 1 and the total descriptor count.");
                 }
 
-                if (CurrentDescriptorCount == TotalDescriptorCount)
+                if (CurrentDescriptorCount + count > TotalDescriptorCount)
                 {
                     Reset();
                 }
@@ -64,7 +64,7 @@ namespace DirectX12GameEngine.Graphics
             {
                 if (slot < 0 || slot > TotalDescriptorCount - 1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(slot), "Slot must be between 0 and the descript count - 1.");
+                    throw new ArgumentOutOfRangeException(nameof(slot), "Slot must be between 0 and the total descriptor count - 1.");
                 }
 
                 CpuDescriptorHandle cpuDescriptorHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart() + slot * DescriptorHandleIncrementSize;
