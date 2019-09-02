@@ -11,7 +11,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ConstantBufferView] public readonly uint RenderTargetCount;
         [ConstantBufferView] public readonly GlobalBuffer Globals;
         [ConstantBufferView] public readonly ViewProjectionTransform[] ViewProjectionTransforms;
-        [ConstantBufferView] public Matrix4x4[] WorldMatrices;
+        [ConstantBufferView] public readonly Matrix4x4[] WorldMatrices;
 
         [ShaderMember] public readonly DirectionalLightGroup DirectionalLights;
 

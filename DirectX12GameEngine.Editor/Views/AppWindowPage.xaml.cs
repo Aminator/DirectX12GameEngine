@@ -34,7 +34,7 @@ namespace DirectX12GameEngine.Editor.Views
                 TabView.AppWindow = parameters.AppWindow;
                 TabView.AppWindow.Frame.DragRegionVisuals.Add(TitleBar);
 
-                TabView.Items.Add(parameters.Tab);
+                TabView.TabItems.Add(parameters.Tab);
             }
         }
 

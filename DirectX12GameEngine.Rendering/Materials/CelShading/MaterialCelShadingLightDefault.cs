@@ -8,11 +8,11 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
     [StaticResource]
     public class MaterialCelShadingLightDefault : IMaterialCelShadingLightFunction
     {
-        private Buffer<bool>? isBlackAndWhiteBuffer;
+        private GraphicsBuffer<bool>? isBlackAndWhiteBuffer;
 
         public void Visit(MaterialGeneratorContext context)
         {
-            isBlackAndWhiteBuffer ??= Buffer.Constant.New(context.GraphicsDevice, IsBlackAndWhite).DisposeBy(context.GraphicsDevice);
+            isBlackAndWhiteBuffer ??= GraphicsBuffer.Constant.New(context.GraphicsDevice, IsBlackAndWhite).DisposeBy(context.GraphicsDevice);
             context.ConstantBufferViews.Add(isBlackAndWhiteBuffer);
         }
 

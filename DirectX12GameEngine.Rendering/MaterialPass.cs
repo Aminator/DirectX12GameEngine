@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Rendering
 
         public PipelineState? PipelineState { get; set; }
 
-        public DescriptorSet? ShaderResourceDescriptorSet { get; set; }
+        public DescriptorSet? ShaderResourceViewDescriptorSet { get; set; }
 
         public DescriptorSet? SamplerDescriptorSet { get; set; }
     }

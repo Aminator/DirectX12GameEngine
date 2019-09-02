@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     public class MaterialRoughnessMapFeature : IMaterialMicroSurfaceFeature
     {
         private bool invert;
-        private Buffer<bool>? invertBuffer;
+        private GraphicsBuffer<bool>? invertBuffer;
 
         public MaterialRoughnessMapFeature()
         {
@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             RoughnessMap.Visit(context);
 
-            invertBuffer ??= Buffer.Constant.New(context.GraphicsDevice, Invert).DisposeBy(context.GraphicsDevice);
+            invertBuffer ??= GraphicsBuffer.Constant.New(context.GraphicsDevice, Invert).DisposeBy(context.GraphicsDevice);
 
             context.ConstantBufferViews.Add(invertBuffer);
         }

@@ -70,14 +70,14 @@
             FolderTemplate="{StaticResource FolderTemplate}" />
     </UserControl.Resources>
 
-    <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
-        <winui:RefreshContainer RefreshRequested="RefreshContainer_RefreshRequested">
-            <winui:RefreshContainer.ContextFlyout>
+    <Grid>
+        <RefreshContainer RefreshRequested="RefreshContainer_RefreshRequested">
+            <RefreshContainer.ContextFlyout>
                 <MenuFlyout>
                     <MenuFlyoutItem Command="{StaticResource RefreshCommand}" />
                 </MenuFlyout>
-            </winui:RefreshContainer.ContextFlyout>
+            </RefreshContainer.ContextFlyout>
             <winui:TreeView ItemTemplateSelector="{StaticResource StorageItemTemplateSelector}" ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}" />
-        </winui:RefreshContainer>
+        </RefreshContainer>
     </Grid>
 </UserControl>

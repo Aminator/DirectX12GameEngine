@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     public class ComputeColor : IComputeColor
     {
         private Vector4 color;
-        private Buffer<Vector4>? colorBuffer;
+        private GraphicsBuffer<Vector4>? colorBuffer;
 
         public ComputeColor()
         {
@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public void Visit(MaterialGeneratorContext context)
         {
-            colorBuffer ??= Buffer.Constant.New(context.GraphicsDevice, Color).DisposeBy(context.GraphicsDevice);
+            colorBuffer ??= GraphicsBuffer.Constant.New(context.GraphicsDevice, Color).DisposeBy(context.GraphicsDevice);
             context.ConstantBufferViews.Add(colorBuffer);
         }
 

@@ -35,7 +35,10 @@
                 HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
                 IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
                 ItemsSource="{x:Bind Properties, Mode=OneWay}">
-                <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind Type.Name, Mode=OneWay}" />
+                </StackPanel>
             </winui:TreeViewItem>
         </DataTemplate>
 
@@ -267,7 +270,7 @@
         </local:DataTypeTemplateSelector>
     </UserControl.Resources>
 
-    <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
+    <Grid>
         <controls:UniformGrid />
 
         <winui:TreeView ItemTemplateSelector="{StaticResource PropertyTemplateSelector}" ItemsSource="{x:Bind ViewModel.Properties, Mode=OneWay}">

@@ -1,6 +1,6 @@
 ﻿using SharpGen.Runtime;
 using Vortice.DirectX;
-using Vortice.DirectX.DXGI;
+using Vortice.DXGI;
 using Windows.UI.Core;
 
 namespace DirectX12GameEngine.Graphics

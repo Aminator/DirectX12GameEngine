@@ -20,6 +20,10 @@
     </Page.Resources>
 
     <Grid>
+        <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
+            <local:ExtendedTabView x:Name="TabView" Background="Transparent" />
+        </Grid>
+
         <Grid
             x:Name="TitleBar"
             Height="40"
@@ -33,7 +37,5 @@
             OverflowButtonVisibility="Collapsed">
             <AppBarButton Command="{StaticResource OpenMainWindowCommand}" />
         </CommandBar>
-
-        <local:ExtendedTabView x:Name="TabView" Background="Transparent" />
     </Grid>
 </Page>

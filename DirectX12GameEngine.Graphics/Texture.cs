@@ -2,8 +2,8 @@
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using Vortice.DirectX.Direct3D12;
-using Vortice.DirectX.DXGI;
+using Vortice.Direct3D12;
+using Vortice.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -23,6 +23,8 @@ namespace DirectX12GameEngine.Graphics
         public int Width => Description.Width;
 
         public int Height => Description.Height;
+
+        internal CpuDescriptorHandle NativeDepthStencilView { get; private set; }
 
         public static async Task<Texture> LoadAsync(GraphicsDevice device, string filePath)
         {
@@ -98,20 +100,30 @@ namespace DirectX12GameEngine.Graphics
             return InitializeFrom(resource, description);
         }
 
-        private Texture InitializeFrom(ID3D12Resource resource, TextureDescription description)
+        internal Texture InitializeFrom(ID3D12Resource resource, TextureDescription description)
         {
             NativeResource = resource;
-
             Description = description;
 
-            NativeCpuDescriptorHandle = description.Flags switch
+            if (description.Flags.HasFlag(TextureFlags.DepthStencil))
             {
-                TextureFlags.DepthStencil => CreateDepthStencilView(),
-                TextureFlags.RenderTarget => CreateRenderTargetView(),
-                TextureFlags.ShaderResource => CreateShaderResourceView(),
-                TextureFlags.UnorderedAccess => CreateUnorderedAccessView(),
-                _ => default
-            };
+                NativeDepthStencilView = CreateDepthStencilView();
+            }
+
+            if (description.Flags.HasFlag(TextureFlags.RenderTarget))
+            {
+                NativeRenderTargetView = CreateRenderTargetView();
+            }
+
+            if (description.Flags.HasFlag(TextureFlags.ShaderResource))
+            {
+                NativeShaderResourceView = CreateShaderResourceView();
+            }
+
+            if (description.Flags.HasFlag(TextureFlags.UnorderedAccess))
+            {
+                NativeUnorderedAccessView = CreateUnorderedAccessView();
+            }
 
             return this;
         }
@@ -190,7 +202,7 @@ namespace DirectX12GameEngine.Graphics
             };
         }
 
-        private CpuDescriptorHandle CreateDepthStencilView()
+        internal CpuDescriptorHandle CreateDepthStencilView()
         {
             CpuDescriptorHandle cpuHandle = GraphicsDevice.DepthStencilViewAllocator.Allocate(1);
             GraphicsDevice.NativeDevice.CreateDepthStencilView(NativeResource, null, cpuHandle);
@@ -198,7 +210,7 @@ namespace DirectX12GameEngine.Graphics
             return cpuHandle;
         }
 
-        private CpuDescriptorHandle CreateRenderTargetView()
+        internal CpuDescriptorHandle CreateRenderTargetView()
         {
             CpuDescriptorHandle cpuHandle = GraphicsDevice.RenderTargetViewAllocator.Allocate(1);
             GraphicsDevice.NativeDevice.CreateRenderTargetView(NativeResource, null, cpuHandle);
@@ -206,7 +218,7 @@ namespace DirectX12GameEngine.Graphics
             return cpuHandle;
         }
 
-        private CpuDescriptorHandle CreateShaderResourceView()
+        internal CpuDescriptorHandle CreateShaderResourceView()
         {
             CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
             GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, null, cpuHandle);
@@ -214,7 +226,7 @@ namespace DirectX12GameEngine.Graphics
             return cpuHandle;
         }
 
-        private CpuDescriptorHandle CreateUnorderedAccessView()
+        internal CpuDescriptorHandle CreateUnorderedAccessView()
         {
             CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
             GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, null, cpuHandle);

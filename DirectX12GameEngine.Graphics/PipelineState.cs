@@ -1,5 +1,5 @@
-﻿using Vortice.DirectX.Direct3D12;
-using Vortice.DirectX.DXGI;
+﻿using Vortice.Direct3D12;
+using Vortice.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -77,7 +77,7 @@ namespace DirectX12GameEngine.Graphics
 
             for (int i = 0; i < renderTargetFormats.Length; i++)
             {
-                renderTargetFormats[i] = (Format)device.CommandList.RenderTargets[i].Description.Format;
+                renderTargetFormats[i] = (Format)(device.CommandList.RenderTargets[i] as Texture).Description.Format;
             }
 
             pipelineStateDescription.RenderTargetFormats = renderTargetFormats;

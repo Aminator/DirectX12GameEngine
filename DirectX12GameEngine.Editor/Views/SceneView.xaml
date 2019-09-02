@@ -66,7 +66,7 @@
             </winui:TreeView>
         </Grid>
 
-        <Grid Grid.Column="1" Background="{ThemeResource AcrylicAssetEditorBackground}">
+        <Grid Grid.Column="1">
             <SwapChainPanel x:Name="SwapChainPanel">
                 <local:BackgroundControl>
                     <local:BackgroundControl.Template>

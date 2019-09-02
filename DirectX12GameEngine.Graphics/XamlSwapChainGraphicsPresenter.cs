@@ -1,7 +1,7 @@
 ﻿using SharpGen.Runtime;
 using System.Numerics;
 using Vortice.DirectX;
-using Vortice.DirectX.DXGI;
+using Vortice.DXGI;
 using Windows.UI.Xaml.Controls;
 
 namespace DirectX12GameEngine.Graphics

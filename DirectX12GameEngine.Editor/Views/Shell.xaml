@@ -48,22 +48,26 @@
                 <ColumnDefinition x:Name="SolutionExplorerColumnDefinition" Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <local:ExtendedTabView
-                x:Name="AssetEditorTabView"
-                Background="Transparent"
-                Shadow="{StaticResource AssetEditorShadow}" />
+            <Grid
+                x:Name="AssetEditorPanel"
+                Background="{ThemeResource AcrylicAssetEditorBackground}"
+                Shadow="{StaticResource AssetEditorShadow}">
+                <local:ExtendedTabView x:Name="AssetEditorTabView" Background="Transparent" />
+            </Grid>
 
-            <local:ExtendedTabView
-                x:Name="SolutionExplorerTabView"
+            <Grid
+                x:Name="SolutionExplorerPanel"
                 Grid.Column="1"
                 Background="{ThemeResource AcrylicSolutionExplorerBackground}"
                 Shadow="{StaticResource SolutionExplorerShadow}">
-                <!--<local:ExtendedTabView.Transitions>
+                <local:ExtendedTabView x:Name="SolutionExplorerTabView" Background="Transparent">
+                    <!--<local:ExtendedTabView.Transitions>
                     <TransitionCollection>
                         <PaneThemeTransition Edge="Left" />
                     </TransitionCollection>
                 </local:ExtendedTabView.Transitions>-->
-            </local:ExtendedTabView>
+                </local:ExtendedTabView>
+            </Grid>
 
             <controls:GridSplitter
                 Grid.Column="1"

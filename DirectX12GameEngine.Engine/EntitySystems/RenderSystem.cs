@@ -10,7 +10,7 @@ using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
 
-using Buffer = DirectX12GameEngine.Graphics.Buffer;
+using GraphicsBuffer = DirectX12GameEngine.Graphics.GraphicsBuffer;
 using CommandList = DirectX12GameEngine.Graphics.CommandList;
 
 namespace DirectX12GameEngine.Engine
@@ -24,7 +24,7 @@ namespace DirectX12GameEngine.Engine
 
         private readonly List<CommandList> commandLists = new List<CommandList>();
 
-        private readonly Dictionary<Model, (CompiledCommandList[] Bundles, Buffer[] WorldMatrixBuffers)> models = new Dictionary<Model, (CompiledCommandList[], Buffer[])>();
+        private readonly Dictionary<Model, (CompiledCommandList[] Bundles, GraphicsBuffer[] WorldMatrixBuffers)> models = new Dictionary<Model, (CompiledCommandList[], GraphicsBuffer[])>();
 
         public RenderSystem(GraphicsDevice device, SceneSystem sceneSystem) : base(typeof(TransformComponent))
         {
@@ -33,16 +33,19 @@ namespace DirectX12GameEngine.Engine
 
             if (graphicsDevice is null) throw new InvalidOperationException();
 
-            DirectionalLightGroupBuffer = Buffer.Constant.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights);
-            GlobalBuffer = Buffer.Constant.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>());
-            ViewProjectionTransformBuffer = Buffer.Constant.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>());
+            DirectionalLightGroupBuffer = GraphicsBuffer.Constant.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights);
+            GlobalBuffer = GraphicsBuffer.Constant.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>());
+            ViewProjectionTransformBuffer = GraphicsBuffer.Constant.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>());
+            DefaultSampler = new SamplerState(graphicsDevice, Vortice.Direct3D12.SamplerDescription.Default);
         }
 
-        public Buffer DirectionalLightGroupBuffer { get; }
+        public GraphicsBuffer DirectionalLightGroupBuffer { get; }
 
-        public Buffer GlobalBuffer { get; }
+        public GraphicsBuffer GlobalBuffer { get; }
 
-        public Buffer ViewProjectionTransformBuffer { get; }
+        public GraphicsBuffer ViewProjectionTransformBuffer { get; }
+
+        public SamplerState DefaultSampler { get; }
 
         public override void Draw(GameTime gameTime)
         {
@@ -60,7 +63,7 @@ namespace DirectX12GameEngine.Engine
             int batchSize = (int)Math.Ceiling((double)componentsWithSameModel.Length / batchCount);
 
             Texture? depthStencilBuffer = graphicsDevice.CommandList.DepthStencilBuffer;
-            Texture[] renderTargets = graphicsDevice.CommandList.RenderTargets;
+            GraphicsResource[] renderTargets = graphicsDevice.CommandList.RenderTargets;
             var viewports = graphicsDevice.CommandList.Viewports;
             var scissorRectangles = graphicsDevice.CommandList.ScissorRectangles;
 
@@ -99,11 +102,11 @@ namespace DirectX12GameEngine.Engine
 
                     if (!models.ContainsKey(model))
                     {
-                        Buffer[] newWorldMatrixBuffers = new Buffer[meshCount];
+                        GraphicsBuffer[] newWorldMatrixBuffers = new GraphicsBuffer[meshCount];
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            newWorldMatrixBuffers[meshIndex] = Buffer.Constant.New(graphicsDevice, modelComponents.Count() * 16 * sizeof(float));
+                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.Constant.New(graphicsDevice, modelComponents.Count() * 16 * sizeof(float));
                         }
 
                         CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];
@@ -130,7 +133,7 @@ namespace DirectX12GameEngine.Engine
                         models.Add(model, (newBundles, newWorldMatrixBuffers));
                     }
 
-                    (CompiledCommandList[] bundles, Buffer[] worldMatrixBuffers) = models[model];
+                    (CompiledCommandList[] bundles, GraphicsBuffer[] worldMatrixBuffers) = models[model];
 
                     int modelComponentIndex = 0;
 
@@ -186,7 +189,7 @@ namespace DirectX12GameEngine.Engine
 
             foreach (var item in models)
             {
-                (CompiledCommandList[]? bundles, Buffer[]? worldMatrixBuffers) = item.Value;
+                (CompiledCommandList[]? bundles, GraphicsBuffer[]? worldMatrixBuffers) = item.Value;
 
                 DisposeModel(bundles, worldMatrixBuffers);
             }
@@ -210,11 +213,11 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private static void DisposeModel(CompiledCommandList[] bundles, Buffer[] worldMatrixBuffers)
+        private static void DisposeModel(CompiledCommandList[] bundles, GraphicsBuffer[] worldMatrixBuffers)
         {
             if (worldMatrixBuffers != null)
             {
-                foreach (Buffer constantBuffer in worldMatrixBuffers)
+                foreach (GraphicsBuffer constantBuffer in worldMatrixBuffers)
                 {
                     constantBuffer.Dispose();
                 }
@@ -229,7 +232,7 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void RecordCommandList(Model model, CommandList commandList, Buffer[] worldMatrixBuffers, int instanceCount, int passIndex)
+        private void RecordCommandList(Model model, CommandList commandList, GraphicsBuffer[] worldMatrixBuffers, int instanceCount, int passIndex)
         {
             int renderTargetCount = graphicsDevice?.Presenter is null ? 1 : graphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
             instanceCount *= renderTargetCount;
@@ -254,15 +257,16 @@ namespace DirectX12GameEngine.Engine
                 int rootParameterIndex = 0;
 
                 commandList.SetGraphicsRoot32BitConstant(rootParameterIndex++, renderTargetCount, 0);
-                commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, GlobalBuffer);
-                commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, ViewProjectionTransformBuffer);
-                commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, worldMatrixBuffers[i]);
+                commandList.SetGraphicsConstantBuffers(rootParameterIndex++, GlobalBuffer);
+                commandList.SetGraphicsConstantBuffers(rootParameterIndex++, ViewProjectionTransformBuffer);
+                commandList.SetGraphicsConstantBuffers(rootParameterIndex++, worldMatrixBuffers[i]);
 
-                commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, DirectionalLightGroupBuffer);
+                commandList.SetGraphicsConstantBuffers(rootParameterIndex++, DirectionalLightGroupBuffer);
+                commandList.SetGraphicsSamplers(rootParameterIndex++, DefaultSampler);
 
-                if (materialPass.ShaderResourceDescriptorSet != null)
+                if (materialPass.ShaderResourceViewDescriptorSet != null)
                 {
-                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.ShaderResourceDescriptorSet);
+                    commandList.SetGraphicsRootDescriptorTable(rootParameterIndex++, materialPass.ShaderResourceViewDescriptorSet);
                 }
 
                 if (materialPass.SamplerDescriptorSet != null)

@@ -3,12 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
-using Vortice.DirectX.Direct3D12;
+using Vortice.Direct3D12;
 using Vortice.Dxc;
 
-using Buffer = DirectX12GameEngine.Graphics.Buffer;
 using CommandListType = DirectX12GameEngine.Graphics.CommandListType;
-using DescriptorHeapType = DirectX12GameEngine.Graphics.DescriptorHeapType;
 
 namespace DirectX12ComputeShaderSample
 {
@@ -49,12 +47,13 @@ namespace DirectX12ComputeShaderSample
 
             float[] outputArray = new float[width * height];
 
-            using Buffer<float> sourceBuffer = Buffer.ShaderResource.New(device, array.AsSpan());
-            using Buffer<float> destinationBuffer = Buffer.UnorderedAccess.New<float>(device, array.Length);
+            using GraphicsBuffer<float> sourceBuffer = GraphicsBuffer.ShaderResource.New(device, array.AsSpan());
+            using GraphicsBuffer<float> destinationBuffer = GraphicsBuffer.UnorderedAccess.New<float>(device, array.Length * 2);
+            using GraphicsBuffer<float> slicedDestinationBuffer = destinationBuffer.Slice(20, 60);
 
-            DescriptorSet descriptorSet = new DescriptorSet(device, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, 2);
-            descriptorSet.AddDescriptor(sourceBuffer);
-            descriptorSet.AddDescriptor(destinationBuffer);
+            DescriptorSet descriptorSet = new DescriptorSet(device, 2);
+            descriptorSet.AddShaderResourceViews(sourceBuffer);
+            descriptorSet.AddUnorderedAccessViews(slicedDestinationBuffer);
 
             // Generate computer shader
 

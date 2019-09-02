@@ -1,5 +1,5 @@
 ﻿using System;
-using Vortice.DirectX.Direct3D12;
+using Vortice.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -8,8 +8,6 @@ namespace DirectX12GameEngine.Graphics
         private const int DescriptorsPerHeap = 4096;
 
         private readonly object allocatorLock = new object();
-        private CpuDescriptorHandle currentCpuHandle;
-        private int remainingHandles;
 
         public DescriptorAllocator(GraphicsDevice device, DescriptorHeapType descriptorHeapType, int descriptorCount = DescriptorsPerHeap, DescriptorHeapFlags descriptorHeapFlags = DescriptorHeapFlags.None)
         {
@@ -18,39 +16,43 @@ namespace DirectX12GameEngine.Graphics
                 throw new ArgumentOutOfRangeException(nameof(descriptorCount), $"Descriptor count must be between 1 and {DescriptorsPerHeap}.");
             }
 
-            DescriptorIncrementSize = device.NativeDevice.GetDescriptorHandleIncrementSize((Vortice.DirectX.Direct3D12.DescriptorHeapType)descriptorHeapType);
+            DescriptorHandleIncrementSize = device.NativeDevice.GetDescriptorHandleIncrementSize((Vortice.Direct3D12.DescriptorHeapType)descriptorHeapType);
 
-            DescriptorHeapDescription descriptorHeapDescription = new DescriptorHeapDescription((Vortice.DirectX.Direct3D12.DescriptorHeapType)descriptorHeapType, descriptorCount, descriptorHeapFlags);
+            DescriptorHeapDescription descriptorHeapDescription = new DescriptorHeapDescription((Vortice.Direct3D12.DescriptorHeapType)descriptorHeapType, descriptorCount, descriptorHeapFlags);
 
             DescriptorHeap = device.NativeDevice.CreateDescriptorHeap(descriptorHeapDescription);
 
-            remainingHandles = descriptorCount;
-            currentCpuHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart();
+            TotalDescriptorCount = descriptorCount;
         }
 
-        public ID3D12DescriptorHeap DescriptorHeap { get; }
+        public int CurrentDescriptorCount { get; private set; }
 
-        internal int DescriptorIncrementSize { get; }
+        public int TotalDescriptorCount { get; private set; }
+
+        internal ID3D12DescriptorHeap DescriptorHeap { get; }
+
+        internal int DescriptorHandleIncrementSize { get; }
+
+        internal CpuDescriptorHandle CurrentCpuDescriptorHandle => DescriptorHeap.GetCPUDescriptorHandleForHeapStart() + CurrentDescriptorCount * DescriptorHandleIncrementSize;
+
+        internal GpuDescriptorHandle CurrentGpuDescriptorHandle => DescriptorHeap.GetGPUDescriptorHandleForHeapStart() + CurrentDescriptorCount * DescriptorHandleIncrementSize;
 
         public CpuDescriptorHandle Allocate(int count)
         {
-            if (count < 1 || (count > remainingHandles && remainingHandles != 0))
-            {
-                throw new ArgumentOutOfRangeException(nameof(count), "Count must be between 1 and the remaining handles if the remaining handles are not 0.");
-            }
-
             lock (allocatorLock)
             {
-                if (remainingHandles == 0)
+                if (count < 1 || (CurrentDescriptorCount + count > TotalDescriptorCount && CurrentDescriptorCount != TotalDescriptorCount))
                 {
-                    remainingHandles = DescriptorHeap.Description.DescriptorCount;
-                    currentCpuHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart();
+                    throw new ArgumentOutOfRangeException(nameof(count), "Count must be between 1 and the remaining handles if the remaining handles are not 0.");
                 }
 
-                CpuDescriptorHandle cpuDescriptorHandle = currentCpuHandle;
+                if (CurrentDescriptorCount == TotalDescriptorCount)
+                {
+                    Reset();
+                }
 
-                currentCpuHandle += DescriptorIncrementSize * count;
-                remainingHandles -= count;
+                CpuDescriptorHandle cpuDescriptorHandle = CurrentCpuDescriptorHandle;
+                CurrentDescriptorCount += count;
 
                 return cpuDescriptorHandle;
             }
@@ -58,17 +60,22 @@ namespace DirectX12GameEngine.Graphics
 
         public CpuDescriptorHandle AllocateSlot(int slot)
         {
-            if (slot < 0 || slot > DescriptorHeap.Description.DescriptorCount - 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(slot), "Slot must be between 0 and the descript count - 1.");
-            }
-
             lock (allocatorLock)
             {
-                CpuDescriptorHandle cpuDescriptorHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart() + DescriptorIncrementSize * slot;
+                if (slot < 0 || slot > TotalDescriptorCount - 1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(slot), "Slot must be between 0 and the descript count - 1.");
+                }
+
+                CpuDescriptorHandle cpuDescriptorHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart() + slot * DescriptorHandleIncrementSize;
 
                 return cpuDescriptorHandle;
             }
+        }
+
+        public void Reset()
+        {
+            CurrentDescriptorCount = 0;
         }
 
         public void Dispose()

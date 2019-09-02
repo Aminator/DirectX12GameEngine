@@ -17,10 +17,9 @@ namespace DirectX12GameEngine.Games
         {
             Control = control;
         }
+    }
 
-        public override void ConfigureServices(IServiceCollection services)
-        {
-            base.ConfigureServices(services);
-        }
+    public class NullGameContext : GameContext
+    {
     }
 }

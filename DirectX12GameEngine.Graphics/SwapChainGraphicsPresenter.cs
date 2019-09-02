@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Vortice.DirectX;
-using Vortice.DirectX.Direct3D12;
-using Vortice.DirectX.DXGI;
+using Vortice.Direct3D12;
+using Vortice.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {

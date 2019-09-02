@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using Nito.AsyncEx.Interop;
 using SharpGen.Runtime;
-using Vortice.DirectX.Direct3D12;
+using Vortice.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
     public sealed class GraphicsDevice : IDisposable, ICollector
     {
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
-        private Vortice.DirectX.Direct3D11.ID3D11Device? nativeDirect3D11Device;
+        private Vortice.Direct3D11.ID3D11Device? nativeDirect3D11Device;
 
         public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level11_0, bool enableDebugLayer = false)
         {
@@ -26,9 +26,9 @@ namespace DirectX12GameEngine.Graphics
             Result result = D3D12.D3D12CreateDevice(null, (Vortice.DirectX.Direct3D.FeatureLevel)FeatureLevel, out ID3D12Device device);
             NativeDevice = device;
 
-            NativeComputeCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.DirectX.Direct3D12.CommandListType.Compute));
-            NativeCopyCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.DirectX.Direct3D12.CommandListType.Copy));
-            NativeDirectCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.DirectX.Direct3D12.CommandListType.Direct));
+            NativeComputeCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.Direct3D12.CommandListType.Compute));
+            NativeCopyCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.Direct3D12.CommandListType.Copy));
+            NativeDirectCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.Direct3D12.CommandListType.Direct));
 
             BundleAllocatorPool = new CommandAllocatorPool(this, CommandListType.Bundle);
             ComputeAllocatorPool = new CommandAllocatorPool(this, CommandListType.Compute);
@@ -41,8 +41,11 @@ namespace DirectX12GameEngine.Graphics
 
             DepthStencilViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.DepthStencilView, 1);
             RenderTargetViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.RenderTargetView, 2);
-            ShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, 4096, DescriptorHeapFlags.ShaderVisible);
-            SamplerAllocator = new DescriptorAllocator(this, DescriptorHeapType.Sampler, 256, DescriptorHeapFlags.ShaderVisible);
+            ShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, 4096);
+            SamplerAllocator = new DescriptorAllocator(this, DescriptorHeapType.Sampler, 256);
+
+            ShaderVisibleShaderResourceViewAllocator = new DescriptorAllocator(this, DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView, 4096, DescriptorHeapFlags.ShaderVisible);
+            ShaderVisibleSamplerAllocator = new DescriptorAllocator(this, DescriptorHeapType.Sampler, 256, DescriptorHeapFlags.ShaderVisible);
 
             CommandList = new CommandList(this, CommandListType.Direct);
             CommandList.Close();
@@ -63,14 +66,14 @@ namespace DirectX12GameEngine.Graphics
 
         internal ID3D12Device NativeDevice { get; }
 
-        internal Vortice.DirectX.Direct3D11.ID3D11Device NativeDirect3D11Device
+        internal Vortice.Direct3D11.ID3D11Device NativeDirect3D11Device
         {
             get
             {
                 if (nativeDirect3D11Device is null)
                 {
-                    Vortice.DirectX.Direct3D11.D3D11.D3D11On12CreateDevice(
-                        NativeDevice, Vortice.DirectX.Direct3D11.DeviceCreationFlags.BgraSupport, null, new[] { NativeDirectCommandQueue }, 0,
+                    Vortice.Direct3D11.D3D11.D3D11On12CreateDevice(
+                        NativeDevice, Vortice.Direct3D11.DeviceCreationFlags.BgraSupport, null, new[] { NativeDirectCommandQueue }, 0,
                         out nativeDirect3D11Device, out _, out _);
                 }
 
@@ -86,6 +89,9 @@ namespace DirectX12GameEngine.Graphics
 
         internal DescriptorAllocator SamplerAllocator { get; set; }
 
+        internal DescriptorAllocator ShaderVisibleShaderResourceViewAllocator { get; }
+
+        internal DescriptorAllocator ShaderVisibleSamplerAllocator { get; }
 
         internal CommandAllocatorPool BundleAllocatorPool { get; }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Vortice.DirectX.Direct3D12;
+using Vortice.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -65,7 +65,7 @@ namespace DirectX12GameEngine.Graphics
                     }
                 }
 
-                return GraphicsDevice.NativeDevice.CreateCommandAllocator((Vortice.DirectX.Direct3D12.CommandListType)CommandListType);
+                return GraphicsDevice.NativeDevice.CreateCommandAllocator((Vortice.Direct3D12.CommandListType)CommandListType);
             }
         }
     }

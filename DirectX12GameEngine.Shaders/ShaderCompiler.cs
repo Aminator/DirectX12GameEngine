@@ -5,7 +5,13 @@ namespace DirectX12GameEngine.Shaders
 {
     public static class ShaderCompiler
     {
-        private static readonly IDxcLibrary library = Dxc.CreateDxcLibrary();
+        static ShaderCompiler()
+        {
+            Dxil.LoadLibrary();
+            library = Dxc.CreateDxcLibrary();
+        }
+
+        private static readonly IDxcLibrary library;
 
         public static byte[] Compile(DxcShaderStage shaderStage, string source, string entryPoint, string sourceName = "")
         {
@@ -14,14 +20,11 @@ namespace DirectX12GameEngine.Shaders
 
         public static byte[] Compile(DxcShaderStage shaderStage, string source, string entryPoint, string sourceName, DxcShaderModel shaderModel)
         {
-            return Compile(shaderStage, source, entryPoint, sourceName, new DxcCompilerOptions { ShaderModel = shaderModel });
+            return Compile(shaderStage, source, entryPoint, sourceName, new DxcCompilerOptions { ShaderModel = shaderModel, PackMatrixInRowMajor = true });
         }
 
         public static byte[] Compile(DxcShaderStage shaderStage, string source, string entryPoint, string sourceName, DxcCompilerOptions options)
         {
-            // TODO: Temporary fix because of bug in Vortice.Dxc
-            options.PackMatricesInRowMajor = false;
-
             IDxcOperationResult result = DxcCompiler.Compile(shaderStage, source, entryPoint, sourceName, options);
 
             if (result.GetStatus() == 0)

@@ -3,9 +3,9 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Vortice.DirectX.Direct3D12;
-using Vortice.DirectX.DXGI;
-using Vortice.Interop;
+using Vortice.Direct3D12;
+using Vortice.DXGI;
+using Vortice.Mathematics;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -16,10 +16,8 @@ namespace DirectX12GameEngine.Graphics
 
         private readonly CompiledCommandList currentCommandList;
 
-        private ID3D12DescriptorHeap? srvDescriptorHeap;
-        private ID3D12DescriptorHeap? samplerDescriptorHeap;
-
-        private ID3D12DescriptorHeap[] descriptorHeaps = Array.Empty<ID3D12DescriptorHeap>();
+        private DescriptorAllocator? srvDescriptorHeap;
+        private DescriptorAllocator? samplerDescriptorHeap;
 
         public CommandList(GraphicsDevice device, CommandListType commandListType)
         {
@@ -28,11 +26,10 @@ namespace DirectX12GameEngine.Graphics
 
             ID3D12CommandAllocator commandAllocator = GetCommandAllocator();
 
-            ID3D12GraphicsCommandList nativeCommandList = GraphicsDevice.NativeDevice.CreateCommandList((Vortice.DirectX.Direct3D12.CommandListType)CommandListType, commandAllocator, null);
+            ID3D12GraphicsCommandList nativeCommandList = GraphicsDevice.NativeDevice.CreateCommandList((Vortice.Direct3D12.CommandListType)CommandListType, commandAllocator, null);
             currentCommandList = new CompiledCommandList(this, commandAllocator, nativeCommandList);
 
-            // TODO: Setting a sampler descriptor heap throws an exception when closing the command list.
-            SetDescriptorHeaps(GraphicsDevice.ShaderResourceViewAllocator.DescriptorHeap/*, GraphicsDevice.SamplerAllocator.DescriptorHeap*/);
+            SetDescriptorHeaps(GraphicsDevice.ShaderVisibleShaderResourceViewAllocator, GraphicsDevice.ShaderVisibleSamplerAllocator);
         }
 
         public CommandListType CommandListType { get; }
@@ -41,7 +38,7 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsDevice GraphicsDevice { get; }
 
-        public Texture[] RenderTargets { get; private set; } = Array.Empty<Texture>();
+        public GraphicsResource[] RenderTargets { get; private set; } = Array.Empty<GraphicsResource>();
 
         public Rectangle[] ScissorRectangles { get; private set; } = Array.Empty<Rectangle>();
 
@@ -52,7 +49,7 @@ namespace DirectX12GameEngine.Graphics
             BeginRenderPass(DepthStencilBuffer, RenderTargets);
         }
 
-        public void BeginRenderPass(Texture? depthStencilView, params Texture[] renderTargetViews)
+        public void BeginRenderPass(Texture? depthStencilView, params GraphicsResource[] renderTargetViews)
         {
             RenderPassRenderTargetDescription[] renderPassRenderTargetDescriptions = new RenderPassRenderTargetDescription[renderTargetViews.Length];
 
@@ -65,7 +62,7 @@ namespace DirectX12GameEngine.Graphics
                 {
                     BeginningAccess = renderPassBeginningAccessPreserve,
                     EndingAccess = renderPassEndingAccessPreserve,
-                    CpuDescriptor = renderTargetViews[i].NativeCpuDescriptorHandle
+                    CpuDescriptor = renderTargetViews[i].NativeRenderTargetView
                 };
 
                 renderPassRenderTargetDescriptions[i] = renderPassRenderTargetDescription;
@@ -84,7 +81,7 @@ namespace DirectX12GameEngine.Graphics
                     DepthEndingAccess = renderPassEndingAccessNoAccess,
                     StencilBeginningAccess = renderPassBeginningAccessNoAccess,
                     StencilEndingAccess = renderPassEndingAccessNoAccess,
-                    CpuDescriptor = depthStencilView.NativeCpuDescriptorHandle,
+                    CpuDescriptor = depthStencilView.NativeDepthStencilView,
                 };
             }
 
@@ -113,12 +110,12 @@ namespace DirectX12GameEngine.Graphics
 
         public void Clear(Texture depthStencilBuffer, ClearFlags clearFlags, float depth = 1, byte stencil = 0)
         {
-            currentCommandList.NativeCommandList.ClearDepthStencilView(depthStencilBuffer.NativeCpuDescriptorHandle, (Vortice.DirectX.Direct3D12.ClearFlags)clearFlags, depth, stencil);
+            currentCommandList.NativeCommandList.ClearDepthStencilView(depthStencilBuffer.NativeDepthStencilView, (Vortice.Direct3D12.ClearFlags)clearFlags, depth, stencil);
         }
 
-        public unsafe void Clear(Texture renderTarget, Vector4 color)
+        public unsafe void Clear(GraphicsResource renderTarget, Vector4 color)
         {
-            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeCpuDescriptorHandle, new RawColor4(color.X, color.Y, color.Z, color.W));
+            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeRenderTargetView, new Color4(color));
         }
 
         public void ClearState()
@@ -127,13 +124,17 @@ namespace DirectX12GameEngine.Graphics
             Array.Clear(ScissorRectangles, 0, ScissorRectangles.Length);
 
             Texture? depthStencilBuffer = GraphicsDevice.Presenter?.DepthStencilBuffer;
-            Texture? backBuffer = GraphicsDevice.Presenter?.BackBuffer;
+            GraphicsResource? backBuffer = GraphicsDevice.Presenter?.BackBuffer;
 
             if (backBuffer != null)
             {
                 SetRenderTargets(depthStencilBuffer, backBuffer);
-                SetScissorRectangles(new Rectangle(0, 0, backBuffer.Width, backBuffer.Height));
-                SetViewports(new RectangleF(0, 0, backBuffer.Width, backBuffer.Height));
+
+                if (backBuffer is Texture texture)
+                {
+                    SetScissorRectangles(new Rectangle(0, 0, texture.Width, texture.Height));
+                    SetViewports(new RectangleF(0, 0, texture.Width, texture.Height));
+                }
             }
             else if (depthStencilBuffer != null)
             {
@@ -237,7 +238,7 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandAllocator = commandAllocator;
             currentCommandList.NativeCommandList.Reset(currentCommandList.NativeCommandAllocator, null);
 
-            SetDescriptorHeaps(GraphicsDevice.ShaderResourceViewAllocator.DescriptorHeap);
+            SetDescriptorHeaps(GraphicsDevice.ShaderVisibleShaderResourceViewAllocator, GraphicsDevice.ShaderVisibleSamplerAllocator);
         }
 
         public void ResourceBarrierTransition(GraphicsResource resource, ResourceStates stateBefore, ResourceStates stateAfter)
@@ -245,16 +246,14 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.ResourceBarrierTransition(resource.NativeResource, stateBefore, stateAfter);
         }
 
-        private void SetDescriptorHeaps(params ID3D12DescriptorHeap[] descriptorHeaps)
+        private void SetDescriptorHeaps(params DescriptorAllocator[] descriptorHeaps)
         {
             if (CommandListType != CommandListType.Copy)
             {
-                currentCommandList.NativeCommandList.SetDescriptorHeaps(descriptorHeaps.Length, descriptorHeaps);
+                currentCommandList.NativeCommandList.SetDescriptorHeaps(descriptorHeaps.Length, descriptorHeaps.Select(d => d.DescriptorHeap).ToArray());
 
-                srvDescriptorHeap = descriptorHeaps.FirstOrDefault(d => d.Description.Type == Vortice.DirectX.Direct3D12.DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
-                samplerDescriptorHeap = descriptorHeaps.FirstOrDefault(d => d.Description.Type == Vortice.DirectX.Direct3D12.DescriptorHeapType.Sampler);
-
-                this.descriptorHeaps = descriptorHeaps;
+                srvDescriptorHeap = descriptorHeaps.SingleOrDefault(d => d.DescriptorHeap.Description.Type == Vortice.Direct3D12.DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView);
+                samplerDescriptorHeap = descriptorHeaps.SingleOrDefault(d => d.DescriptorHeap.Description.Type == Vortice.Direct3D12.DescriptorHeapType.Sampler);
             }
         }
 
@@ -263,24 +262,38 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.SetComputeRoot32BitConstant(rootParameterIndex, srcData, destOffsetIn32BitValues);
         }
 
-        public void SetComputeRootDescriptorTable(int rootParameterIndex, GraphicsResource resource)
+        public void SetComputeConstantBuffers(int rootParameterIndex, params GraphicsBuffer[] buffers)
         {
             if (srvDescriptorHeap is null) throw new InvalidOperationException();
 
-            SetComputeRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, resource.NativeCpuDescriptorHandle);
+            foreach (GraphicsBuffer buffer in buffers)
+            {
+                SetComputeRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, buffer.CreateConstantBufferView(), 1);
+            }
+        }
+
+        public void SetComputeSamplers(int rootParameterIndex, params SamplerState[] samplers)
+        {
+            if (samplerDescriptorHeap is null) throw new InvalidOperationException();
+
+            foreach (SamplerState sampler in samplers)
+            {
+                SetComputeRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.NativeCpuDescriptorHandle, 1);
+            }
         }
 
         public void SetComputeRootDescriptorTable(int rootParameterIndex, DescriptorSet descriptorSet)
         {
-            SetComputeRootDescriptorTable(rootParameterIndex, descriptorSet.DescriptorAllocator.DescriptorHeap, descriptorSet.StartCpuDescriptorHandle);
+            DescriptorAllocator? descriptorAllocator = descriptorSet.DescriptorHeapType == DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView ? srvDescriptorHeap : samplerDescriptorHeap;
+
+            if (descriptorAllocator is null) throw new InvalidOperationException();
+
+            SetComputeRootDescriptorTable(rootParameterIndex, descriptorAllocator, descriptorSet.StartCpuDescriptorHandle, descriptorSet.TotalDescriptorCount);
         }
 
-        private void SetComputeRootDescriptorTable(int rootParameterIndex, ID3D12DescriptorHeap descriptorHeap, CpuDescriptorHandle baseDescriptor)
+        private void SetComputeRootDescriptorTable(int rootParameterIndex, DescriptorAllocator descriptorAllocator, CpuDescriptorHandle baseDescriptor, int descriptorCount)
         {
-            if (!descriptorHeaps.Contains(descriptorHeap)) throw new InvalidOperationException();
-
-            var offset = baseDescriptor.Ptr - descriptorHeap.GetCPUDescriptorHandleForHeapStart().Ptr;
-            GpuDescriptorHandle gpuDescriptorHandle = descriptorHeap.GetGPUDescriptorHandleForHeapStart() + offset;
+            GpuDescriptorHandle gpuDescriptorHandle = CopyDescriptors(descriptorAllocator, baseDescriptor, descriptorCount);
 
             currentCommandList.NativeCommandList.SetComputeRootDescriptorTable(rootParameterIndex, gpuDescriptorHandle);
         }
@@ -290,29 +303,52 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.SetGraphicsRoot32BitConstant(rootParameterIndex, srcData, destOffsetIn32BitValues);
         }
 
-        public void SetGraphicsRootDescriptorTable(int rootParameterIndex, GraphicsResource resource)
+        public void SetGraphicsConstantBuffers(int rootParameterIndex, params GraphicsBuffer[] buffers)
         {
             if (srvDescriptorHeap is null) throw new InvalidOperationException();
 
-            SetGraphicsRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, resource.NativeCpuDescriptorHandle);
+            foreach (GraphicsBuffer buffer in buffers)
+            {
+                SetGraphicsRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, buffer.NativeConstantBufferView, 1);
+            }
+        }
+
+        public void SetGraphicsSamplers(int rootParameterIndex, params SamplerState[] samplers)
+        {
+            if (samplerDescriptorHeap is null) throw new InvalidOperationException();
+
+            foreach (SamplerState sampler in samplers)
+            {
+                SetGraphicsRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.NativeCpuDescriptorHandle, 1);
+            }
         }
 
         public void SetGraphicsRootDescriptorTable(int rootParameterIndex, DescriptorSet descriptorSet)
         {
-            SetGraphicsRootDescriptorTable(rootParameterIndex, descriptorSet.DescriptorAllocator.DescriptorHeap, descriptorSet.StartCpuDescriptorHandle);
+            DescriptorAllocator? descriptorAllocator = descriptorSet.DescriptorHeapType == DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView ? srvDescriptorHeap : samplerDescriptorHeap;
+
+            if (descriptorAllocator is null) throw new InvalidOperationException();
+
+            SetGraphicsRootDescriptorTable(rootParameterIndex, descriptorAllocator, descriptorSet.StartCpuDescriptorHandle, descriptorSet.TotalDescriptorCount);
         }
 
-        private void SetGraphicsRootDescriptorTable(int rootParameterIndex, ID3D12DescriptorHeap descriptorHeap, CpuDescriptorHandle baseDescriptor)
+        private void SetGraphicsRootDescriptorTable(int rootParameterIndex, DescriptorAllocator descriptorAllocator, CpuDescriptorHandle baseDescriptor, int descriptorCount)
         {
-            if (!descriptorHeaps.Contains(descriptorHeap)) throw new InvalidOperationException();
-
-            var offset = baseDescriptor.Ptr - descriptorHeap.GetCPUDescriptorHandleForHeapStart().Ptr;
-            GpuDescriptorHandle gpuDescriptorHandle = descriptorHeap.GetGPUDescriptorHandleForHeapStart() + offset;
+            GpuDescriptorHandle gpuDescriptorHandle = CopyDescriptors(descriptorAllocator, baseDescriptor, descriptorCount);
 
             currentCommandList.NativeCommandList.SetGraphicsRootDescriptorTable(rootParameterIndex, gpuDescriptorHandle);
         }
 
-        public void SetIndexBuffer(Buffer? indexBuffer)
+        private GpuDescriptorHandle CopyDescriptors(DescriptorAllocator descriptorAllocator, CpuDescriptorHandle baseDescriptor, int descriptorCount)
+        {
+            GpuDescriptorHandle gpuDescriptorHandle = descriptorAllocator.CurrentGpuDescriptorHandle;
+            CpuDescriptorHandle destinationDescriptor = descriptorAllocator.Allocate(descriptorCount);
+            GraphicsDevice.NativeDevice.CopyDescriptorsSimple(descriptorCount, destinationDescriptor, baseDescriptor, descriptorAllocator.DescriptorHeap.Description.Type);
+
+            return gpuDescriptorHandle;
+        }
+
+        public void SetIndexBuffer(GraphicsBuffer? indexBuffer)
         {
             if (indexBuffer is null)
             {
@@ -350,7 +386,7 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.IASetPrimitiveTopology((Vortice.DirectX.Direct3D.PrimitiveTopology)primitiveTopology);
         }
 
-        public void SetRenderTargets(Texture? depthStencilView, params Texture[] renderTargetViews)
+        public void SetRenderTargets(Texture? depthStencilView, params GraphicsResource[] renderTargetViews)
         {
             DepthStencilBuffer = depthStencilView;
 
@@ -361,7 +397,7 @@ namespace DirectX12GameEngine.Graphics
 
             if (RenderTargets.Length != renderTargetViews.Length)
             {
-                RenderTargets = new Texture[renderTargetViews.Length];
+                RenderTargets = new GraphicsResource[renderTargetViews.Length];
             }
 
             renderTargetViews.CopyTo(RenderTargets, 0);
@@ -370,10 +406,10 @@ namespace DirectX12GameEngine.Graphics
 
             for (int i = 0; i < renderTargetViews.Length; i++)
             {
-                renderTargetDescriptors[i] = renderTargetViews[i].NativeCpuDescriptorHandle;
+                renderTargetDescriptors[i] = renderTargetViews[i].NativeRenderTargetView;
             }
 
-            currentCommandList.NativeCommandList.OMSetRenderTargets(renderTargetDescriptors, depthStencilView?.NativeCpuDescriptorHandle);
+            currentCommandList.NativeCommandList.OMSetRenderTargets(renderTargetDescriptors, depthStencilView?.NativeDepthStencilView);
         }
 
         public void SetScissorRectangles(params Rectangle[] scissorRectangles)
@@ -390,10 +426,10 @@ namespace DirectX12GameEngine.Graphics
 
             scissorRectangles.CopyTo(ScissorRectangles, 0);
 
-            currentCommandList.NativeCommandList.RSSetScissorRects(scissorRectangles.Select(s => (RawRectangle)s).ToArray());
+            currentCommandList.NativeCommandList.RSSetScissorRects(scissorRectangles.Select(s => (Rect)s).ToArray());
         }
 
-        public void SetVertexBuffers(int startSlot, params Buffer[] vertexBuffers)
+        public void SetVertexBuffers(int startSlot, params GraphicsBuffer[] vertexBuffers)
         {
             VertexBufferView[] vertexBufferViews = vertexBuffers.Select(b => new VertexBufferView
             {
@@ -419,7 +455,7 @@ namespace DirectX12GameEngine.Graphics
 
             viewports.CopyTo(Viewports, 0);
 
-            currentCommandList.NativeCommandList.RSSetViewports(viewports.Select(v => new RawViewport(v.X, v.Y, v.Width, v.Height)).ToArray());
+            currentCommandList.NativeCommandList.RSSetViewports(viewports.Select(v => new Viewport(v)).ToArray());
         }
 
         private ID3D12CommandAllocator GetCommandAllocator() => CommandListType switch

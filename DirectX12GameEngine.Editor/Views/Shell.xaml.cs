@@ -6,7 +6,8 @@ using DirectX12GameEngine.Editor.Messages;
 using DirectX12GameEngine.Editor.Messaging;
 using DirectX12GameEngine.Editor.ViewModels;
 using DirectX12GameEngine.Engine;
-using Microsoft.Toolkit.Uwp.UI.Controls;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -33,14 +34,14 @@ namespace DirectX12GameEngine.Editor.Views
                 Bindings.Update();
             };
 
-            SolutionExplorerTabView.Items.VectorChanged += (s, e) => SolutionExplorerColumnDefinition.Width = GridLength.Auto;
+            SolutionExplorerTabView.TabItemsChanged += (s, e) => SolutionExplorerColumnDefinition.Width = GridLength.Auto;
 
-            SolutionExplorerShadow.Receivers.Add(AssetEditorTabView);
-            //SolutionExplorerShadow.Receivers.Add(BackgroundPanel);
-            //AssetEditorShadow.Receivers.Add(BackgroundPanel);
+            AssetEditorShadow.Receivers.Add(BackgroundPanel);
+            SolutionExplorerShadow.Receivers.Add(AssetEditorPanel);
+            SolutionExplorerShadow.Receivers.Add(BackgroundPanel);
 
-            AssetEditorTabView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
-            SolutionExplorerTabView.Translation += new Vector3(0.0f, 0.0f, 64.0f);
+            AssetEditorPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
+            SolutionExplorerPanel.Translation += new Vector3(0.0f, 0.0f, 64.0f);
 
             Window.Current.SetTitleBar(TitleBar);
 
@@ -58,7 +59,7 @@ namespace DirectX12GameEngine.Editor.Views
         {
             base.OnDragEnter(e);
 
-            if (SolutionExplorerTabView.Items.Count == 0)
+            if (SolutionExplorerTabView.TabItems.Count == 0)
             {
                 SolutionExplorerColumnDefinition.Width = new GridLength(200);
             }
@@ -68,7 +69,7 @@ namespace DirectX12GameEngine.Editor.Views
         {
             base.OnDragLeave(e);
 
-            if (SolutionExplorerTabView.Items.Count == 0)
+            if (SolutionExplorerTabView.TabItems.Count == 0)
             {
                 SolutionExplorerColumnDefinition.Width = GridLength.Auto;
             }
@@ -90,7 +91,7 @@ namespace DirectX12GameEngine.Editor.Views
                             Header = m.Item.Name
                         };
 
-                        AssetEditorTabView.Items.Add(tabViewItem);
+                        AssetEditorTabView.TabItems.Add(tabViewItem);
                     }
                     else
                     {
@@ -113,13 +114,12 @@ namespace DirectX12GameEngine.Editor.Views
                         Content = new SolutionExplorerView { DataContext = ViewModel.SolutionExplorer }
                     };
 
-                    tabViewItem.Closing += (s, e) =>
+                    tabViewItem.CloseRequested += (s, e) =>
                     {
-                        e.Cancel = true;
                         ViewModel.EditorViews.IsSolutionExplorerOpen = false;
                     };
 
-                    SolutionExplorerTabView.Items.Add(tabViewItem);
+                    SolutionExplorerTabView.TabItems.Add(tabViewItem);
                     visibleViews.Add(m.ViewName, tabViewItem);
                 }
                 else if (m.ViewName == "PropertyGrid")
@@ -130,13 +130,12 @@ namespace DirectX12GameEngine.Editor.Views
                         Content = new PropertyGridView { DataContext = ViewModel.PropertyGrid }
                     };
 
-                    tabViewItem.Closing += (s, e) =>
+                    tabViewItem.CloseRequested += (s, e) =>
                     {
-                        e.Cancel = true;
                         ViewModel.EditorViews.IsPropertyGridOpen = false;
                     };
 
-                    SolutionExplorerTabView.Items.Add(tabViewItem);
+                    SolutionExplorerTabView.TabItems.Add(tabViewItem);
                     visibleViews.Add(m.ViewName, tabViewItem);
                 }
             });
@@ -147,7 +146,7 @@ namespace DirectX12GameEngine.Editor.Views
 
                 if (visibleViews.TryGetValue(viewName, out TabViewItem item))
                 {
-                    (item.Parent as TabView)?.Items.Remove(item);
+                    (item.Parent as TabViewListView)?.Items.Remove(item);
                     visibleViews.Remove(viewName);
                 }
             });

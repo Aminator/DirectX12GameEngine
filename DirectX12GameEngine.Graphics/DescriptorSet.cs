@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Vortice.DirectX.Direct3D12;
+using Vortice.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
     public class DescriptorSet
     {
-        public DescriptorSet(GraphicsDevice device, DescriptorHeapType descriptorHeapType, int descriptorCount)
+        public DescriptorSet(GraphicsDevice device, int descriptorCount, DescriptorHeapType descriptorHeapType = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView)
         {
             if (descriptorCount < 1) throw new ArgumentOutOfRangeException(nameof(descriptorCount));
 
@@ -17,16 +17,6 @@ namespace DirectX12GameEngine.Graphics
 
             DescriptorAllocator = GetDescriptorAllocator();
             StartCpuDescriptorHandle = DescriptorAllocator.Allocate(TotalDescriptorCount);
-        }
-
-        public DescriptorSet(GraphicsDevice device, DescriptorHeapType descriptorHeapType, GraphicsResource resource) : this(device, descriptorHeapType, 1)
-        {
-            AddDescriptor(resource);
-        }
-
-        public DescriptorSet(GraphicsDevice device, DescriptorHeapType descriptorHeapType, IEnumerable<GraphicsResource> resources) : this(device, descriptorHeapType, resources.Count())
-        {
-            AddDescriptors(resources);
         }
 
         public GraphicsDevice GraphicsDevice { get; }
@@ -39,24 +29,63 @@ namespace DirectX12GameEngine.Graphics
 
         internal DescriptorAllocator DescriptorAllocator { get; }
 
-        internal CpuDescriptorHandle StartCpuDescriptorHandle { get; private set; }
+        internal CpuDescriptorHandle StartCpuDescriptorHandle { get; }
 
-        public void AddDescriptor(GraphicsResource resource)
+        public void AddConstantBufferViews(params GraphicsBuffer[] buffers)
+        {
+            AddConstantBufferViews(buffers.AsEnumerable());
+        }
+
+        public void AddConstantBufferViews(IEnumerable<GraphicsBuffer> buffers)
+        {
+            AddDescriptors(buffers.Select(r => r.CreateConstantBufferView()).ToArray());
+        }
+
+        public void AddShaderResourceViews(params GraphicsResource[] resources)
+        {
+            AddShaderResourceViews(resources.AsEnumerable());
+        }
+
+        public void AddShaderResourceViews(IEnumerable<GraphicsResource> resources)
+        {
+            AddDescriptors(resources.Select(r => r.NativeShaderResourceView).ToArray());
+        }
+
+        public void AddUnorderedAccessViews(params GraphicsResource[] resources)
+        {
+            AddUnorderedAccessViews(resources.AsEnumerable());
+        }
+
+        public void AddUnorderedAccessViews(IEnumerable<GraphicsResource> resources)
+        {
+            AddDescriptors(resources.Select(r => r.NativeUnorderedAccessView).ToArray());
+        }
+
+        public void AddSamplers(params SamplerState[] samplers)
+        {
+            AddSamplers(samplers);
+        }
+
+        public void AddSamplers(IEnumerable<SamplerState> samplers)
+        {
+            AddDescriptors(samplers.Select(r => r.NativeCpuDescriptorHandle).ToArray());
+        }
+
+        private void AddDescriptor(CpuDescriptorHandle descriptorHandle)
         {
             if (CurrentDescriptorCount + 1 > TotalDescriptorCount) throw new InvalidOperationException();
 
-            CpuDescriptorHandle destinationDescriptor = StartCpuDescriptorHandle + CurrentDescriptorCount * DescriptorAllocator.DescriptorIncrementSize;
+            CpuDescriptorHandle destinationDescriptor = StartCpuDescriptorHandle + CurrentDescriptorCount * DescriptorAllocator.DescriptorHandleIncrementSize;
 
-            GraphicsDevice.NativeDevice.CopyDescriptorsSimple(1, destinationDescriptor, resource.NativeCpuDescriptorHandle, (Vortice.DirectX.Direct3D12.DescriptorHeapType)DescriptorHeapType);
+            GraphicsDevice.NativeDevice.CopyDescriptorsSimple(1, destinationDescriptor, descriptorHandle, (Vortice.Direct3D12.DescriptorHeapType)DescriptorHeapType);
 
             CurrentDescriptorCount++;
         }
 
-        public void AddDescriptors(IEnumerable<GraphicsResource> resources)
+        private void AddDescriptors(CpuDescriptorHandle[] descriptors)
         {
-            if (CurrentDescriptorCount + resources.Count() > TotalDescriptorCount) throw new InvalidOperationException();
+            if (CurrentDescriptorCount + descriptors.Length > TotalDescriptorCount) throw new InvalidOperationException();
 
-            CpuDescriptorHandle[] descriptors = resources.Select(t => t.NativeCpuDescriptorHandle).ToArray();
             int[] sourceDescriptorRangeStarts = new int[descriptors.Length];
 
             //Array.Fill(srcDescriptorRangeStarts, 1);
@@ -65,12 +94,12 @@ namespace DirectX12GameEngine.Graphics
                 sourceDescriptorRangeStarts[i] = 1;
             }
 
-            CpuDescriptorHandle destinationDescriptor = StartCpuDescriptorHandle + CurrentDescriptorCount * DescriptorAllocator.DescriptorIncrementSize;
+            CpuDescriptorHandle destinationDescriptor = StartCpuDescriptorHandle + CurrentDescriptorCount * DescriptorAllocator.DescriptorHandleIncrementSize;
 
             GraphicsDevice.NativeDevice.CopyDescriptors(
                 1, new[] { destinationDescriptor }, new[] { descriptors.Length },
                 descriptors.Length, descriptors, sourceDescriptorRangeStarts,
-                (Vortice.DirectX.Direct3D12.DescriptorHeapType)DescriptorHeapType);
+                (Vortice.Direct3D12.DescriptorHeapType)DescriptorHeapType);
 
             CurrentDescriptorCount += descriptors.Length;
         }

@@ -1,4 +1,4 @@
-﻿using Vortice.DirectX.DXGI;
+﻿using Vortice.DXGI;
 using System;
 using System.Runtime.InteropServices;
 using Windows.Graphics.DirectX.Direct3D11;

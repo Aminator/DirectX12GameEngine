@@ -1,6 +1,6 @@
-﻿using Vortice.DirectX.Direct3D11;
-using Vortice.DirectX.Direct3D12;
-using Vortice.DirectX.DXGI;
+﻿using Vortice.Direct3D11;
+using Vortice.Direct3D12;
+using Vortice.DXGI;
 using Windows.Graphics.DirectX.Direct3D11;
 using Windows.Graphics.Holographic;
 using Windows.Perception.Spatial;
@@ -100,7 +100,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
             return device11On12.CreateWrappedResource(
                 BackBuffer.NativeResource,
-                new Vortice.DirectX.Direct3D11.ResourceFlags { BindFlags = (int)Direct3DBindings.RenderTarget },
+                new Vortice.Direct3D11.ResourceFlags { BindFlags = (int)Direct3DBindings.RenderTarget },
                 (int)ResourceStates.RenderTarget,
                 (int)ResourceStates.Present);
         }
