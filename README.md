@@ -6,8 +6,9 @@
 
 - **DirectX12GameEngine.Assets:** Assets classes for importing assets like textures, materials and models.
 - **DirectX12GameEngine.Core.Assets:** Content manager, serialization of assets.
-- **DirectX12GameEngine.Core.:** Helper classes and extensions.
+- **DirectX12GameEngine.Core:** Helper classes and extensions.
 - **DirectX12GameEngine.Editor:** A UWP XAML editor for this game engine to handle scene manipulation and changing properties of components.
+- **DirectX12GameEngine.Engine:** Main engine project with entity component system.
 - **DirectX12GameEngine.Games:** Game base class, dependency injection and window handling.
 - **DirectX12GameEngine.Graphics:** Direct3D 12 abstraction and Mixed Reality.
 - **DirectX12GameEngine.Input:** Input manager that handles every platform.
@@ -32,7 +33,7 @@ Most projects are just using .NET Standard 2.0 or sometimes additionaly .NET Cor
 
 ## Supported Platforms
 
-- UWP, Windows 10 Creators Update or higher (either `CoreWindow` or XAML)
+- UWP, Windows 10 Fall Creators Update or higher (either `CoreWindow` or XAML)
 - WinForms (WPF also supported with XAML Islands)
 
 ## Credits
