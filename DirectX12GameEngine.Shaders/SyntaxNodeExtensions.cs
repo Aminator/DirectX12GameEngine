@@ -22,12 +22,12 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        public static bool TryGetMappedMemberName(this MemberAccessExpressionSyntax node, SemanticModel semanticModel, out ISymbol memberSymbol, out string? mappedName)
+        public static bool TryGetMappedMemberName(this MemberAccessExpressionSyntax node, SemanticModel semanticModel, out ISymbol? memberSymbol, out string? mappedName)
         {
             SymbolInfo memberSymbolInfo = semanticModel.GetSymbolInfo(node.Name);
 
-            memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault() ?? throw new InvalidOperationException();
-            INamedTypeSymbol containingTypeSymbol = memberSymbol.ContainingType;
+            memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
+            INamedTypeSymbol? containingTypeSymbol = memberSymbol?.ContainingType;
 
             mappedName = null;
 

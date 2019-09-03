@@ -8,10 +8,7 @@ namespace DirectX12GameEngine.Shaders
         static ShaderCompiler()
         {
             Dxil.LoadLibrary();
-            library = Dxc.CreateDxcLibrary();
         }
-
-        private static readonly IDxcLibrary library;
 
         public static byte[] Compile(DxcShaderStage shaderStage, string source, string entryPoint, string sourceName = "")
         {
@@ -34,7 +31,7 @@ namespace DirectX12GameEngine.Shaders
             }
             else
             {
-                string resultText = Dxc.GetStringFromBlob(library, result.GetErrors());
+                string resultText = Dxc.GetStringFromBlob(DxcCompiler.Library, result.GetErrors());
                 throw new Exception(resultText);
             }
         }

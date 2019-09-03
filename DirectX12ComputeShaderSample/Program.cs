@@ -49,7 +49,9 @@ namespace DirectX12ComputeShaderSample
 
             using GraphicsBuffer<float> sourceBuffer = GraphicsBuffer.ShaderResource.New(device, array.AsSpan());
             using GraphicsBuffer<float> destinationBuffer = GraphicsBuffer.UnorderedAccess.New<float>(device, array.Length * 2);
-            using GraphicsBuffer<float> slicedDestinationBuffer = destinationBuffer.Slice(20, 60);
+
+            GraphicsBuffer<float> slicedDestinationBuffer = destinationBuffer.Slice(20, 60);
+            slicedDestinationBuffer = slicedDestinationBuffer.Slice(10, 50);
 
             DescriptorSet descriptorSet = new DescriptorSet(device, 2);
             descriptorSet.AddShaderResourceViews(sourceBuffer);
@@ -129,4 +131,3 @@ namespace DirectX12ComputeShaderSample
         }
     }
 }
-

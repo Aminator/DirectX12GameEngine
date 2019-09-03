@@ -54,7 +54,7 @@ namespace DirectX12GameEngine.Shaders
                 });
             }
 
-            var metadataReferences = assemblyPaths.Select(p => MetadataReference.CreateFromFile(p));
+            var metadataReferences = assemblyPaths.Select(p => MetadataReference.CreateFromFile(p)).ToArray();
 
             compilation = CSharpCompilation.Create("ShaderAssembly").WithReferences(metadataReferences);
 

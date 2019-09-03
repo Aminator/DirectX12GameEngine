@@ -22,8 +22,8 @@ namespace DirectX12GameEngine.Editor.Views
 
             ((StandardUICommand)Resources["OpenCommand"]).KeyboardAccelerators.Clear();
 
-            //EditorGame game = new EditorGame(new XamlGameContext(SwapChainPanel), rootFolder.Model);
-            EditorGame game = new EditorGame(new GameContextWithGraphics(), rootFolder.Model);
+            EditorGame game = new EditorGame(new XamlGameContext(SwapChainPanel), rootFolder.Model);
+            //EditorGame game = new EditorGame(new GameContextWithGraphics(), rootFolder.Model);
             game.Run();
 
             ViewModel = new SceneViewModel(game);

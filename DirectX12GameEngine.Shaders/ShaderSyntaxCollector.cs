@@ -22,9 +22,9 @@ namespace DirectX12GameEngine.Shaders
         {
             base.VisitMemberAccessExpression(node);
 
-            if (!node.TryGetMappedMemberName(GetSemanticModel(node), out ISymbol memberSymbol, out _))
+            if (!node.TryGetMappedMemberName(GetSemanticModel(node), out ISymbol? memberSymbol, out _))
             {
-                if (memberSymbol.ContainingType != null)
+                if (memberSymbol?.ContainingType != null)
                 {
                     string fullTypeName = memberSymbol.ContainingType.ToDisplayString(
                         new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces))

@@ -81,9 +81,9 @@ namespace DirectX12GameEngine.Shaders
             }
             else
             {
-                if (node.TryGetMappedMemberName(GetSemanticModel(node), out ISymbol memberSymbol, out string? mappedName))
+                if (node.TryGetMappedMemberName(GetSemanticModel(node), out ISymbol? memberSymbol, out string? mappedName))
                 {
-                    if (memberSymbol.IsStatic)
+                    if (memberSymbol!.IsStatic)
                     {
                         newNode = SyntaxFactory.IdentifierName(mappedName);
                     }
@@ -92,7 +92,7 @@ namespace DirectX12GameEngine.Shaders
                         newNode = SyntaxFactory.IdentifierName($"{newBaseNode.Expression}{mappedName}");
                     }
                 }
-                else
+                else if (memberSymbol != null)
                 {
                     if (memberSymbol.IsStatic || memberSymbol.ContainingSymbol.IsStatic)
                     {
