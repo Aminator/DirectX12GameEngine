@@ -19,7 +19,7 @@ namespace DirectX12GameEngine.Editor.Messaging
             set => defaultInstance = value;
         }   
 
-        public void Register<TMessage>(object recipient, Action<TMessage> action)
+        public void Register<TMessage>(object recipient, Action<TMessage> action) where TMessage : notnull
         {
             Type messageType = typeof(TMessage);
 
@@ -38,7 +38,7 @@ namespace DirectX12GameEngine.Editor.Messaging
             registeredActions.Add(x => action((TMessage)x));
         }
 
-        public void Send<TMessage>(TMessage message)
+        public void Send<TMessage>(TMessage message) where TMessage : notnull
         {
             Type messageType = typeof(TMessage);
 
@@ -62,7 +62,7 @@ namespace DirectX12GameEngine.Editor.Messaging
             }
         }
 
-        public void Unregister<TMessage>(object recipient)
+        public void Unregister<TMessage>(object recipient) where TMessage : notnull
         {
             Type messageType = typeof(TMessage);
 
@@ -72,7 +72,7 @@ namespace DirectX12GameEngine.Editor.Messaging
             }
         }
 
-        public async Task<TMessage> WaitAsync<TMessage>(object recipient, CancellationToken cancellationToken = default)
+        public async Task<TMessage> WaitAsync<TMessage>(object recipient, CancellationToken cancellationToken = default) where TMessage : notnull
         {
             TaskCompletionSource<TMessage> tcs = new TaskCompletionSource<TMessage>();
             Register<TMessage>(recipient, m => tcs.TrySetResult(m));

@@ -33,7 +33,7 @@ namespace DirectX12GameEngine.Input
             }
         }
 
-        private void OnGamepadAdded(object sender, Gamepad gamepad)
+        private void OnGamepadAdded(object? sender, Gamepad gamepad)
         {
             if (!gamepads.ContainsKey(gamepad))
             {
@@ -43,9 +43,9 @@ namespace DirectX12GameEngine.Input
             }
         }
 
-        private void OnGamepadRemoved(object sender, Gamepad gamepad)
+        private void OnGamepadRemoved(object? sender, Gamepad gamepad)
         {
-            if (gamepads.TryGetValue(gamepad, out UwpGamepad currentGamepad))
+            if (gamepads.TryGetValue(gamepad, out UwpGamepad? currentGamepad))
             {
                 gamepads.Remove(gamepad);
                 Gamepads.Remove(currentGamepad);

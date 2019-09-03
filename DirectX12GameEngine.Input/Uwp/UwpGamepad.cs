@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Numerics;
 using Windows.Gaming.Input;
 
@@ -38,7 +39,7 @@ namespace DirectX12GameEngine.Input
 
             ClearButtonStates();
 
-            foreach (GamepadButtons button in Enum.GetValues(typeof(GamepadButtons)))
+            foreach (GamepadButtons button in Enum.GetValues(typeof(GamepadButtons)).Cast<GamepadButtons>())
             {
                 bool oldState = oldReading.Buttons.HasFlag(button);
                 bool newState = newReading.Buttons.HasFlag(button);

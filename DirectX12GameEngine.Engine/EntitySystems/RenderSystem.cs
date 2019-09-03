@@ -251,7 +251,7 @@ namespace DirectX12GameEngine.Engine
                 commandList.SetIndexBuffer(mesh.MeshDraw.IndexBufferView);
                 commandList.SetVertexBuffers(0, mesh.MeshDraw.VertexBufferViews);
 
-                commandList.SetPipelineState(materialPass.PipelineState);
+                commandList.SetPipelineState(materialPass.PipelineState!);
                 commandList.SetPrimitiveTopology(PrimitiveTopology.TriangleList);
 
                 int rootParameterIndex = 0;

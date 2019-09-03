@@ -10,26 +10,19 @@ using CommandListType = DirectX12GameEngine.Graphics.CommandListType;
 
 namespace DirectX12ComputeShaderSample
 {
-    public enum MyEnum
-    {
-        A,
-        B,
-        C,
-        D
-    }
-
     public class MyComputeShader : ComputeShaderBase
     {
+#nullable disable
         public StructuredBufferResource<float> Source;
 
         public RWStructuredBufferResource<float> Destination;
+#nullable restore
 
         [ShaderMember]
         [Shader("compute")]
         [NumThreads(100, 1, 1)]
         public override void CSMain(CSInput input)
         {
-            MyEnum m = MyEnum.B;
             Destination[input.DispatchThreadId.X] = Math.Max(Source[input.DispatchThreadId.X], 45);
         }
     }

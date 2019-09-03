@@ -15,7 +15,7 @@ namespace DirectX12WinFormsApp
             Load += MyForm_Load;
         }
 
-        private void MyForm_Load(object sender, EventArgs e)
+        private void MyForm_Load(object? sender, EventArgs e)
         {
             MyGame game = new MyGame(new WinFormsGameContext(this));
             game.Run();

@@ -77,7 +77,7 @@ namespace DirectX12GameEngine.Graphics
 
             for (int i = 0; i < renderTargetFormats.Length; i++)
             {
-                renderTargetFormats[i] = (Format)(device.CommandList.RenderTargets[i] as Texture).Description.Format;
+                renderTargetFormats[i] = (Format)((Texture)device.CommandList.RenderTargets[i]).Description.Format;
             }
 
             pipelineStateDescription.RenderTargetFormats = renderTargetFormats;

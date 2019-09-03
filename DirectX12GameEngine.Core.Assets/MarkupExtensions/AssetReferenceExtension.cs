@@ -20,7 +20,7 @@ namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
             Type = type;
         }
 
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
         public Type? Type { get; set; }
 
@@ -29,7 +29,7 @@ namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
             ContentManager contentManager = services.GetRequiredService<ContentManager>();
             ContentManager.DeserializeOperation operation = services.GetRequiredService<ContentManager.DeserializeOperation>();
 
-            return await contentManager.DeserializeAsync(Path, Type ?? operation.Type, operation.ParentReference, null);
+            return await contentManager.DeserializeAsync(Path!, Type ?? operation.Type, operation.ParentReference, null);
         }
     }
 }

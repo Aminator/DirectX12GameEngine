@@ -16,13 +16,13 @@ namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
             TypeName = typeName;
         }
 
-        public string TypeName { get; set; }
+        public string? TypeName { get; set; }
 
         public override Task<object> ProvideValueAsync(IServiceProvider services)
         {
             XElement element = services.GetRequiredService<XElement>();
 
-            ContentManager.GetNamespaceAndTypeName(TypeName, element, out string namespaceName, out string typeName);
+            ContentManager.GetNamespaceAndTypeName(TypeName!, element, out string namespaceName, out string typeName);
             Type type = ContentManager.GetTypeFromXmlName(namespaceName, typeName);
 
             return Task.FromResult<object>(type);

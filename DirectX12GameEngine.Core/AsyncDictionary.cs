@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace DirectX12GameEngine.Core
 {
-    public class AsyncDictionary<TKey, TValue>
+    public class AsyncDictionary<TKey, TValue> where TKey : notnull where TValue : notnull
     {
         private readonly Dictionary<TKey, TValue> dictionary = new Dictionary<TKey, TValue>();
 

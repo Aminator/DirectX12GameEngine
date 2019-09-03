@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Reflection;
 using DirectX12GameEngine.Games;
 using Microsoft.Extensions.DependencyInjection;
@@ -210,13 +211,13 @@ namespace DirectX12GameEngine.Engine
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (Entity entity in e.NewItems)
+                    foreach (Entity entity in e.NewItems.Cast<Entity>())
                     {
                         Add(entity);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (Entity entity in e.OldItems)
+                    foreach (Entity entity in e.OldItems.Cast<Entity>())
                     {
                         Remove(entity);
                     }
@@ -231,14 +232,14 @@ namespace DirectX12GameEngine.Engine
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (EntityComponent component in e.NewItems)
+                    foreach (EntityComponent component in e.NewItems.Cast<EntityComponent>())
                     {
                         Add(component, entity);
                         UpdateDependentSystems(entity, component);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (EntityComponent component in e.OldItems)
+                    foreach (EntityComponent component in e.OldItems.Cast<EntityComponent>())
                     {
                         Remove(component, entity);
                         UpdateDependentSystems(entity, component);

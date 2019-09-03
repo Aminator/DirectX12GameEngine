@@ -15,7 +15,7 @@ namespace DirectX12GameEngine.Core.Assets.MarkupExtensions
             Id = id;
         }
 
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         public override async Task<object> ProvideValueAsync(IServiceProvider services)
         {

@@ -44,7 +44,7 @@ namespace DirectX12Game
             }
         }
 
-        private void Keyboard_KeyDown(object sender, KeyEventArgs e)
+        private void Keyboard_KeyDown(object? sender, KeyEventArgs e)
         {
             OnKeyDown(e.Key);
         }

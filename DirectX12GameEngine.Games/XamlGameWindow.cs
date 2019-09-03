@@ -37,7 +37,7 @@ namespace DirectX12GameEngine.Games
             CompositionTarget.Rendering += CompositionTarget_Rendering;
         }
 
-        private void CompositionTarget_Rendering(object sender, object e)
+        private void CompositionTarget_Rendering(object? sender, object e)
         {
             Tick();
         }

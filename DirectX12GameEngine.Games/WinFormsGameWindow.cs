@@ -40,12 +40,12 @@ namespace DirectX12GameEngine.Games
             CompositionTarget.Rendering += CompositionTarget_Rendering;
         }
 
-        private void CompositionTarget_Rendering(object sender, object e)
+        private void CompositionTarget_Rendering(object? sender, EventArgs e)
         {
             Tick();
         }
 
-        private void Control_ClientSizeChanged(object sender, EventArgs e)
+        private void Control_ClientSizeChanged(object? sender, EventArgs e)
         {
             OnSizeChanged();
         }

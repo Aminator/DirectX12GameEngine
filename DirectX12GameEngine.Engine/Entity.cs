@@ -156,13 +156,13 @@ namespace DirectX12GameEngine.Engine
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (Entity entity in e.NewItems)
+                    foreach (Entity entity in e.NewItems.Cast<Entity>())
                     {
                         AddInternal(entity);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (Entity entity in e.OldItems)
+                    foreach (Entity entity in e.OldItems.Cast<Entity>())
                     {
                         RemoveInternal(entity);
                     }
@@ -175,13 +175,13 @@ namespace DirectX12GameEngine.Engine
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (EntityComponent component in e.NewItems)
+                    foreach (EntityComponent component in e.NewItems.Cast<EntityComponent>())
                     {
                         AddInternal(component);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (EntityComponent component in e.OldItems)
+                    foreach (EntityComponent component in e.OldItems.Cast<EntityComponent>())
                     {
                         RemoveInternal(component);
                     }
