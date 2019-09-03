@@ -274,7 +274,14 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine("{");
             writer.Indent++;
 
-            var fieldAndPropertyInfos = type.GetMembersInOrder(GetBindingFlagsForType(type) | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
+            BindingFlags fieldBindingFlags = GetBindingFlagsForType(type) | BindingFlags.DeclaredOnly;
+
+            if (type.IsEnum)
+            {
+                fieldBindingFlags &= ~BindingFlags.Instance;
+            }
+
+            var fieldAndPropertyInfos = type.GetMembersInOrder(fieldBindingFlags).Where(m => m is FieldInfo || m is PropertyInfo);
             var methodInfos = type.GetMembersInTypeHierarchyInOrder(GetBindingFlagsForType(type)).Where(m => m is MethodInfo);
             var memberInfos = fieldAndPropertyInfos.Concat(methodInfos);
 

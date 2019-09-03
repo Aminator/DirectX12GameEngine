@@ -1,12 +1,15 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace DirectX12GameEngine.Rendering.Lights
 {
+    [StructLayout(LayoutKind.Explicit)]
     public struct DirectionalLightData
     {
+        [FieldOffset(0)]
         public Vector3 Color;
-        private readonly float Padding0;
+
+        [FieldOffset(16)]
         public Vector3 Direction;
-        private readonly float Padding1;
     }
 }

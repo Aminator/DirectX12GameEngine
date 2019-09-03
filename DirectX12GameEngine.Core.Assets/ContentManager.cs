@@ -30,6 +30,8 @@ namespace DirectX12GameEngine.Core.Assets
             AppDomain.CurrentDomain.AssemblyLoad += (s, e) => AddAssembly(e.LoadedAssembly);
         }
 
+        public static XNamespace ExtensionsNamespace { get; } = "http://schemas.directx12gameengine.com/xaml/extensions";
+
         private static void AddAssembly(Assembly assembly)
         {
             foreach (ContractNamespaceAttribute attribute in assembly.GetCustomAttributes<ContractNamespaceAttribute>())
@@ -178,7 +180,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             properties = properties.Where(p => !p.IsDefined(typeof(IgnoreDataMemberAttribute)) && !p.IsSpecialName && !(p.GetIndexParameters().Length > 0));
 
-            return properties.Where(p => p.CanRead).Where(p => p.CanWrite || p.GetValue(obj) is IList);
+            return properties.Where(p => p.CanRead).Where(p => p.CanWrite || p.GetValue(obj) is ICollection);
         }
 
         public static void GetNamespaceAndTypeName(string xmlName, XElement element, out string namespaceName, out string typeName)

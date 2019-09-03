@@ -12,7 +12,7 @@ namespace DirectX12GameEngine.Shaders
 
         public static byte[] Compile(DxcShaderStage shaderStage, string source, string entryPoint, string sourceName = "")
         {
-            return Compile(shaderStage, source, entryPoint, sourceName, DxcShaderModel.Model6_2);
+            return Compile(shaderStage, source, entryPoint, sourceName, DxcShaderModel.Model6_3);
         }
 
         public static byte[] Compile(DxcShaderStage shaderStage, string source, string entryPoint, string sourceName, DxcShaderModel shaderModel)

@@ -7,6 +7,7 @@ using Vortice.Direct3D12;
 using Vortice.DXGI;
 using Vortice.Dxc;
 using Windows.Storage;
+using System.Runtime.CompilerServices;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
@@ -89,7 +90,7 @@ namespace DirectX12GameEngine.Rendering.Materials
                 new InputElementDescription("TexCoord", 0, (Format)PixelFormat.R32G32_Float, 3)
             };
 
-            CompiledShader compiledShader = new CompiledShader(); 
+            CompiledShader compiledShader = new CompiledShader();
 
             string fileName = $"Shader_{MaterialDescriptor.MaterialId}";
 
@@ -98,28 +99,14 @@ namespace DirectX12GameEngine.Rendering.Materials
                 ShaderGenerator shaderGenerator = new ShaderGenerator(MaterialDescriptor.Attributes);
                 ShaderGenerationResult result = shaderGenerator.GenerateShader();
 
-                string shaderSource = result.ShaderSource;
+                CompiledShaderAsset shaderAsset = new CompiledShaderAsset();
 
-                compiledShader.VertexShader = !result.EntryPoints.ContainsKey("vertex") ? throw new Exception("Vertex shader must be present.") : ShaderCompiler.Compile(DxcShaderStage.VertexShader, shaderSource, result.EntryPoints["vertex"]);
-                compiledShader.PixelShader = !result.EntryPoints.ContainsKey("pixel") ? throw new Exception("Pixel shader must be present.") : ShaderCompiler.Compile(DxcShaderStage.PixelShader, shaderSource, result.EntryPoints["pixel"]);
-                compiledShader.GeometryShader = !result.EntryPoints.ContainsKey("geometry") ? default : ShaderCompiler.Compile(DxcShaderStage.GeometryShader, shaderSource, result.EntryPoints["geometry"]);
-                compiledShader.HullShader = !result.EntryPoints.ContainsKey("hull") ? default : ShaderCompiler.Compile(DxcShaderStage.HullShader, shaderSource, result.EntryPoints["hull"]);
-                compiledShader.DomainShader = !result.EntryPoints.ContainsKey("domain") ? default : ShaderCompiler.Compile(DxcShaderStage.DomainShader, shaderSource, result.EntryPoints["domain"]);
-
-                CompiledShaderAsset shaderAsset = new CompiledShaderAsset
+                foreach (var entryPoint in result.EntryPoints)
                 {
-                    VertexShaderSource = $"VertexShader_{MaterialDescriptor.MaterialId}.cso",
-                    PixelShaderSource = $"PixelShader_{MaterialDescriptor.MaterialId}.cso",
-                    GeometryShaderSource = !result.EntryPoints.ContainsKey("geometry") ? null : $"GeometryShader_{MaterialDescriptor.MaterialId}.cso",
-                    HullShaderSource = !result.EntryPoints.ContainsKey("hull") ? null : $"HullShader_{MaterialDescriptor.MaterialId}.cso",
-                    DomainShaderSource = !result.EntryPoints.ContainsKey("domain") ? null : $"DomainShader_{MaterialDescriptor.MaterialId}.cso",
-                };
-
-                await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.VertexShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.VertexShader);
-                await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.PixelShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.PixelShader);
-                if (shaderAsset.GeometryShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.GeometryShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.GeometryShader);
-                if (shaderAsset.HullShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.HullShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.HullShader);
-                if (shaderAsset.DomainShaderSource != null) await FileIO.WriteBytesAsync(await Content.RootFolder.CreateFileAsync(shaderAsset.DomainShaderSource, CreationCollisionOption.ReplaceExisting), compiledShader.DomainShader);
+                    compiledShader.Shaders[entryPoint.Key] = ShaderCompiler.Compile(GetShaderStage(entryPoint.Key), result.ShaderSource, entryPoint.Value);
+                    shaderAsset.ShaderSources[entryPoint.Key] = $"{entryPoint.Key}_{MaterialDescriptor.MaterialId}.cso";
+                    await FileIO.WriteBytesAsync(await Content.RootFolder!.CreateFileAsync(shaderAsset.ShaderSources[entryPoint.Key], CreationCollisionOption.ReplaceExisting), compiledShader.Shaders[entryPoint.Key]);
+                }
 
                 await Content.SaveAsync(fileName, shaderAsset);
             }
@@ -131,8 +118,23 @@ namespace DirectX12GameEngine.Rendering.Materials
             ID3D12RootSignature rootSignature = CreateRootSignature();
 
             return new PipelineState(GraphicsDevice, inputElements, rootSignature,
-                compiledShader.VertexShader, compiledShader.PixelShader, compiledShader.GeometryShader, compiledShader.HullShader, compiledShader.DomainShader);
+                compiledShader.Shaders["vertex"],
+                compiledShader.Shaders["pixel"],
+                compiledShader.Shaders.ContainsKey("geometry") ? compiledShader.Shaders["geometry"] : null,
+                compiledShader.Shaders.ContainsKey("hull") ? compiledShader.Shaders["hull"] : null,
+                compiledShader.Shaders.ContainsKey("domain") ? compiledShader.Shaders["domain"] : null);
         }
+
+        private DxcShaderStage GetShaderStage(string shader) => shader switch
+        {
+            "vertex" => DxcShaderStage.VertexShader,
+            "pixel" => DxcShaderStage.PixelShader,
+            "geometry" => DxcShaderStage.GeometryShader,
+            "hull" => DxcShaderStage.HullShader,
+            "domain" => DxcShaderStage.DomainShader,
+            "compute" => DxcShaderStage.ComputeShader,
+            _ => DxcShaderStage.Library
+        };
 
         public ID3D12RootSignature CreateRootSignature()
         {
