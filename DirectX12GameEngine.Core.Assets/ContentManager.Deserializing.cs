@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -222,7 +223,7 @@ namespace DirectX12GameEngine.Core.Assets
                         }
                         else
                         {
-                            parsedObject = TypeDescriptor.GetConverter(propertyInfo.PropertyType).ConvertFromString(innerElement.Value);
+                            parsedObject = TypeDescriptor.GetConverter(propertyInfo.PropertyType).ConvertFromString(null, CultureInfo.InvariantCulture, innerElement.Value);
                         }
 
                         propertyInfo.SetValue(parsedElement, parsedObject);
@@ -312,7 +313,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             return string.IsNullOrWhiteSpace(content)
                 ? Activator.CreateInstance(type)
-                : TypeDescriptor.GetConverter(type).ConvertFromString(content);
+                : TypeDescriptor.GetConverter(type).ConvertFromString(null, CultureInfo.InvariantCulture, content);
         }
 
         private async Task<object> ParseAttributeValueAsync(Type type, string value, XElement element, DeserializeOperation? operation = null)
@@ -328,7 +329,7 @@ namespace DirectX12GameEngine.Core.Assets
             else
             {
                 TypeConverter converter = TypeDescriptor.GetConverter(type);
-                return converter.ConvertFromString(value);
+                return converter.ConvertFromString(null, CultureInfo.InvariantCulture, value);
             }
         }
 
@@ -355,7 +356,7 @@ namespace DirectX12GameEngine.Core.Assets
 
                 for (int i = 0; i < parameterCount; i++)
                 {
-                    parsedParameters[i] = TypeDescriptor.GetConverter(constructorParameters[i].ParameterType).ConvertFromString(markupExtensionParameters[i]);
+                    parsedParameters[i] = TypeDescriptor.GetConverter(constructorParameters[i].ParameterType).ConvertFromString(null, CultureInfo.InvariantCulture, markupExtensionParameters[i]);
                 }
 
                 markupExtension = (MarkupExtension)Activator.CreateInstance(markupExtensionType, parsedParameters);

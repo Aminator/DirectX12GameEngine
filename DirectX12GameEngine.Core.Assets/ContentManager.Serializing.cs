@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -53,7 +54,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             if (typeConverter.GetType() != typeof(TypeConverter) && typeConverter.CanConvertTo(typeof(string)))
             {
-                string serializedValue = typeConverter.ConvertToString(obj);
+                string serializedValue = typeConverter.ConvertToString(null, CultureInfo.InvariantCulture, obj);
                 root.Value = serializedValue;
             }
 
@@ -98,7 +99,7 @@ namespace DirectX12GameEngine.Core.Assets
                 }
                 else if (typeConverter.GetType() != typeof(TypeConverter) && typeConverter.GetType() != typeof(CollectionConverter) && typeConverter.CanConvertTo(typeof(string)))
                 {
-                    string serializedValue = typeConverter.ConvertToString(propertyValue);
+                    string serializedValue = typeConverter.ConvertToString(null, CultureInfo.InvariantCulture, propertyValue);
 
                     XAttribute propertyAttribute = new XAttribute(propertyName, serializedValue);
                     root.Add(propertyAttribute);
