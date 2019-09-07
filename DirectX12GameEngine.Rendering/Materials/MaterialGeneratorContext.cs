@@ -7,7 +7,6 @@ using Vortice.Direct3D12;
 using Vortice.DXGI;
 using Vortice.Dxc;
 using Windows.Storage;
-using System.Runtime.CompilerServices;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {

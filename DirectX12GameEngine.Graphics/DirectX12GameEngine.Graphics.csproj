@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DirectX12GameEngine.Core\DirectX12GameEngine.Core.csproj" />
+    <ProjectReference Include="..\DirectX12GameEngine.Core.Assets\DirectX12GameEngine.Core.Assets.csproj" />
   </ItemGroup>
 
 </Project>

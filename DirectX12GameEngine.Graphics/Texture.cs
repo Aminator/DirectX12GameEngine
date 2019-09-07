@@ -2,11 +2,13 @@
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Core.Assets;
 using Vortice.Direct3D12;
 using Vortice.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {
+    [TypeConverter(typeof(AssetReferenceTypeConverter))]
     public sealed class Texture : GraphicsResource
     {
         [EditorBrowsable(EditorBrowsableState.Never)]

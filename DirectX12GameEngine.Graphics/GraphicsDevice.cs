@@ -241,7 +241,7 @@ namespace DirectX12GameEngine.Graphics
 
             lock (fence)
             {
-                fence.SetEventOnCompletion(fenceValue, fenceEvent.SafeWaitHandle.DangerousGetHandle());
+                fence.SetEventOnCompletion(fenceValue, fenceEvent);
 
                 return WaitHandleAsyncFactory.FromWaitHandle(fenceEvent);
             }

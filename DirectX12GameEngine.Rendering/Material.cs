@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering.Materials;
 
 namespace DirectX12GameEngine.Rendering
 {
+    [TypeConverter(typeof(AssetReferenceTypeConverter))]
     public class Material
     {
         public MaterialDescriptor? Descriptor { get; set; }

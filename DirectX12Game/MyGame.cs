@@ -3,6 +3,7 @@ using System.IO;
 using System.Numerics;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Assets;
+using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;

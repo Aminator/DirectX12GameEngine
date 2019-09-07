@@ -6,8 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Nito.AsyncEx;
+using Portable.Xaml;
 using Windows.Storage;
 
 namespace DirectX12GameEngine.Core.Assets
@@ -21,29 +22,6 @@ namespace DirectX12GameEngine.Core.Assets
         static ContentManager()
         {
             AddTypeConverters(typeof(Vector3Converter), typeof(Vector4Converter), typeof(QuaternionConverter), typeof(Matrix4x4Converter));
-
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                AddAssembly(assembly);
-            }
-
-            AppDomain.CurrentDomain.AssemblyLoad += (s, e) => AddAssembly(e.LoadedAssembly);
-        }
-
-        public static XNamespace ExtensionsNamespace { get; } = "http://schemas.directx12gameengine.com/xaml/extensions";
-
-        private static void AddAssembly(Assembly assembly)
-        {
-            foreach (ContractNamespaceAttribute attribute in assembly.GetCustomAttributes<ContractNamespaceAttribute>())
-            {
-                if (!XmlnsDefinitions.TryGetValue(attribute.ContractNamespace, out var namespaces))
-                {
-                    namespaces = new List<(string, Assembly)>();
-                    XmlnsDefinitions.Add(attribute.ContractNamespace, namespaces);
-                }
-
-                namespaces.Add((attribute.ClrNamespace, assembly));
-            }
         }
 
         public ContentManager(IServiceProvider services)
@@ -56,8 +34,6 @@ namespace DirectX12GameEngine.Core.Assets
             Services = services;
             RootFolder = rootFolder;
         }
-
-        public static Dictionary<string, List<(string ClrNamespace, Assembly Assembly)>> XmlnsDefinitions { get; } = new Dictionary<string, List<(string, Assembly)>>();
 
         public IServiceProvider Services { get; }
 
@@ -74,7 +50,7 @@ namespace DirectX12GameEngine.Core.Assets
             return await folder.TryGetItemAsync(path + FileExtension) != null;
         }
 
-        public T Get<T>(string path) where T : class?
+        public T Get<T>(string path) where T : class ?
         {
             object? asset = Get(typeof(T), path);
 
@@ -89,6 +65,11 @@ namespace DirectX12GameEngine.Core.Assets
         public object? Get(Type type, string path)
         {
             return FindDeserializedObject(path, type)?.Object;
+        }
+
+        public bool IsLoaded(string path)
+        {
+            return loadedAssetPaths.ContainsKey(path);
         }
 
         public async Task<T> LoadAsync<T>(string path) where T : class
@@ -126,12 +107,24 @@ namespace DirectX12GameEngine.Core.Assets
             }
         }
 
-        public async Task SaveAsync(string path, object asset, Type? storageType = null)
+        public async Task SaveAsync(string path, object asset)
         {
             using (await asyncLock.LockAsync())
             {
-                await SerializeAsync(path, asset, storageType);
+                await SerializeAsync(path, asset);
             }
+        }
+
+        public bool TryGetAssetPath(object asset, out string? path)
+        {
+            if (loadedAssetReferences.TryGetValue(asset, out Reference reference))
+            {
+                path = reference.Path;
+                return true;
+            }
+
+            path = null;
+            return false;
         }
 
         public void Unload(object asset)
@@ -183,71 +176,29 @@ namespace DirectX12GameEngine.Core.Assets
             return properties.Where(p => p.CanRead).Where(p => p.CanWrite || p.GetValue(obj) is ICollection);
         }
 
-        public static void GetNamespaceAndTypeName(string xmlName, XElement element, out string namespaceName, out string typeName)
+        internal class InternalXamlSchemaContext : XamlSchemaContext
         {
-            string[] namespaceAndType = xmlName.Split(new[] { ':' }, 2);
-
-            if (namespaceAndType.Length == 2)
+            public InternalXamlSchemaContext(ContentManager contentManager)
             {
-                string namespacePrefix = namespaceAndType[0];
-                namespaceName = element.GetNamespaceOfPrefix(namespacePrefix).NamespaceName;
-
-                typeName = namespaceAndType[1];
+                ContentManager = contentManager;
             }
-            else
+
+            public InternalXamlSchemaContext(IEnumerable<Assembly> referenceAssemblies, ContentManager contentManager) : base(referenceAssemblies)
             {
-                namespaceName = element.GetDefaultNamespace().NamespaceName;
-                typeName = xmlName;
+                ContentManager = contentManager;
             }
-        }
 
-        public static Type GetTypeFromXmlName(string xmlNamespace, string typeName)
-        {
-            const string clrNamespaceString = "clr-namespace:";
-            const string assemblyString = "assembly=";
-            const string extensionString = "Extension";
-
-            int indexOfSemicolon = xmlNamespace.IndexOf(';');
-
-            if (xmlNamespace.StartsWith(clrNamespaceString))
+            public InternalXamlSchemaContext(XamlSchemaContextSettings settings, ContentManager contentManager) : base(settings)
             {
-                string namespaceName = indexOfSemicolon >= 0
-                    ? xmlNamespace.Substring(clrNamespaceString.Length, indexOfSemicolon - clrNamespaceString.Length)
-                    : xmlNamespace.Substring(clrNamespaceString.Length);
-
-                Assembly assembly;
-
-                if (indexOfSemicolon >= 0)
-                {
-                    string assemblyName = xmlNamespace.Substring(indexOfSemicolon + assemblyString.Length + 1);
-                    assembly = Assembly.Load(assemblyName);
-                }
-                else
-                {
-                    assembly = Assembly.GetExecutingAssembly();
-                }
-
-                Type? type = assembly.GetType(namespaceName + Type.Delimiter + typeName, false);
-
-                return type ?? assembly.GetType(namespaceName + Type.Delimiter + typeName + extensionString, true);
+                ContentManager = contentManager;
             }
-            else
+
+            public InternalXamlSchemaContext(IEnumerable<Assembly> referenceAssemblies, XamlSchemaContextSettings settings, ContentManager contentManager) : base(referenceAssemblies, settings)
             {
-                var namespaces = XmlnsDefinitions[xmlNamespace];
-
-                foreach ((string clrNamespace, Assembly assembly) in namespaces)
-                {
-                    Type? type = assembly.GetType(clrNamespace + Type.Delimiter + typeName, false);
-                    type ??= assembly.GetType(clrNamespace + Type.Delimiter + typeName + extensionString, false);
-
-                    if (type != null)
-                    {
-                        return type;
-                    }
-                }
-
-                throw new InvalidOperationException();
+                ContentManager = contentManager;
             }
+
+            public ContentManager ContentManager { get; }
         }
     }
 }

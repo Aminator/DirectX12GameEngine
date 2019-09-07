@@ -1,6 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<ModelAsset xmlns="http://schemas.directx12gameengine.com/xaml" xmlns:x="http://schemas.directx12gameengine.com/xaml/extensions" Source="Assets\Resources\Models\SwimmingShark.glb">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ModelAsset
+    xmlns="http://schemas.directx12gameengine.com/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Source="Assets\Resources\Models\SwimmingShark.glb">
     <ModelAsset.Materials>
-        <x:AssetReference Path="Assets\Materials\SwimmingShark_Material" Type="{x:Type Material}" />
+        <Material>Assets\Materials\SwimmingShark_Material</Material>
     </ModelAsset.Materials>
 </ModelAsset>

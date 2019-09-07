@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Editor.ViewModels;
+using Portable.Xaml;
 
 #nullable enable
 
@@ -21,14 +22,15 @@ namespace DirectX12GameEngine.Editor.Factories
 
         public async Task<object?> CreateAsync(StorageFileViewModel item)
         {
-            XElement root;
+            using Stream stream = await item.Model.OpenStreamForReadAsync();
+            XamlXmlReader reader = new XamlXmlReader(stream);
 
-            using (Stream stream = await item.Model.OpenStreamForReadAsync())
+            while (reader.NodeType != XamlNodeType.StartObject)
             {
-                root = await XElement.LoadAsync(stream, LoadOptions.None, default);
+                reader.Read();
             }
 
-            Type type = ContentManager.GetTypeFromXmlName(root.Name.NamespaceName, root.Name.LocalName);
+            Type type = reader.Type.UnderlyingType;
 
             if (factories.TryGetValue(type, out IAssetViewFactory factory))
             {

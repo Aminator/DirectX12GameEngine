@@ -29,23 +29,17 @@ namespace DirectX12GameEngine.Engine
 
         public virtual void Update(GameTime gameTime)
         {
-            lock (Systems)
+            foreach (EntitySystem system in Systems)
             {
-                foreach (EntitySystem system in Systems)
-                {
-                    system.Update(gameTime);
-                }
+                system.Update(gameTime);
             }
         }
 
         public virtual void Draw(GameTime gameTime)
         {
-            lock (Systems)
+            foreach (EntitySystem system in Systems)
             {
-                foreach (EntitySystem system in Systems)
-                {
-                    system.Draw(gameTime);
-                }
+                system.Draw(gameTime);
             }
         }
 
@@ -131,40 +125,37 @@ namespace DirectX12GameEngine.Engine
 
         private void CheckEntityComponentWithSystems(EntityComponent component, Entity entity, bool forceRemove)
         {
-            lock (Systems)
-            {
-                Type componentType = component.GetType();
+            Type componentType = component.GetType();
 
-                if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))
+            if (systemsPerComponentType.TryGetValue(componentType, out var systemsForComponent))
+            {
+                foreach (EntitySystem system in systemsForComponent)
                 {
-                    foreach (EntitySystem system in systemsForComponent)
+                    system.ProcessEntityComponent(component, entity, forceRemove);
+                }
+            }
+            else
+            {
+                if (!forceRemove)
+                {
+                    CollectNewEntitySystems(componentType);
+                }
+
+                systemsForComponent = new List<EntitySystem>();
+
+                foreach (EntitySystem system in Systems)
+                {
+                    if (system.Accept(componentType))
                     {
-                        system.ProcessEntityComponent(component, entity, forceRemove);
+                        systemsForComponent.Add(system);
                     }
                 }
-                else
+
+                systemsPerComponentType.Add(componentType, systemsForComponent);
+
+                foreach (EntitySystem system in systemsForComponent)
                 {
-                    if (!forceRemove)
-                    {
-                        CollectNewEntitySystems(componentType);
-                    }
-
-                    systemsForComponent = new List<EntitySystem>();
-
-                    foreach (EntitySystem system in Systems)
-                    {
-                        if (system.Accept(componentType))
-                        {
-                            systemsForComponent.Add(system);
-                        }
-                    }
-
-                    systemsPerComponentType.Add(componentType, systemsForComponent);
-
-                    foreach (EntitySystem system in systemsForComponent)
-                    {
-                        system.ProcessEntityComponent(component, entity, forceRemove);
-                    }
+                    system.ProcessEntityComponent(component, entity, forceRemove);
                 }
             }
         }

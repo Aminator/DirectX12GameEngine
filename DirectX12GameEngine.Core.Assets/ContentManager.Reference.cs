@@ -55,7 +55,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             if (referenceCount == 0)
             {
-                ReleaseAsset(reference);
+                ReleaseReference(reference);
 
                 foreach (Reference childReference in reference.References)
                 {
@@ -64,7 +64,7 @@ namespace DirectX12GameEngine.Core.Assets
             }
         }
 
-        private void SetAsset(Reference reference)
+        private void AddReference(Reference reference)
         {
             if (loadedAssetPaths.TryGetValue(reference.Path, out Reference previousReference))
             {
@@ -86,7 +86,7 @@ namespace DirectX12GameEngine.Core.Assets
             loadedAssetReferences[reference.Object] = reference;
         }
 
-        private void ReleaseAsset(Reference reference)
+        private void ReleaseReference(Reference reference)
         {
             //if (reference.Object is IDisposable disposable)
             //{

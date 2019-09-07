@@ -38,8 +38,6 @@ namespace DirectX12GameEngine.Core.Assets
 
             return base.ConvertTo(context, culture, value, destinationType);
         }
-
-        public override bool IsValid(ITypeDescriptorContext context, object value) => value is Vector3;
     }
 
     [GlobalTypeConverter(typeof(Vector4))]
@@ -73,8 +71,6 @@ namespace DirectX12GameEngine.Core.Assets
 
             return base.ConvertTo(context, culture, value, destinationType);
         }
-
-        public override bool IsValid(ITypeDescriptorContext context, object value) => value is Vector4;
     }
 
     [GlobalTypeConverter(typeof(Quaternion))]
@@ -108,8 +104,6 @@ namespace DirectX12GameEngine.Core.Assets
 
             return base.ConvertTo(context, culture, value, destinationType);
         }
-
-        public override bool IsValid(ITypeDescriptorContext context, object value) => value is Quaternion;
     }
 
     [GlobalTypeConverter(typeof(Matrix4x4))]
@@ -150,7 +144,5 @@ namespace DirectX12GameEngine.Core.Assets
 
             return base.ConvertTo(context, culture, value, destinationType);
         }
-
-        public override bool IsValid(ITypeDescriptorContext context, object value) => value is Matrix4x4;
     }
 }
