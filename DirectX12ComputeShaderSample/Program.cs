@@ -33,7 +33,7 @@ namespace DirectX12ComputeShaderSample
         {
             // Create graphics device
 
-            using GraphicsDevice device = new GraphicsDevice(FeatureLevel.Level12_1);
+            using GraphicsDevice device = new GraphicsDevice(FeatureLevel.Level11_0);
 
             // Create graphics buffer
 
