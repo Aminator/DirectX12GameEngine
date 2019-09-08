@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DirectX12GameEngine.Core.Assets
 {
@@ -66,24 +67,27 @@ namespace DirectX12GameEngine.Core.Assets
 
         private void AddReference(Reference reference)
         {
-            if (loadedAssetPaths.TryGetValue(reference.Path, out Reference previousReference))
+            lock (loadedAssetPaths)
             {
-                reference.Next = previousReference.Next;
-                reference.Previous = previousReference;
-
-                if (previousReference.Next != null)
+                if (loadedAssetPaths.TryGetValue(reference.Path, out Reference previousReference))
                 {
-                    previousReference.Next.Previous = reference;
+                    reference.Next = previousReference.Next;
+                    reference.Previous = previousReference;
+
+                    if (previousReference.Next != null)
+                    {
+                        previousReference.Next.Previous = reference;
+                    }
+
+                    previousReference.Next = reference;
+                }
+                else
+                {
+                    loadedAssetPaths[reference.Path] = reference;
                 }
 
-                previousReference.Next = reference;
+                loadedAssetReferences[reference.Object] = reference;
             }
-            else
-            {
-                loadedAssetPaths[reference.Path] = reference;
-            }
-
-            loadedAssetReferences[reference.Object] = reference;
         }
 
         private void ReleaseReference(Reference reference)
@@ -131,8 +135,6 @@ namespace DirectX12GameEngine.Core.Assets
                 PrivateReferenceCount = isPublicReference ? 0 : 1;
             }
 
-            public bool IsDeserialized { get; set; }
-
             public string Path { get; }
 
             public object Object { get; }
@@ -140,6 +142,8 @@ namespace DirectX12GameEngine.Core.Assets
             public int PublicReferenceCount { get; set; }
 
             public int PrivateReferenceCount { get; set; }
+
+            public Task? DeserializationTask { get; set; }
 
             public HashSet<Reference> References { get; set; } = new HashSet<Reference>();
 

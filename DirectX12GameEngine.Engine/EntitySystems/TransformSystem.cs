@@ -34,7 +34,10 @@ namespace DirectX12GameEngine.Engine
 
         private void UpdateTransformations(IEnumerable<TransformComponent> transformationRoots)
         {
-            Parallel.ForEach(transformationRoots, UpdateTransformationsRecursive);
+            foreach (TransformComponent transformComponent in transformationRoots)
+            {
+                UpdateTransformationsRecursive(transformComponent);
+            }
         }
 
         private void UpdateTransformationsRecursive(TransformComponent transformComponent)

@@ -665,29 +665,32 @@ namespace DirectX12GameEngine.Shaders
 
         private static SyntaxTree GetSyntaxTree(Type type)
         {
-            if (!decompiledTypes.TryGetValue(type, out SyntaxTree syntaxTree))
+            lock (decompiledTypes)
             {
-                EntityHandle handle = MetadataTokenHelpers.TryAsEntityHandle(type.MetadataToken) ?? throw new InvalidOperationException();
-                string assemblyPath = type.Assembly.Location;
-
-                if (!decompilers.TryGetValue(assemblyPath, out CSharpDecompiler decompiler))
+                if (!decompiledTypes.TryGetValue(type, out SyntaxTree syntaxTree))
                 {
-                    decompiler = CreateDecompiler(assemblyPath);
-                    decompilers.Add(assemblyPath, decompiler);
+                    EntityHandle handle = MetadataTokenHelpers.TryAsEntityHandle(type.MetadataToken) ?? throw new InvalidOperationException();
+                    string assemblyPath = type.Assembly.Location;
+
+                    if (!decompilers.TryGetValue(assemblyPath, out CSharpDecompiler decompiler))
+                    {
+                        decompiler = CreateDecompiler(assemblyPath);
+                        decompilers.Add(assemblyPath, decompiler);
+                    }
+
+                    string sourceCode = decompiler.DecompileAsString(handle);
+
+                    sourceCode = ClosureTypeDeclarationRegex.Replace(sourceCode, "Shader");
+                    sourceCode = LambdaMethodDeclarationRegex.Replace(sourceCode, "internal void Main");
+
+                    syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, CSharpParseOptions.Default.WithLanguageVersion(Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp8));
+                    compilation = compilation.AddSyntaxTrees(syntaxTree);
+
+                    decompiledTypes.Add(type, syntaxTree);
                 }
 
-                string sourceCode = decompiler.DecompileAsString(handle);
-
-                sourceCode = ClosureTypeDeclarationRegex.Replace(sourceCode, "Shader");
-                sourceCode = LambdaMethodDeclarationRegex.Replace(sourceCode, "internal void Main");
-
-                syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, CSharpParseOptions.Default.WithLanguageVersion(Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp8));
-                compilation = compilation.AddSyntaxTrees(syntaxTree);
-
-                decompiledTypes.Add(type, syntaxTree);
+                return syntaxTree;
             }
-
-            return syntaxTree;
         }
 
         private static CSharpDecompiler CreateDecompiler(string assemblyPath)

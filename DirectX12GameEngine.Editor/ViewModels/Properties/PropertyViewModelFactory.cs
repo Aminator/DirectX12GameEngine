@@ -57,18 +57,12 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
                 }
                 else
                 {
-                    if (value is null)
+                    propertyViewModel = value switch
                     {
-                        propertyViewModel = new NullPropertyViewModel(model, propertyInfo);
-                    }
-                    if (value is IList)
-                    {
-                        propertyViewModel = new CollectionPropertyViewModel(model, propertyInfo);
-                    }
-                    else
-                    {
-                        propertyViewModel = new ClassPropertyViewModel(model, propertyInfo);
-                    }
+                        null => (PropertyViewModel)new NullPropertyViewModel(model, propertyInfo),
+                        IList _ => new CollectionPropertyViewModel(model, propertyInfo),
+                        _ => new ClassPropertyViewModel(model, propertyInfo)
+                    };
                 }
             }
 

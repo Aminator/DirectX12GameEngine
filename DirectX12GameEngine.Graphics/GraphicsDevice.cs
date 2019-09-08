@@ -12,6 +12,8 @@ namespace DirectX12GameEngine.Graphics
     public sealed class GraphicsDevice : IDisposable, ICollector
     {
         private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
+        private readonly object fenceLock = new object();
+
         private Vortice.Direct3D11.ID3D11Device? nativeDirect3D11Device;
 
         public GraphicsDevice(FeatureLevel minFeatureLevel = FeatureLevel.Level11_0, bool enableDebugLayer = false)
@@ -164,6 +166,24 @@ namespace DirectX12GameEngine.Graphics
             NativeDevice.Dispose();
         }
 
+        public void ExecuteCommandLists(bool wait, params CompiledCommandList[] commandLists)
+        {
+            ID3D12Fence fence = commandLists[0].Builder.CommandListType switch
+            {
+                CommandListType.Direct => NativeDirectFence,
+                CommandListType.Compute => NativeComputeFence,
+                CommandListType.Copy => NativeCopyFence,
+                _ => throw new NotSupportedException("This command list type is not supported.")
+            };
+
+            long fenceValue = ExecuteCommandLists(commandLists);
+
+            if (wait)
+            {
+                WaitForFence(fence, fenceValue);
+            }
+        }
+
         public Task ExecuteCommandListsAsync(params CompiledCommandList[] commandLists)
         {
             ID3D12Fence fence = commandLists[0].Builder.CommandListType switch
@@ -179,7 +199,7 @@ namespace DirectX12GameEngine.Graphics
             return WaitForFenceAsync(fence, fenceValue);
         }
 
-        public long ExecuteCommandLists(params CompiledCommandList[] commandLists)
+        private long ExecuteCommandLists(params CompiledCommandList[] commandLists)
         {
             CommandAllocatorPool commandAllocatorPool;
             ID3D12CommandQueue commandQueue;
@@ -193,24 +213,21 @@ namespace DirectX12GameEngine.Graphics
                     commandQueue = NativeComputeCommandQueue;
 
                     fence = NativeComputeFence;
-                    fenceValue = NextComputeFenceValue;
-                    NextComputeFenceValue++;
+                    fenceValue = NextComputeFenceValue++;
                     break;
                 case CommandListType.Copy:
                     commandAllocatorPool = CopyAllocatorPool;
                     commandQueue = NativeCopyCommandQueue;
 
                     fence = NativeCopyFence;
-                    fenceValue = NextCopyFenceValue;
-                    NextCopyFenceValue++;
+                    fenceValue = NextCopyFenceValue++;
                     break;
                 case CommandListType.Direct:
                     commandAllocatorPool = DirectAllocatorPool;
                     commandQueue = NativeDirectCommandQueue;
 
                     fence = NativeDirectFence;
-                    fenceValue = NextDirectFenceValue;
-                    NextDirectFenceValue++;
+                    fenceValue = NextDirectFenceValue++;
                     break;
                 default:
                     throw new NotSupportedException("This command list type is not supported.");
@@ -235,11 +252,23 @@ namespace DirectX12GameEngine.Graphics
             return fence.CompletedValue >= fenceValue;
         }
 
+        internal void WaitForFence(ID3D12Fence fence, long fenceValue)
+        {
+            if (IsFenceComplete(fence, fenceValue)) return;
+
+            lock (fenceLock)
+            {
+                fence.SetEventOnCompletion(fenceValue, fenceEvent);
+
+                fenceEvent.WaitOne();
+            }
+        }
+
         internal Task WaitForFenceAsync(ID3D12Fence fence, long fenceValue)
         {
             if (IsFenceComplete(fence, fenceValue)) return Task.CompletedTask;
 
-            lock (fence)
+            lock (fenceLock)
             {
                 fence.SetEventOnCompletion(fenceValue, fenceEvent);
 

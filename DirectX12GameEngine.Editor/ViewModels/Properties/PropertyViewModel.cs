@@ -123,7 +123,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         {
             if (HasUnrealizedChildren)
             {
-                object value = Value!;
+                object value = Value ?? throw new InvalidOperationException("Value was null.");
 
                 var properties = ContentManager.GetDataContractProperties(Type, value);
 

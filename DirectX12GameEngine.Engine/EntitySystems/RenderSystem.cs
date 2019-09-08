@@ -167,8 +167,8 @@ namespace DirectX12GameEngine.Engine
                 compiledCommandLists[batchIndex] = commandList.Close();
             }
 
-            graphicsDevice.CommandList.Flush();
-            graphicsDevice.ExecuteCommandLists(compiledCommandLists);
+            graphicsDevice.CommandList.Flush(true);
+            graphicsDevice.ExecuteCommandLists(true, compiledCommandLists);
 
             graphicsDevice.CommandList.Reset();
             graphicsDevice.CommandList.ClearState();

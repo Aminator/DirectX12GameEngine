@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -15,7 +16,6 @@ namespace DirectX12GameEngine.Core.Assets
 {
     public partial class ContentManager : IContentManager
     {
-        private readonly AsyncLock asyncLock = new AsyncLock();
         private readonly Dictionary<string, Reference> loadedAssetPaths = new Dictionary<string, Reference>();
         private readonly Dictionary<object, Reference> loadedAssetReferences = new Dictionary<object, Reference>();
 
@@ -79,40 +79,31 @@ namespace DirectX12GameEngine.Core.Assets
 
         public async Task<object> LoadAsync(Type type, string path)
         {
-            using (await asyncLock.LockAsync())
-            {
-                return await DeserializeAsync(path, type, null, null);
-            }
+            return await DeserializeAsync(path, type, null, null);
         }
 
         public async Task<bool> ReloadAsync(object asset, string? newPath = null)
         {
-            using (await asyncLock.LockAsync())
+            if (!loadedAssetReferences.TryGetValue(asset, out Reference reference))
             {
-                if (!loadedAssetReferences.TryGetValue(asset, out Reference reference))
-                {
-                    return false;
-                }
-
-                string path = newPath ?? reference.Path;
-
-                await DeserializeExistingObjectAsync(reference.Path, path, asset);
-
-                if (path != reference.Path)
-                {
-                    loadedAssetPaths.Remove(reference.Path);
-                }
-
-                return true;
+                return false;
             }
+
+            string path = newPath ?? reference.Path;
+
+            await DeserializeExistingObjectAsync(reference.Path, path, asset);
+
+            if (path != reference.Path)
+            {
+                loadedAssetPaths.Remove(reference.Path);
+            }
+
+            return true;
         }
 
         public async Task SaveAsync(string path, object asset)
         {
-            using (await asyncLock.LockAsync())
-            {
-                await SerializeAsync(path, asset);
-            }
+            await SerializeAsync(path, asset);
         }
 
         public bool TryGetAssetPath(object asset, out string? path)
@@ -129,28 +120,22 @@ namespace DirectX12GameEngine.Core.Assets
 
         public void Unload(object asset)
         {
-            using (asyncLock.Lock())
+            if (!loadedAssetReferences.TryGetValue(asset, out Reference reference))
             {
-                if (!loadedAssetReferences.TryGetValue(asset, out Reference reference))
-                {
-                    throw new InvalidOperationException("Content is not loaded.");
-                }
-
-                DecrementReference(reference, true);
+                throw new InvalidOperationException("Content is not loaded.");
             }
+
+            DecrementReference(reference, true);
         }
 
         public void Unload(string path)
         {
-            using (asyncLock.Lock())
+            if (!loadedAssetPaths.TryGetValue(path, out Reference reference))
             {
-                if (!loadedAssetPaths.TryGetValue(path, out Reference reference))
-                {
-                    throw new InvalidOperationException("Content is not loaded.");
-                }
-
-                DecrementReference(reference, true);
+                throw new InvalidOperationException("Content is not loaded.");
             }
+
+            DecrementReference(reference, true);
         }
 
         public static void AddTypeConverters(params Type[] typeConverters)
@@ -176,29 +161,33 @@ namespace DirectX12GameEngine.Core.Assets
             return properties.Where(p => p.CanRead).Where(p => p.CanWrite || p.GetValue(obj) is ICollection);
         }
 
+        public static Type GetRootObjectType(Stream stream)
+        {
+            XamlXmlReader reader = new XamlXmlReader(stream);
+
+            while (reader.NodeType != XamlNodeType.StartObject)
+            {
+                reader.Read();
+            }
+
+            Type type = reader.Type.UnderlyingType;
+
+            stream.Seek(0, SeekOrigin.Begin);
+
+            return type;
+        }
+
         internal class InternalXamlSchemaContext : XamlSchemaContext
         {
-            public InternalXamlSchemaContext(ContentManager contentManager)
+            public InternalXamlSchemaContext(ContentManager contentManager, Reference? parentReference = null)
             {
                 ContentManager = contentManager;
-            }
-
-            public InternalXamlSchemaContext(IEnumerable<Assembly> referenceAssemblies, ContentManager contentManager) : base(referenceAssemblies)
-            {
-                ContentManager = contentManager;
-            }
-
-            public InternalXamlSchemaContext(XamlSchemaContextSettings settings, ContentManager contentManager) : base(settings)
-            {
-                ContentManager = contentManager;
-            }
-
-            public InternalXamlSchemaContext(IEnumerable<Assembly> referenceAssemblies, XamlSchemaContextSettings settings, ContentManager contentManager) : base(referenceAssemblies, settings)
-            {
-                ContentManager = contentManager;
+                ParentReference = parentReference;
             }
 
             public ContentManager ContentManager { get; }
+
+            public Reference? ParentReference { get; }
         }
     }
 }

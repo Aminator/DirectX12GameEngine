@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Portable.Xaml;
 using Portable.Xaml.Markup;
@@ -24,12 +23,10 @@ namespace DirectX12GameEngine.Core.Assets
                 if (xamlSchemaContextProvider.SchemaContext is ContentManager.InternalXamlSchemaContext xamlSchemaContext)
                 {
                     IDestinationTypeProvider destinationTypeProvider = valueSerializerContext.GetRequiredService<IDestinationTypeProvider>();
-                    IRootObjectProvider rootObjectProvider = valueSerializerContext.GetRequiredService<IRootObjectProvider>();
 
                     Type type = destinationTypeProvider.GetDestinationType();
-                    object rootObject = rootObjectProvider.RootObject;
 
-                    return AsyncHelper.RunSync(() => xamlSchemaContext.ContentManager.DeserializeAsync(path, type, rootObject, null));
+                    return AsyncHelper.RunSync(() => xamlSchemaContext.ContentManager.DeserializeAsync(path, type, xamlSchemaContext.ParentReference, null));
                 }
             }
 

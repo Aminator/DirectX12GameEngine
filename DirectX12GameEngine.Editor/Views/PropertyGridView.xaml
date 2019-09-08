@@ -53,7 +53,10 @@
 
         <DataTemplate x:Key="NullPropertyTemplate" x:DataType="properties:NullPropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="(None)" />
+                <TextBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsReadOnly="True"
+                    Text="(None)" />
             </winui:TreeViewItem>
         </DataTemplate>
 

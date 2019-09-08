@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Portable.Xaml;
@@ -22,9 +23,8 @@ namespace DirectX12GameEngine.Core.Assets
 
             HashSet<Reference>? references = reference.References;
             reference.References = new HashSet<Reference>();
-            reference.IsDeserialized = false;
 
-            object asset = await DeserializeAsync(newPath, type, null, instance);
+            object asset = await DeserializeAsync(newPath, type, null, reference);
 
             foreach (Reference childReference in references)
             {
@@ -34,83 +34,89 @@ namespace DirectX12GameEngine.Core.Assets
             return asset;
         }
 
-        internal async Task<object> DeserializeAsync(string path, Type type, object? parent, object? instance)
+        internal async Task<object> DeserializeAsync(string path, Type type, Reference? parentReference, Reference? referenceToReload)
         {
-            Reference? parentReference = null;
-
-            if (parent != null)
-            {
-                loadedAssetReferences.TryGetValue(parent, out parentReference);
-            }
-
             bool isRoot = parentReference is null;
 
-            Reference? reference = FindDeserializedObject(path, type);
+            // Check if reference exists and immediately return.
 
-            if (reference != null && reference.IsDeserialized)
+            if (referenceToReload is null)
             {
-                if (isRoot || parentReference!.References.Add(reference))
-                {
-                    IncrementReference(reference, isRoot);
-                }
+                Reference? foundReference = FindDeserializedObject(path, type);
 
-                return reference.Object;
+                if (foundReference != null)
+                {
+                    if (isRoot || parentReference!.References.Add(foundReference))
+                    {
+                        IncrementReference(foundReference, isRoot);
+                    }
+
+                    if (foundReference.DeserializationTask is null) throw new InvalidOperationException();
+
+                    await foundReference.DeserializationTask.ConfigureAwait(false);
+
+                    return foundReference.Object;
+                }
             }
+
+            // Reference not found, so deserialize asset.
 
             if (!await ExistsAsync(path).ConfigureAwait(false))
             {
                 throw new FileNotFoundException();
             }
 
-            object? rootObjectInstance = reference?.Object ?? instance;
-            TaskCompletionSource<bool> hasRootObject = new TaskCompletionSource<bool>();
+            Stream stream = await RootFolder.OpenStreamForReadAsync(path + FileExtension).ConfigureAwait(false);
+            Type rootObjectType = GetRootObjectType(stream);
 
-            InternalXamlSchemaContext xamlSchemaContext = new InternalXamlSchemaContext(this);
+            object rootObjectInstance = referenceToReload != null && referenceToReload.Object.GetType().IsInstanceOfType(rootObjectType)
+                ? referenceToReload.Object : Activator.CreateInstance(rootObjectType);
 
-            XamlObjectWriter writer = new XamlObjectWriter(xamlSchemaContext, new XamlObjectWriterSettings
+            object result = rootObjectInstance;
+
+            if (!type.IsInstanceOfType(rootObjectInstance) || (type == typeof(object) && rootObjectInstance is Asset))
             {
-                RootObjectInstance = rootObjectInstance,
-                BeforePropertiesHandler = (s, e) =>
+                if (!(rootObjectInstance is Asset)) throw new InvalidOperationException();
+
+                AssetContentTypeAttribute? contentType = rootObjectInstance.GetType().GetCustomAttribute<AssetContentTypeAttribute>();
+
+                if (type == typeof(object) && contentType != null)
                 {
-                    if (hasRootObject.Task.IsCompleted) return;
-
-                    rootObjectInstance = e.Instance;
-
-                    if (rootObjectInstance is null) throw new InvalidOperationException();
-
-                    object? result = rootObjectInstance;
-
-                    if (!type.IsInstanceOfType(rootObjectInstance) || (type == typeof(object) && rootObjectInstance is Asset))
-                    {
-                        if (!(rootObjectInstance is Asset)) throw new InvalidOperationException();
-
-                        AssetContentTypeAttribute? contentType = rootObjectInstance.GetType().GetCustomAttribute<AssetContentTypeAttribute>();
-
-                        if (type == typeof(object) && contentType != null)
-                        {
-                            type = contentType.ContentType;
-                        }
-
-                        result = Activator.CreateInstance(type);
-                    }
-
-                    reference = new Reference(path, result, isRoot);
-                    AddReference(reference);
-
-                    reference.IsDeserialized = true;
-
-                    hasRootObject.TrySetResult(true);
+                    type = contentType.ContentType;
                 }
-            });
 
-            Task<object> transformTask = Task.Run(async () =>
+                result = Activator.CreateInstance(type);
+            }
+
+            Reference reference = referenceToReload ?? new Reference(path, result, isRoot);
+
+            if (referenceToReload is null)
             {
-                using Stream stream = await RootFolder.OpenStreamForReadAsync(path + FileExtension).ConfigureAwait(false);
+                AddReference(reference);
+            }
+
+            parentReference?.References.Add(reference);
+
+            // Deserialization
+
+            Task deserializationTask = Task.Run(async () =>
+            {
+                parentReference?.ToString();
+
+                InternalXamlSchemaContext xamlSchemaContext = new InternalXamlSchemaContext(this, reference);
+
+                XamlObjectWriter writer = new XamlObjectWriter(xamlSchemaContext, new XamlObjectWriterSettings
+                {
+                    RootObjectInstance = rootObjectInstance
+                });
+
                 XamlXmlReader reader = new XamlXmlReader(stream, xamlSchemaContext);
 
                 XamlServices.Transform(reader, writer);
 
-                if (reference?.Object is null) throw new InvalidOperationException();
+                stream.Dispose();
+
+                await Task.WhenAll(reference.References.Select(r => r.DeserializationTask ?? throw new InvalidOperationException())).ConfigureAwait(false);
 
                 if (rootObjectInstance != reference.Object)
                 {
@@ -118,17 +124,11 @@ namespace DirectX12GameEngine.Core.Assets
 
                     await asset.CreateAssetAsync(reference.Object, Services).ConfigureAwait(false);
                 }
-
-                parentReference?.References.Add(reference);
-
-                return reference.Object;
             });
 
-            await hasRootObject.Task.ConfigureAwait(false);
+            reference.DeserializationTask = deserializationTask;
 
-            if (reference?.Object is null) throw new InvalidOperationException();
-
-            await transformTask.ConfigureAwait(false);
+            await reference.DeserializationTask.ConfigureAwait(false);
 
             return reference.Object;
         }

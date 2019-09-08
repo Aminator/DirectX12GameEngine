@@ -23,14 +23,8 @@ namespace DirectX12GameEngine.Editor.Factories
         public async Task<object?> CreateAsync(StorageFileViewModel item)
         {
             using Stream stream = await item.Model.OpenStreamForReadAsync();
-            XamlXmlReader reader = new XamlXmlReader(stream);
 
-            while (reader.NodeType != XamlNodeType.StartObject)
-            {
-                reader.Read();
-            }
-
-            Type type = reader.Type.UnderlyingType;
+            Type type = ContentManager.GetRootObjectType(stream);
 
             if (factories.TryGetValue(type, out IAssetViewFactory factory))
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DirectX12GameEngine.Core;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -218,12 +219,7 @@ namespace DirectX12GameEngine.Graphics
 
         public void Flush(bool wait = false)
         {
-            Task task = FlushAsync();
-
-            if (wait)
-            {
-                task.Wait();
-            }
+            GraphicsDevice.ExecuteCommandLists(wait, Close());
         }
 
         public Task FlushAsync()
