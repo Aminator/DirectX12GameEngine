@@ -96,7 +96,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             if (!await Content.ExistsAsync(fileName))
             {
                 ShaderGenerator shaderGenerator = new ShaderGenerator(MaterialDescriptor.Attributes);
-                ShaderGenerationResult result = shaderGenerator.GenerateShader();
+                ShaderGeneratorResult result = shaderGenerator.GenerateShader();
 
                 CompiledShaderAsset shaderAsset = new CompiledShaderAsset();
 

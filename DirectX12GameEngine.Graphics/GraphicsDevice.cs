@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using Nito.AsyncEx.Interop;
 using SharpGen.Runtime;
 using Vortice.Direct3D12;
+using Vortice.Direct3D12.Debug;
 
 namespace DirectX12GameEngine.Graphics
 {
@@ -21,11 +23,25 @@ namespace DirectX12GameEngine.Graphics
 #if DEBUG
             if (enableDebugLayer)
             {
+                Result debugResult = D3D12.D3D12GetDebugInterface<ID3D12Debug>(out ID3D12Debug debugInterface);
+
+                using ID3D12Debug debug = debugInterface;
+
+                if (debugResult.Success)
+                {
+                    debug.EnableDebugLayer();
+                }
             }
 #endif
             FeatureLevel = minFeatureLevel < FeatureLevel.Level11_0 ? FeatureLevel.Level11_0 : minFeatureLevel;
 
             Result result = D3D12.D3D12CreateDevice(null, (Vortice.DirectX.Direct3D.FeatureLevel)FeatureLevel, out ID3D12Device device);
+
+            if (result.Failure)
+            {
+                throw new COMException("Device creation failed.", result.Code);
+            }
+
             NativeDevice = device;
 
             NativeComputeCommandQueue = NativeDevice.CreateCommandQueue(new CommandQueueDescription(Vortice.Direct3D12.CommandListType.Compute));

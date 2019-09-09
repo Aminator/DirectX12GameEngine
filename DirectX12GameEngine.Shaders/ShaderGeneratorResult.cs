@@ -2,9 +2,9 @@
 
 namespace DirectX12GameEngine.Shaders
 {
-    public class ShaderGenerationResult
+    public class ShaderGeneratorResult
     {
-        public ShaderGenerationResult(string shaderSource)
+        public ShaderGeneratorResult(string shaderSource)
         {
             ShaderSource = shaderSource;
         }

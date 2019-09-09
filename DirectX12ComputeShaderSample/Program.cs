@@ -13,9 +13,9 @@ namespace DirectX12ComputeShaderSample
     public class MyComputeShader : ComputeShaderBase
     {
 #nullable disable
-        public StructuredBufferResource<float> Source;
-
         public RWStructuredBufferResource<float> Destination;
+
+        public StructuredBufferResource<float> Source;
 #nullable restore
 
         [ShaderMember]
@@ -24,6 +24,19 @@ namespace DirectX12ComputeShaderSample
         public override void CSMain(CSInput input)
         {
             Destination[input.DispatchThreadId.X] = Math.Max(Source[input.DispatchThreadId.X], 45);
+        }
+    }
+
+    public static class GraphicsBufferExtensions
+    {
+        public static StructuredBufferResource<T> GetStructuredBuffer<T>(this GraphicsBuffer<T> buffer) where T : unmanaged
+        {
+            return new StructuredBufferResource<T>();
+        }
+
+        public static RWStructuredBufferResource<T> GetRWStructuredBuffer<T>(this GraphicsBuffer<T> buffer) where T : unmanaged
+        {
+            return new RWStructuredBufferResource<T>();
         }
     }
 
@@ -56,33 +69,27 @@ namespace DirectX12ComputeShaderSample
             slicedDestinationBuffer = slicedDestinationBuffer.Slice(10, 50);
 
             DescriptorSet descriptorSet = new DescriptorSet(device, 2);
-            descriptorSet.AddShaderResourceViews(sourceBuffer);
             descriptorSet.AddUnorderedAccessViews(slicedDestinationBuffer);
+            descriptorSet.AddShaderResourceViews(sourceBuffer);
 
             // Generate computer shader
 
-            //StructuredBufferResource<float> source = sourceBuffer.GetStructuredBuffer();
-            //RWStructuredBufferResource<float> destination = destinationBuffer.GetRWStructuredBuffer();
+            bool generateWithDelegate = true;
 
-            //Action<CSInput> action = input =>
-            //{
-            //    destination[input.DispatchThreadId.X] = source[input.DispatchThreadId.X];
-            //};
+            ShaderGenerator shaderGenerator = generateWithDelegate
+                ? CreateShaderGeneratorWithDelegate(sourceBuffer, destinationBuffer)
+                : CreateShaderGeneratorWithClass();
 
-            //ShaderGenerator shaderGenerator = new ShaderGenerator(action);
-            //ShaderGenerationResult result = shaderGenerator.GenerateShader();
+            ShaderGeneratorResult result = shaderGenerator.GenerateShader();
 
-            MyComputeShader myComputeShader = new MyComputeShader();
-
-            ShaderGenerator shaderGenerator = new ShaderGenerator(myComputeShader);
-            ShaderGenerationResult result = shaderGenerator.GenerateShader();
+            // Copmile shader
 
             byte[] shaderBytecode = ShaderCompiler.Compile(DxcShaderStage.ComputeShader, result.ShaderSource, result.EntryPoints["compute"]);
 
             DescriptorRange1[] descriptorRanges = new DescriptorRange1[]
             {
-                new DescriptorRange1(DescriptorRangeType.ShaderResourceView, 1, 0),
-                new DescriptorRange1(DescriptorRangeType.UnorderedAccessView, 1, 0)
+                new DescriptorRange1(DescriptorRangeType.UnorderedAccessView, 1, 0),
+                new DescriptorRange1(DescriptorRangeType.ShaderResourceView, 1, 0)
             };
 
             RootParameter1 rootParameter = new RootParameter1(new RootDescriptorTable1(descriptorRanges), ShaderVisibility.All);
@@ -114,6 +121,26 @@ namespace DirectX12ComputeShaderSample
             Console.WriteLine();
             Console.WriteLine("After:");
             PrintMatrix(outputArray, width, height);
+        }
+
+        private static ShaderGenerator CreateShaderGeneratorWithClass()
+        {
+            MyComputeShader myComputeShader = new MyComputeShader();
+
+            return new ShaderGenerator(myComputeShader);
+        }
+
+        private static ShaderGenerator CreateShaderGeneratorWithDelegate(GraphicsBuffer<float> sourceBuffer, GraphicsBuffer<float> destinationBuffer)
+        {
+            StructuredBufferResource<float> source = sourceBuffer.GetStructuredBuffer();
+            RWStructuredBufferResource<float> destination = destinationBuffer.GetRWStructuredBuffer();
+
+            Action<CSInput> action = input =>
+            {
+                destination[input.DispatchThreadId.X] = Math.Max(source[input.DispatchThreadId.X], 45);
+            };
+
+            return new ShaderGenerator(action, new ShaderAttribute("compute"), new NumThreadsAttribute(100, 1, 1));
         }
 
         private static void PrintMatrix(float[] array, int width, int height)
