@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using DirectX12GameEngine.Editor.Factories;
 using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Editor.Messaging;
+using DirectX12GameEngine.Mvvm.Messaging;
 using DirectX12GameEngine.Editor.ViewModels;
 using DirectX12GameEngine.Engine;
 using Microsoft.UI.Xaml.Controls;
@@ -36,12 +36,12 @@ namespace DirectX12GameEngine.Editor.Views
 
             SolutionExplorerTabView.TabItemsChanged += (s, e) => SolutionExplorerColumnDefinition.Width = GridLength.Auto;
 
-            AssetEditorShadow.Receivers.Add(BackgroundPanel);
-            SolutionExplorerShadow.Receivers.Add(AssetEditorPanel);
-            SolutionExplorerShadow.Receivers.Add(BackgroundPanel);
 
-            AssetEditorPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
-            SolutionExplorerPanel.Translation += new Vector3(0.0f, 0.0f, 64.0f);
+            TitleBarShadow.Receivers.Add(ContentPanel);
+            SolutionExplorerShadow.Receivers.Add(AssetEditorPanel);
+
+            TitleBarPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
+            SolutionExplorerPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
 
             Window.Current.SetTitleBar(TitleBar);
 

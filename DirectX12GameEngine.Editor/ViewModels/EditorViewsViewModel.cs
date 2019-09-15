@@ -1,5 +1,6 @@
 ﻿using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Editor.Messaging;
+using DirectX12GameEngine.Mvvm;
+using DirectX12GameEngine.Mvvm.Messaging;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {

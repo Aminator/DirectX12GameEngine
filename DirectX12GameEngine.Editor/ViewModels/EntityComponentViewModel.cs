@@ -1,5 +1,6 @@
 ﻿using System;
 using DirectX12GameEngine.Engine;
+using DirectX12GameEngine.Mvvm;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {

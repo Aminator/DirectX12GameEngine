@@ -4,8 +4,9 @@ using System.Numerics;
 using System.Reflection;
 using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Editor.Messaging;
+using DirectX12GameEngine.Mvvm.Messaging;
 using DirectX12GameEngine.Editor.ViewModels.Properties;
+using DirectX12GameEngine.Mvvm;
 
 #nullable enable
 

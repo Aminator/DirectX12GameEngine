@@ -1,7 +1,8 @@
-﻿#nullable enable
-
-using DirectX12GameEngine.Editor.Commanding;
+﻿using DirectX12GameEngine.Mvvm;
+using DirectX12GameEngine.Mvvm.Commanding;
 using Windows.ApplicationModel.Core;
+
+#nullable enable
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {

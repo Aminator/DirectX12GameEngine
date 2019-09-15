@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
 using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Mvvm;
+using DirectX12GameEngine.Mvvm.Collections;
 
 #nullable enable
 

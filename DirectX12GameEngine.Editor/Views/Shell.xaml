@@ -3,21 +3,17 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
-    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:DirectX12GameEngine.Editor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     d:DesignHeight="300"
     d:DesignWidth="400"
     AllowDrop="True"
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <ThemeShadow x:Name="TitleBarShadow" />
         <ThemeShadow x:Name="SolutionExplorerShadow" />
-        <ThemeShadow x:Name="AssetEditorShadow" />
     </UserControl.Resources>
 
     <Grid>
@@ -26,9 +22,10 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <Grid x:Name="BackgroundPanel" Grid.RowSpan="2" />
-
-        <Grid>
+        <Grid
+            x:Name="TitleBarPanel"
+            Background="{ThemeResource AcrylicTitleBarBackground}"
+            Shadow="{StaticResource TitleBarShadow}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
@@ -42,16 +39,14 @@
                 Background="Transparent" />
         </Grid>
 
-        <Grid Grid.Row="1">
+        <Grid x:Name="ContentPanel" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition x:Name="SolutionExplorerColumnDefinition" Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Grid
-                x:Name="AssetEditorPanel"
-                Background="{ThemeResource AcrylicAssetEditorBackground}"
-                Shadow="{StaticResource AssetEditorShadow}">
+            <Grid>
+                <Grid x:Name="AssetEditorPanel" />
                 <local:ExtendedTabView x:Name="AssetEditorTabView" Background="Transparent" />
             </Grid>
 
@@ -60,13 +55,12 @@
                 Grid.Column="1"
                 Background="{ThemeResource AcrylicSolutionExplorerBackground}"
                 Shadow="{StaticResource SolutionExplorerShadow}">
-                <local:ExtendedTabView x:Name="SolutionExplorerTabView" Background="Transparent">
-                    <!--<local:ExtendedTabView.Transitions>
+                <local:ExtendedTabView x:Name="SolutionExplorerTabView" Background="Transparent" />
+                <Grid.Transitions>
                     <TransitionCollection>
                         <PaneThemeTransition Edge="Left" />
                     </TransitionCollection>
-                </local:ExtendedTabView.Transitions>-->
-                </local:ExtendedTabView>
+                </Grid.Transitions>
             </Grid>
 
             <controls:GridSplitter

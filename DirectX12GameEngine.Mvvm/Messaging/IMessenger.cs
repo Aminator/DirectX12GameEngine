@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DirectX12GameEngine.Editor.Messaging
+namespace DirectX12GameEngine.Mvvm.Messaging
 {
     public interface IMessenger
     {

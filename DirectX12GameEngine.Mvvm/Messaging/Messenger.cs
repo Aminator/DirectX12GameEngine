@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-#nullable enable
-
-namespace DirectX12GameEngine.Editor.Messaging
+namespace DirectX12GameEngine.Mvvm.Messaging
 {
     public class Messenger : IMessenger
     {

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-#nullable enable
-
-namespace DirectX12GameEngine.Editor.Commanding
+namespace DirectX12GameEngine.Mvvm.Commanding
 {
     public class RelayCommand : ICommand
     {

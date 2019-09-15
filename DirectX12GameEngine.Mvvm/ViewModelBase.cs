@@ -4,9 +4,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
-#nullable enable
-
-namespace DirectX12GameEngine.Editor.ViewModels
+namespace DirectX12GameEngine.Mvvm
 {
     public abstract class ViewModelBase : INotifyPropertyChanged
     {

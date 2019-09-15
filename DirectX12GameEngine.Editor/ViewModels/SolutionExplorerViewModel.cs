@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
-using DirectX12GameEngine.Editor.Commanding;
 using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Editor.Messaging;
+using DirectX12GameEngine.Mvvm;
+using DirectX12GameEngine.Mvvm.Commanding;
+using DirectX12GameEngine.Mvvm.Messaging;
 
 #nullable enable
 

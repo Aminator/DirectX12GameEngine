@@ -15,6 +15,13 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <AcrylicBrush
+                        x:Key="AcrylicTitleBarBackground"
+                        BackgroundSource="HostBackdrop"
+                        FallbackColor="#FFE0E0E5"
+                        TintColor="#FFE0E0E5"
+                        TintOpacity="0.8" />
+
+                    <AcrylicBrush
                         x:Key="AcrylicSolutionExplorerBackground"
                         BackgroundSource="HostBackdrop"
                         FallbackColor="#FFFFFFFF"
@@ -22,21 +29,22 @@
                         TintOpacity="0.8" />
 
                     <AcrylicBrush
-                        x:Key="AcrylicAssetEditorBackground"
+                        x:Key="AcrylicWindowBackground"
                         BackgroundSource="HostBackdrop"
                         FallbackColor="#FFE8E8ED"
                         TintColor="#FFE8E8ED"
                         TintOpacity="0.8" />
-
-                    <AcrylicBrush
-                        x:Key="AcrylicWindowBackground"
-                        BackgroundSource="HostBackdrop"
-                        FallbackColor="#FFE0E0E5"
-                        TintColor="#FFE0E0E5"
-                        TintOpacity="0.6" />
                 </ResourceDictionary>
 
                 <ResourceDictionary x:Key="Dark">
+                    <AcrylicBrush
+                        x:Key="AcrylicTitleBarBackground"
+                        BackgroundSource="HostBackdrop"
+                        FallbackColor="#FF1E2124"
+                        TintColor="#FF1E2124"
+                        TintLuminosityOpacity="0.95"
+                        TintOpacity="0.8" />
+
                     <AcrylicBrush
                         x:Key="AcrylicSolutionExplorerBackground"
                         BackgroundSource="HostBackdrop"
@@ -46,20 +54,12 @@
                         TintOpacity="0.8" />
 
                     <AcrylicBrush
-                        x:Key="AcrylicAssetEditorBackground"
+                        x:Key="AcrylicWindowBackground"
                         BackgroundSource="HostBackdrop"
                         FallbackColor="#FF2F3136"
                         TintColor="#FF2a2c31"
                         TintLuminosityOpacity="0.95"
                         TintOpacity="0.8" />
-
-                    <AcrylicBrush
-                        x:Key="AcrylicWindowBackground"
-                        BackgroundSource="HostBackdrop"
-                        FallbackColor="#FF1E2124"
-                        TintColor="#FF1E2124"
-                        TintLuminosityOpacity="0.95"
-                        TintOpacity="0.6" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 

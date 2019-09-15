@@ -2,6 +2,8 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using DirectX12GameEngine.Engine;
+using DirectX12GameEngine.Mvvm;
+using DirectX12GameEngine.Mvvm.Collections;
 
 #nullable enable
 

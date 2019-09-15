@@ -5,9 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 
-#nullable enable
-
-namespace DirectX12GameEngine.Editor
+namespace DirectX12GameEngine.Mvvm.Collections
 {
     public class ObservableViewModelCollection<TViewModel, TModel> : ObservableCollection<TViewModel>
     {
