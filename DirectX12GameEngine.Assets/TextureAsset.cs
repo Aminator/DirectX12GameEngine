@@ -19,20 +19,13 @@ namespace DirectX12GameEngine.Assets
 
             string extension = Path.GetExtension(Source);
 
-            if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
-            {
-                using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source);
-                using Image image = await Image.LoadAsync(stream);
+            using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source);
+            using Image image = await Image.LoadAsync(stream);
 
-                texture.Dispose();
-                texture.GraphicsDevice = device;
-                texture.InitializeFrom(image.Description);
-                texture.SetData(image.Data.Span);
-            }
-            else
-            {
-                throw new NotSupportedException("This file type is not supported.");
-            }
+            texture.Dispose();
+            texture.GraphicsDevice = device;
+            texture.InitializeFrom(image.Description);
+            texture.SetData(image.Data.Span);
         }
     }
 }

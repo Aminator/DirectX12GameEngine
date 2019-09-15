@@ -76,14 +76,14 @@ namespace DirectX12Game
                     }
                     break;
                 case VirtualKey.R:
-                    Entity? cliffhouse = SceneSystem.SceneInstance?.RootEntity?.Children.FirstOrDefault(m => m.Name == "Cliffhouse");
+                    Entity? cliffhouse = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (cliffhouse != null)
                     {
-                        SceneSystem.SceneInstance?.RootEntity?.Children.Remove(cliffhouse);
+                        cliffhouse.Parent?.Children.Remove(cliffhouse);
                     }
                     break;
                 case VirtualKey.T:
-                    Entity? cliffhouse1 = SceneSystem.SceneInstance?.RootEntity?.Children.FirstOrDefault(m => m.Name == "Cliffhouse");
+                    Entity? cliffhouse1 = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "");
                     cliffhouse1?.Remove<ModelComponent>();
                     break;
                 case VirtualKey.A:
@@ -97,7 +97,7 @@ namespace DirectX12Game
                     break;
                 case VirtualKey.P:
                     Entity? child1 = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Child1");
-                    if (child1 != null && child1.Parent is null)
+                    if (child1 != null && child1.Parent != null)
                     {
                         child1.Transform.Parent = null;
                         SceneSystem.SceneInstance?.RootEntity?.Children.Add(child1);
@@ -125,26 +125,17 @@ namespace DirectX12Game
                     }
                     break;
                 case VirtualKey.O:
-                    Entity? entity = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "CustomCliffhouse");
+                    Entity? entity = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Cliffhouse");
                     if (entity != null)
                     {
-                        await Content.SaveAsync(@"Assets\CustomCliffhouse", entity);
+                        await Content.SaveAsync(@"Assets\Cliffhouse", entity);
                     }
                     break;
                 case VirtualKey.I:
                     {
                         if (scene != null)
                         {
-                            Entity copy = new Entity();
-                            List<Entity> entities = new List<Entity>(scene.Children);
-
-                            foreach (var entity2 in entities)
-                            {
-                                scene.Children.Remove(entity2);
-                                copy.Children.Add(entity2);
-                            }
-
-                            await Content.SaveAsync(@"Assets\CustomScene", copy);
+                            await Content.SaveAsync(@"Assets\CustomScene", scene);
                         }
                     }
                     break;

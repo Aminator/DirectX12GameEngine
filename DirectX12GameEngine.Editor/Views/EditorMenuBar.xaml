@@ -27,10 +27,18 @@
             Command="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerCommand}"
             Kind="Open" />
         <StandardUICommand x:Key="SaveCommand" Kind="Save" />
-        <StandardUICommand
+        <XamlUICommand
             x:Key="CloseCommand"
             Command="{x:Bind ViewModel.CloseApplicationCommand}"
-            Kind="Close" />
+            Description="Close application"
+            Label="Close">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Cancel" />
+            </XamlUICommand.IconSource>
+            <XamlUICommand.KeyboardAccelerators>
+                <KeyboardAccelerator Key="F4" Modifiers="Menu" />
+            </XamlUICommand.KeyboardAccelerators>
+        </XamlUICommand>
 
         <StandardUICommand x:Key="UndoCommand" Kind="Undo" />
         <StandardUICommand x:Key="RedoCommand" Kind="Redo" />

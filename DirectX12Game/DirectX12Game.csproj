@@ -16,8 +16,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Models\Octopus.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine.Assets\DirectX12GameEngine.Assets.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\Models\Octopus.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\CustomScene.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
 
 </Project>

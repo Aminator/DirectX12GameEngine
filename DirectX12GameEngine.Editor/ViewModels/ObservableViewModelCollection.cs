@@ -11,26 +11,33 @@ namespace DirectX12GameEngine.Editor
 {
     public class ObservableViewModelCollection<TViewModel, TModel> : ObservableCollection<TViewModel>
     {
-        private readonly IList<TModel> source;
+        private readonly IList<TModel> modelCollection;
         private readonly Func<TViewModel, TModel> modelFactory;
         private readonly Func<TModel, int, TViewModel> viewModelFactory;
 
-        public ObservableViewModelCollection(IList<TModel> source, Func<TViewModel, TModel> modelFactory, Func<TModel, int, TViewModel> viewModelFactory)
-            : base(source.Select((model, i) => viewModelFactory(model, i)))
+        public ObservableViewModelCollection(IList<TModel> modelCollection, Func<TViewModel, TModel> modelFactory, Func<TModel, int, TViewModel> viewModelFactory)
+            : base(modelCollection.Select((model, i) => viewModelFactory(model, i)))
         {
-            this.source = source;
+            this.modelCollection = modelCollection;
             this.modelFactory = modelFactory;
             this.viewModelFactory = viewModelFactory;
 
-            if (source is INotifyCollectionChanged notifyCollection)
+            CollectionChanged += OnViewModelCollectionChanged;
+
+            if (modelCollection is INotifyCollectionChanged notifyCollection)
             {
-                notifyCollection.CollectionChanged += OnSourceCollectionChanged;
+                notifyCollection.CollectionChanged += OnModelCollectionChanged;
             }
         }
 
-        private void OnSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnViewModelCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            OnSourceCollectionChanged(e);
+            OnViewModelCollectionChanged(e);
+        }
+
+        private void OnModelCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnModelCollectionChanged(e);
         }
 
         protected virtual TViewModel CreateViewModel(TModel model, int index)
@@ -43,15 +50,13 @@ namespace DirectX12GameEngine.Editor
             return modelFactory(viewModel);
         }
 
-        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnViewModelCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            base.OnCollectionChanged(e);
-
-            INotifyCollectionChanged? notifyCollection = source as INotifyCollectionChanged;
+            INotifyCollectionChanged? notifyCollection = modelCollection as INotifyCollectionChanged;
 
             if (notifyCollection != null)
             {
-                notifyCollection.CollectionChanged -= OnSourceCollectionChanged;
+                notifyCollection.CollectionChanged -= OnModelCollectionChanged;
             }
 
             switch (e.Action)
@@ -59,55 +64,57 @@ namespace DirectX12GameEngine.Editor
                 case NotifyCollectionChangedAction.Add:
                     for (int i = 0; i < e.NewItems.Count; i++)
                     {
-                        source.Insert(e.NewStartingIndex + i, CreateModel((TViewModel)e.NewItems[i]));
+                        modelCollection.Insert(e.NewStartingIndex + i, CreateModel((TViewModel)e.NewItems[i]));
                     }
                     break;
                 case NotifyCollectionChangedAction.Move:
-                    if (e.OldItems.Count == 1 && source is ObservableCollection<TModel> observableCollection)
+                    if (e.OldItems.Count == 1 && modelCollection is ObservableCollection<TModel> observableCollection)
                     {
                         observableCollection.Move(e.OldStartingIndex, e.NewStartingIndex);
                     }
                     else
                     {
-                        List<TModel> items = source.Skip(e.OldStartingIndex).Take(e.OldItems.Count).ToList();
+                        List<TModel> items = modelCollection.Skip(e.OldStartingIndex).Take(e.OldItems.Count).ToList();
 
                         for (int i = 0; i < e.OldItems.Count; i++)
                         {
-                            source.RemoveAt(e.OldStartingIndex);
+                            modelCollection.RemoveAt(e.OldStartingIndex);
                         }
 
                         for (int i = 0; i < items.Count; i++)
                         {
-                            source.Insert(e.NewStartingIndex + i, items[i]);
+                            modelCollection.Insert(e.NewStartingIndex + i, items[i]);
                         }
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     for (int i = 0; i < e.OldItems.Count; i++)
                     {
-                        source.RemoveAt(e.OldStartingIndex);
+                        modelCollection.RemoveAt(e.OldStartingIndex);
                     }
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     for (int i = 0; i < e.OldItems.Count; i++)
                     {
-                        source.RemoveAt(e.OldStartingIndex);
+                        modelCollection.RemoveAt(e.OldStartingIndex);
                     }
 
                     goto case NotifyCollectionChangedAction.Add;
                 case NotifyCollectionChangedAction.Reset:
-                    source.Clear();
+                    modelCollection.Clear();
                     break;
             }
 
             if (notifyCollection != null)
             {
-                notifyCollection.CollectionChanged += OnSourceCollectionChanged;
+                notifyCollection.CollectionChanged += OnModelCollectionChanged;
             }
         }
 
-        protected virtual void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnModelCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
+            CollectionChanged -= OnViewModelCollectionChanged;
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -153,31 +160,40 @@ namespace DirectX12GameEngine.Editor
                     Clear();
                     break;
             }
+
+            CollectionChanged += OnViewModelCollectionChanged;
         }
     }
 
     public class ObservableViewModelCollection<TViewModel> : ObservableCollection<TViewModel>
     {
-        private readonly IList source;
+        private readonly IList modelCollection;
         private readonly Func<TViewModel, object?> modelFactory;
         private readonly Func<object?, int, TViewModel> viewModelFactory;
 
-        public ObservableViewModelCollection(IList source, Func<TViewModel, object?> modelFactory, Func<object?, int, TViewModel> viewModelFactory)
-            : base(source.Cast<object?>().Select((model, i) => viewModelFactory(model, i)))
+        public ObservableViewModelCollection(IList modelCollection, Func<TViewModel, object?> modelFactory, Func<object?, int, TViewModel> viewModelFactory)
+            : base(modelCollection.Cast<object?>().Select((model, i) => viewModelFactory(model, i)))
         {
-            this.source = source;
+            this.modelCollection = modelCollection;
             this.modelFactory = modelFactory;
             this.viewModelFactory = viewModelFactory;
 
-            if (source is INotifyCollectionChanged notifyCollection)
+            CollectionChanged += OnViewModelCollectionChanged;
+
+            if (modelCollection is INotifyCollectionChanged notifyCollection)
             {
-                notifyCollection.CollectionChanged += OnSourceCollectionChanged;
+                notifyCollection.CollectionChanged += OnModelCollectionChanged;
             }
         }
 
-        private void OnSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnViewModelCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            OnSourceCollectionChanged(e);
+            OnViewModelCollectionChanged(e);
+        }
+
+        private void OnModelCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnModelCollectionChanged(e);
         }
 
         protected virtual TViewModel CreateViewModel(object? model, int index)
@@ -190,15 +206,13 @@ namespace DirectX12GameEngine.Editor
             return modelFactory(viewModel);
         }
 
-        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnViewModelCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            base.OnCollectionChanged(e);
-
-            INotifyCollectionChanged? notifyCollection = source as INotifyCollectionChanged;
+            INotifyCollectionChanged? notifyCollection = modelCollection as INotifyCollectionChanged;
 
             if (notifyCollection != null)
             {
-                notifyCollection.CollectionChanged -= OnSourceCollectionChanged;
+                notifyCollection.CollectionChanged -= OnModelCollectionChanged;
             }
 
             switch (e.Action)
@@ -206,55 +220,57 @@ namespace DirectX12GameEngine.Editor
                 case NotifyCollectionChangedAction.Add:
                     for (int i = 0; i < e.NewItems.Count; i++)
                     {
-                        source.Insert(e.NewStartingIndex + i, CreateModel((TViewModel)e.NewItems[i]));
+                        modelCollection.Insert(e.NewStartingIndex + i, CreateModel((TViewModel)e.NewItems[i]));
                     }
                     break;
                 case NotifyCollectionChangedAction.Move:
-                    if (e.OldItems.Count == 1 && source is ObservableCollection<object> observableCollection)
+                    if (e.OldItems.Count == 1 && modelCollection is ObservableCollection<object> observableCollection)
                     {
                         observableCollection.Move(e.OldStartingIndex, e.NewStartingIndex);
                     }
                     else
                     {
-                        List<object> items = source.Cast<object>().Skip(e.OldStartingIndex).Take(e.OldItems.Count).ToList();
+                        List<object> items = modelCollection.Cast<object>().Skip(e.OldStartingIndex).Take(e.OldItems.Count).ToList();
 
                         for (int i = 0; i < e.OldItems.Count; i++)
                         {
-                            source.RemoveAt(e.OldStartingIndex);
+                            modelCollection.RemoveAt(e.OldStartingIndex);
                         }
 
                         for (int i = 0; i < items.Count; i++)
                         {
-                            source.Insert(e.NewStartingIndex + i, items[i]);
+                            modelCollection.Insert(e.NewStartingIndex + i, items[i]);
                         }
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     for (int i = 0; i < e.OldItems.Count; i++)
                     {
-                        source.RemoveAt(e.OldStartingIndex);
+                        modelCollection.RemoveAt(e.OldStartingIndex);
                     }
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     for (int i = 0; i < e.OldItems.Count; i++)
                     {
-                        source.RemoveAt(e.OldStartingIndex);
+                        modelCollection.RemoveAt(e.OldStartingIndex);
                     }
 
                     goto case NotifyCollectionChangedAction.Add;
                 case NotifyCollectionChangedAction.Reset:
-                    source.Clear();
+                    modelCollection.Clear();
                     break;
             }
 
             if (notifyCollection != null)
             {
-                notifyCollection.CollectionChanged += OnSourceCollectionChanged;
+                notifyCollection.CollectionChanged += OnModelCollectionChanged;
             }
         }
 
-        protected virtual void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
+        protected virtual void OnModelCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
+            CollectionChanged -= OnViewModelCollectionChanged;
+
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -300,6 +316,8 @@ namespace DirectX12GameEngine.Editor
                     Clear();
                     break;
             }
+
+            CollectionChanged += OnViewModelCollectionChanged;
         }
     }
 }

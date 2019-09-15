@@ -1,11 +1,9 @@
-﻿using System;
+﻿using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    public interface IMaterialDescriptor : IComputeNode
+    public interface IMaterialDescriptor : IComputeNode, IIdentifiable
     {
-        Guid MaterialId { get; set; }
-
         MaterialAttributes Attributes { get; set; }
     }
 }

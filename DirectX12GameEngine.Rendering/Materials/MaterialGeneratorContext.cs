@@ -91,7 +91,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             CompiledShader compiledShader = new CompiledShader();
 
-            string fileName = $"Shader_{MaterialDescriptor.MaterialId}";
+            string fileName = $"Shader_{MaterialDescriptor.Id}";
 
             if (!await Content.ExistsAsync(fileName))
             {
@@ -103,7 +103,7 @@ namespace DirectX12GameEngine.Rendering.Materials
                 foreach (var entryPoint in result.EntryPoints)
                 {
                     compiledShader.Shaders[entryPoint.Key] = ShaderCompiler.Compile(GetShaderStage(entryPoint.Key), result.ShaderSource, entryPoint.Value);
-                    shaderAsset.ShaderSources[entryPoint.Key] = $"{entryPoint.Key}_{MaterialDescriptor.MaterialId}.cso";
+                    shaderAsset.ShaderSources[entryPoint.Key] = $"{entryPoint.Key}_{MaterialDescriptor.Id}.cso";
                     await FileIO.WriteBytesAsync(await Content.RootFolder!.CreateFileAsync(shaderAsset.ShaderSources[entryPoint.Key], CreationCollisionOption.ReplaceExisting), compiledShader.Shaders[entryPoint.Key]);
                 }
 

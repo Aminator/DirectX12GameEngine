@@ -27,7 +27,7 @@ namespace DirectX12GameEngine.Assets
 
             if (string.IsNullOrEmpty(Source))
             {
-                descriptor = new MaterialDescriptor { MaterialId = Id, Attributes = Attributes };
+                descriptor = new MaterialDescriptor { Id = Id, Attributes = Attributes };
             }
             else
             {
@@ -38,11 +38,12 @@ namespace DirectX12GameEngine.Assets
                 if (extension == ".glb")
                 {
                     using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(path);
-                    MaterialAttributes materialAttributes = await new GltfModelLoader(device).LoadMaterialAsync(stream, index);
+                    GltfModelLoader modelLoader = await GltfModelLoader.CreateAsync(device, stream);
+                    MaterialAttributes materialAttributes = await modelLoader.GetMaterialAttributesAsync(index);
 
                     // TODO: Combine material attributes.
 
-                    descriptor = new MaterialDescriptor { MaterialId = Id, Attributes = materialAttributes };
+                    descriptor = new MaterialDescriptor { Id = Id, Attributes = materialAttributes };
                 }
                 else
                 {

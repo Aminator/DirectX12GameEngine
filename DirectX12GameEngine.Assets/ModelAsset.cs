@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
+using DirectX12GameEngine.Rendering.Materials;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Assets
@@ -17,6 +18,7 @@ namespace DirectX12GameEngine.Assets
         public async override Task CreateAssetAsync(Model model, IServiceProvider services)
         {
             ContentManager contentManager = services.GetRequiredService<ContentManager>();
+            ShaderContentManager shaderContentManager = services.GetRequiredService<ShaderContentManager>();
             GraphicsDevice device = services.GetRequiredService<GraphicsDevice>();
 
             if (device is null) throw new InvalidOperationException();
@@ -28,19 +30,31 @@ namespace DirectX12GameEngine.Assets
                 model.Materials.Clear();
                 model.Meshes.Clear();
 
-                using (Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source))
-                {
-                    var meshes = await new GltfModelLoader(device).LoadMeshesAsync(stream);
 
-                    foreach (Mesh mesh in meshes)
-                    {
-                        model.Meshes.Add(mesh);
-                    }
+                using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source);
+                GltfModelLoader modelLoader = await GltfModelLoader.CreateAsync(device, stream);
+
+                var meshes = await modelLoader.GetMeshesAsync();
+
+                foreach (Mesh mesh in meshes)
+                {
+                    model.Meshes.Add(mesh);
                 }
 
-                foreach (Material material in Materials)
+                if (Materials.Count > 0)
                 {
-                    model.Materials.Add(material);
+                    foreach (Material material in Materials)
+                    {
+                        model.Materials.Add(material);
+                    }
+                }
+                else
+                {
+                    foreach (MaterialAttributes attributes in await modelLoader.GetMaterialAttributesAsync())
+                    {
+                        Material material = await Material.CreateAsync(device, new MaterialDescriptor { Id = Id, Attributes = attributes }, shaderContentManager);
+                        model.Materials.Add(material);
+                    }
                 }
             }
             else
