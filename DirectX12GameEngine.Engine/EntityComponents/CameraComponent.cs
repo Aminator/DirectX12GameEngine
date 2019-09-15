@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.Serialization;
 
@@ -8,12 +9,15 @@ namespace DirectX12GameEngine.Engine
     public sealed class CameraComponent : EntityComponent
     {
         [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Matrix4x4 ViewMatrix { get; set; } = Matrix4x4.Identity;
 
         [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Matrix4x4 ProjectionMatrix { get; set; } = Matrix4x4.Identity;
 
         [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Matrix4x4 ViewProjectionMatrix { get; set; } = Matrix4x4.Identity;
 
         public float AspectRatio { get; set; } = 16.0f / 9.0f;

@@ -158,7 +158,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             properties = properties.Where(p => !p.IsDefined(typeof(IgnoreDataMemberAttribute)) && !p.IsSpecialName && !(p.GetIndexParameters().Length > 0));
 
-            return properties.Where(p => p.CanRead).Where(p => p.CanWrite || p.GetValue(obj) is ICollection);
+            return properties.Where(p => p.CanRead && p.GetMethod.IsPublic).Where(p => (p.CanWrite && p.SetMethod.IsPublic) || p.GetValue(obj) is ICollection);
         }
 
         public static Type GetRootObjectType(Stream stream)

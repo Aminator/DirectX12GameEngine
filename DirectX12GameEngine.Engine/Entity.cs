@@ -35,6 +35,8 @@ namespace DirectX12GameEngine.Engine
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Guid Id { get => id; set => Set(ref id, value); }
 
         public string Name { get => name; set => Set(ref name, value); }
@@ -44,6 +46,7 @@ namespace DirectX12GameEngine.Engine
         public ObservableCollection<EntityComponent> Components { get; } = new ObservableCollection<EntityComponent>();
 
         [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Entity? Parent
         {
             get => parent;
@@ -58,10 +61,8 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        [IgnoreDataMember]
         public EntityManager? EntityManager { get; internal set; }
 
-        [IgnoreDataMember]
         public TransformComponent Transform { get => transform; private set => Set(ref transform, value); }
 
         public IEnumerator<EntityComponent> GetEnumerator() => Components.GetEnumerator();

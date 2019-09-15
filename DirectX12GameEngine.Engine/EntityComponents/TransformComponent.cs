@@ -17,16 +17,18 @@ namespace DirectX12GameEngine.Engine
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        [IgnoreDataMember]
         public IEnumerable<TransformComponent> Children => this;
 
         [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public TransformComponent? Parent { get => Entity?.Parent?.Transform; set { if (Entity != null) Entity.Parent = value?.Entity; } }
 
         [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Matrix4x4 LocalMatrix { get; set; } = Matrix4x4.Identity;
 
         [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Matrix4x4 WorldMatrix { get; set; } = Matrix4x4.Identity;
 
         public Vector3 Position { get => position; set => Set(ref position, value); }
@@ -36,6 +38,7 @@ namespace DirectX12GameEngine.Engine
         public Vector3 Scale { get => scale; set => Set(ref scale, value); }
 
         [IgnoreDataMember]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Vector3 RotationEuler { get => QuaternionExtensions.ToEuler(Rotation); set { if (Set(ref rotation, QuaternionExtensions.ToQuaternion(value), nameof(Rotation))) NotifyPropertyChanged(); } }
 
         public override string ToString() => $"Position: {Position}, Rotation: {RotationEuler}, Scale: {Scale}";
