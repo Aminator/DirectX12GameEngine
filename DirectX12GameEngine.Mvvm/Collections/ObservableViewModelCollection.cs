@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DirectX12GameEngine.Mvvm.Collections
 {
     public class ObservableViewModelCollection<TViewModel, TModel> : ObservableCollection<TViewModel>
     {
+        private readonly TaskScheduler originalTaskScheduler;
+
         private readonly IList<TModel> modelCollection;
         private readonly Func<TViewModel, TModel> modelFactory;
         private readonly Func<TModel, int, TViewModel> viewModelFactory;
@@ -16,6 +19,8 @@ namespace DirectX12GameEngine.Mvvm.Collections
         public ObservableViewModelCollection(IList<TModel> modelCollection, Func<TViewModel, TModel> modelFactory, Func<TModel, int, TViewModel> viewModelFactory)
             : base(modelCollection.Select((model, i) => viewModelFactory(model, i)))
         {
+            originalTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
             this.modelCollection = modelCollection;
             this.modelFactory = modelFactory;
             this.viewModelFactory = viewModelFactory;
@@ -113,51 +118,56 @@ namespace DirectX12GameEngine.Mvvm.Collections
         {
             CollectionChanged -= OnViewModelCollectionChanged;
 
-            switch (e.Action)
+            Task collectionChangeTask = Task.Factory.StartNew(() =>
             {
-                case NotifyCollectionChangedAction.Add:
-                    for (int i = 0; i < e.NewItems.Count; i++)
-                    {
-                        Insert(e.NewStartingIndex + i, CreateViewModel((TModel)e.NewItems[i], e.NewStartingIndex + i));
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    if (e.OldItems.Count == 1)
-                    {
-                        Move(e.OldStartingIndex, e.NewStartingIndex);
-                    }
-                    else
-                    {
-                        List<TViewModel> items = this.Skip(e.OldStartingIndex).Take(e.OldItems.Count).ToList();
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        for (int i = 0; i < e.NewItems.Count; i++)
+                        {
+                            Insert(e.NewStartingIndex + i, CreateViewModel((TModel)e.NewItems[i], e.NewStartingIndex + i));
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Move:
+                        if (e.OldItems.Count == 1)
+                        {
+                            Move(e.OldStartingIndex, e.NewStartingIndex);
+                        }
+                        else
+                        {
+                            List<TViewModel> items = this.Skip(e.OldStartingIndex).Take(e.OldItems.Count).ToList();
 
+                            for (int i = 0; i < e.OldItems.Count; i++)
+                            {
+                                RemoveAt(e.OldStartingIndex);
+                            }
+
+                            for (int i = 0; i < items.Count; i++)
+                            {
+                                Insert(e.NewStartingIndex + i, items[i]);
+                            }
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        for (int i = 0; i < e.OldItems.Count; i++)
+                        {
+                            RemoveAt(e.OldStartingIndex);
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
                         for (int i = 0; i < e.OldItems.Count; i++)
                         {
                             RemoveAt(e.OldStartingIndex);
                         }
 
-                        for (int i = 0; i < items.Count; i++)
-                        {
-                            Insert(e.NewStartingIndex + i, items[i]);
-                        }
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    for (int i = 0; i < e.OldItems.Count; i++)
-                    {
-                        RemoveAt(e.OldStartingIndex);
-                    }
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    for (int i = 0; i < e.OldItems.Count; i++)
-                    {
-                        RemoveAt(e.OldStartingIndex);
-                    }
+                        goto case NotifyCollectionChangedAction.Add;
+                    case NotifyCollectionChangedAction.Reset:
+                        Clear();
+                        break;
+                }
+            }, default, TaskCreationOptions.None, originalTaskScheduler);
 
-                    goto case NotifyCollectionChangedAction.Add;
-                case NotifyCollectionChangedAction.Reset:
-                    Clear();
-                    break;
-            }
+            collectionChangeTask.Wait();
 
             CollectionChanged += OnViewModelCollectionChanged;
         }

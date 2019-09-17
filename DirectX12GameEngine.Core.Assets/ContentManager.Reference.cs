@@ -6,14 +6,19 @@ namespace DirectX12GameEngine.Core.Assets
 {
     public partial class ContentManager
     {
-        private Reference? FindDeserializedObject(string path, Type type)
+        private async Task<Reference?> FindDeserializedReferenceAsync(string path, Type type)
         {
             if (loadedAssetPaths.TryGetValue(path, out Reference? reference))
             {
-                while (reference != null && !type.IsAssignableFrom(reference.Object.GetType()))
+                while (reference != null && !type.IsInstanceOfType(reference.Object))
                 {
                     reference = reference.Next;
                 }
+            }
+
+            if (reference != null)
+            {
+                await reference.DeserializationTask;
             }
 
             return reference;
@@ -143,7 +148,7 @@ namespace DirectX12GameEngine.Core.Assets
 
             public int PrivateReferenceCount { get; set; }
 
-            public Task? DeserializationTask { get; set; }
+            public Task DeserializationTask { get; set; } = Task.CompletedTask;
 
             public HashSet<Reference> References { get; set; } = new HashSet<Reference>();
 

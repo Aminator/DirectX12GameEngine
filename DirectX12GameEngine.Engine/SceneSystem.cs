@@ -8,12 +8,12 @@ namespace DirectX12GameEngine.Engine
 {
     public sealed class SceneSystem : GameSystemBase
     {
-        private readonly ContentManager content;
+        private readonly IContentManager contentManager;
 
         public SceneSystem(IServiceProvider services)
         {
             SceneInstance = new SceneInstance(services);
-            content = services.GetRequiredService<ContentManager>();
+            contentManager = services.GetRequiredService<IContentManager>();
         }
 
         public CameraComponent? CurrentCamera { get; set; }
@@ -26,7 +26,7 @@ namespace DirectX12GameEngine.Engine
         {
             if (InitialScenePath != null)
             {
-                SceneInstance.RootEntity = await content.LoadAsync<Entity>(InitialScenePath);
+                SceneInstance.RootEntity = await contentManager.LoadAsync<Entity>(InitialScenePath);
             }
         }
 

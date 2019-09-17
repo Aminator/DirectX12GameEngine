@@ -12,7 +12,7 @@ namespace DirectX12GameEngine.Assets
     {
         public async override Task CreateAssetAsync(Texture texture, IServiceProvider services)
         {
-            ContentManager contentManager = services.GetRequiredService<ContentManager>();
+            IContentManager contentManager = services.GetRequiredService<IContentManager>();
             GraphicsDevice device = services.GetRequiredService<GraphicsDevice>();
 
             if (device is null) throw new InvalidOperationException();

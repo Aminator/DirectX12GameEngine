@@ -16,7 +16,7 @@ namespace DirectX12GameEngine.Engine
 #nullable disable
         public IServiceProvider Services { get; private set; }
 
-        public ContentManager Content { get; private set; }
+        public IContentManager Content { get; private set; }
 
         public GameBase Game { get; private set; }
 
@@ -33,7 +33,7 @@ namespace DirectX12GameEngine.Engine
 
             GraphicsDevice = Services.GetService<GraphicsDevice>();
 
-            Content = Services.GetRequiredService<ContentManager>();
+            Content = Services.GetRequiredService<IContentManager>();
             Game = Services.GetRequiredService<GameBase>();
             Input = Services.GetRequiredService<InputManager>();
             SceneSystem = Services.GetRequiredService<SceneSystem>();

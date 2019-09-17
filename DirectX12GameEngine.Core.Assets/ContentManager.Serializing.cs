@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using System.Xml;
 using Portable.Xaml;
 
 namespace DirectX12GameEngine.Core.Assets
@@ -12,7 +13,8 @@ namespace DirectX12GameEngine.Core.Assets
             {
                 InternalXamlSchemaContext xamlSchemaContext = new InternalXamlSchemaContext(this);
 
-                XamlXmlWriter writer = new XamlXmlWriter(stream, xamlSchemaContext);
+                XmlWriter xmlWriter = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true });
+                XamlXmlWriter writer = new XamlXmlWriter(xmlWriter, xamlSchemaContext);
                 XamlObjectReader reader = new XamlObjectReader(obj, xamlSchemaContext);
 
                 XamlServices.Transform(reader, writer);

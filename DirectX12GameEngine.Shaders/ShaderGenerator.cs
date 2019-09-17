@@ -19,10 +19,13 @@ namespace DirectX12GameEngine.Shaders
     {
         private const string DelegateEntryPointName = "Main";
 
-        private static readonly Dictionary<string, CSharpDecompiler> decompilers = new Dictionary<string, CSharpDecompiler>();
-        private static readonly Dictionary<Type, SyntaxTree> decompiledTypes = new Dictionary<Type, SyntaxTree>();
+        private static readonly Regex ClosureTypeDeclarationRegex = new Regex(@"(?<=private sealed class )<\w*>[\w_]+", RegexOptions.Compiled);
+        private static readonly Regex LambdaMethodDeclarationRegex = new Regex(@"(private|internal) void <\w+>[\w_|]+(?=\()", RegexOptions.Compiled);
 
-        private static Compilation compilation;
+        private static readonly Dictionary<string, CSharpDecompiler> decompilers = new Dictionary<string, CSharpDecompiler>();
+        private static readonly Dictionary<Type, Compilation> decompiledTypes = new Dictionary<Type, Compilation>();
+
+        private static Compilation globalCompilation;
 
         private readonly object shader;
         private readonly Delegate? action;
@@ -53,7 +56,7 @@ namespace DirectX12GameEngine.Shaders
 
             var metadataReferences = assemblyPaths.Select(p => MetadataReference.CreateFromFile(p)).ToArray();
 
-            compilation = CSharpCompilation.Create("ShaderAssembly").WithReferences(metadataReferences);
+            globalCompilation = CSharpCompilation.Create("ShaderAssembly").WithReferences(metadataReferences);
 
             AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
         }
@@ -63,7 +66,7 @@ namespace DirectX12GameEngine.Shaders
             if (!e.LoadedAssembly.IsDynamic)
             {
                 PortableExecutableReference metadataReference = MetadataReference.CreateFromFile(e.LoadedAssembly.Location);
-                compilation = compilation.AddReferences(metadataReference);
+                globalCompilation = globalCompilation.AddReferences(metadataReference);
             }
         }
 
@@ -506,8 +509,8 @@ namespace DirectX12GameEngine.Shaders
 
         private void CollectMethod(MethodInfo methodInfo)
         {
-            SyntaxTree syntaxTree = GetSyntaxTree(methodInfo.DeclaringType);
-            MethodDeclarationSyntax methodNode = GetMethodDeclaration(methodInfo, syntaxTree);
+            Compilation compilation = GetCompilation(methodInfo.DeclaringType);
+            MethodDeclarationSyntax methodNode = GetMethodDeclaration(methodInfo, compilation.SyntaxTrees.Single());
 
             ShaderSyntaxCollector syntaxCollector = new ShaderSyntaxCollector(compilation, this);
             syntaxCollector.Visit(methodNode.Body);
@@ -570,10 +573,10 @@ namespace DirectX12GameEngine.Shaders
 
             if (methodInfo.GetMethodBody() != null)
             {
-                SyntaxTree syntaxTree = GetSyntaxTree(methodInfo.DeclaringType);
-                MethodDeclarationSyntax methodNode = GetMethodDeclaration(methodInfo, syntaxTree);
+                Compilation compilation = GetCompilation(methodInfo.DeclaringType);
+                MethodDeclarationSyntax methodNode = GetMethodDeclaration(methodInfo, compilation.SyntaxTrees.Single());
 
-                string methodBody = GetMethodBody(methodNode, depth);
+                string methodBody = GetMethodBody(methodNode, compilation, depth);
 
                 writer.WriteLine();
                 writer.WriteLine(methodBody);
@@ -650,7 +653,7 @@ namespace DirectX12GameEngine.Shaders
             writer.Write(")");
         }
 
-        private string GetMethodBody(MethodDeclarationSyntax methodNode, int depth = 0)
+        private string GetMethodBody(MethodDeclarationSyntax methodNode, Compilation compilation, int depth = 0)
         {
             ShaderSyntaxRewriter syntaxRewriter = new ShaderSyntaxRewriter(compilation, this, true, depth);
             SyntaxNode newBody = syntaxRewriter.Visit(methodNode.Body);
@@ -678,15 +681,11 @@ namespace DirectX12GameEngine.Shaders
             return shaderSource.Replace(Environment.NewLine + IndentedTextWriter.DefaultTabString, Environment.NewLine + indent).TrimEnd(' ');
         }
 
-        private static readonly Regex ClosureTypeDeclarationRegex = new Regex(@"(?<=private sealed class )<\w*>[\w_]+", RegexOptions.Compiled);
-
-        private static readonly Regex LambdaMethodDeclarationRegex = new Regex(@"(private|internal) void <\w+>[\w_|]+(?=\()", RegexOptions.Compiled);
-
-        private static SyntaxTree GetSyntaxTree(Type type)
+        private static Compilation GetCompilation(Type type)
         {
             lock (decompiledTypes)
             {
-                if (!decompiledTypes.TryGetValue(type, out SyntaxTree syntaxTree))
+                if (!decompiledTypes.TryGetValue(type, out Compilation compilation))
                 {
                     EntityHandle handle = MetadataTokenHelpers.TryAsEntityHandle(type.MetadataToken) ?? throw new InvalidOperationException();
                     string assemblyPath = type.Assembly.Location;
@@ -702,13 +701,13 @@ namespace DirectX12GameEngine.Shaders
                     sourceCode = ClosureTypeDeclarationRegex.Replace(sourceCode, "Shader");
                     sourceCode = LambdaMethodDeclarationRegex.Replace(sourceCode, $"internal void {DelegateEntryPointName}");
 
-                    syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, CSharpParseOptions.Default.WithLanguageVersion(Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp8));
-                    compilation = compilation.AddSyntaxTrees(syntaxTree);
+                    SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, CSharpParseOptions.Default.WithLanguageVersion(Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp8));
+                    compilation = globalCompilation.AddSyntaxTrees(syntaxTree);
 
-                    decompiledTypes.Add(type, syntaxTree);
+                    decompiledTypes.Add(type, compilation);
                 }
 
-                return syntaxTree;
+                return compilation;
             }
         }
 

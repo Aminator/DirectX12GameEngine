@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Editor.ViewModels;
-using Portable.Xaml;
 
 #nullable enable
 

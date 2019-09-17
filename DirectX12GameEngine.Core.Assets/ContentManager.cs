@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -7,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Nito.AsyncEx;
 using Portable.Xaml;
 using Windows.Storage;
@@ -16,6 +16,8 @@ namespace DirectX12GameEngine.Core.Assets
 {
     public partial class ContentManager : IContentManager
     {
+        private readonly AsyncLock asyncLock = new AsyncLock();
+
         private readonly Dictionary<string, Reference> loadedAssetPaths = new Dictionary<string, Reference>();
         private readonly Dictionary<object, Reference> loadedAssetReferences = new Dictionary<object, Reference>();
 
@@ -24,9 +26,8 @@ namespace DirectX12GameEngine.Core.Assets
             AddTypeConverters(typeof(Vector3Converter), typeof(Vector4Converter), typeof(QuaternionConverter), typeof(Matrix4x4Converter));
         }
 
-        public ContentManager(IServiceProvider services)
+        public ContentManager(IServiceProvider services) : this(services, null!)
         {
-            Services = services;
         }
 
         public ContentManager(IServiceProvider services, IStorageFolder rootFolder)
@@ -39,9 +40,9 @@ namespace DirectX12GameEngine.Core.Assets
 
         public string FileExtension { get; set; } = ".xaml";
 
-        public IStorageFolder? RootFolder { get; set; }
+        public IStorageFolder RootFolder { get; set; }
 
-        public string? RootPath => RootFolder?.Path;
+        public string RootPath => RootFolder.Path;
 
         public async Task<bool> ExistsAsync(string path)
         {
@@ -50,9 +51,9 @@ namespace DirectX12GameEngine.Core.Assets
             return await folder.TryGetItemAsync(path + FileExtension) != null;
         }
 
-        public T Get<T>(string path) where T : class ?
+        public async Task<T> GetAsync<T>(string path) where T : class?
         {
-            object? asset = Get(typeof(T), path);
+            object? asset = await GetAsync(typeof(T), path);
 
             if (asset != null)
             {
@@ -62,9 +63,11 @@ namespace DirectX12GameEngine.Core.Assets
             return null!;
         }
 
-        public object? Get(Type type, string path)
+        public async Task<object?> GetAsync(Type type, string path)
         {
-            return FindDeserializedObject(path, type)?.Object;
+            Reference? reference = await FindDeserializedReferenceAsync(path, type);
+
+            return reference?.Object ?? null;
         }
 
         public bool IsLoaded(string path)

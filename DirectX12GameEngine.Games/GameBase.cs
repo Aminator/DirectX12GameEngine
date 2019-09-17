@@ -30,10 +30,10 @@ namespace DirectX12GameEngine.Games
                 Window.TickRequested += (s, e) => Tick();
             }
 
-            Content = Services.GetRequiredService<ContentManager>();
+            Content = Services.GetRequiredService<IContentManager>();
         }
 
-        public ContentManager Content { get; }
+        public IContentManager Content { get; }
 
         public IList<GameSystemBase> GameSystems { get; } = new List<GameSystemBase>();
 
@@ -181,7 +181,7 @@ namespace DirectX12GameEngine.Games
             Context.ConfigureServices(services);
 
             services.AddSingleton<GameBase>(this);
-            services.AddSingleton<ContentManager>();
+            services.AddSingleton<IContentManager, ContentManager>();
         }
 
         private void CheckEndRun()

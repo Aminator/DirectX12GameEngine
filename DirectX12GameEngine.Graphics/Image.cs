@@ -33,7 +33,7 @@ namespace DirectX12GameEngine.Graphics
 
         public static async Task<Image> LoadAsync(Stream stream)
         {
-            BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream.AsRandomAccessStream()).AsTask().ConfigureAwait(false);
+            BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream.AsRandomAccessStream());
 
             PixelDataProvider pixelDataProvider = await decoder.GetPixelDataAsync(
                 decoder.BitmapPixelFormat, decoder.BitmapAlphaMode, new BitmapTransform(),

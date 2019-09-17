@@ -39,7 +39,7 @@ namespace DirectX12GameEngine.Engine
 
         [IgnoreDataMember]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Vector3 RotationEuler { get => QuaternionExtensions.ToEuler(Rotation); set { if (Set(ref rotation, QuaternionExtensions.ToQuaternion(value), nameof(Rotation))) NotifyPropertyChanged(); } }
+        public Vector3 RotationEuler { get => Rotation.ToEuler(); set { if (Set(ref rotation, value.ToQuaternion(), nameof(Rotation))) NotifyPropertyChanged(); } }
 
         public override string ToString() => $"Position: {Position}, Rotation: {RotationEuler}, Scale: {Scale}";
 

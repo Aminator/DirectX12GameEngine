@@ -17,7 +17,7 @@ namespace DirectX12GameEngine.Assets
 
         public async override Task CreateAssetAsync(Model model, IServiceProvider services)
         {
-            ContentManager contentManager = services.GetRequiredService<ContentManager>();
+            IContentManager contentManager = services.GetRequiredService<IContentManager>();
             ShaderContentManager shaderContentManager = services.GetRequiredService<ShaderContentManager>();
             GraphicsDevice device = services.GetRequiredService<GraphicsDevice>();
 

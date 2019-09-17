@@ -5,7 +5,7 @@ namespace DirectX12GameEngine.Core
 {
     public static class QuaternionExtensions
     {
-        public static Vector3 ToEuler(in Quaternion rotation)
+        public static Vector3 ToEuler(this in Quaternion rotation)
         {
             Vector3 rotationEuler;
 
@@ -36,7 +36,7 @@ namespace DirectX12GameEngine.Core
             return rotationEuler;
         }
 
-        public static Quaternion ToQuaternion(in Vector3 value)
+        public static Quaternion ToQuaternion(this in Vector3 value)
         {
             Quaternion rotation;
 

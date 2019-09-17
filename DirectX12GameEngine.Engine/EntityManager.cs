@@ -218,7 +218,8 @@ namespace DirectX12GameEngine.Engine
 
         private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            Entity entity = (Entity)sender;
+            EntityComponentCollection entityComponentCollection = (EntityComponentCollection)sender;
+            Entity entity = entityComponentCollection.Entity;
 
             switch (e.Action)
             {

@@ -27,6 +27,8 @@ namespace DirectX12GameEngine.Engine
         {
             this.name = name;
 
+            Components = new EntityComponentCollection(this);
+
             Children.CollectionChanged += Children_CollectionChanged;
             Components.CollectionChanged += Components_CollectionChanged;
 
@@ -43,7 +45,7 @@ namespace DirectX12GameEngine.Engine
 
         public ObservableCollection<Entity> Children { get; } = new ObservableCollection<Entity>();
 
-        public ObservableCollection<EntityComponent> Components { get; } = new ObservableCollection<EntityComponent>();
+        public EntityComponentCollection Components { get; }
 
         [IgnoreDataMember]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -133,9 +135,8 @@ namespace DirectX12GameEngine.Engine
                 throw new InvalidOperationException("An entity component cannot be set on more than one entity.");
             }
 
-            if (component is TransformComponent transformComponent && Transform != transformComponent)
+            if (component is TransformComponent transformComponent)
             {
-                Components.Remove(Transform);
                 Transform = transformComponent;
             }
 

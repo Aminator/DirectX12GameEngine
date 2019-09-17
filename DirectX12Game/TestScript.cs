@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using DirectX12GameEngine.Engine;
-using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Materials;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,7 +51,7 @@ namespace DirectX12Game
         private async void OnKeyDown(VirtualKey key)
         {
             Entity? cameraEntity = SceneSystem.CurrentCamera?.Entity;
-            Entity scene = SceneSystem.SceneInstance?.RootEntity ?? throw new InvalidOperationException();
+            Entity scene = await Content.GetAsync<Entity>("Assets\\Scenes\\Scene1");
 
             switch (key)
             {
@@ -90,7 +89,7 @@ namespace DirectX12Game
                     Entity newCliffhouse = new Entity("Cliffhouse")
                     {
                         new TransformComponent { Position = new Vector3(-200.0f, 120.0f, 500.0f) },
-                        new ModelComponent(await Services.GetRequiredService<ContentManager>().LoadAsync<Model>("Assets\\Models\\Cliffhouse_Model"))
+                        new ModelComponent(await Services.GetRequiredService<IContentManager>().LoadAsync<Model>("Assets\\Models\\Cliffhouse_Model"))
                     };
 
                     SceneSystem.SceneInstance?.RootEntity?.Children.Add(newCliffhouse);

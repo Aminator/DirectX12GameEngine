@@ -26,7 +26,7 @@ namespace DirectX12GameEngine.Core.Assets
 
                     Type type = destinationTypeProvider.GetDestinationType();
 
-                    return AsyncHelper.RunSync(() => xamlSchemaContext.ContentManager.DeserializeAsync(path, type, xamlSchemaContext.ParentReference, null));
+                    return xamlSchemaContext.ContentManager.DeserializeAsync(path, type, xamlSchemaContext.ParentReference, null).Result;
                 }
             }
 
