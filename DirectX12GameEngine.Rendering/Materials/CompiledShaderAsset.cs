@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.IO;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
 using Microsoft.Extensions.DependencyInjection;
-using Windows.Storage;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
@@ -14,11 +13,16 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public override async Task CreateAssetAsync(CompiledShader obj, IServiceProvider services)
         {
-            ShaderContentManager shaderContentManager = services.GetRequiredService<ShaderContentManager>();
+            IContentManager contentManager = services.GetRequiredService<IContentManager>();
 
             foreach (var shaderSource in ShaderSources)
             {
-                obj.Shaders[shaderSource.Key] = (await FileIO.ReadBufferAsync(await shaderContentManager.RootFolder!.GetFileAsync(shaderSource.Value))).ToArray();
+                using Stream stream = await contentManager.FileProvider.OpenStreamAsync(shaderSource.Value, FileMode.Open, FileAccess.Read);
+                using MemoryStream memoryStream = new MemoryStream();
+
+                await stream.CopyToAsync(memoryStream);
+
+                obj.Shaders[shaderSource.Key] = memoryStream.ToArray();
             }
         }
     }

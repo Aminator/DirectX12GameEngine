@@ -9,7 +9,7 @@ namespace DirectX12GameEngine.Core.Assets
     {
         internal async Task SerializeAsync(string path, object obj)
         {
-            using (Stream stream = await RootFolder.OpenStreamForWriteAsync(path + FileExtension, Windows.Storage.CreationCollisionOption.ReplaceExisting))
+            using (Stream stream = await FileProvider.OpenStreamAsync(path + FileExtension, FileMode.Create, FileAccess.ReadWrite))
             {
                 InternalXamlSchemaContext xamlSchemaContext = new InternalXamlSchemaContext(this);
 

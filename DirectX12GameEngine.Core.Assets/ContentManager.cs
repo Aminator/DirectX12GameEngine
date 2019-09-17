@@ -26,29 +26,21 @@ namespace DirectX12GameEngine.Core.Assets
             AddTypeConverters(typeof(Vector3Converter), typeof(Vector4Converter), typeof(QuaternionConverter), typeof(Matrix4x4Converter));
         }
 
-        public ContentManager(IServiceProvider services) : this(services, null!)
-        {
-        }
-
-        public ContentManager(IServiceProvider services, IStorageFolder rootFolder)
+        public ContentManager(IServiceProvider services, IFileProvider fileProvider)
         {
             Services = services;
-            RootFolder = rootFolder;
+            FileProvider = fileProvider;
         }
 
         public IServiceProvider Services { get; }
 
+        public IFileProvider FileProvider { get; }
+
         public string FileExtension { get; set; } = ".xaml";
 
-        public IStorageFolder RootFolder { get; set; }
-
-        public string RootPath => RootFolder.Path;
-
-        public async Task<bool> ExistsAsync(string path)
+        public Task<bool> ExistsAsync(string path)
         {
-            if (RootFolder is null || !(RootFolder is IStorageFolder2 folder)) throw new InvalidOperationException("The root folder cannot be null.");
-
-            return await folder.TryGetItemAsync(path + FileExtension) != null;
+            return FileProvider.ExistsAsync(path + FileExtension);
         }
 
         public async Task<T> GetAsync<T>(string path) where T : class?

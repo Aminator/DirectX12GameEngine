@@ -20,7 +20,6 @@ namespace DirectX12GameEngine.Engine
             Input = Services.GetRequiredService<InputManager>();
             SceneSystem = Services.GetRequiredService<SceneSystem>();
             Script = Services.GetRequiredService<ScriptSystem>();
-            ShaderContent = Services.GetRequiredService<ShaderContentManager>();
 
             GameSystems.Add(Input);
             GameSystems.Add(SceneSystem);
@@ -34,8 +33,6 @@ namespace DirectX12GameEngine.Engine
         public SceneSystem SceneSystem { get; }
 
         public ScriptSystem Script { get; }
-
-        public ShaderContentManager ShaderContent { get; }
 
         public override void Dispose()
         {
@@ -94,7 +91,6 @@ namespace DirectX12GameEngine.Engine
             services.AddSingleton<InputManager>();
             services.AddSingleton<SceneSystem>();
             services.AddSingleton<ScriptSystem>();
-            services.AddSingleton<ShaderContentManager>();
         }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Games
 {
-    public class GameContextWithGraphics : GameContext
+    public class GameContextWithGraphics : GameContextWithFileProvider
     {
         public GraphicsDevice GraphicsDevice { get; } = new GraphicsDevice();
 
@@ -17,7 +17,7 @@ namespace DirectX12GameEngine.Games
         }
     }
 
-    public class GameContextWithGraphics<TControl> : GameContext<TControl> where TControl : class
+    public class GameContextWithGraphics<TControl> : GameContextWithFileProvider<TControl> where TControl : class
     {
         public GameContextWithGraphics(TControl control) : base(control)
         {

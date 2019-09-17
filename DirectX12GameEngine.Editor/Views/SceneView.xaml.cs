@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Editor.ViewModels;
 using DirectX12GameEngine.Games;
 using Windows.UI.Xaml.Controls;
@@ -22,8 +23,8 @@ namespace DirectX12GameEngine.Editor.Views
 
             ((StandardUICommand)Resources["OpenCommand"]).KeyboardAccelerators.Clear();
 
-            EditorGame game = new EditorGame(new XamlGameContext(SwapChainPanel), rootFolder.Model);
-            //EditorGame game = new EditorGame(new GameContextWithGraphics(), rootFolder.Model);
+            EditorGame game = new EditorGame(new XamlGameContext(SwapChainPanel) { FileProvider = new FileSystemProvider(rootFolder.Model) });
+            //EditorGame game = new EditorGame(new GameContextWithGraphics() { FileProvider = new FileSystemProvider(rootFolder.Model) });
             game.Run();
 
             ViewModel = new SceneViewModel(game);

@@ -14,7 +14,7 @@ namespace DirectX12GameEngine.Rendering
 
         public IList<MaterialPass> Passes { get; } = new List<MaterialPass>();
 
-        public static Task<Material> CreateAsync(GraphicsDevice device, MaterialDescriptor descriptor, ShaderContentManager contentManager)
+        public static Task<Material> CreateAsync(GraphicsDevice device, MaterialDescriptor descriptor, IContentManager contentManager)
         {
             Material material = new Material { Descriptor = descriptor };
 

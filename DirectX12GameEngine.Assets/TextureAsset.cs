@@ -19,7 +19,7 @@ namespace DirectX12GameEngine.Assets
 
             string extension = Path.GetExtension(Source);
 
-            using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source);
+            using Stream stream = await contentManager.FileProvider.OpenStreamAsync(Source, FileMode.Open, FileAccess.Read);
             using Image image = await Image.LoadAsync(stream);
 
             texture.Dispose();

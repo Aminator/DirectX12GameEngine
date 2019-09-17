@@ -6,7 +6,8 @@ using DirectX12GameEngine.Shaders;
 using Vortice.Direct3D12;
 using Vortice.DXGI;
 using Vortice.Dxc;
-using Windows.Storage;
+using DirectX12GameEngine.Core.Assets;
+using System.IO;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
@@ -14,7 +15,7 @@ namespace DirectX12GameEngine.Rendering.Materials
     {
         private readonly Stack<IMaterialDescriptor> materialDescriptorStack = new Stack<IMaterialDescriptor>();
 
-        public MaterialGeneratorContext(GraphicsDevice device, Material material, ShaderContentManager contentManager)
+        public MaterialGeneratorContext(GraphicsDevice device, Material material, IContentManager contentManager)
         {
             GraphicsDevice = device;
             Material = material;
@@ -25,7 +26,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public Material Material { get; }
 
-        public ShaderContentManager Content { get; }
+        public IContentManager Content { get; }
 
         public IList<GraphicsBuffer> ConstantBufferViews { get; } = new List<GraphicsBuffer>();
 
@@ -91,9 +92,11 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             CompiledShader compiledShader = new CompiledShader();
 
-            string fileName = $"Shader_{MaterialDescriptor.Id}";
+            const string ShaderCachePath = "ShaderCache";
 
-            if (!await Content.ExistsAsync(fileName))
+            string filePath = Path.Combine(ShaderCachePath, $"Shader_{MaterialDescriptor.Id}");
+
+            if (!await Content.ExistsAsync(filePath))
             {
                 ShaderGenerator shaderGenerator = new ShaderGenerator(MaterialDescriptor.Attributes);
                 ShaderGeneratorResult result = shaderGenerator.GenerateShader();
@@ -103,15 +106,17 @@ namespace DirectX12GameEngine.Rendering.Materials
                 foreach (var entryPoint in result.EntryPoints)
                 {
                     compiledShader.Shaders[entryPoint.Key] = ShaderCompiler.Compile(GetShaderStage(entryPoint.Key), result.ShaderSource, entryPoint.Value);
-                    shaderAsset.ShaderSources[entryPoint.Key] = $"{entryPoint.Key}_{MaterialDescriptor.Id}.cso";
-                    await FileIO.WriteBytesAsync(await Content.RootFolder!.CreateFileAsync(shaderAsset.ShaderSources[entryPoint.Key], CreationCollisionOption.ReplaceExisting), compiledShader.Shaders[entryPoint.Key]);
+                    shaderAsset.ShaderSources[entryPoint.Key] = Path.Combine(ShaderCachePath, $"{entryPoint.Key}_{MaterialDescriptor.Id}.cso");
+
+                    using Stream stream = await Content.FileProvider.OpenStreamAsync(shaderAsset.ShaderSources[entryPoint.Key], FileMode.Create, FileAccess.ReadWrite);
+                    await stream.WriteAsync(compiledShader.Shaders[entryPoint.Key], 0, compiledShader.Shaders[entryPoint.Key].Length);
                 }
 
-                await Content.SaveAsync(fileName, shaderAsset);
+                await Content.SaveAsync(filePath, shaderAsset);
             }
             else
             {
-                compiledShader = await Content.LoadAsync<CompiledShader>(fileName);
+                compiledShader = await Content.LoadAsync<CompiledShader>(filePath);
             }
 
             ID3D12RootSignature rootSignature = CreateRootSignature();

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 using DirectX12Game;
+using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Games;
+using Windows.Storage;
 
 namespace DirectX12WinFormsApp
 {
@@ -15,9 +18,11 @@ namespace DirectX12WinFormsApp
             Load += MyForm_Load;
         }
 
-        private void MyForm_Load(object? sender, EventArgs e)
+        private async void MyForm_Load(object? sender, EventArgs e)
         {
-            MyGame game = new MyGame(new WinFormsGameContext(this));
+            StorageFolder rootFolder = await StorageFolder.GetFolderFromPathAsync(Directory.GetCurrentDirectory());
+
+            MyGame game = new MyGame(new WinFormsGameContext(this) { FileProvider = new FileSystemProvider(rootFolder) });
             game.Run();
         }
     }

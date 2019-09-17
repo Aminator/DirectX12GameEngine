@@ -61,7 +61,7 @@ namespace DirectX12GameEngine.Core.Assets
                 throw new FileNotFoundException();
             }
 
-            using Stream stream = await RootFolder.OpenStreamForReadAsync(path + FileExtension);
+            using Stream stream = await FileProvider.OpenStreamAsync(path + FileExtension, FileMode.Open, FileAccess.Read);
             Type rootObjectType = GetRootObjectType(stream);
 
             object rootObjectInstance = referenceToReload != null && referenceToReload.Object.GetType().IsAssignableFrom(rootObjectType)

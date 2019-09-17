@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Windows.Storage;
 
 namespace DirectX12GameEngine.Core.Assets
 {
     public interface IContentManager
     {
-        IStorageFolder RootFolder { get; set; }
+        public IFileProvider FileProvider { get; }
 
         Task<bool> ExistsAsync(string path);
 

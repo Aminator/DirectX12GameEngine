@@ -18,7 +18,6 @@ namespace DirectX12GameEngine.Assets
         public async override Task CreateAssetAsync(Material material, IServiceProvider services)
         {
             IContentManager contentManager = services.GetRequiredService<IContentManager>();
-            ShaderContentManager shaderContentManager = services.GetRequiredService<ShaderContentManager>();
             GraphicsDevice device = services.GetRequiredService<GraphicsDevice>();
 
             if (device is null) throw new InvalidOperationException();
@@ -37,7 +36,7 @@ namespace DirectX12GameEngine.Assets
 
                 if (extension == ".glb")
                 {
-                    using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(path);
+                    using Stream stream = await contentManager.FileProvider.OpenStreamAsync(path, FileMode.Open, FileAccess.Read);
                     GltfModelLoader modelLoader = await GltfModelLoader.CreateAsync(device, stream);
                     MaterialAttributes materialAttributes = await modelLoader.GetMaterialAttributesAsync(index);
 
@@ -55,7 +54,7 @@ namespace DirectX12GameEngine.Assets
 
             material.Descriptor = descriptor;
 
-            MaterialGeneratorContext context = new MaterialGeneratorContext(device, material, shaderContentManager);
+            MaterialGeneratorContext context = new MaterialGeneratorContext(device, material, contentManager);
             await MaterialGenerator.GenerateAsync(descriptor, context);
         }
 

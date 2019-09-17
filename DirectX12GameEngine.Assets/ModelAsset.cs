@@ -18,7 +18,6 @@ namespace DirectX12GameEngine.Assets
         public async override Task CreateAssetAsync(Model model, IServiceProvider services)
         {
             IContentManager contentManager = services.GetRequiredService<IContentManager>();
-            ShaderContentManager shaderContentManager = services.GetRequiredService<ShaderContentManager>();
             GraphicsDevice device = services.GetRequiredService<GraphicsDevice>();
 
             if (device is null) throw new InvalidOperationException();
@@ -30,8 +29,7 @@ namespace DirectX12GameEngine.Assets
                 model.Materials.Clear();
                 model.Meshes.Clear();
 
-
-                using Stream stream = await contentManager.RootFolder.OpenStreamForReadAsync(Source);
+                using Stream stream = await contentManager.FileProvider.OpenStreamAsync(Source, FileMode.Open, FileAccess.Read);
                 GltfModelLoader modelLoader = await GltfModelLoader.CreateAsync(device, stream);
 
                 var meshes = await modelLoader.GetMeshesAsync();
@@ -52,7 +50,7 @@ namespace DirectX12GameEngine.Assets
                 {
                     foreach (MaterialAttributes attributes in await modelLoader.GetMaterialAttributesAsync())
                     {
-                        Material material = await Material.CreateAsync(device, new MaterialDescriptor { Id = Id, Attributes = attributes }, shaderContentManager);
+                        Material material = await Material.CreateAsync(device, new MaterialDescriptor { Id = Id, Attributes = attributes }, contentManager);
                         model.Materials.Add(material);
                     }
                 }

@@ -82,7 +82,7 @@ namespace DirectX12ComputeShaderSample
 
             ShaderGeneratorResult result = shaderGenerator.GenerateShader();
 
-            // Copmile shader
+            // Compile shader
 
             byte[] shaderBytecode = ShaderCompiler.Compile(DxcShaderStage.ComputeShader, result.ShaderSource, result.EntryPoints["compute"]);
 
