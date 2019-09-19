@@ -31,7 +31,7 @@ namespace DirectX12Game
         {
             if (Input.Keyboard != null)
             {
-                Input.Keyboard.KeyDown += Keyboard_KeyDown;
+                Input.Keyboard.KeyDown += OnKeyDown;
             }
         }
 
@@ -39,21 +39,16 @@ namespace DirectX12Game
         {
             if (Input.Keyboard != null)
             {
-                Input.Keyboard.KeyDown -= Keyboard_KeyDown;
+                Input.Keyboard.KeyDown -= OnKeyDown;
             }
         }
 
-        private void Keyboard_KeyDown(object? sender, KeyEventArgs e)
-        {
-            OnKeyDown(e.Key);
-        }
-
-        private async void OnKeyDown(VirtualKey key)
+        private async void OnKeyDown(object? sender, KeyEventArgs e)
         {
             Entity? cameraEntity = SceneSystem.CurrentCamera?.Entity;
             Entity scene = await Content.GetAsync<Entity>("Assets\\Scenes\\Scene1");
 
-            switch (key)
+            switch (e.Key)
             {
                 case VirtualKey.Number0 when GraphicsDevice?.Presenter != null:
                     GraphicsDevice.Presenter.PresentationParameters.SyncInterval = 0;

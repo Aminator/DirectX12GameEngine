@@ -17,7 +17,7 @@ namespace DirectX12GameEngine.Engine
 
         private Guid id = Guid.NewGuid();
         private string name;
-        private TransformComponent transform = new TransformComponent();
+        private TransformComponent? transform;
 
         public Entity() : this("Entity")
         {
@@ -32,7 +32,7 @@ namespace DirectX12GameEngine.Engine
             Children.CollectionChanged += Children_CollectionChanged;
             Components.CollectionChanged += Components_CollectionChanged;
 
-            Components.Add(Transform);
+            Components.Add(new TransformComponent());
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -65,7 +65,7 @@ namespace DirectX12GameEngine.Engine
 
         public EntityManager? EntityManager { get; internal set; }
 
-        public TransformComponent Transform { get => transform; private set => Set(ref transform, value); }
+        public TransformComponent Transform { get => transform!; }
 
         public IEnumerator<EntityComponent> GetEnumerator() => Components.GetEnumerator();
 
@@ -106,6 +106,11 @@ namespace DirectX12GameEngine.Engine
             return false;
         }
 
+        public bool Remove(EntityComponent component)
+        {
+            return Components.Remove(component);
+        }
+
         public override string ToString() => $"Entity {Name}";
 
         private void AddInternal(Entity entity)
@@ -137,7 +142,7 @@ namespace DirectX12GameEngine.Engine
 
             if (component is TransformComponent transformComponent)
             {
-                Transform = transformComponent;
+                transform = transformComponent;
             }
 
             component.Entity = this;
@@ -148,6 +153,11 @@ namespace DirectX12GameEngine.Engine
             if (component.Entity != this)
             {
                 throw new InvalidOperationException("This entity component is not set on this entity.");
+            }
+
+            if (component is TransformComponent)
+            {
+                transform = Get<TransformComponent>();
             }
 
             component.Entity = null;

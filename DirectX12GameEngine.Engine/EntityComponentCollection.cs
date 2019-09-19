@@ -10,5 +10,20 @@ namespace DirectX12GameEngine.Engine
         }
 
         public Entity Entity { get; }
+
+        protected override void InsertItem(int index, EntityComponent item)
+        {
+            TransformComponent? oldTransformComponent = Entity.Transform;
+
+            base.InsertItem(index, item);
+
+            if (item is TransformComponent)
+            {
+                if (oldTransformComponent != null)
+                {
+                    Remove(oldTransformComponent);
+                }
+            }
+        }
     }
 }

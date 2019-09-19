@@ -115,15 +115,15 @@ namespace DirectX12GameEngine.Input
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (IInputSource? source in e.NewItems)
+                    foreach (IInputSource source in e.NewItems.Cast<IInputSource>())
                     {
-                        OnInputSourceAdded(source!);
+                        OnInputSourceAdded(source);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (IInputSource? source in e.OldItems)
+                    foreach (IInputSource source in e.OldItems.Cast<IInputSource>())
                     {
-                        OnInputSourceRemoved(source!);
+                        OnInputSourceRemoved(source);
                     }
                     break;
             }

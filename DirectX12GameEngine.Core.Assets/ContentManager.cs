@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -10,14 +9,11 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 using Portable.Xaml;
-using Windows.Storage;
 
 namespace DirectX12GameEngine.Core.Assets
 {
     public partial class ContentManager : IContentManager
     {
-        private readonly AsyncLock asyncLock = new AsyncLock();
-
         private readonly Dictionary<string, Reference> loadedAssetPaths = new Dictionary<string, Reference>();
         private readonly Dictionary<object, Reference> loadedAssetReferences = new Dictionary<object, Reference>();
 

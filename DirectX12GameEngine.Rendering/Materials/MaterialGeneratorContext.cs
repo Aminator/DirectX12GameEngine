@@ -92,9 +92,9 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             CompiledShader compiledShader = new CompiledShader();
 
-            const string ShaderCachePath = "ShaderCache";
+            string shaderCachePath = Path.Combine("Log", "ShaderCache");
 
-            string filePath = Path.Combine(ShaderCachePath, $"Shader_{MaterialDescriptor.Id}");
+            string filePath = Path.Combine(shaderCachePath, $"Shader_{MaterialDescriptor.Id}");
 
             if (!await Content.ExistsAsync(filePath))
             {
@@ -106,7 +106,7 @@ namespace DirectX12GameEngine.Rendering.Materials
                 foreach (var entryPoint in result.EntryPoints)
                 {
                     compiledShader.Shaders[entryPoint.Key] = ShaderCompiler.Compile(GetShaderStage(entryPoint.Key), result.ShaderSource, entryPoint.Value);
-                    shaderAsset.ShaderSources[entryPoint.Key] = Path.Combine(ShaderCachePath, $"{entryPoint.Key}_{MaterialDescriptor.Id}.cso");
+                    shaderAsset.ShaderSources[entryPoint.Key] = Path.Combine(shaderCachePath, $"{entryPoint.Key}_{MaterialDescriptor.Id}.cso");
 
                     using Stream stream = await Content.FileProvider.OpenStreamAsync(shaderAsset.ShaderSources[entryPoint.Key], FileMode.Create, FileAccess.ReadWrite);
                     await stream.WriteAsync(compiledShader.Shaders[entryPoint.Key], 0, compiledShader.Shaders[entryPoint.Key].Length);

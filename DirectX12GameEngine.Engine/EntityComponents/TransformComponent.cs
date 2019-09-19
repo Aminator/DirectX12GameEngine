@@ -49,7 +49,10 @@ namespace DirectX12GameEngine.Engine
 
             foreach (Entity entity in Entity.Children)
             {
-                yield return entity.Transform;
+                if (entity.Transform != null)
+                {
+                    yield return entity.Transform;
+                }
             }
         }
 

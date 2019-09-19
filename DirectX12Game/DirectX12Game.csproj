@@ -13,7 +13,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
-    <Content Include="ShaderCache\**">
+    <Content Include="Log\ShaderCache\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
@@ -22,6 +22,39 @@
   <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine.Assets\DirectX12GameEngine.Assets.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Log\ShaderCache\Shader_0251d700-42a2-4cfd-af43-c69b14538620.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Log\ShaderCache\Shader_13404da5-5566-4710-9f65-69b35563d655.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Log\ShaderCache\Shader_bcff8c18-1596-4f13-8e0d-9212bc7c0dbb.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Log\ShaderCache\Shader_c91a471f-36a9-40f7-beab-777dbf1a85ed.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Log\ShaderCache\Shader_e38f005c-e50a-4c88-89bd-dc31f2f90292.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="ShaderCache\Shader_0251d700-42a2-4cfd-af43-c69b14538620.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="ShaderCache\Shader_13404da5-5566-4710-9f65-69b35563d655.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="ShaderCache\Shader_bcff8c18-1596-4f13-8e0d-9212bc7c0dbb.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="ShaderCache\Shader_c91a471f-36a9-40f7-beab-777dbf1a85ed.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="ShaderCache\Shader_e38f005c-e50a-4c88-89bd-dc31f2f90292.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
 
 </Project>

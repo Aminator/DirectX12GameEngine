@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -85,6 +87,13 @@ namespace DirectX12GameEngine.Core.Assets
 
             reference = referenceToReload ?? new Reference(path, result, parentReference is null);
 
+            if (referenceToReload != null)
+            {
+                object instance = referenceToReload.Object;
+
+                ClearCollections(instance);
+            }
+
             reference.DeserializationTask = Task.Run(async () => await DeserializeAsync(stream, rootObjectInstance, reference));
 
             if (referenceToReload is null)
@@ -97,6 +106,35 @@ namespace DirectX12GameEngine.Core.Assets
             await reference.DeserializationTask;
 
             return reference.Object;
+        }
+
+        private static void ClearCollections(object instance)
+        {
+            foreach (PropertyInfo propertyInfo in instance.GetType().GetProperties())
+            {
+                var visibilityAttribute = propertyInfo.GetCustomAttribute<DesignerSerializationVisibilityAttribute>();
+                bool isVisible = visibilityAttribute is null || visibilityAttribute.Visibility != DesignerSerializationVisibility.Hidden;
+
+                if (propertyInfo.CanRead && isVisible)
+                {
+                    object value = propertyInfo.GetValue(instance);
+
+                    if (value is IList list)
+                    {
+                        while (list.Count > 0)
+                        {
+                            list.RemoveAt(list.Count - 1);
+                        }
+                    }
+                    else if (value is IDictionary dictionary)
+                    {
+                        foreach (object key in dictionary.Keys)
+                        {
+                            dictionary.Remove(key);
+                        }
+                    }
+                }
+            }
         }
 
         private async Task DeserializeAsync(Stream stream, object rootObjectInstance, Reference reference)

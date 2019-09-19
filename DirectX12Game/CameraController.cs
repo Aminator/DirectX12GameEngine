@@ -8,8 +8,9 @@ namespace DirectX12Game
     public class CameraController : SyncScript
     {
         private readonly float scrollSpeed = 0.05f;
+        private CameraComponent? camera;
 
-        public CameraComponent? Camera { get; set; }
+        public CameraComponent? Camera { get => camera; set { camera = value; if (SceneSystem != null) SceneSystem.CurrentCamera = camera; } }
 
         public override void Start()
         {
@@ -17,18 +18,32 @@ namespace DirectX12Game
 
             if (Input.Keyboard != null)
             {
-                Input.Keyboard.KeyDown += (s, e) => OnKeyDown(e.Key);
+                Input.Keyboard.KeyDown += OnKeyDown;
             }
 
             if (Input.Pointer != null)
             {
-                Input.Pointer.PointerPressed += (s, e) => OnPointerPressed(e.CurrentPoint);
-                Input.Pointer.PointerWheelChanged += (s, e) => OnPointerWheelChanged(e.CurrentPoint);
+                Input.Pointer.PointerPressed += OnPointerPressed;
+                Input.Pointer.PointerWheelChanged += OnPointerWheelChanged;
             }
         }
 
         public override void Update()
         {
+        }
+
+        public override void Cancel()
+        {
+            if (Input.Keyboard != null)
+            {
+                Input.Keyboard.KeyDown -= OnKeyDown;
+            }
+
+            if (Input.Pointer != null)
+            {
+                Input.Pointer.PointerPressed -= OnPointerPressed;
+                Input.Pointer.PointerWheelChanged -= OnPointerWheelChanged;
+            }
         }
 
         private void MoveCamera(float value)
@@ -41,29 +56,29 @@ namespace DirectX12Game
             }
         }
 
-        private void OnPointerPressed(PointerPoint pointerPoint)
+        private void OnPointerPressed(object? sender, PointerEventArgs e)
         {
-            if (pointerPoint.Properties.IsLeftButtonPressed)
+            if (e.CurrentPoint.Properties.IsLeftButtonPressed)
             {
                 if (Input.Pointer != null)
                 {
                     Input.Pointer.IsPointerPositionLocked = true;
                 }
             }
-            else if (pointerPoint.Properties.IsRightButtonPressed)
+            else if (e.CurrentPoint.Properties.IsRightButtonPressed)
             {
                 MoveCamera(10.0f);
             }
         }
 
-        private void OnPointerWheelChanged(PointerPoint pointerPoint)
+        private void OnPointerWheelChanged(object? sender, PointerEventArgs e)
         {
-            MoveCamera(-pointerPoint.Properties.MouseWheelDelta * scrollSpeed);
+            MoveCamera(-e.CurrentPoint.Properties.MouseWheelDelta * scrollSpeed);
         }
 
-        private void OnKeyDown(VirtualKey key)
+        private void OnKeyDown(object? sender, KeyEventArgs e)
         {
-            switch (key)
+            switch (e.Key)
             {
                 case VirtualKey.Left:
                     if (Camera?.Entity != null) Camera.Entity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, (float)(10 * Math.PI / 180.0f));

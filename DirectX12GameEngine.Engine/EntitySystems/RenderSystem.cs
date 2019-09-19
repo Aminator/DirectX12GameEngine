@@ -106,7 +106,7 @@ namespace DirectX12GameEngine.Engine
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.Constant.New(graphicsDevice, modelComponents.Count() * 16 * sizeof(float));
+                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.Constant.New(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>());
                         }
 
                         CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];
