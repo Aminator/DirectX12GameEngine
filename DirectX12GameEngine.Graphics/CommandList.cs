@@ -258,24 +258,18 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.SetComputeRoot32BitConstant(rootParameterIndex, srcData, destOffsetIn32BitValues);
         }
 
-        public void SetComputeConstantBuffers(int rootParameterIndex, params GraphicsBuffer[] buffers)
+        public void SetComputeRootConstantBufferView(int rootParameterIndex, GraphicsBuffer buffer)
         {
             if (srvDescriptorHeap is null) throw new InvalidOperationException();
 
-            foreach (GraphicsBuffer buffer in buffers)
-            {
-                SetComputeRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, buffer.CreateConstantBufferView(), 1);
-            }
+            SetComputeRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, buffer.NativeConstantBufferView, 1);
         }
 
-        public void SetComputeSamplers(int rootParameterIndex, params SamplerState[] samplers)
+        public void SetComputeRootSampler(int rootParameterIndex, SamplerState sampler)
         {
             if (samplerDescriptorHeap is null) throw new InvalidOperationException();
 
-            foreach (SamplerState sampler in samplers)
-            {
-                SetComputeRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.NativeCpuDescriptorHandle, 1);
-            }
+            SetComputeRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.NativeCpuDescriptorHandle, 1);
         }
 
         public void SetComputeRootDescriptorTable(int rootParameterIndex, DescriptorSet descriptorSet)
@@ -284,7 +278,7 @@ namespace DirectX12GameEngine.Graphics
 
             if (descriptorAllocator is null) throw new InvalidOperationException();
 
-            SetComputeRootDescriptorTable(rootParameterIndex, descriptorAllocator, descriptorSet.StartCpuDescriptorHandle, descriptorSet.TotalDescriptorCount);
+            SetComputeRootDescriptorTable(rootParameterIndex, descriptorAllocator, descriptorSet.StartCpuDescriptorHandle, descriptorSet.DescriptorCapacity);
         }
 
         private void SetComputeRootDescriptorTable(int rootParameterIndex, DescriptorAllocator descriptorAllocator, CpuDescriptorHandle baseDescriptor, int descriptorCount)
@@ -299,24 +293,18 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.SetGraphicsRoot32BitConstant(rootParameterIndex, srcData, destOffsetIn32BitValues);
         }
 
-        public void SetGraphicsConstantBuffers(int rootParameterIndex, params GraphicsBuffer[] buffers)
+        public void SetGraphicsRootConstantBufferView(int rootParameterIndex, GraphicsBuffer buffer)
         {
             if (srvDescriptorHeap is null) throw new InvalidOperationException();
 
-            foreach (GraphicsBuffer buffer in buffers)
-            {
-                SetGraphicsRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, buffer.NativeConstantBufferView, 1);
-            }
+            SetGraphicsRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, buffer.NativeConstantBufferView, 1);
         }
 
-        public void SetGraphicsSamplers(int rootParameterIndex, params SamplerState[] samplers)
+        public void SetGraphicsRootSampler(int rootParameterIndex, SamplerState sampler)
         {
             if (samplerDescriptorHeap is null) throw new InvalidOperationException();
 
-            foreach (SamplerState sampler in samplers)
-            {
-                SetGraphicsRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.NativeCpuDescriptorHandle, 1);
-            }
+            SetGraphicsRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.NativeCpuDescriptorHandle, 1);
         }
 
         public void SetGraphicsRootDescriptorTable(int rootParameterIndex, DescriptorSet descriptorSet)
@@ -325,23 +313,22 @@ namespace DirectX12GameEngine.Graphics
 
             if (descriptorAllocator is null) throw new InvalidOperationException();
 
-            SetGraphicsRootDescriptorTable(rootParameterIndex, descriptorAllocator, descriptorSet.StartCpuDescriptorHandle, descriptorSet.TotalDescriptorCount);
+            SetGraphicsRootDescriptorTable(rootParameterIndex, descriptorAllocator, descriptorSet.StartCpuDescriptorHandle, descriptorSet.DescriptorCapacity);
         }
 
         private void SetGraphicsRootDescriptorTable(int rootParameterIndex, DescriptorAllocator descriptorAllocator, CpuDescriptorHandle baseDescriptor, int descriptorCount)
         {
-            GpuDescriptorHandle gpuDescriptorHandle = CopyDescriptors(descriptorAllocator, baseDescriptor, descriptorCount);
+            GpuDescriptorHandle gpuDescriptor = CopyDescriptors(descriptorAllocator, baseDescriptor, descriptorCount);
 
-            currentCommandList.NativeCommandList.SetGraphicsRootDescriptorTable(rootParameterIndex, gpuDescriptorHandle);
+            currentCommandList.NativeCommandList.SetGraphicsRootDescriptorTable(rootParameterIndex, gpuDescriptor);
         }
 
         private GpuDescriptorHandle CopyDescriptors(DescriptorAllocator descriptorAllocator, CpuDescriptorHandle baseDescriptor, int descriptorCount)
         {
-            GpuDescriptorHandle gpuDescriptorHandle = descriptorAllocator.CurrentGpuDescriptorHandle;
             CpuDescriptorHandle destinationDescriptor = descriptorAllocator.Allocate(descriptorCount);
             GraphicsDevice.NativeDevice.CopyDescriptorsSimple(descriptorCount, destinationDescriptor, baseDescriptor, descriptorAllocator.DescriptorHeap.Description.Type);
 
-            return gpuDescriptorHandle;
+            return descriptorAllocator.GetGpuDescriptorHandle(destinationDescriptor);
         }
 
         public void SetIndexBuffer(GraphicsBuffer? indexBuffer)

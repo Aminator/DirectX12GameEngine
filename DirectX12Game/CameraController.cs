@@ -8,9 +8,8 @@ namespace DirectX12Game
     public class CameraController : SyncScript
     {
         private readonly float scrollSpeed = 0.05f;
-        private CameraComponent? camera;
 
-        public CameraComponent? Camera { get => camera; set { camera = value; if (SceneSystem != null) SceneSystem.CurrentCamera = camera; } }
+        public CameraComponent? Camera { get; set; }
 
         public override void Start()
         {
@@ -30,6 +29,10 @@ namespace DirectX12Game
 
         public override void Update()
         {
+            if (SceneSystem.CurrentCamera != Camera)
+            {
+                SceneSystem.CurrentCamera = Camera;
+            }
         }
 
         public override void Cancel()

@@ -22,7 +22,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public void Visit(MaterialGeneratorContext context)
         {
-            valueBuffer ??= GraphicsBuffer.Constant.New(context.GraphicsDevice, Value).DisposeBy(context.GraphicsDevice);
+            valueBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Value, BufferFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
             context.ConstantBufferViews.Add(valueBuffer);
         }
 

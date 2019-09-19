@@ -13,10 +13,10 @@ namespace DirectX12GameEngine.Graphics
 
             GraphicsDevice = device;
             DescriptorHeapType = descriptorHeapType;
-            TotalDescriptorCount = descriptorCount;
+            DescriptorCapacity = descriptorCount;
 
             DescriptorAllocator = GetDescriptorAllocator();
-            StartCpuDescriptorHandle = DescriptorAllocator.Allocate(TotalDescriptorCount);
+            StartCpuDescriptorHandle = DescriptorAllocator.Allocate(DescriptorCapacity);
         }
 
         public GraphicsDevice GraphicsDevice { get; }
@@ -25,7 +25,7 @@ namespace DirectX12GameEngine.Graphics
 
         public int CurrentDescriptorCount { get; private set; }
 
-        public int TotalDescriptorCount { get; private set; }
+        public int DescriptorCapacity { get; private set; }
 
         internal DescriptorAllocator DescriptorAllocator { get; }
 
@@ -38,7 +38,7 @@ namespace DirectX12GameEngine.Graphics
 
         public void AddConstantBufferViews(IEnumerable<GraphicsBuffer> buffers)
         {
-            AddDescriptors(buffers.Select(r => r.CreateConstantBufferView()).ToArray());
+            AddDescriptors(buffers.Select(r => r.NativeConstantBufferView).ToArray());
         }
 
         public void AddShaderResourceViews(params GraphicsResource[] resources)
@@ -71,20 +71,20 @@ namespace DirectX12GameEngine.Graphics
             AddDescriptors(samplers.Select(r => r.NativeCpuDescriptorHandle).ToArray());
         }
 
-        private void AddDescriptor(CpuDescriptorHandle descriptorHandle)
+        private void AddDescriptor(CpuDescriptorHandle descriptor)
         {
-            if (CurrentDescriptorCount + 1 > TotalDescriptorCount) throw new InvalidOperationException();
+            if (CurrentDescriptorCount + 1 > DescriptorCapacity) throw new InvalidOperationException();
 
             CpuDescriptorHandle destinationDescriptor = StartCpuDescriptorHandle + CurrentDescriptorCount * DescriptorAllocator.DescriptorHandleIncrementSize;
 
-            GraphicsDevice.NativeDevice.CopyDescriptorsSimple(1, destinationDescriptor, descriptorHandle, (Vortice.Direct3D12.DescriptorHeapType)DescriptorHeapType);
+            GraphicsDevice.NativeDevice.CopyDescriptorsSimple(1, destinationDescriptor, descriptor, (Vortice.Direct3D12.DescriptorHeapType)DescriptorHeapType);
 
             CurrentDescriptorCount++;
         }
 
         private void AddDescriptors(CpuDescriptorHandle[] descriptors)
         {
-            if (CurrentDescriptorCount + descriptors.Length > TotalDescriptorCount) throw new InvalidOperationException();
+            if (CurrentDescriptorCount + descriptors.Length > DescriptorCapacity) throw new InvalidOperationException();
 
             int[] sourceDescriptorRangeStarts = new int[descriptors.Length];
 

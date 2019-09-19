@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public void Visit(MaterialGeneratorContext context)
         {
-            colorBuffer ??= GraphicsBuffer.Constant.New(context.GraphicsDevice, Color).DisposeBy(context.GraphicsDevice);
+            colorBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Color, BufferFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
             context.ConstantBufferViews.Add(colorBuffer);
         }
 

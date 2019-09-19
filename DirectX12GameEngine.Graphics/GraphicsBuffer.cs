@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using DirectX12GameEngine.Core;
 using Vortice.Direct3D12;
 
@@ -114,7 +115,8 @@ namespace DirectX12GameEngine.Graphics
             else
             {
                 Map(0);
-                MemoryHelper.Copy(MappedResource + offsetInBytes, data);
+                IntPtr source = MappedResource + offsetInBytes;
+                source.CopyTo(data);
                 Unmap(0);
             }
         }
@@ -142,7 +144,7 @@ namespace DirectX12GameEngine.Graphics
             else
             {
                 Map(0);
-                MemoryHelper.Copy(data, MappedResource + offsetInBytes);
+                data.CopyTo(MappedResource + offsetInBytes);
                 Unmap(0);
             }
         }

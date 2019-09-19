@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
 
-using GraphicsBuffer = DirectX12GameEngine.Graphics.GraphicsBuffer;
 using CommandList = DirectX12GameEngine.Graphics.CommandList;
 
 namespace DirectX12GameEngine.Engine
@@ -33,9 +31,9 @@ namespace DirectX12GameEngine.Engine
 
             if (graphicsDevice is null) throw new InvalidOperationException();
 
-            DirectionalLightGroupBuffer = GraphicsBuffer.Constant.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights);
-            GlobalBuffer = GraphicsBuffer.Constant.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>());
-            ViewProjectionTransformBuffer = GraphicsBuffer.Constant.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>());
+            DirectionalLightGroupBuffer = GraphicsBuffer.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, BufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
+            GlobalBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), BufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
+            ViewProjectionTransformBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>(), BufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
             DefaultSampler = new SamplerState(graphicsDevice, Vortice.Direct3D12.SamplerDescription.Default);
         }
 
@@ -106,7 +104,7 @@ namespace DirectX12GameEngine.Engine
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.Constant.New(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>());
+                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.New(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>(), BufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
                         }
 
                         CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];
@@ -257,12 +255,12 @@ namespace DirectX12GameEngine.Engine
                 int rootParameterIndex = 0;
 
                 commandList.SetGraphicsRoot32BitConstant(rootParameterIndex++, renderTargetCount, 0);
-                commandList.SetGraphicsConstantBuffers(rootParameterIndex++, GlobalBuffer);
-                commandList.SetGraphicsConstantBuffers(rootParameterIndex++, ViewProjectionTransformBuffer);
-                commandList.SetGraphicsConstantBuffers(rootParameterIndex++, worldMatrixBuffers[i]);
+                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, GlobalBuffer);
+                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, ViewProjectionTransformBuffer);
+                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, worldMatrixBuffers[i]);
 
-                commandList.SetGraphicsConstantBuffers(rootParameterIndex++, DirectionalLightGroupBuffer);
-                commandList.SetGraphicsSamplers(rootParameterIndex++, DefaultSampler);
+                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, DirectionalLightGroupBuffer);
+                commandList.SetGraphicsRootSampler(rootParameterIndex++, DefaultSampler);
 
                 if (materialPass.ShaderResourceViewDescriptorSet != null)
                 {
