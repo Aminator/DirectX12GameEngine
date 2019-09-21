@@ -8,14 +8,23 @@ namespace DirectX12GameEngine.Rendering.Materials
     public class MaterialShader : RasterizationShaderBase
     {
 #nullable disable
-        [ConstantBufferView] public readonly uint RenderTargetCount;
-        [ConstantBufferView] public readonly GlobalBuffer Globals;
-        [ConstantBufferView] public readonly ViewProjectionTransform[] ViewProjectionTransforms;
-        [ConstantBufferView] public readonly Matrix4x4[] WorldMatrices;
+        [ConstantBufferView]
+        public readonly uint RenderTargetCount;
 
-        [ShaderMember] public readonly DirectionalLightGroup DirectionalLights;
+        [ConstantBufferView]
+        public readonly GlobalBuffer Globals;
 
-        [ShaderMember] public readonly SamplerResource Sampler;
+        [ConstantBufferView]
+        public readonly ViewProjectionTransform[] ViewProjectionTransforms;
+
+        [ConstantBufferView]
+        public readonly Matrix4x4[] WorldMatrices;
+
+        [ShaderMember]
+        public readonly DirectionalLightGroup DirectionalLights;
+
+        [ShaderMember]
+        public readonly SamplerResource Sampler;
 #nullable enable
 
         [ShaderMember]

@@ -5,7 +5,6 @@ using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    [ShaderContract]
     [ConstantBufferView]
     public class ComputeColor : IComputeColor
     {
@@ -23,13 +22,10 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public void Visit(MaterialGeneratorContext context)
         {
-            colorBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Color, BufferFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
+            colorBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Color, GraphicsBufferFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
             context.ConstantBufferViews.Add(colorBuffer);
         }
 
-        #region Shader
-
-        [ShaderMember]
         public Vector4 Color
         {
             get => color;
@@ -45,7 +41,5 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             return Color;
         }
-
-        #endregion
     }
 }

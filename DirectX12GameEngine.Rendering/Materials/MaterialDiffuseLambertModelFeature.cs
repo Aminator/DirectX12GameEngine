@@ -12,8 +12,6 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
         }
 
-        #region Shader
-
         [ShaderMember]
         public Vector3 ComputeDirectLightContribution()
         {
@@ -28,7 +26,5 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             return default;
         }
-
-        #endregion
     }
 }

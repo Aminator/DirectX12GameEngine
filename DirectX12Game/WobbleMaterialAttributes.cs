@@ -15,9 +15,7 @@ namespace DirectX12Game
             WobbleStrength.Visit(context);
         }
 
-        #region Shader
-
-        [ShaderMember] public IComputeScalar WobbleStrength { get; set; } = new ComputeScalar(2.0f);
+        public IComputeScalar WobbleStrength { get; set; } = new ComputeScalar(2.0f);
 
         [ShaderMember]
         [Shader("vertex")]
@@ -30,7 +28,5 @@ namespace DirectX12Game
 
             return base.VSMain(input);
         }
-
-        #endregion
     }
 }

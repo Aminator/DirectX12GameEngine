@@ -45,14 +45,14 @@ namespace DirectX12GameEngine.Graphics
             return new Texture(device).InitializeFrom(description);
         }
 
-        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, short mipCount = 1, short arraySize = 1, int multisampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
-            return New(device, TextureDescription.New2D(width, height, format, textureFlags, mipCount, arraySize, multisampleCount, heapType));
+            return New(device, TextureDescription.New2D(width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType));
         }
 
-        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, short mipCount = 1, short arraySize = 1, int sampleCount = 1, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            Texture texture = New2D(device, width, height, format, textureFlags, mipCount, arraySize, sampleCount, heapType);
+            Texture texture = New2D(device, width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType);
             texture.SetData(data);
 
             return texture;
@@ -130,80 +130,6 @@ namespace DirectX12GameEngine.Graphics
             return this;
         }
 
-        internal static ResourceFlags GetBindFlagsFromTextureFlags(TextureFlags flags)
-        {
-            ResourceFlags result = ResourceFlags.None;
-
-            if (flags.HasFlag(TextureFlags.RenderTarget))
-            {
-                result |= ResourceFlags.AllowRenderTarget;
-            }
-
-            if (flags.HasFlag(TextureFlags.UnorderedAccess))
-            {
-                result |= ResourceFlags.AllowUnorderedAccess;
-            }
-
-            if (flags.HasFlag(TextureFlags.DepthStencil))
-            {
-                result |= ResourceFlags.AllowDepthStencil;
-
-                if (!flags.HasFlag(TextureFlags.ShaderResource))
-                {
-                    result |= ResourceFlags.DenyShaderResource;
-                }
-            }
-
-            return result;
-        }
-
-        private static TextureDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType, bool isShaderResource = false)
-        {
-            TextureDescription textureDescription = new TextureDescription
-            {
-                Dimension = TextureDimension.Texture2D,
-                Width = (int)description.Width,
-                Height = description.Height,
-                SampleCount = description.SampleDescription.Count,
-                Format = (PixelFormat)description.Format,
-                MipLevels = description.MipLevels,
-                HeapType = heapType,
-                DepthOrArraySize = description.DepthOrArraySize,
-                Flags = TextureFlags.None
-            };
-
-            if (description.Flags.HasFlag(ResourceFlags.AllowRenderTarget))
-            {
-                textureDescription.Flags |= TextureFlags.RenderTarget;
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.AllowUnorderedAccess))
-            {
-                textureDescription.Flags |= TextureFlags.UnorderedAccess;
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.AllowDepthStencil))
-            {
-                textureDescription.Flags |= TextureFlags.DepthStencil;
-            }
-
-            if (!description.Flags.HasFlag(ResourceFlags.DenyShaderResource) && isShaderResource)
-            {
-                textureDescription.Flags |= TextureFlags.ShaderResource;
-            }
-
-            return textureDescription;
-        }
-
-        private static ResourceDescription ConvertToNativeDescription(TextureDescription description)
-        {
-            return description.Dimension switch
-            {
-                TextureDimension.Texture2D => ResourceDescription.Texture2D((Format)description.Format, description.Width, description.Height, description.DepthOrArraySize, description.MipLevels, description.SampleCount, 0, GetBindFlagsFromTextureFlags(description.Flags)),
-                _ => throw new NotSupportedException()
-            };
-        }
-
         internal CpuDescriptorHandle CreateDepthStencilView()
         {
             CpuDescriptorHandle cpuHandle = GraphicsDevice.DepthStencilViewAllocator.Allocate(1);
@@ -234,6 +160,81 @@ namespace DirectX12GameEngine.Graphics
             GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, null, cpuHandle);
 
             return cpuHandle;
+        }
+
+        private static TextureDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType, bool isShaderResource = false)
+        {
+            TextureFlags flags = TextureFlags.None;
+
+            if (description.Flags.HasFlag(ResourceFlags.AllowRenderTarget))
+            {
+                flags |= TextureFlags.RenderTarget;
+            }
+
+            if (description.Flags.HasFlag(ResourceFlags.AllowUnorderedAccess))
+            {
+                flags |= TextureFlags.UnorderedAccess;
+            }
+
+            if (description.Flags.HasFlag(ResourceFlags.AllowDepthStencil))
+            {
+                flags |= TextureFlags.DepthStencil;
+            }
+
+            if (!description.Flags.HasFlag(ResourceFlags.DenyShaderResource) && isShaderResource)
+            {
+                flags |= TextureFlags.ShaderResource;
+            }
+
+            return new TextureDescription
+            {
+                Dimension = (TextureDimension)description.Dimension,
+                Width = (int)description.Width,
+                Height = description.Height,
+                DepthOrArraySize = description.DepthOrArraySize,
+                MipLevels = description.MipLevels,
+                Format = (PixelFormat)description.Format,
+                Flags = flags,
+                SampleDescription = new SampleDescription(description.SampleDescription.Count, description.SampleDescription.Quality),
+                HeapType = heapType,
+            };
+        }
+
+        private static ResourceDescription ConvertToNativeDescription(TextureDescription description)
+        {
+            ResourceFlags flags = ResourceFlags.None;
+
+            if (description.Flags.HasFlag(TextureFlags.RenderTarget))
+            {
+                flags |= ResourceFlags.AllowRenderTarget;
+            }
+
+            if (description.Flags.HasFlag(TextureFlags.UnorderedAccess))
+            {
+                flags |= ResourceFlags.AllowUnorderedAccess;
+            }
+
+            if (description.Flags.HasFlag(TextureFlags.DepthStencil))
+            {
+                flags |= ResourceFlags.AllowDepthStencil;
+
+                if (!description.Flags.HasFlag(TextureFlags.ShaderResource))
+                {
+                    flags |= ResourceFlags.DenyShaderResource;
+                }
+            }
+
+            return new ResourceDescription
+            {
+                Dimension = (ResourceDimension)description.Dimension,
+                Width = description.Width,
+                Height = description.Height,
+                DepthOrArraySize = description.DepthOrArraySize,
+                MipLevels = description.MipLevels,
+                Format = (Format)description.Format,
+                Flags = flags,
+                SampleDescription = new Vortice.DXGI.SampleDescription(description.SampleDescription.Count, description.SampleDescription.Quality)
+            };
         }
     }
 }

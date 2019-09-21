@@ -7,8 +7,9 @@ namespace DirectX12GameEngine.Rendering.Lights
     public class DirectionalLightGroup : DirectLightGroup
     {
 #nullable disable
-        [ShaderMember] public DirectionalLightData[] Lights;
-#nullable enable
+        [ShaderMember]
+        public DirectionalLightData[] Lights;
+#nullable restore
 
         /// <summary>
         /// Compute the light color/direction for the specified index within this group.

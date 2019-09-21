@@ -5,19 +5,19 @@ namespace DirectX12GameEngine.Rendering.Lights
 {
     public class LightStream
     {
-        [ShaderMember] public static Vector3 LightPositionWS;
-        [ShaderMember] public static Vector3 LightDirectionWS;
-        [ShaderMember] public static Vector3 LightColor;
+        public static Vector3 LightPositionWS;
+        public static Vector3 LightDirectionWS;
+        public static Vector3 LightColor;
 
-        [ShaderMember] public static Vector3 LightColorNDotL;
-        [ShaderMember] public static Vector3 LightSpecularColorNDotL;
+        public static Vector3 LightColorNDotL;
+        public static Vector3 LightSpecularColorNDotL;
 
-        [ShaderMember] public static Vector3 EnvironmentLightDiffuseColor;
-        [ShaderMember] public static Vector3 EnvironmentLightSpecularColor;
+        public static Vector3 EnvironmentLightDiffuseColor;
+        public static Vector3 EnvironmentLightSpecularColor;
 
-        [ShaderMember] public static float NDotL;
+        public static float NDotL;
 
-        [ShaderMember] public static float LightDirectAmbientOcclusion;
+        public static float LightDirectAmbientOcclusion;
 
         [ShaderMember]
         public static void Reset()

@@ -16,13 +16,11 @@ namespace DirectX12Game
             Speed.Visit(context);
         }
 
-        #region Shader
+        public IComputeScalar Amplitude { get; set; } = new ComputeScalar(1.0f);
 
-        [ShaderMember] public IComputeScalar Amplitude { get; set; } = new ComputeScalar(1.0f);
+        public IComputeScalar Frequency { get; set; } = new ComputeScalar(10.0f);
 
-        [ShaderMember] public IComputeScalar Frequency { get; set; } = new ComputeScalar(10.0f);
-
-        [ShaderMember] public IComputeScalar Speed { get; set; } = new ComputeScalar(0.05f);
+        public IComputeScalar Speed { get; set; } = new ComputeScalar(0.05f);
 
         [ShaderMember]
         public Vector4 Compute()
@@ -33,7 +31,5 @@ namespace DirectX12Game
 
             return new Vector4(value, value, value, 1.0f);
         }
-
-        #endregion
     }
 }

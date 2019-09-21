@@ -10,14 +10,10 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
         {
         }
 
-        #region Shader
-
         [ShaderMember]
         public float Compute()
         {
             return BrdfMicrofacet.VisibilitySmithSchlickGgx(MaterialPixelStream.AlphaRoughness, LightStream.NDotL, MaterialPixelStream.NDotV);
         }
-
-        #endregion
     }
 }

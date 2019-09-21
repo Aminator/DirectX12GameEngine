@@ -1,5 +1,4 @@
 ﻿using SharpGen.Runtime;
-using Vortice.DirectX;
 using Vortice.DXGI;
 using Windows.UI.Core;
 
@@ -21,7 +20,7 @@ namespace DirectX12GameEngine.Graphics
             {
                 Width = presentationParameters.BackBufferWidth,
                 Height = presentationParameters.BackBufferHeight,
-                SampleDescription = new SampleDescription(1, 0),
+                SampleDescription = new Vortice.DXGI.SampleDescription(1, 0),
                 Stereo = presentationParameters.Stereo,
                 Usage = Usage.RenderTargetOutput,
                 BufferCount = BufferCount,

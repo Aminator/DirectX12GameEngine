@@ -22,9 +22,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public static Vector4 DefaultNormalColor { get; } = new Vector4(0.5f, 0.5f, 1.0f, 1.0f);
 
-        #region Shader
-
-        [ShaderMember] public IComputeColor NormalMap { get; set; } = new ComputeColor(DefaultNormalColor);
+        public IComputeColor NormalMap { get; set; } = new ComputeColor(DefaultNormalColor);
 
         [ShaderMember]
         public void Compute()
@@ -34,7 +32,5 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             MaterialPixelStream.MaterialNormal = new Vector3(normal.X, normal.Y, normal.Z);
         }
-
-        #endregion
     }
 }

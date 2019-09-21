@@ -1,5 +1,4 @@
-﻿using DirectX12GameEngine.Core;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -13,7 +12,6 @@ namespace DirectX12GameEngine.Graphics
     public sealed class CommandList : IDisposable
     {
         private const int MaxRenderTargetCount = 8;
-        private const int MaxViewportAndScissorRectangleCount = 16;
 
         private readonly CompiledCommandList currentCommandList;
 
@@ -43,7 +41,7 @@ namespace DirectX12GameEngine.Graphics
 
         public Rectangle[] ScissorRectangles { get; private set; } = Array.Empty<Rectangle>();
 
-        public RectangleF[] Viewports { get; private set; } = Array.Empty<RectangleF>();
+        public Viewport[] Viewports { get; private set; } = Array.Empty<Viewport>();
 
         public void BeginRenderPass()
         {
@@ -134,14 +132,14 @@ namespace DirectX12GameEngine.Graphics
                 if (backBuffer is Texture texture)
                 {
                     SetScissorRectangles(new Rectangle(0, 0, texture.Width, texture.Height));
-                    SetViewports(new RectangleF(0, 0, texture.Width, texture.Height));
+                    SetViewports(new Viewport(0, 0, texture.Width, texture.Height));
                 }
             }
             else if (depthStencilBuffer != null)
             {
                 SetRenderTargets(depthStencilBuffer);
                 SetScissorRectangles(new Rectangle(0, 0, depthStencilBuffer.Width, depthStencilBuffer.Height));
-                SetViewports(new RectangleF(0, 0, depthStencilBuffer.Width, depthStencilBuffer.Height));
+                SetViewports(new Viewport(0, 0, depthStencilBuffer.Width, depthStencilBuffer.Height));
             }
             else
             {
@@ -397,9 +395,9 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetScissorRectangles(params Rectangle[] scissorRectangles)
         {
-            if (scissorRectangles.Length > MaxViewportAndScissorRectangleCount)
+            if (scissorRectangles.Length > ID3D12GraphicsCommandList.ViewportAndScissorRectObjectCountPerPipeline)
             {
-                throw new ArgumentOutOfRangeException(nameof(scissorRectangles), scissorRectangles.Length, $"The maximum number of scissor rectangles is {MaxViewportAndScissorRectangleCount}.");
+                throw new ArgumentOutOfRangeException(nameof(scissorRectangles), scissorRectangles.Length, $"The maximum number of scissor rectangles is {ID3D12GraphicsCommandList.ViewportAndScissorRectObjectCountPerPipeline}.");
             }
 
             if (ScissorRectangles.Length != scissorRectangles.Length)
@@ -424,21 +422,21 @@ namespace DirectX12GameEngine.Graphics
             currentCommandList.NativeCommandList.IASetVertexBuffers(startSlot, vertexBufferViews);
         }
 
-        public void SetViewports(params RectangleF[] viewports)
+        public void SetViewports(params Viewport[] viewports)
         {
-            if (viewports.Length > MaxViewportAndScissorRectangleCount)
+            if (viewports.Length > ID3D12GraphicsCommandList.ViewportAndScissorRectObjectCountPerPipeline)
             {
-                throw new ArgumentOutOfRangeException(nameof(viewports), viewports.Length, $"The maximum number of viewporst is {MaxViewportAndScissorRectangleCount}.");
+                throw new ArgumentOutOfRangeException(nameof(viewports), viewports.Length, $"The maximum number of viewports is {ID3D12GraphicsCommandList.ViewportAndScissorRectObjectCountPerPipeline}.");
             }
 
             if (Viewports.Length != viewports.Length)
             {
-                Viewports = new RectangleF[viewports.Length];
+                Viewports = new Viewport[viewports.Length];
             }
 
             viewports.CopyTo(Viewports, 0);
 
-            currentCommandList.NativeCommandList.RSSetViewports(viewports.Select(v => new Viewport(v)).ToArray());
+            currentCommandList.NativeCommandList.RSSetViewports(viewports);
         }
 
         private ID3D12CommandAllocator GetCommandAllocator() => CommandListType switch

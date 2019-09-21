@@ -20,9 +20,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             SpecularMap.Visit(context);
         }
 
-        #region Shader
-
-        [ShaderMember] public IComputeColor SpecularMap { get; set; } = new ComputeColor();
+        public IComputeColor SpecularMap { get; set; } = new ComputeColor();
 
         [ShaderMember]
         public void Compute()
@@ -30,7 +28,5 @@ namespace DirectX12GameEngine.Rendering.Materials
             Vector4 specular = SpecularMap.Compute();
             MaterialPixelStream.MaterialSpecular = new Vector3(specular.X, specular.Y, specular.Z);
         }
-
-        #endregion
     }
 }

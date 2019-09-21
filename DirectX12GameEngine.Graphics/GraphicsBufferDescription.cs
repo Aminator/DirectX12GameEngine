@@ -1,8 +1,8 @@
 ﻿namespace DirectX12GameEngine.Graphics
 {
-    public struct BufferDescription
+    public struct GraphicsBufferDescription
     {
-        public BufferDescription(int sizeInBytes, BufferFlags bufferFlags, GraphicsHeapType heapType, int structureByteStride = 0)
+        public GraphicsBufferDescription(int sizeInBytes, GraphicsBufferFlags bufferFlags, GraphicsHeapType heapType, int structureByteStride = 0)
         {
             SizeInBytes = sizeInBytes;
             Flags = bufferFlags;
@@ -12,7 +12,7 @@
 
         public int SizeInBytes;
 
-        public BufferFlags Flags;
+        public GraphicsBufferFlags Flags;
 
         public GraphicsHeapType HeapType;
 

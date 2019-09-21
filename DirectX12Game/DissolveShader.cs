@@ -14,13 +14,11 @@ namespace DirectX12Game
             DissolveStrength.Visit(context);
         }
 
-        #region Shader
+        public IComputeColor MainTexture { get; set; } = new ComputeColor(Vector4.One);
 
-        [ShaderMember] public IComputeColor MainTexture { get; set; } = new ComputeColor(Vector4.One);
+        public IComputeScalar DissolveTexture { get; set; } = new ComputeScalar(1.0f);
 
-        [ShaderMember] public IComputeScalar DissolveTexture { get; set; } = new ComputeScalar(1.0f);
-
-        [ShaderMember] public IComputeScalar DissolveStrength { get; set; } = new ComputeScalar(0.5f);
+        public IComputeScalar DissolveStrength { get; set; } = new ComputeScalar(0.5f);
 
         [ShaderMember]
         public Vector4 Compute()
@@ -34,7 +32,5 @@ namespace DirectX12Game
 
             return colorBase;
         }
-
-        #endregion
     }
 }

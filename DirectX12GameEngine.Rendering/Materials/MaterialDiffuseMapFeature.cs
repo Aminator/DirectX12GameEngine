@@ -20,9 +20,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             DiffuseMap.Visit(context);
         }
 
-        #region Shader
-
-        [ShaderMember] public IComputeColor DiffuseMap { get; set; } = new ComputeColor();
+        public IComputeColor DiffuseMap { get; set; } = new ComputeColor();
 
         [ShaderMember]
         public void Compute()
@@ -32,7 +30,5 @@ namespace DirectX12GameEngine.Rendering.Materials
             MaterialPixelStream.MaterialColorBase = colorBase;
             MaterialPixelStream.MaterialDiffuse = colorBase;
         }
-
-        #endregion
     }
 }

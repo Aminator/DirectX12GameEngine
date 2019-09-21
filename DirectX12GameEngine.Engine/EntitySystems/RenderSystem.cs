@@ -31,9 +31,9 @@ namespace DirectX12GameEngine.Engine
 
             if (graphicsDevice is null) throw new InvalidOperationException();
 
-            DirectionalLightGroupBuffer = GraphicsBuffer.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, BufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
-            GlobalBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), BufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
-            ViewProjectionTransformBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>(), BufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
+            DirectionalLightGroupBuffer = GraphicsBuffer.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, GraphicsBufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
+            GlobalBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), GraphicsBufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
+            ViewProjectionTransformBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>(), GraphicsBufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
             DefaultSampler = new SamplerState(graphicsDevice, Vortice.Direct3D12.SamplerDescription.Default);
         }
 
@@ -104,7 +104,7 @@ namespace DirectX12GameEngine.Engine
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.New(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>(), BufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
+                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.New(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>(), GraphicsBufferFlags.ConstantBuffer, GraphicsHeapType.Upload);
                         }
 
                         CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];

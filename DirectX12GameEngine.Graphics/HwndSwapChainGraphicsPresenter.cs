@@ -19,7 +19,7 @@ namespace DirectX12GameEngine.Graphics
             {
                 Width = presentationParameters.BackBufferWidth,
                 Height = presentationParameters.BackBufferHeight,
-                SampleDescription = new SampleDescription(1, 0),
+                SampleDescription = new Vortice.DXGI.SampleDescription(1, 0),
                 Stereo = presentationParameters.Stereo,
                 Usage = Usage.RenderTargetOutput,
                 BufferCount = BufferCount,

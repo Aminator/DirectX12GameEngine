@@ -13,9 +13,7 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
             RampFunction.Visit(context);
         }
 
-        #region Shader
-
-        [ShaderMember] public IMaterialCelShadingLightFunction RampFunction { get; set; } = new MaterialCelShadingLightDefault();
+        public IMaterialCelShadingLightFunction RampFunction { get; set; } = new MaterialCelShadingLightDefault();
 
         [ShaderMember]
         public Vector3 ComputeDirectLightContribution()
@@ -33,7 +31,5 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
         {
             return default;
         }
-
-        #endregion
     }
 }

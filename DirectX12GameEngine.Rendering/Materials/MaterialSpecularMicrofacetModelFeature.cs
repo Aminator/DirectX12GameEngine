@@ -15,13 +15,11 @@ namespace DirectX12GameEngine.Rendering.Materials
             NormalDistribution.Visit(context);
         }
 
-        #region Shader
+        public IMaterialSpecularMicrofacetFresnelFunction Fresnel { get; set; } = new MaterialSpecularMicrofacetFresnelSchlick();
 
-        [ShaderMember] public IMaterialSpecularMicrofacetFresnelFunction Fresnel { get; set; } = new MaterialSpecularMicrofacetFresnelSchlick();
+        public IMaterialSpecularMicrofacetVisibilityFunction Visibility { get; set; } = new MaterialSpecularMicrofacetVisibilitySmithSchlickGgx();
 
-        [ShaderMember] public IMaterialSpecularMicrofacetVisibilityFunction Visibility { get; set; } = new MaterialSpecularMicrofacetVisibilitySmithSchlickGgx();
-
-        [ShaderMember] public IMaterialSpecularMicrofacetNormalDistributionFunction NormalDistribution { get; set; } = new MaterialSpecularMicrofacetNormalDistributionGgx();
+        public IMaterialSpecularMicrofacetNormalDistributionFunction NormalDistribution { get; set; } = new MaterialSpecularMicrofacetNormalDistributionGgx();
 
         [ShaderMember]
         public Vector3 ComputeDirectLightContribution()
@@ -42,7 +40,5 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             return default;
         }
-
-        #endregion
     }
 }

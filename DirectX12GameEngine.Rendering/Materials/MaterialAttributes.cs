@@ -18,19 +18,17 @@ namespace DirectX12GameEngine.Rendering.Materials
             SpecularModel.Visit(context);
         }
 
-        #region Shader
+        public IMaterialSurfaceFeature Surface { get; set; } = new MaterialNormalMapFeature();
 
-        [ShaderMember] public IMaterialSurfaceFeature Surface { get; set; } = new MaterialNormalMapFeature();
+        public IMaterialMicroSurfaceFeature MicroSurface { get; set; } = new MaterialRoughnessMapFeature();
 
-        [ShaderMember] public IMaterialMicroSurfaceFeature MicroSurface { get; set; } = new MaterialRoughnessMapFeature();
+        public IMaterialDiffuseFeature Diffuse { get; set; } = new MaterialDiffuseMapFeature();
 
-        [ShaderMember] public IMaterialDiffuseFeature Diffuse { get; set; } = new MaterialDiffuseMapFeature();
+        public IMaterialDiffuseModelFeature DiffuseModel { get; set; } = new MaterialDiffuseLambertModelFeature();
 
-        [ShaderMember] public IMaterialDiffuseModelFeature DiffuseModel { get; set; } = new MaterialDiffuseLambertModelFeature();
+        public IMaterialSpecularFeature Specular { get; set; } = new MaterialMetalnessMapFeature();
 
-        [ShaderMember] public IMaterialSpecularFeature Specular { get; set; } = new MaterialMetalnessMapFeature();
-
-        [ShaderMember] public IMaterialSpecularModelFeature SpecularModel { get; set; } = new MaterialSpecularMicrofacetModelFeature();
+        public IMaterialSpecularModelFeature SpecularModel { get; set; } = new MaterialSpecularMicrofacetModelFeature();
 
         [ShaderMember]
         public void ComputeSurfaceLightingAndShading()
@@ -79,7 +77,5 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             return output;
         }
-
-        #endregion
     }
 }

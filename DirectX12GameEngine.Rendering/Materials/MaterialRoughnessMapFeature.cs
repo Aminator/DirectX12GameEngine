@@ -23,16 +23,15 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             RoughnessMap.Visit(context);
 
-            invertBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Invert, BufferFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
+            invertBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Invert, GraphicsBufferFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
 
             context.ConstantBufferViews.Add(invertBuffer);
         }
 
-        #region Shader
+        public IComputeScalar RoughnessMap { get; set; } = new ComputeScalar();
 
-        [ShaderMember] public IComputeScalar RoughnessMap { get; set; } = new ComputeScalar();
-
-        [ConstantBufferView] public bool Invert
+        [ConstantBufferView]
+        public bool Invert
         {
             get => invert;
             set
@@ -50,7 +49,5 @@ namespace DirectX12GameEngine.Rendering.Materials
 
             MaterialPixelStream.MaterialRoughness = roughness;
         }
-
-        #endregion
     }
 }

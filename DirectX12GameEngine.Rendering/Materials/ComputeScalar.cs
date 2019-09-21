@@ -4,7 +4,6 @@ using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    [ShaderContract]
     [ConstantBufferView]
     public class ComputeScalar : IComputeScalar
     {
@@ -22,13 +21,10 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public void Visit(MaterialGeneratorContext context)
         {
-            valueBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Value, BufferFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
+            valueBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Value, GraphicsBufferFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
             context.ConstantBufferViews.Add(valueBuffer);
         }
 
-        #region Shader
-
-        [ShaderMember]
         public float Value
         {
             get => scalarValue;
@@ -44,7 +40,5 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             return Value;
         }
-
-        #endregion
     }
 }

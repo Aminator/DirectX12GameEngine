@@ -2,9 +2,8 @@
 {
     public enum TextureDimension
     {
-        Texture1D,
-        Texture2D,
-        Texture3D,
-        TextureCube
+        Texture1D = 2,
+        Texture2D = 3,
+        Texture3D = 4
     }
 }

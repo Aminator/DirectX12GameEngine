@@ -9,7 +9,8 @@ namespace DirectX12GameEngine.Rendering.Lights
     [ConstantBufferView]
     public abstract class DirectLightGroup
     {
-        [ShaderMember] public int LightCount;
+        [ShaderMember]
+        public int LightCount;
 
         /// <summary>
         /// Compute the light color/direction for the specified index within this group.

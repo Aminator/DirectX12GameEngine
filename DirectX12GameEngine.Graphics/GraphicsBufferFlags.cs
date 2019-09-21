@@ -3,7 +3,7 @@
 namespace DirectX12GameEngine.Graphics
 {
     [Flags]
-    public enum BufferFlags
+    public enum GraphicsBufferFlags
     {
         None = 0,
         RenderTarget = 1,
@@ -11,6 +11,6 @@ namespace DirectX12GameEngine.Graphics
         IndexBuffer = 4,
         VertexBuffer = 8,
         ShaderResource = 16,
-        UnorderedAccess = 32,
+        UnorderedAccess = 32
     }
 }

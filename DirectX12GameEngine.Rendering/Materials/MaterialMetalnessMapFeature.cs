@@ -20,9 +20,7 @@ namespace DirectX12GameEngine.Rendering.Materials
             MetalnessMap.Visit(context);
         }
 
-        #region Shader
-
-        [ShaderMember] public IComputeScalar MetalnessMap { get; set; } = new ComputeScalar();
+        public IComputeScalar MetalnessMap { get; set; } = new ComputeScalar();
 
         [ShaderMember]
         public void Compute()
@@ -35,7 +33,5 @@ namespace DirectX12GameEngine.Rendering.Materials
             MaterialPixelStream.MaterialSpecular = Vector3.Lerp(new Vector3(0.02f, 0.02f, 0.02f), materialDiffuseRgb, metalness);
             MaterialPixelStream.MaterialDiffuse = new Vector4(Vector3.Lerp(materialDiffuseRgb, Vector3.Zero, metalness), materialDiffuse.W);
         }
-
-        #endregion
     }
 }

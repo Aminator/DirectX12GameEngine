@@ -5,11 +5,6 @@ namespace DirectX12GameEngine.Shaders
 {
     public static class ShaderCompiler
     {
-        static ShaderCompiler()
-        {
-            Dxil.LoadLibrary();
-        }
-
         public static byte[] Compile(DxcShaderStage shaderStage, string source, string entryPoint, string sourceName = "")
         {
             return Compile(shaderStage, source, entryPoint, sourceName, DxcShaderModel.Model6_3);

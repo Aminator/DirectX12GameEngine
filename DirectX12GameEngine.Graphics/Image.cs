@@ -48,7 +48,7 @@ namespace DirectX12GameEngine.Graphics
                 _ => throw new NotSupportedException("This format is not supported.")
             };
 
-            ImageDescription description = ImageDescription.New2D((int)decoder.PixelWidth, (int)decoder.OrientedPixelHeight, pixelFormat);
+            ImageDescription description = ImageDescription.New2D((int)decoder.OrientedPixelWidth, (int)decoder.OrientedPixelHeight, pixelFormat);
 
             return new Image(description, imageBuffer);
         }
