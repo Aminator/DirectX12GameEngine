@@ -35,7 +35,7 @@ namespace DirectX12GameEngine.Engine
             Components.Add(new TransformComponent());
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         [IgnoreDataMember]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

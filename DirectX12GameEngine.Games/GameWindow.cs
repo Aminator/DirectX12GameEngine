@@ -5,9 +5,9 @@ namespace DirectX12GameEngine.Games
 {
     public abstract class GameWindow : IDisposable
     {
-        public event EventHandler SizeChanged;
+        public event EventHandler? SizeChanged;
 
-        public event EventHandler TickRequested;
+        public event EventHandler? TickRequested;
 
         public bool IsExiting { get; private set; }
 

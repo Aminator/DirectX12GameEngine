@@ -8,19 +8,19 @@ namespace DirectX12GameEngine.Input
         private Vector2 capturedPointerPosition;
         private bool isPointerPositionLocked;
 
-        public event EventHandler<PointerEventArgs> PointerCaptureLost;
+        public event EventHandler<PointerEventArgs>? PointerCaptureLost;
 
-        public event EventHandler<PointerEventArgs> PointerEntered;
+        public event EventHandler<PointerEventArgs>? PointerEntered;
 
-        public event EventHandler<PointerEventArgs> PointerExited;
+        public event EventHandler<PointerEventArgs>? PointerExited;
 
-        public event EventHandler<PointerEventArgs> PointerMoved;
+        public event EventHandler<PointerEventArgs>? PointerMoved;
 
-        public event EventHandler<PointerEventArgs> PointerPressed;
+        public event EventHandler<PointerEventArgs>? PointerPressed;
 
-        public event EventHandler<PointerEventArgs> PointerReleased;
+        public event EventHandler<PointerEventArgs>? PointerReleased;
 
-        public event EventHandler<PointerEventArgs> PointerWheelChanged;
+        public event EventHandler<PointerEventArgs>? PointerWheelChanged;
 
         public abstract bool HasCapture { get; }
 

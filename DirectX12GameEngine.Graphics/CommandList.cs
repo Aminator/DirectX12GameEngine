@@ -107,12 +107,12 @@ namespace DirectX12GameEngine.Graphics
             }
         }
 
-        public void Clear(Texture depthStencilBuffer, ClearFlags clearFlags, float depth = 1, byte stencil = 0)
+        public void ClearDepthStencilView(Texture depthStencilBuffer, ClearFlags clearFlags, float depth = 1, byte stencil = 0)
         {
             currentCommandList.NativeCommandList.ClearDepthStencilView(depthStencilBuffer.NativeDepthStencilView, (Vortice.Direct3D12.ClearFlags)clearFlags, depth, stencil);
         }
 
-        public unsafe void Clear(GraphicsResource renderTarget, Vector4 color)
+        public unsafe void ClearRenderTargetView(GraphicsResource renderTarget, Vector4 color)
         {
             currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeRenderTargetView, new Color4(color));
         }

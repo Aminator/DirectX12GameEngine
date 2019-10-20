@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Editor.Factories
 {
     public class AssetViewFactory : IAssetViewFactory
     {
-        private static AssetViewFactory defaultInstance;
+        private static AssetViewFactory? defaultInstance;
 
         private readonly Dictionary<string, IAssetViewFactory> factories = new Dictionary<string, IAssetViewFactory>();
 

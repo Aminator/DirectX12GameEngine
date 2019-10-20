@@ -15,7 +15,7 @@ namespace DirectX12GameEngine.Engine
         private Quaternion rotation = Quaternion.Identity;
         private Vector3 scale = Vector3.One;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public IEnumerable<TransformComponent> Children => this;
 

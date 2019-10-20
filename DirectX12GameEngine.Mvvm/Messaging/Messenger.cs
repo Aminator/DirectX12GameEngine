@@ -7,7 +7,7 @@ namespace DirectX12GameEngine.Mvvm.Messaging
 {
     public class Messenger : IMessenger
     {
-        private static IMessenger defaultInstance;
+        private static IMessenger? defaultInstance;
 
         private readonly Dictionary<Type, Dictionary<object, List<Action<object>>>> registeredRecipientsPerMessageType = new Dictionary<Type, Dictionary<object, List<Action<object>>>>();
 

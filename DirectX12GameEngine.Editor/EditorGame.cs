@@ -29,8 +29,8 @@ namespace DirectX12GameEngine.Editor
 
             if (GraphicsDevice?.Presenter != null)
             {
-                GraphicsDevice.CommandList.Clear(GraphicsDevice.Presenter.BackBuffer, new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
-                GraphicsDevice.CommandList.Clear(GraphicsDevice.Presenter.DepthStencilBuffer, ClearFlags.FlagsDepth);
+                GraphicsDevice.CommandList.ClearRenderTargetView(GraphicsDevice.Presenter.BackBuffer, new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+                GraphicsDevice.CommandList.ClearDepthStencilView(GraphicsDevice.Presenter.DepthStencilBuffer, ClearFlags.FlagsDepth);
             }
         }
     }

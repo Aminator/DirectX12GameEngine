@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
 {
     public class PropertyViewModelFactory : IPropertyViewModelFactory, IEnumerable<KeyValuePair<Type, IPropertyViewModelFactory>>
     {
-        private static PropertyViewModelFactory defaultInstance;
+        private static PropertyViewModelFactory? defaultInstance;
 
         private readonly Dictionary<Type, IPropertyViewModelFactory> factories = new Dictionary<Type, IPropertyViewModelFactory>();
 

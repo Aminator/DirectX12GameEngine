@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace DirectX12GameEngine.Input
 {
@@ -8,9 +7,9 @@ namespace DirectX12GameEngine.Input
     {
         private readonly List<KeyEventArgs> keyEvents = new List<KeyEventArgs>();
 
-        public event EventHandler<KeyEventArgs> KeyDown;
+        public event EventHandler<KeyEventArgs>? KeyDown;
 
-        public event EventHandler<KeyEventArgs> KeyUp;
+        public event EventHandler<KeyEventArgs>? KeyUp;
 
         public ISet<VirtualKey> DownKeys { get; } = new HashSet<VirtualKey>();
 

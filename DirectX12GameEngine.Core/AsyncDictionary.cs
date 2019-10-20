@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Core
     {
         private readonly Dictionary<TKey, TValue> dictionary = new Dictionary<TKey, TValue>();
 
-        public event EventHandler<DictionaryChangedEventArgs<TKey, TValue>> ItemAdded;
+        public event EventHandler<DictionaryChangedEventArgs<TKey, TValue>>? ItemAdded;
 
         public void Add(TKey key, TValue value)
         {
