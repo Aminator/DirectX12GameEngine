@@ -32,7 +32,7 @@ namespace DirectX12GameEngine.Graphics
         {
             Result result = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.NativePointer, out IntPtr graphicsDevice);
 
-            if (result.Failure) throw new InvalidOperationException(result.Code.ToString());
+            if (result.Failure) throw new COMException("Device creation failed.", result.Code);
 
             IDirect3DDevice d3DInteropDevice = (IDirect3DDevice)Marshal.GetObjectForIUnknown(graphicsDevice);
             Marshal.Release(graphicsDevice);
@@ -44,7 +44,7 @@ namespace DirectX12GameEngine.Graphics
         {
             Result result = CreateDirect3D11SurfaceFromDXGISurface(dxgiSurface.NativePointer, out IntPtr graphicsSurface);
 
-            if (result.Failure) throw new InvalidOperationException(result.Code.ToString());
+            if (result.Failure) throw new COMException("Surface creation failed.", result.Code);
 
             IDirect3DSurface d3DSurface = (IDirect3DSurface)Marshal.GetObjectForIUnknown(graphicsSurface);
             Marshal.Release(graphicsSurface);

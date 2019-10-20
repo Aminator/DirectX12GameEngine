@@ -37,6 +37,8 @@ namespace DirectX12GameEngine.Games
 
             PresentationParameters.BackBufferWidth = (int)Control.Bounds.Width;
             PresentationParameters.BackBufferHeight = (int)Control.Bounds.Width;
+
+            PresentationParameters.Stereo = HolographicDisplay.GetDefault().IsStereo;
         }
 
         public HolographicSpace HolographicSpace { get; }

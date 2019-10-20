@@ -40,6 +40,9 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
             renderTarget = CreateRenderTarget();
             direct3D11RenderTarget = CreateDirect3D11RenderTarget();
+
+            DepthStencilBuffer.Dispose();
+            DepthStencilBuffer = CreateDepthStencilBuffer();
         }
 
         public override Texture BackBuffer => renderTarget;
@@ -73,14 +76,14 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
         public override void Present()
         {
-            GraphicsDevice.NativeDirect3D11Device.ImmediateContext.CopyResource(direct3D11RenderTarget, HolographicBackBuffer);
+            GraphicsDevice.NativeDirect3D11Device.ImmediateContext.CopyResource(HolographicBackBuffer, direct3D11RenderTarget);
             HolographicFrame.PresentUsingCurrentPrediction();
         }
 
         protected override void ResizeBackBuffer(int width, int height)
         {
-            //using SharpDX.Direct3D11.Device11On12 device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<SharpDX.Direct3D11.Device11On12>();
-            //device11On12.ReleaseWrappedResources(new[] { direct3D11RenderTarget }, 1);
+            //using ID3D11On12Device device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<ID3D11On12Device>();
+            //device11On12.ReleaseWrappedResources(direct3D11RenderTarget);
 
             //renderTarget.Dispose();
 
@@ -90,8 +93,8 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
         protected override void ResizeDepthStencilBuffer(int width, int height)
         {
-            DepthStencilBuffer.Dispose();
-            DepthStencilBuffer = CreateDepthStencilBuffer();
+            //DepthStencilBuffer.Dispose();
+            //DepthStencilBuffer = CreateDepthStencilBuffer();
         }
 
         private ID3D11Resource CreateDirect3D11RenderTarget()
@@ -122,13 +125,13 @@ namespace DirectX12GameEngine.Graphics.Holographic
             HolographicSurface = HolographicFrame.GetRenderingParameters(HolographicFrame.CurrentPrediction.CameraPoses[0]).Direct3D11BackBuffer;
             using IDXGISurface surface = Direct3DInterop.CreateDXGISurface(HolographicSurface);
 
-            ID3D11Texture2D d3DBackBuffer = new ID3D11Texture2D(surface.NativePointer);
+            ID3D11Texture2D direct3DBackBuffer = new ID3D11Texture2D(surface.NativePointer);
 
-            PresentationParameters.BackBufferFormat = (PixelFormat)d3DBackBuffer.Description.Format;
-            PresentationParameters.BackBufferWidth = d3DBackBuffer.Description.Width;
-            PresentationParameters.BackBufferHeight = d3DBackBuffer.Description.Height;
+            PresentationParameters.BackBufferFormat = (PixelFormat)direct3DBackBuffer.Description.Format;
+            PresentationParameters.BackBufferWidth = direct3DBackBuffer.Description.Width;
+            PresentationParameters.BackBufferHeight = direct3DBackBuffer.Description.Height;
 
-            return d3DBackBuffer;
+            return direct3DBackBuffer;
         }
     }
 }

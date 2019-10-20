@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Graphics
 #if DEBUG
             if (enableDebugLayer)
             {
-                Result debugResult = D3D12.D3D12GetDebugInterface<ID3D12Debug>(out ID3D12Debug debugInterface);
+                Result debugResult = D3D12.D3D12GetDebugInterface(out ID3D12Debug debugInterface);
 
                 using ID3D12Debug debug = debugInterface;
 
@@ -90,9 +90,14 @@ namespace DirectX12GameEngine.Graphics
             {
                 if (nativeDirect3D11Device is null)
                 {
-                    Vortice.Direct3D11.D3D11.D3D11On12CreateDevice(
-                        NativeDevice, Vortice.Direct3D11.DeviceCreationFlags.BgraSupport, null, new[] { NativeDirectCommandQueue }, 0,
+                    Result result = Vortice.Direct3D11.D3D11.D3D11On12CreateDevice(
+                        NativeDevice, Vortice.Direct3D11.DeviceCreationFlags.BgraSupport, new[] { (Vortice.DirectX.Direct3D.FeatureLevel)FeatureLevel }, new[] { NativeDirectCommandQueue }, 0,
                         out nativeDirect3D11Device, out _, out _);
+
+                    if (result.Failure)
+                    {
+                        throw new COMException("Device creation failed.", result.Code);
+                    }
                 }
 
                 return nativeDirect3D11Device;
