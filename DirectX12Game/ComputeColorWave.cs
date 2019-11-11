@@ -23,6 +23,7 @@ namespace DirectX12Game
         public IComputeScalar Speed { get; set; } = new ComputeScalar(0.05f);
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector4 Compute()
         {
             float phase = DirectX12GameEngine.Shaders.Numerics.Vector2.Length(Texturing.TexCoord - new Vector2(0.5f, 0.5f));

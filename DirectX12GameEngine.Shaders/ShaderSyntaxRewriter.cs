@@ -8,17 +8,11 @@ namespace DirectX12GameEngine.Shaders
 {
     public class ShaderSyntaxRewriter : CSharpSyntaxRewriter
     {
-        private readonly int depth;
-        private readonly bool isTopLevel;
         private readonly Compilation compilation;
-        private readonly ShaderGenerator shaderGenerator;
 
-        public ShaderSyntaxRewriter(Compilation compilation, ShaderGenerator shaderGenerator, bool isTopLevel = false, int depth = 0)
+        public ShaderSyntaxRewriter(Compilation compilation)
         {
             this.compilation = compilation;
-            this.shaderGenerator = shaderGenerator;
-            this.isTopLevel = isTopLevel;
-            this.depth = depth;
         }
 
         private SemanticModel GetSemanticModel(SyntaxNode node) => compilation.GetSemanticModel(node.SyntaxTree);
@@ -67,17 +61,10 @@ namespace DirectX12GameEngine.Shaders
 
             if (node.Expression is BaseExpressionSyntax)
             {
-                if (isTopLevel)
-                {
-                    newNode = SyntaxFactory.IdentifierName($"Base_{depth + 1}_{node.Name}");
-                }
-                else
-                {
-                    SymbolInfo memberSymbolInfo = GetSemanticModel(node.Name).GetSymbolInfo(node.Name);
-                    ISymbol memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault() ?? throw new InvalidOperationException();
+                SymbolInfo memberSymbolInfo = GetSemanticModel(node.Name).GetSymbolInfo(node.Name);
+                ISymbol memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault() ?? throw new InvalidOperationException();
 
-                    newNode = SyntaxFactory.IdentifierName($"{memberSymbol.ContainingType.Name}::{node.Name}");
-                }
+                newNode = SyntaxFactory.IdentifierName($"{memberSymbol.ContainingType.ToString().Replace(".", "::")}::{node.Name}");
             }
             else
             {

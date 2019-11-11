@@ -16,7 +16,7 @@ namespace DirectX12GameEngine.Shaders
 
         public static IList<MethodInfo> GetBaseMethods(this MethodInfo methodInfo)
         {
-            List<MethodInfo> methodInfos = new List<MethodInfo>() { methodInfo };
+            List<MethodInfo> methodInfos = new List<MethodInfo>();
 
             if (methodInfo.IsOverride())
             {
@@ -30,6 +30,21 @@ namespace DirectX12GameEngine.Shaders
             }
 
             return methodInfos;
+        }
+
+        public static IList<Type> GetBaseTypes(this Type type)
+        {
+            List<Type> baseTypes = new List<Type>();
+
+            Type baseType = type.BaseType;
+
+            while (baseType != null && baseType != typeof(object) && baseType != typeof(ValueType))
+            {
+                baseTypes.Add(baseType);
+                baseType = baseType.BaseType;
+            }
+
+            return baseTypes;
         }
 
         public static IEnumerable<Type> GetNestedTypesInTypeHierarchy(this Type type, BindingFlags bindingFlags)

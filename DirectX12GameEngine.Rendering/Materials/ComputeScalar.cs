@@ -36,6 +36,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public float Compute()
         {
             return Value;

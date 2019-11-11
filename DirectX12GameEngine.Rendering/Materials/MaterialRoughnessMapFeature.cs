@@ -42,6 +42,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public void Compute()
         {
             float roughness = RoughnessMap.Compute();

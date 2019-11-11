@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,13 +9,13 @@ namespace DirectX12GameEngine.Shaders
     public class ShaderSyntaxCollector : CSharpSyntaxWalker
     {
         private readonly Compilation compilation;
-        private readonly ShaderGenerator shaderGenerator;
 
-        public ShaderSyntaxCollector(Compilation compilation, ShaderGenerator shaderGenerator)
+        public ShaderSyntaxCollector(Compilation compilation)
         {
             this.compilation = compilation;
-            this.shaderGenerator = shaderGenerator;
         }
+
+        public IList<Type> CollectedTypes { get; } = new List<Type>();
 
         private SemanticModel GetSemanticModel(SyntaxNode node) => compilation.GetSemanticModel(node.SyntaxTree);
 
@@ -32,10 +33,7 @@ namespace DirectX12GameEngine.Shaders
 
                     Type? type = Type.GetType(fullTypeName);
 
-                    if (type != null)
-                    {
-                        shaderGenerator.AddType(type);
-                    }
+                    CollectedTypes.Add(type);
                 }
             }
         }

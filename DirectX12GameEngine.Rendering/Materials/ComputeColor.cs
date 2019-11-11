@@ -37,6 +37,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector4 Compute()
         {
             return Color;

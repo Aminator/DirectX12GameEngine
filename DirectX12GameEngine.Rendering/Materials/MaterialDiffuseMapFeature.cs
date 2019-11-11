@@ -23,6 +23,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         public IComputeColor DiffuseMap { get; set; } = new ComputeColor();
 
         [ShaderMember]
+        [ShaderMethod]
         public void Compute()
         {
             Vector4 colorBase = DiffuseMap.Compute();

@@ -20,6 +20,7 @@ namespace DirectX12GameEngine.Rendering.Lights
         public static float LightDirectAmbientOcclusion;
 
         [ShaderMember]
+        [ShaderMethod]
         public static void Reset()
         {
             LightPositionWS = default;

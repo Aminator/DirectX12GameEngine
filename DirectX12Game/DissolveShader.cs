@@ -21,6 +21,7 @@ namespace DirectX12Game
         public IComputeScalar DissolveStrength { get; set; } = new ComputeScalar(0.5f);
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector4 Compute()
         {
             Vector4 colorBase = MainTexture.Compute();

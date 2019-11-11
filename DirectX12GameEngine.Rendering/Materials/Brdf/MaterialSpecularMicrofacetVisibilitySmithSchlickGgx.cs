@@ -11,6 +11,7 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public float Compute()
         {
             return BrdfMicrofacet.VisibilitySmithSchlickGgx(MaterialPixelStream.AlphaRoughness, LightStream.NDotL, MaterialPixelStream.NDotV);

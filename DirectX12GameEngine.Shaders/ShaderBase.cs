@@ -5,6 +5,7 @@ namespace DirectX12GameEngine.Shaders
     public abstract class RasterizationShaderBase
     {
         [ShaderMember]
+        [ShaderMethod]
         [Shader("vertex")]
         public virtual VSOutput VSMain(VSInput input)
         {
@@ -12,6 +13,7 @@ namespace DirectX12GameEngine.Shaders
         }
 
         [ShaderMember]
+        [ShaderMethod]
         [Shader("pixel")]
         public virtual PSOutput PSMain(PSInput input)
         {
@@ -22,6 +24,7 @@ namespace DirectX12GameEngine.Shaders
     public abstract class ComputeShaderBase
     {
         [ShaderMember]
+        [ShaderMethod]
         [Shader("compute")]
         public virtual void CSMain(CSInput input)
         {

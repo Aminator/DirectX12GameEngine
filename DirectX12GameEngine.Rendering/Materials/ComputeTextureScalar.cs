@@ -56,6 +56,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public float Compute()
         {
             Vector4 color = ScalarTexture.Sample(Texturing.Sampler, Texturing.TexCoord);

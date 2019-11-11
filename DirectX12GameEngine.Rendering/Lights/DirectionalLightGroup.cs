@@ -15,6 +15,7 @@ namespace DirectX12GameEngine.Rendering.Lights
         /// Compute the light color/direction for the specified index within this group.
         /// </summary>
         [ShaderMember]
+        [ShaderMethod]
         protected override void PrepareDirectLightCore(int lightIndex)
         {
             LightStream.LightColor = Lights[lightIndex].Color;

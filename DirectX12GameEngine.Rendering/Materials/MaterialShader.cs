@@ -28,6 +28,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 #nullable enable
 
         [ShaderMember]
+        [ShaderMethod]
         [Shader("vertex")]
         public override VSOutput VSMain(VSInput input)
         {
@@ -55,6 +56,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         [Shader("pixel")]
         public override PSOutput PSMain(PSInput input)
         {

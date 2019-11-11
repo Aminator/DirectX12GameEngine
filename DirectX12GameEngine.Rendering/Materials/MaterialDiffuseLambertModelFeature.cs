@@ -13,6 +13,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector3 ComputeDirectLightContribution()
         {
             Vector3 diffuseColor = MaterialPixelStream.MaterialDiffuseVisible;
@@ -22,6 +23,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector3 ComputeEnvironmentLightContribution()
         {
             return default;

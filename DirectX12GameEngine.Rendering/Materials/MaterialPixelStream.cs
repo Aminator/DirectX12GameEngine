@@ -26,6 +26,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderMember] public static float AlphaRoughness;
 
         [ShaderMember]
+        [ShaderMethod]
         public static void PrepareMaterialForLightingAndShading()
         {
             MaterialDiffuseVisible = new Vector3(MaterialDiffuse.X, MaterialDiffuse.Y, MaterialDiffuse.Z);
@@ -37,6 +38,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public static void Reset()
         {
             MaterialNormal = Vector3.UnitZ;

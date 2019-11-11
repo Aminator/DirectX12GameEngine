@@ -33,6 +33,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 #nullable restore
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector4 Compute()
         {
             return ColorTexture.Sample(Texturing.Sampler, Texturing.TexCoord);

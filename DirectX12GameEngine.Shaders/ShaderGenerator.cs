@@ -4,71 +4,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text.RegularExpressions;
-using ICSharpCode.Decompiler;
-using ICSharpCode.Decompiler.CSharp;
-using ICSharpCode.Decompiler.Metadata;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DirectX12GameEngine.Shaders
 {
     public class ShaderGenerator
     {
-        private const string DelegateEntryPointName = "Main";
-
-        private static readonly Regex ClosureTypeDeclarationRegex = new Regex(@"(?<=private sealed class )<\w*>[\w_]+", RegexOptions.Compiled);
-        private static readonly Regex LambdaMethodDeclarationRegex = new Regex(@"(private|internal) void <\w+>[\w_|]+(?=\()", RegexOptions.Compiled);
-
-        private static readonly Dictionary<string, CSharpDecompiler> decompilers = new Dictionary<string, CSharpDecompiler>();
-        private static readonly Dictionary<Type, Compilation> decompiledTypes = new Dictionary<Type, Compilation>();
-
-        private static Compilation globalCompilation;
+        public const string DelegateEntryPointName = "Main";
+        public const string DelegateTypeName = "Shader";
 
         private readonly object shader;
+        private readonly Type shaderType;
         private readonly Delegate? action;
 
         private readonly List<ShaderTypeDefinition> collectedTypes = new List<ShaderTypeDefinition>();
+        private readonly HashSet<Type> registeredTypes = new HashSet<Type>();
         private readonly HlslBindingTracker bindingTracker = new HlslBindingTracker();
 
         private readonly StringWriter stringWriter = new StringWriter();
         private readonly IndentedTextWriter writer;
 
         private ShaderGeneratorResult? result;
-
-        static ShaderGenerator()
-        {
-            IEnumerable<string> assemblyPaths;
-
-            if (!string.IsNullOrEmpty(Assembly.GetEntryAssembly().Location))
-            {
-                assemblyPaths = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => a.Location);
-            }
-            else
-            {
-                assemblyPaths = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.dll").Where(p =>
-                {
-                    try { PEFile peFile = new PEFile(p); return true; } catch { return false; }
-                });
-            }
-
-            var metadataReferences = assemblyPaths.Select(p => MetadataReference.CreateFromFile(p)).ToArray();
-
-            globalCompilation = CSharpCompilation.Create("ShaderAssembly").WithReferences(metadataReferences);
-
-            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
-        }
-
-        private static void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs e)
-        {
-            if (!e.LoadedAssembly.IsDynamic)
-            {
-                PortableExecutableReference metadataReference = MetadataReference.CreateFromFile(e.LoadedAssembly.Location);
-                globalCompilation = globalCompilation.AddReferences(metadataReference);
-            }
-        }
 
         public ShaderGenerator(object shader, params Attribute[] entryPointAttributes) : this(shader, new ShaderGeneratorSettings(entryPointAttributes))
         {
@@ -77,6 +32,7 @@ namespace DirectX12GameEngine.Shaders
         public ShaderGenerator(object shader, ShaderGeneratorSettings settings)
         {
             this.shader = shader;
+            shaderType = shader.GetType();
 
             EntryPointAttributes = settings.EntryPointAttributes;
 
@@ -110,16 +66,15 @@ namespace DirectX12GameEngine.Shaders
 
         public BindingFlags GetBindingFlagsForType(Type type)
         {
-            return type.IsDefined(typeof(ShaderContractAttribute)) ? BindingFlagsWithContract : BindingFlagsWithoutContract;
+            return type.IsDefined(typeof(ShaderContractAttribute)) || type.IsAssignableFrom(action?.Target.GetType()) ? BindingFlagsWithContract : BindingFlagsWithoutContract;
         }
 
         public ShaderGeneratorResult GenerateShader()
         {
             if (result != null) return result;
 
-            Type shaderType = shader.GetType();
-
-            var memberInfos = shaderType.GetMembersInTypeHierarchyInOrder(GetBindingFlagsForType(shaderType));
+            var allMemberInfos = shaderType.GetMembersInTypeHierarchyInOrder(GetBindingFlagsForType(shaderType));
+            var memberInfos = allMemberInfos.Where(m => !(m is MethodInfo));
 
             // Collecting stage
 
@@ -131,17 +86,9 @@ namespace DirectX12GameEngine.Shaders
                 {
                     CollectStructure(memberType, memberInfo.GetMemberValue(shader));
                 }
-
-                if (memberInfo is MethodInfo methodInfo && CanWriteMethod(methodInfo))
-                {
-                    CollectTopLevelMethod(methodInfo);
-                }
             }
 
-            if (action != null)
-            {
-                CollectTopLevelMethod(action.Method);
-            }
+            CollectStructure(shaderType, shader);
 
             // Writing stage
 
@@ -155,19 +102,27 @@ namespace DirectX12GameEngine.Shaders
                 Type? memberType = memberInfo.GetMemberType(shader);
                 ShaderMemberAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
 
-                if (memberInfo is MethodInfo methodInfo && CanWriteMethod(methodInfo))
-                {
-                    WriteTopLevelMethod(methodInfo, EntryPointAttributes);
-                }
-                else if (memberType != null && resourceType != null)
+                if (memberType != null && resourceType != null)
                 {
                     WriteResource(memberInfo.Name, memberType, resourceType);
                 }
             }
 
+            foreach (Type type in shaderType.GetBaseTypes().Reverse())
+            {
+                WriteStructure(type, shader);
+            }
+
+            foreach (MethodInfo methodInfo in shaderType.GetMethods(GetBindingFlagsForType(shaderType))
+                .Where(m => m.IsDefined(typeof(ShaderMemberAttribute)))
+                .OrderBy(m => m.GetCustomAttribute<ShaderMemberAttribute>()?.Order))
+            {
+                WriteMethod(methodInfo, null, null, true);
+            }
+
             if (action != null)
             {
-                WriteTopLevelMethod(action.Method, EntryPointAttributes, DelegateEntryPointName);
+                WriteMethod(action.Method, EntryPointAttributes, DelegateEntryPointName, true);
             }
 
             stringWriter.GetStringBuilder().TrimEnd();
@@ -189,7 +144,9 @@ namespace DirectX12GameEngine.Shaders
 
         public static void GetEntryPoints(ShaderGeneratorResult result, Type shaderType, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
         {
-            foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingFlags).Where(m => m.IsDefined(typeof(ShaderAttribute))))
+            foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingFlags)
+                .Where(m => m.IsDefined(typeof(ShaderAttribute)))
+                .OrderBy(m => m.GetCustomAttribute<ShaderMemberAttribute>()?.Order))
             {
                 ShaderAttribute shaderAttribute = shaderMethodInfo.GetCustomAttribute<ShaderAttribute>();
                 result.EntryPoints[shaderAttribute.Name] = shaderMethodInfo.Name;
@@ -200,7 +157,7 @@ namespace DirectX12GameEngine.Shaders
         {
             type = type.GetElementOrDeclaredType();
 
-            if (type.IsAssignableFrom(shader.GetType()) || HlslKnownTypes.ContainsKey(type) || collectedTypes.Any(d => d.Type == type)) return;
+            if (HlslKnownTypes.ContainsKey(type) || !registeredTypes.Add(type)) return;
 
             ShaderTypeDefinition shaderTypeDefinition = new ShaderTypeDefinition(type, obj);
 
@@ -210,12 +167,9 @@ namespace DirectX12GameEngine.Shaders
                 return;
             }
 
-            Type parentType = type.BaseType;
-
-            while (parentType != null && parentType != typeof(object) && parentType != typeof(ValueType))
+            foreach (Type baseType in type.GetBaseTypes())
             {
-                CollectStructure(parentType, obj);
-                parentType = parentType.BaseType;
+                CollectStructure(baseType, obj);
             }
 
             foreach (Type interfaceType in type.GetInterfaces())
@@ -245,12 +199,22 @@ namespace DirectX12GameEngine.Shaders
                 }
             }
 
-            collectedTypes.Add(shaderTypeDefinition);
+            if (!type.IsAssignableFrom(shaderType))
+            {
+                collectedTypes.Add(shaderTypeDefinition);
+            }
         }
 
-        private void WriteStructure(Type type, object? obj)
+        private void WriteStructure(Type type, object? obj, string? explicitTypeName = null)
         {
+            string typeName = explicitTypeName ?? type.Name;
+
             string[] namespaces = type.Namespace.Split('.');
+
+            if (type.IsAssignableFrom(shaderType))
+            {
+                namespaces = namespaces.Concat(new[] { typeName }).ToArray();
+            }
 
             for (int i = 0; i < namespaces.Length - 1; i++)
             {
@@ -261,37 +225,52 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine("{");
             writer.Indent++;
 
-            if (type.IsEnum)
+            if (!type.IsAssignableFrom(shaderType))
             {
-                writer.WriteLine($"enum class {type.Name}");
-            }
-            else if (type.IsInterface)
-            {
-                writer.WriteLine($"interface {type.Name}");
-            }
-            else
-            {
-                writer.Write($"struct {type.Name}");
-
-                if (type.BaseType != null && type.BaseType != typeof(object) && type.BaseType != typeof(ValueType))
+                if (type.IsEnum)
                 {
-                    writer.Write($" : {HlslKnownTypes.GetMappedName(type.BaseType)}, ");
+                    writer.WriteLine($"enum class {typeName}");
+                }
+                else if (type.IsInterface)
+                {
+                    writer.WriteLine($"interface {typeName}");
+                }
+                else
+                {
+                    writer.Write($"struct {typeName}");
+
+                    bool trim = false;
+
+                    if (type.BaseType != null && type.BaseType != typeof(object) && type.BaseType != typeof(ValueType))
+                    {
+                        writer.Write($" : {HlslKnownTypes.GetMappedName(type.BaseType)}, ");
+                        trim = true;
+                    }
 
                     // NOTE: Types might no expose every interface method.
+                    //Type[] interfaces = type.GetInterfaces();
 
-                    //foreach (Type interfaceType in type.GetInterfaces())
+                    //if (interfaces.Length > 0)
                     //{
-                    //    writer.Write(interfaceType.Name + ", ");
+                    //    foreach (Type interfaceType in interfaces)
+                    //    {
+                    //        writer.Write(interfaceType.Name + ", ");
+                    //    }
+
+                    //    trim = true;
                     //}
 
-                    stringWriter.GetStringBuilder().Length -= 2;
+                    if (trim)
+                    {
+                        stringWriter.GetStringBuilder().Length -= 2;
+                    }
+
+                    writer.WriteLine();
                 }
 
-                writer.WriteLine();
+                writer.WriteLine("{");
+                writer.Indent++;
             }
-
-            writer.WriteLine("{");
-            writer.Indent++;
 
             BindingFlags fieldBindingFlags = GetBindingFlagsForType(type) | BindingFlags.DeclaredOnly;
 
@@ -302,7 +281,7 @@ namespace DirectX12GameEngine.Shaders
 
             var fieldAndPropertyInfos = type.GetMembersInOrder(fieldBindingFlags).Where(m => m is FieldInfo || m is PropertyInfo);
             var methodInfos = type.GetMembersInTypeHierarchyInOrder(GetBindingFlagsForType(type)).Where(m => m is MethodInfo);
-            var memberInfos = fieldAndPropertyInfos.Concat(methodInfos);
+            var memberInfos = type.IsAssignableFrom(shaderType) ? methodInfos : fieldAndPropertyInfos.Concat(methodInfos);
 
             foreach (MemberInfo memberInfo in memberInfos)
             {
@@ -326,11 +305,14 @@ namespace DirectX12GameEngine.Shaders
                 }
             }
 
-            stringWriter.GetStringBuilder().TrimEnd();
+            stringWriter.GetStringBuilder().TrimEnd().AppendLine();
 
-            writer.Indent--;
-            writer.WriteLine();
-            writer.WriteLine("};");
+            if (!type.IsAssignableFrom(shaderType))
+            {
+                writer.Indent--;
+                writer.WriteLine("};");
+            }
+
             writer.Indent--;
 
             for (int i = 0; i < namespaces.Length - 1; i++)
@@ -440,27 +422,32 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine();
         }
 
-        private void WriteStaticResource(string memberName, Type memberType)
+        private void WriteStaticResource(string memberName, Type memberType, IEnumerable<string>? resourceNames = null)
         {
-            List<string> generatedMemberNames = new List<string>();
-
-            foreach (ResourceDefinition resourceDefinition in collectedTypes.First(d => d.Type == memberType).ResourceDefinitions)
+            if (resourceNames is null)
             {
-                string generatedMemberName = $"__Generated__{bindingTracker.StaticResource++}__";
-                generatedMemberNames.Add(generatedMemberName);
+                List<string> generatedMemberNames = new List<string>();
 
-                WriteResource(generatedMemberName, resourceDefinition.MemberType, resourceDefinition.ResourceType);
+                foreach (ResourceDefinition resourceDefinition in collectedTypes.First(d => d.Type == memberType).ResourceDefinitions)
+                {
+                    string generatedMemberName = $"__Generated__{bindingTracker.StaticResource++}__";
+                    generatedMemberNames.Add(generatedMemberName);
+
+                    WriteResource(generatedMemberName, resourceDefinition.MemberType, resourceDefinition.ResourceType);
+                }
+
+                resourceNames = generatedMemberNames;
             }
 
             writer.Write($"static {HlslKnownTypes.GetMappedName(memberType)} {memberName}");
 
-            if (generatedMemberNames.Count > 0)
+            if (resourceNames.Count() > 0)
             {
                 writer.Write(" = { ");
 
-                foreach (string generatedMemberName in generatedMemberNames)
+                foreach (string resourceName in resourceNames)
                 {
-                    writer.Write(generatedMemberName);
+                    writer.Write(resourceName);
                     writer.Write(", ");
                 }
 
@@ -493,53 +480,29 @@ namespace DirectX12GameEngine.Shaders
 
         private bool CanWriteMethod(MethodInfo methodInfo)
         {
-            return methodInfo.IsDefined(typeof(ShaderMemberAttribute)) || methodInfo.DeclaringType.IsInterface;
-        }
-
-        private void CollectTopLevelMethod(MethodInfo methodInfo)
-        {
-            IList<MethodInfo> methodInfos = methodInfo.GetBaseMethods();
-
-            for (int depth = methodInfos.Count - 1; depth >= 0; depth--)
-            {
-                MethodInfo currentMethodInfo = methodInfos[depth];
-                CollectMethod(currentMethodInfo);
-            }
+            return methodInfo.IsDefined(typeof(ShaderMemberAttribute)) || methodInfo == action?.Method /*|| methodInfo.DeclaringType.IsInterface*/;
         }
 
         private void CollectMethod(MethodInfo methodInfo)
         {
-            Compilation compilation = GetCompilation(methodInfo.DeclaringType);
-            MethodDeclarationSyntax methodNode = GetMethodDeclaration(methodInfo, compilation.SyntaxTrees.Single());
+            ShaderMethodAttribute? shaderMethodAttribute = methodInfo.GetCustomAttribute<ShaderMethodAttribute?>();
 
-            ShaderSyntaxCollector syntaxCollector = new ShaderSyntaxCollector(compilation, this);
-            syntaxCollector.Visit(methodNode.Body);
-        }
+            IEnumerable<Type> dependentTypes = shaderMethodAttribute?.DependentTypes.Length > 0
+                ? shaderMethodAttribute.DependentTypes
+                : ShaderMethodGenerator.GetDependentTypes(methodInfo);
 
-        private static MethodDeclarationSyntax GetMethodDeclaration(MethodInfo methodInfo, SyntaxTree syntaxTree)
-        {
-            SyntaxNode root = syntaxTree.GetRoot();
+            dependentTypes = dependentTypes.Concat(methodInfo.GetParameters().Select(p => p.ParameterType).Concat(new[] { methodInfo.ReturnType })).Distinct();
 
-            MethodDeclarationSyntax methodNode = root.DescendantNodes().OfType<MethodDeclarationSyntax>()
-                .First(n => (n.Identifier.ValueText == methodInfo.Name || n.Identifier.ValueText == DelegateEntryPointName)
-                    && n.ParameterList.Parameters.Count == methodInfo.GetParameters().Length);
-
-            return methodNode;
-        }
-
-        private void WriteTopLevelMethod(MethodInfo methodInfo, IEnumerable<Attribute>? attributes = null, string? explicitMethodName = null)
-        {
-            IList<MethodInfo> methodInfos = methodInfo.GetBaseMethods();
-
-            for (int depth = methodInfos.Count - 1; depth >= 0; depth--)
+            foreach (Type type in dependentTypes)
             {
-                MethodInfo currentMethodInfo = methodInfos[depth];
-                WriteMethod(currentMethodInfo, attributes, depth, explicitMethodName);
+                AddType(type);
             }
         }
 
-        private void WriteMethod(MethodInfo methodInfo, IEnumerable<Attribute>? attributes = null, int depth = 0, string? explicitMethodName = null)
+        private void WriteMethod(MethodInfo methodInfo, IEnumerable<Attribute>? attributes = null, string? explicitMethodName = null, bool isTopLevel = false)
         {
+            bool isStatic = methodInfo.IsStatic;
+
             var methodAttributes = methodInfo.GetCustomAttributes();
 
             if (attributes != null)
@@ -549,16 +512,15 @@ namespace DirectX12GameEngine.Shaders
 
             foreach (Attribute attribute in methodAttributes)
             {
-                if (depth == 0 || !(attribute is ShaderAttribute))
+                if (isTopLevel || !(attribute is ShaderAttribute))
                 {
                     WriteAttribute(attribute);
                 }
             }
 
-            if (methodInfo.IsStatic) writer.Write("static ");
+            if (isStatic) writer.Write("static ");
 
             string methodName = explicitMethodName ?? methodInfo.Name;
-            methodName = depth > 0 ? $"Base_{depth}_{methodName}" : methodName;
 
             writer.Write(HlslKnownTypes.GetMappedName(methodInfo.ReturnType));
             writer.Write(" ");
@@ -571,20 +533,69 @@ namespace DirectX12GameEngine.Shaders
                 writer.Write(GetHlslSemantic(returnTypeAttribute));
             }
 
+            //if (isTopLevel)
+            //{
+            //    writer.WriteLine();
+            //    writer.WriteLine("{");
+            //    writer.Indent++;
+                
+            //    if (methodInfo.ReturnType != typeof(void))
+            //    {
+            //        writer.Write("return ");
+            //    }
+
+            //    writer.Write($"{methodInfo.DeclaringType.FullName.Replace(".", "::")}::{methodName}");
+            //    writer.Write("(");
+
+            //    ParameterInfo[] parameterInfos = methodInfo.GetParameters();
+
+            //    if (parameterInfos.Length > 0)
+            //    {
+            //        foreach (ParameterInfo parameterInfo in parameterInfos)
+            //        {
+            //            writer.Write(parameterInfo.Name);
+            //            writer.Write(", ");
+            //        }
+
+            //        stringWriter.GetStringBuilder().Length -= 2;
+            //    }
+
+            //    writer.WriteLine(");");
+
+            //    writer.Indent--;
+            //    writer.WriteLine("}");
+            //}
+            //else
             if (methodInfo.GetMethodBody() != null)
             {
-                Compilation compilation = GetCompilation(methodInfo.DeclaringType);
-                MethodDeclarationSyntax methodNode = GetMethodDeclaration(methodInfo, compilation.SyntaxTrees.Single());
-
-                string methodBody = GetMethodBody(methodNode, compilation, depth);
+                string methodBody = GetMethodBody(methodInfo);
 
                 writer.WriteLine();
                 writer.WriteLine(methodBody);
             }
             else
             {
-                writer.WriteLine(";");
+                writer.Write(";");
             }
+
+            writer.WriteLine();
+        }
+
+        private string GetMethodBody(MethodInfo methodInfo)
+        {
+            ShaderMethodAttribute? shaderMethodAttribute = methodInfo.GetCustomAttribute<ShaderMethodAttribute?>();
+
+            string shaderSource = shaderMethodAttribute?.ShaderSource ?? ShaderMethodGenerator.GetMethodBody(methodInfo);
+
+            // Indent every line
+            string indent = "";
+
+            for (int i = 0; i < writer.Indent; i++)
+            {
+                indent += IndentedTextWriter.DefaultTabString;
+            }
+
+            return shaderSource.Replace(Environment.NewLine, Environment.NewLine + indent).Trim();
         }
 
         private void WriteAttribute(Attribute attribute)
@@ -651,79 +662,6 @@ namespace DirectX12GameEngine.Shaders
             }
 
             writer.Write(")");
-        }
-
-        private string GetMethodBody(MethodDeclarationSyntax methodNode, Compilation compilation, int depth = 0)
-        {
-            ShaderSyntaxRewriter syntaxRewriter = new ShaderSyntaxRewriter(compilation, this, true, depth);
-            SyntaxNode newBody = syntaxRewriter.Visit(methodNode.Body);
-
-            string shaderSource = newBody.ToFullString();
-
-            // TODO: See why the System namespace in System.Math is not present in UWP projects.
-            shaderSource = shaderSource.Replace("Math.Max", "max");
-            shaderSource = shaderSource.Replace("Math.Pow", "pow");
-            shaderSource = shaderSource.Replace("Math.Sin", "sin");
-
-            shaderSource = shaderSource.Replace("vector", "vec");
-            shaderSource = Regex.Replace(shaderSource, @"\d+[fF]", m => m.Value.Replace("f", ""));
-
-            shaderSource = shaderSource.TrimStart(' ');
-
-            // Indent every line
-            string indent = "";
-
-            for (int i = 0; i < writer.Indent; i++)
-            {
-                indent += IndentedTextWriter.DefaultTabString;
-            }
-
-            return shaderSource.Replace(Environment.NewLine + IndentedTextWriter.DefaultTabString, Environment.NewLine + indent).TrimEnd(' ');
-        }
-
-        private static Compilation GetCompilation(Type type)
-        {
-            lock (decompiledTypes)
-            {
-                if (!decompiledTypes.TryGetValue(type, out Compilation compilation))
-                {
-                    EntityHandle handle = MetadataTokenHelpers.TryAsEntityHandle(type.MetadataToken) ?? throw new InvalidOperationException();
-                    string assemblyPath = type.Assembly.Location;
-
-                    if (!decompilers.TryGetValue(assemblyPath, out CSharpDecompiler decompiler))
-                    {
-                        decompiler = CreateDecompiler(assemblyPath);
-                        decompilers.Add(assemblyPath, decompiler);
-                    }
-
-                    string sourceCode = decompiler.DecompileAsString(handle);
-
-                    sourceCode = ClosureTypeDeclarationRegex.Replace(sourceCode, "Shader");
-                    sourceCode = LambdaMethodDeclarationRegex.Replace(sourceCode, $"internal void {DelegateEntryPointName}");
-
-                    SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, CSharpParseOptions.Default.WithLanguageVersion(Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp8));
-                    compilation = globalCompilation.AddSyntaxTrees(syntaxTree);
-
-                    decompiledTypes.Add(type, compilation);
-                }
-
-                return compilation;
-            }
-        }
-
-        private static CSharpDecompiler CreateDecompiler(string assemblyPath)
-        {
-            UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(assemblyPath, false, "netstandard");
-
-            DecompilerSettings decompilerSettings = new DecompilerSettings(ICSharpCode.Decompiler.CSharp.LanguageVersion.CSharp8_0)
-            {
-                ObjectOrCollectionInitializers = false,
-                UsingDeclarations = false
-            };
-
-            decompilerSettings.CSharpFormattingOptions.IndentationString = IndentedTextWriter.DefaultTabString;
-
-            return new CSharpDecompiler(assemblyPath, resolver, decompilerSettings);
         }
 
         private class HlslBindingTracker

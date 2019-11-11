@@ -31,6 +31,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         public IMaterialSpecularModelFeature SpecularModel { get; set; } = new MaterialSpecularMicrofacetModelFeature();
 
         [ShaderMember]
+        [ShaderMethod]
         public void ComputeSurfaceLightingAndShading()
         {
             Vector3 materialNormal = Vector3.Normalize(MaterialPixelStream.MaterialNormal);
@@ -60,6 +61,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         [Shader("pixel")]
         public override PSOutput PSMain(PSInput input)
         {

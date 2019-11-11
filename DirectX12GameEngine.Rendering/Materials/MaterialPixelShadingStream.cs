@@ -17,6 +17,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderMember] public static float VDotH;
 
         [ShaderMember]
+        [ShaderMethod]
         public static void PrepareMaterialPerDirectLight()
         {
             H = Vector3.Normalize(MaterialPixelStream.ViewWS + LightStream.LightDirectionWS);
@@ -26,6 +27,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public static void Reset()
         {
             ShadingColorAlpha = 1.0f;

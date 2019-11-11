@@ -20,6 +20,7 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
         public bool IsBlackAndWhite { get; set; }
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector3 Compute(float LightIn)
         {
             if (IsBlackAndWhite)

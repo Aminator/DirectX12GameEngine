@@ -16,6 +16,7 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
         public IMaterialCelShadingLightFunction RampFunction { get; set; } = new MaterialCelShadingLightDefault();
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector3 ComputeDirectLightContribution()
         {
             Vector3 lightColorNDotL = LightStream.LightColor * RampFunction.Compute(LightStream.NDotL);
@@ -27,6 +28,7 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector3 ComputeEnvironmentLightContribution()
         {
             return default;

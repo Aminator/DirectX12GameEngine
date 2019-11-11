@@ -16,6 +16,7 @@ namespace DirectX12GameEngine.Rendering.Lights
         /// Compute the light color/direction for the specified index within this group.
         /// </summary>
         [ShaderMember]
+        [ShaderMethod]
         public void PrepareDirectLight(int lightIndex)
         {
             PrepareDirectLightCore(lightIndex);
@@ -27,6 +28,7 @@ namespace DirectX12GameEngine.Rendering.Lights
         }
 
         [ShaderMember]
+        [ShaderMethod]
         protected virtual void PrepareDirectLightCore(int lightIndex)
         {
         }
