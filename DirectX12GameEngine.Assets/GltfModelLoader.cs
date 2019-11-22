@@ -60,7 +60,7 @@ namespace DirectX12GameEngine.Assets
 
             if (!diffuseTextureIndex.HasValue)
             {
-                if (material.Extensions?.FirstOrDefault().Value is Newtonsoft.Json.Linq.JObject jObject && jObject.TryGetValue("diffuseTexture", out Newtonsoft.Json.Linq.JToken token))
+                if (material.Extensions?.FirstOrDefault().Value is Newtonsoft.Json.Linq.JObject jObject && jObject.TryGetValue("diffuseTexture", out Newtonsoft.Json.Linq.JToken? token))
                 {
                     if (token.FirstOrDefault(t => (t as Newtonsoft.Json.Linq.JProperty)?.Name == "index") is Newtonsoft.Json.Linq.JProperty indexToken)
                     {
@@ -73,7 +73,7 @@ namespace DirectX12GameEngine.Assets
 
             if (!metallicRoughnessTextureIndex.HasValue)
             {
-                if (material.Extensions?.FirstOrDefault().Value is Newtonsoft.Json.Linq.JObject jObject && jObject.TryGetValue("specularGlossinessTexture", out Newtonsoft.Json.Linq.JToken token))
+                if (material.Extensions?.FirstOrDefault().Value is Newtonsoft.Json.Linq.JObject jObject && jObject.TryGetValue("specularGlossinessTexture", out Newtonsoft.Json.Linq.JToken? token))
                 {
                     if (token.FirstOrDefault(t => (t as Newtonsoft.Json.Linq.JProperty)?.Name == "index") is Newtonsoft.Json.Linq.JProperty indexToken)
                     {

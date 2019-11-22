@@ -1,6 +1,4 @@
-﻿using SharpGen.Runtime;
-using System.Numerics;
-using Vortice.DirectX;
+﻿using System.Numerics;
 using Vortice.DXGI;
 using Windows.UI.Xaml.Controls;
 

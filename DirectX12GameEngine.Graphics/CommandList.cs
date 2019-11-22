@@ -364,7 +364,7 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetPrimitiveTopology(PrimitiveTopology primitiveTopology)
         {
-            currentCommandList.NativeCommandList.IASetPrimitiveTopology((Vortice.DirectX.Direct3D.PrimitiveTopology)primitiveTopology);
+            currentCommandList.NativeCommandList.IASetPrimitiveTopology((Vortice.Direct3D.PrimitiveTopology)primitiveTopology);
         }
 
         public void SetRenderTargets(Texture? depthStencilView, params GraphicsResource[] renderTargetViews)
@@ -395,9 +395,9 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetScissorRectangles(params Rectangle[] scissorRectangles)
         {
-            if (scissorRectangles.Length > ID3D12GraphicsCommandList.ViewportAndScissorRectObjectCountPerPipeline)
+            if (scissorRectangles.Length > D3D12.ViewportAndScissorRectObjectCountPerPipeline)
             {
-                throw new ArgumentOutOfRangeException(nameof(scissorRectangles), scissorRectangles.Length, $"The maximum number of scissor rectangles is {ID3D12GraphicsCommandList.ViewportAndScissorRectObjectCountPerPipeline}.");
+                throw new ArgumentOutOfRangeException(nameof(scissorRectangles), scissorRectangles.Length, $"The maximum number of scissor rectangles is {D3D12.ViewportAndScissorRectObjectCountPerPipeline}.");
             }
 
             if (ScissorRectangles.Length != scissorRectangles.Length)
@@ -424,9 +424,9 @@ namespace DirectX12GameEngine.Graphics
 
         public void SetViewports(params Viewport[] viewports)
         {
-            if (viewports.Length > ID3D12GraphicsCommandList.ViewportAndScissorRectObjectCountPerPipeline)
+            if (viewports.Length > D3D12.ViewportAndScissorRectObjectCountPerPipeline)
             {
-                throw new ArgumentOutOfRangeException(nameof(viewports), viewports.Length, $"The maximum number of viewports is {ID3D12GraphicsCommandList.ViewportAndScissorRectObjectCountPerPipeline}.");
+                throw new ArgumentOutOfRangeException(nameof(viewports), viewports.Length, $"The maximum number of viewports is {D3D12.ViewportAndScissorRectObjectCountPerPipeline}.");
             }
 
             if (Viewports.Length != viewports.Length)

@@ -35,7 +35,7 @@ namespace DirectX12GameEngine.Graphics
 #endif
             FeatureLevel = minFeatureLevel < FeatureLevel.Level11_0 ? FeatureLevel.Level11_0 : minFeatureLevel;
 
-            Result result = D3D12.D3D12CreateDevice(null, (Vortice.DirectX.Direct3D.FeatureLevel)FeatureLevel, out ID3D12Device device);
+            Result result = D3D12.D3D12CreateDevice(null, (Vortice.Direct3D.FeatureLevel)FeatureLevel, out ID3D12Device device);
 
             if (result.Failure)
             {
@@ -91,7 +91,7 @@ namespace DirectX12GameEngine.Graphics
                 if (nativeDirect3D11Device is null)
                 {
                     Result result = Vortice.Direct3D11.D3D11.D3D11On12CreateDevice(
-                        NativeDevice, Vortice.Direct3D11.DeviceCreationFlags.BgraSupport, new[] { (Vortice.DirectX.Direct3D.FeatureLevel)FeatureLevel }, new[] { NativeDirectCommandQueue }, 0,
+                        NativeDevice, Vortice.Direct3D11.DeviceCreationFlags.BgraSupport, new[] { (Vortice.Direct3D.FeatureLevel)FeatureLevel }, new[] { NativeDirectCommandQueue }, 0,
                         out nativeDirect3D11Device, out _, out _);
 
                     if (result.Failure)
