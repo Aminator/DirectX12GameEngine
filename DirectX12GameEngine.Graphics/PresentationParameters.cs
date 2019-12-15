@@ -33,5 +33,7 @@ namespace DirectX12GameEngine.Graphics
         public bool Stereo { get; set; }
 
         public int SyncInterval { get; set; } = 1;
+
+        public PresentationParameters Clone() => (PresentationParameters)MemberwiseClone();
     }
 }

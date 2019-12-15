@@ -56,7 +56,7 @@ namespace DirectX12GameEngine.Graphics
                 renderTargets[i].Dispose();
             }
 
-            SwapChain.ResizeBuffers(BufferCount, width, height, (Format)PresentationParameters.BackBufferFormat, SwapChainFlags.None);
+            SwapChain.ResizeBuffers(BufferCount, width, height, Format.Unknown, SwapChainFlags.None);
 
             CreateRenderTargets();
         }
@@ -71,7 +71,7 @@ namespace DirectX12GameEngine.Graphics
         {
             for (int i = 0; i < BufferCount; i++)
             {
-                renderTargets[i] = new Texture(GraphicsDevice).InitializeFrom(SwapChain.GetBuffer<ID3D12Resource>(i));
+                renderTargets[i] = new Texture(GraphicsDevice).InitializeFrom(SwapChain.GetBuffer<ID3D12Resource>(i), PresentationParameters.BackBufferFormat.IsSRgb());
             }
         }
     }

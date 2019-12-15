@@ -37,7 +37,7 @@ namespace DirectX12GameEngine.Graphics
                 BufferCount = BufferCount,
                 Scaling = Scaling.Stretch,
                 SwapEffect = SwapEffect.FlipSequential,
-                Format = (Format)presentationParameters.BackBufferFormat,
+                Format = (Format)presentationParameters.BackBufferFormat.ToNonSRgb(),
                 Flags = SwapChainFlags.None,
                 AlphaMode = AlphaMode.Unspecified
             };

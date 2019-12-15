@@ -28,15 +28,15 @@ namespace DirectX12GameEngine.Graphics
 
         internal CpuDescriptorHandle NativeDepthStencilView { get; private set; }
 
-        public static async Task<Texture> LoadAsync(GraphicsDevice device, string filePath)
+        public static async Task<Texture> LoadAsync(GraphicsDevice device, string filePath, bool isSRgb = false)
         {
             using FileStream stream = File.OpenRead(filePath);
-            return await LoadAsync(device, stream);
+            return await LoadAsync(device, stream, isSRgb);
         }
 
-        public static async Task<Texture> LoadAsync(GraphicsDevice device, Stream stream)
+        public static async Task<Texture> LoadAsync(GraphicsDevice device, Stream stream, bool isSRgb = false)
         {
-            using Image image = await Image.LoadAsync(stream);
+            using Image image = await Image.LoadAsync(stream, isSRgb);
             return New2D(device, image.Data.Span, image.Width, image.Height, image.Description.Format);
         }
 
@@ -65,7 +65,7 @@ namespace DirectX12GameEngine.Graphics
             ID3D12Resource uploadResource = GraphicsDevice.NativeDevice.CreateCommittedResource(new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), HeapFlags.None, NativeResource.Description, ResourceStates.CopyDestination);
             using Texture textureUploadBuffer = new Texture(GraphicsDevice).InitializeFrom(uploadResource);
 
-            textureUploadBuffer.NativeResource!.WriteToSubresource(0, data, Width * 4, Width * Height * 4);
+            textureUploadBuffer.NativeResource.WriteToSubresource(0, data, Width * 4, Width * Height * 4);
 
             using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
 
@@ -93,11 +93,16 @@ namespace DirectX12GameEngine.Graphics
             return InitializeFrom(resource, description);
         }
 
-        internal Texture InitializeFrom(ID3D12Resource resource, bool isShaderResource = false)
+        internal Texture InitializeFrom(ID3D12Resource resource, bool isSRgb = false)
         {
             resource.GetHeapProperties(out HeapProperties heapProperties, out _);
 
-            TextureDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type, isShaderResource);
+            TextureDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type);
+
+            if (isSRgb)
+            {
+                description.Format = description.Format.ToSRgb();
+            }
 
             return InitializeFrom(resource, description);
         }
@@ -141,7 +146,26 @@ namespace DirectX12GameEngine.Graphics
         internal CpuDescriptorHandle CreateRenderTargetView()
         {
             CpuDescriptorHandle cpuHandle = GraphicsDevice.RenderTargetViewAllocator.Allocate(1);
-            GraphicsDevice.NativeDevice.CreateRenderTargetView(NativeResource, null, cpuHandle);
+
+            RenderTargetViewDescription? rtvDescription = null;
+
+            if (Description.Dimension == TextureDimension.Texture2D)
+            {
+                RenderTargetViewDescription rtvTexture2DDescription = new RenderTargetViewDescription
+                {
+                    Format = (Format)Description.Format,
+                    ViewDimension = Description.DepthOrArraySize > 1 ? RenderTargetViewDimension.Texture2DArray : RenderTargetViewDimension.Texture2D,
+                };
+
+                if (Description.DepthOrArraySize > 1)
+                {
+                    rtvTexture2DDescription.Texture2DArray.ArraySize = Description.DepthOrArraySize;
+                }
+
+                rtvDescription = rtvTexture2DDescription;
+            }
+
+            GraphicsDevice.NativeDevice.CreateRenderTargetView(NativeResource, rtvDescription, cpuHandle);
 
             return cpuHandle;
         }

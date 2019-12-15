@@ -7,7 +7,8 @@ namespace DirectX12GameEngine.Graphics
         protected GraphicsPresenter(GraphicsDevice device, PresentationParameters presentationParameters)
         {
             GraphicsDevice = device;
-            PresentationParameters = presentationParameters;
+            PresentationParameters = presentationParameters.Clone();
+            PresentationParameters.BackBufferFormat = PresentationParameters.BackBufferFormat.ToSRgb();
 
             DepthStencilBuffer = CreateDepthStencilBuffer();
         }

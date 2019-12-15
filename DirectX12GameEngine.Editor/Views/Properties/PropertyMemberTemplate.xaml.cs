@@ -17,7 +17,7 @@ namespace DirectX12GameEngine.Editor.Views.Properties
 
         public static readonly DependencyProperty MemberNameProperty = DependencyProperty.Register(nameof(MemberName), typeof(string), typeof(PropertyMemberTemplate), new PropertyMetadata(default));
 
-        public static readonly DependencyProperty MemberValueProperty = DependencyProperty.Register(nameof(MemberValue), typeof(string), typeof(PropertyMemberTemplate), new PropertyMetadata(default));
+        public static readonly DependencyProperty MemberValueProperty = DependencyProperty.Register(nameof(MemberValue), typeof(double), typeof(PropertyMemberTemplate), new PropertyMetadata(default));
 
         public Brush MemberColor
         {
@@ -31,9 +31,9 @@ namespace DirectX12GameEngine.Editor.Views.Properties
             set => SetValue(MemberNameProperty, value);
         }
 
-        public string MemberValue
+        public double MemberValue
         {
-            get => (string)GetValue(MemberValueProperty);
+            get => (double)GetValue(MemberValueProperty);
             set => SetValue(MemberValueProperty, value);
         }
     }

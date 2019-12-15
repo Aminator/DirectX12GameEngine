@@ -1,4 +1,5 @@
-﻿using Vortice.Direct3D11;
+﻿using System;
+using Vortice.Direct3D11;
 using Vortice.Direct3D12;
 using Vortice.DXGI;
 using Windows.Graphics.DirectX.Direct3D11;
@@ -127,7 +128,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
             ID3D11Texture2D direct3DBackBuffer = new ID3D11Texture2D(surface.NativePointer);
 
-            PresentationParameters.BackBufferFormat = (PixelFormat)direct3DBackBuffer.Description.Format;
+            PresentationParameters.BackBufferFormat = ((PixelFormat)direct3DBackBuffer.Description.Format).ToSRgb();
             PresentationParameters.BackBufferWidth = direct3DBackBuffer.Description.Width;
             PresentationParameters.BackBufferHeight = direct3DBackBuffer.Description.Height;
 

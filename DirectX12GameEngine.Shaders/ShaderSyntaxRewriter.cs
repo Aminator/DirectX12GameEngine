@@ -17,24 +17,24 @@ namespace DirectX12GameEngine.Shaders
 
         private SemanticModel GetSemanticModel(SyntaxNode node) => compilation.GetSemanticModel(node.SyntaxTree);
 
-        public override SyntaxNode VisitCastExpression(CastExpressionSyntax node)
+        public override SyntaxNode? VisitCastExpression(CastExpressionSyntax node)
         {
-            node = (CastExpressionSyntax)base.VisitCastExpression(node);
+            node = (CastExpressionSyntax)base.VisitCastExpression(node)!;
             return node.ReplaceType(node.Type);
         }
 
-        public override SyntaxNode VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax node)
+        public override SyntaxNode? VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax node)
         {
-            node = (LocalDeclarationStatementSyntax)base.VisitLocalDeclarationStatement(node);
+            node = (LocalDeclarationStatementSyntax)base.VisitLocalDeclarationStatement(node)!;
             return node.ReplaceType(node.Declaration.Type);
         }
 
-        public override SyntaxNode VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
+        public override SyntaxNode? VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
         {
-            node = (ObjectCreationExpressionSyntax)base.VisitObjectCreationExpression(node);
+            node = (ObjectCreationExpressionSyntax)base.VisitObjectCreationExpression(node)!;
             node = node.ReplaceType(node.Type);
 
-            if (node.ArgumentList.Arguments.Count == 0)
+            if (node.ArgumentList!.Arguments.Count == 0)
             {
                 return SyntaxFactory.CastExpression(node.Type, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
             }
@@ -44,18 +44,18 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        public override SyntaxNode VisitDefaultExpression(DefaultExpressionSyntax node)
+        public override SyntaxNode? VisitDefaultExpression(DefaultExpressionSyntax node)
         {
-            node = (DefaultExpressionSyntax)base.VisitDefaultExpression(node);
+            node = (DefaultExpressionSyntax)base.VisitDefaultExpression(node)!;
             node = node.ReplaceType(node.Type);
 
             CastExpressionSyntax castExpressionSyntax = SyntaxFactory.CastExpression(node.Type, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
             return SyntaxFactory.ParenthesizedExpression(castExpressionSyntax);
         }
 
-        public override SyntaxNode VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
+        public override SyntaxNode? VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
         {
-            MemberAccessExpressionSyntax newBaseNode = (MemberAccessExpressionSyntax)base.VisitMemberAccessExpression(node);
+            MemberAccessExpressionSyntax newBaseNode = (MemberAccessExpressionSyntax)base.VisitMemberAccessExpression(node)!;
 
             SyntaxNode? newNode = null;
 

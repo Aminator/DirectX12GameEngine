@@ -3,9 +3,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     xmlns:local="using:DirectX12GameEngine.Editor.Views.Properties"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     d:DesignHeight="32"
     d:DesignWidth="120"
     mc:Ignorable="d">
@@ -26,6 +26,9 @@
                 Text="{x:Bind MemberName, Mode=OneWay}" />
         </Grid>
 
-        <TextBox Grid.Column="1" Text="{x:Bind MemberValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <winui:NumberBox
+            Grid.Column="1"
+            AcceptsExpression="True"
+            Value="{x:Bind MemberValue, Mode=TwoWay}" />
     </Grid>
 </UserControl>

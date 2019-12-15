@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
@@ -60,11 +61,13 @@ namespace DirectX12GameEngine.Assets
 
             if (!diffuseTextureIndex.HasValue)
             {
-                if (material.Extensions?.FirstOrDefault().Value is Newtonsoft.Json.Linq.JObject jObject && jObject.TryGetValue("diffuseTexture", out Newtonsoft.Json.Linq.JToken? token))
+                if (material.Extensions.TryGetValue("KHR_materials_pbrSpecularGlossiness", out object value) && value is JsonElement element)
                 {
-                    if (token.FirstOrDefault(t => (t as Newtonsoft.Json.Linq.JProperty)?.Name == "index") is Newtonsoft.Json.Linq.JProperty indexToken)
+                    JsonProperty diffuseTextureProperty = element.EnumerateObject().FirstOrDefault(p => p.Name == "diffuseTexture");
+
+                    if (!EqualityComparer<JsonProperty>.Default.Equals(diffuseTextureProperty, default))
                     {
-                        diffuseTextureIndex = (int)indexToken.Value;
+                        diffuseTextureIndex = diffuseTextureProperty.Value.EnumerateObject().First(p => p.Name == "index").Value.GetInt32();
                     }
                 }
             }
@@ -73,11 +76,13 @@ namespace DirectX12GameEngine.Assets
 
             if (!metallicRoughnessTextureIndex.HasValue)
             {
-                if (material.Extensions?.FirstOrDefault().Value is Newtonsoft.Json.Linq.JObject jObject && jObject.TryGetValue("specularGlossinessTexture", out Newtonsoft.Json.Linq.JToken? token))
+                if (material.Extensions.TryGetValue("KHR_materials_pbrSpecularGlossiness", out object value) && value is JsonElement element)
                 {
-                    if (token.FirstOrDefault(t => (t as Newtonsoft.Json.Linq.JProperty)?.Name == "index") is Newtonsoft.Json.Linq.JProperty indexToken)
+                    JsonProperty specularGlossinessTextureProperty = element.EnumerateObject().FirstOrDefault(p => p.Name == "specularGlossinessTexture");
+
+                    if (!EqualityComparer<JsonProperty>.Default.Equals(specularGlossinessTextureProperty, default))
                     {
-                        specularGlossinessTextureIndex = (int)indexToken.Value;
+                        specularGlossinessTextureIndex = specularGlossinessTextureProperty.Value.EnumerateObject().First(p => p.Name == "index").Value.GetInt32();
                     }
                 }
             }
@@ -86,7 +91,7 @@ namespace DirectX12GameEngine.Assets
 
             if (diffuseTextureIndex.HasValue)
             {
-                Texture diffuseTexture = await GetTextureAsync(diffuseTextureIndex.Value);
+                Texture diffuseTexture = await GetTextureAsync(diffuseTextureIndex.Value, true);
                 materialAttributes.Diffuse = new MaterialDiffuseMapFeature(new ComputeTextureColor(diffuseTexture));
             }
             else
@@ -126,7 +131,7 @@ namespace DirectX12GameEngine.Assets
             return materialAttributes;
         }
 
-        public async Task<Texture> GetTextureAsync(int textureIndex)
+        public async Task<Texture> GetTextureAsync(int textureIndex, bool isSRgb = false)
         {
             int imageIndex = gltf.Textures[textureIndex].Source ?? throw new Exception();
             GltfLoader.Schema.Image image = gltf.Images[imageIndex];
@@ -137,7 +142,7 @@ namespace DirectX12GameEngine.Assets
             byte[] currentBuffer = buffers[bufferView.Buffer];
 
             MemoryStream stream = new MemoryStream(currentBuffer, bufferView.ByteOffset, bufferView.ByteLength);
-            Texture texture = await Texture.LoadAsync(GraphicsDevice, stream);
+            Texture texture = await Texture.LoadAsync(GraphicsDevice, stream, isSRgb);
             return texture;
         }
 
@@ -264,8 +269,8 @@ namespace DirectX12GameEngine.Assets
 
             stride = accessor.ComponentType switch
             {
-                Accessor.ComponentTypeEnum.UInt16 => GetCountOfAccessorType(accessor.Type) * sizeof(ushort),
-                Accessor.ComponentTypeEnum.UInt32 => GetCountOfAccessorType(accessor.Type) * sizeof(uint),
+                Accessor.GltfComponentType.UnsignedShort => GetCountOfAccessorType(accessor.Type) * sizeof(ushort),
+                Accessor.GltfComponentType.UnsignedInt => GetCountOfAccessorType(accessor.Type) * sizeof(uint),
                 _ => throw new NotSupportedException("This component type is not supported.")
             };
 
@@ -283,22 +288,11 @@ namespace DirectX12GameEngine.Assets
 
             stride = accessor.ComponentType switch
             {
-                Accessor.ComponentTypeEnum.Float => GetCountOfAccessorType(accessor.Type) * sizeof(float),
+                Accessor.GltfComponentType.Float => GetCountOfAccessorType(accessor.Type) * sizeof(float),
                 _ => throw new NotSupportedException("This component type is not supported.")
             };
 
             return buffers[bufferView.Buffer].AsSpan(offset, stride * accessor.Count);
-        }
-
-        private static Task<Gltf> LoadGltfModelAsync(string filePath)
-        {
-            return Task.Run(() => Interface.LoadModel(filePath));
-        }
-
-        private static async Task<Gltf> LoadGltfModelAsync(Stream stream)
-        {
-            Gltf gltf = await Task.Run(() => Interface.LoadModel(stream));
-            return gltf;
         }
 
         private static async Task<(Gltf, byte[][])> GetGltfModelAndBuffersAsync(Stream stream)
@@ -309,7 +303,7 @@ namespace DirectX12GameEngine.Assets
             using MemoryStream memoryStream1 = new MemoryStream(buffer);
             using MemoryStream memoryStream2 = new MemoryStream(buffer);
 
-            Gltf gltf = await LoadGltfModelAsync(memoryStream1);
+            Gltf gltf = await Interface.LoadModelAsync(memoryStream1);
             byte[][] buffers = GetGltfModelBuffers(gltf, memoryStream2);
 
             return (gltf, buffers);
@@ -339,15 +333,15 @@ namespace DirectX12GameEngine.Assets
             return buffers;
         }
 
-        private static int GetCountOfAccessorType(Accessor.TypeEnum type) => type switch
+        private static int GetCountOfAccessorType(Accessor.GltfType type) => type switch
         {
-            Accessor.TypeEnum.Scalar => 1,
-            Accessor.TypeEnum.Vec2 => 2,
-            Accessor.TypeEnum.Vec3 => 3,
-            Accessor.TypeEnum.Vec4 => 4,
-            Accessor.TypeEnum.Mat2 => 4,
-            Accessor.TypeEnum.Mat3 => 9,
-            Accessor.TypeEnum.Mat4 => 16,
+            Accessor.GltfType.Scalar => 1,
+            Accessor.GltfType.Vec2 => 2,
+            Accessor.GltfType.Vec3 => 3,
+            Accessor.GltfType.Vec4 => 4,
+            Accessor.GltfType.Mat2 => 4,
+            Accessor.GltfType.Mat3 => 9,
+            Accessor.GltfType.Mat4 => 16,
             _ => throw new NotSupportedException("This type is not supported.")
         };
     }

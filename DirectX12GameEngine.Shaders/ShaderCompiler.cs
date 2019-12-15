@@ -5,9 +5,11 @@ namespace DirectX12GameEngine.Shaders
 {
     public static class ShaderCompiler
     {
+        private static readonly object compileLock = new object();
+
         public static byte[] Compile(DxcShaderStage shaderStage, string source, string entryPoint, string sourceName = "")
         {
-            return Compile(shaderStage, source, entryPoint, sourceName, DxcShaderModel.Model6_3);
+            return Compile(shaderStage, source, entryPoint, sourceName, DxcShaderModel.Model6_1);
         }
 
         public static byte[] Compile(DxcShaderStage shaderStage, string source, string entryPoint, string sourceName, DxcShaderModel shaderModel)

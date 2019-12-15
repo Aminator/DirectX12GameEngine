@@ -25,26 +25,26 @@ namespace DirectX12GameEngine.Graphics
             Data = data;
         }
 
-        public static async Task<Image> LoadAsync(string filePath)
+        public static async Task<Image> LoadAsync(string filePath, bool isSRgb = false)
         {
             using FileStream stream = File.OpenRead(filePath);
-            return await LoadAsync(stream);
+            return await LoadAsync(stream, isSRgb);
         }
 
-        public static async Task<Image> LoadAsync(Stream stream)
+        public static async Task<Image> LoadAsync(Stream stream, bool isSRgb = false)
         {
             BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream.AsRandomAccessStream());
 
             PixelDataProvider pixelDataProvider = await decoder.GetPixelDataAsync(
                 decoder.BitmapPixelFormat, decoder.BitmapAlphaMode, new BitmapTransform(),
-                ExifOrientationMode.RespectExifOrientation, ColorManagementMode.DoNotColorManage);
+                ExifOrientationMode.RespectExifOrientation, isSRgb ? ColorManagementMode.DoNotColorManage : ColorManagementMode.DoNotColorManage);
 
             byte[] imageBuffer = pixelDataProvider.DetachPixelData();
 
             PixelFormat pixelFormat = decoder.BitmapPixelFormat switch
             {
-                BitmapPixelFormat.Rgba8 => PixelFormat.R8G8B8A8_UNorm,
-                BitmapPixelFormat.Bgra8 => PixelFormat.B8G8R8A8_UNorm,
+                BitmapPixelFormat.Rgba8 => isSRgb ? PixelFormat.R8G8B8A8_UNorm_SRgb : PixelFormat.R8G8B8A8_UNorm,
+                BitmapPixelFormat.Bgra8 => isSRgb ? PixelFormat.B8G8R8A8_UNorm_SRgb : PixelFormat.B8G8R8A8_UNorm,
                 _ => throw new NotSupportedException("This format is not supported.")
             };
 

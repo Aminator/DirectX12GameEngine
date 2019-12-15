@@ -150,7 +150,7 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsBuffer Slice(int start, int length)
         {
-            return new GraphicsBuffer(GraphicsDevice).InitializeFrom(NativeResource!, Description, FirstElement + start, length);
+            return new GraphicsBuffer(GraphicsDevice).InitializeFrom(NativeResource, Description, FirstElement + start, length);
         }
 
         public GraphicsBuffer InitializeFrom(GraphicsBufferDescription description)
@@ -283,7 +283,7 @@ namespace DirectX12GameEngine.Graphics
 
             ConstantBufferViewDescription cbvDescription = new ConstantBufferViewDescription
             {
-                BufferLocation = NativeResource!.GPUVirtualAddress,
+                BufferLocation = NativeResource.GPUVirtualAddress,
                 SizeInBytes = constantBufferSize
             };
 
@@ -348,7 +348,7 @@ namespace DirectX12GameEngine.Graphics
         public new GraphicsBuffer<T> Slice(int start, int length)
         {
             GraphicsBuffer<T> buffer = new GraphicsBuffer<T>(GraphicsDevice);
-            buffer.InitializeFrom(NativeResource!, Description, FirstElement + start, length);
+            buffer.InitializeFrom(NativeResource, Description, FirstElement + start, length);
 
             return buffer;
         }

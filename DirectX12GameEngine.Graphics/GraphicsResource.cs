@@ -5,22 +5,23 @@ namespace DirectX12GameEngine.Graphics
 {
     public abstract class GraphicsResource : IDisposable
     {
-#nullable disable
+        private GraphicsDevice? graphicsDevice;
+        private ID3D12Resource? nativeResource;
+
         protected GraphicsResource()
         {
         }
-#nullable restore
 
         protected GraphicsResource(GraphicsDevice device)
         {
             GraphicsDevice = device;
         }
 
-        public GraphicsDevice GraphicsDevice { get; set; }
+        public GraphicsDevice GraphicsDevice { get => graphicsDevice ?? throw new InvalidOperationException(); set => graphicsDevice = value ?? throw new ArgumentNullException(); }
 
         public IntPtr MappedResource { get; private set; }
 
-        protected internal ID3D12Resource? NativeResource { get; protected set; }
+        protected internal ID3D12Resource NativeResource { get => nativeResource ?? throw new InvalidOperationException(); protected set => nativeResource = value ?? throw new ArgumentNullException(); }
 
         protected internal CpuDescriptorHandle NativeRenderTargetView { get; protected set; }
 
@@ -30,19 +31,19 @@ namespace DirectX12GameEngine.Graphics
 
         public virtual void Dispose()
         {
-            NativeResource?.Dispose();
+            nativeResource?.Dispose();
         }
 
         public IntPtr Map(int subresource)
         {
-            IntPtr mappedResource = NativeResource?.Map(subresource) ?? throw new InvalidOperationException();
+            IntPtr mappedResource = NativeResource.Map(subresource);
             MappedResource = mappedResource;
             return mappedResource;
         }
 
         public void Unmap(int subresource)
         {
-            NativeResource?.Unmap(subresource);
+            NativeResource.Unmap(subresource);
             MappedResource = IntPtr.Zero;
         }
     }

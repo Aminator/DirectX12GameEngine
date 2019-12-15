@@ -1,2 +1,2 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TextureAsset xmlns="http://schemas.directx12gameengine.com/xaml" Source="Assets\Resources\Models\Cliffhouse\Cliffhouse_img1.png" />
+<TextureAsset xmlns="http://schemas.directx12gameengine.com/xaml" Source="Assets\Resources\Models\Cliffhouse\Cliffhouse_img1.png" IsSRgb="True" />

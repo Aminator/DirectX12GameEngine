@@ -30,6 +30,10 @@
             <Setter Property="Columns" Value="1" />
         </Style>
 
+        <Style TargetType="winui:NumberBox">
+            <Setter Property="AcceptsExpression" Value="True" />
+        </Style>
+
         <DataTemplate x:Key="ClassPropertyTemplate" x:DataType="properties:ClassPropertyViewModel">
             <winui:TreeViewItem
                 HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
@@ -80,13 +84,13 @@
 
         <DataTemplate x:Key="SinglePropertyTemplate" x:DataType="properties:SinglePropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="DoublePropertyTemplate" x:DataType="properties:DoublePropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
@@ -98,37 +102,37 @@
 
         <DataTemplate x:Key="BytePropertyTemplate" x:DataType="properties:BytePropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="SBytePropertyTemplate" x:DataType="properties:SBytePropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="Int16PropertyTemplate" x:DataType="properties:Int16PropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="UInt16PropertyTemplate" x:DataType="properties:UInt16PropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="Int32PropertyTemplate" x:DataType="properties:Int32PropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="UInt32PropertyTemplate" x:DataType="properties:UInt32PropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
