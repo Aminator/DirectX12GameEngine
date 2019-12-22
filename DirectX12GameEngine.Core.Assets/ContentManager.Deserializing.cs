@@ -64,7 +64,12 @@ namespace DirectX12GameEngine.Core.Assets
             }
 
             using Stream stream = await FileProvider.OpenStreamAsync(path + FileExtension, FileMode.Open, FileAccess.Read);
-            Type rootObjectType = GetRootObjectType(stream);
+            Type? rootObjectType = GetRootObjectType(stream);
+
+            if (rootObjectType is null)
+            {
+                throw new InvalidOperationException();
+            }
 
             object rootObjectInstance = referenceToReload != null && referenceToReload.Object.GetType().IsAssignableFrom(rootObjectType)
                 ? referenceToReload.Object : Activator.CreateInstance(rootObjectType);

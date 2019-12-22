@@ -143,7 +143,6 @@
                     Scale="1,1,1" />
                 <d:TestScript
                     MyColorChannel="G"
-                    MyDateTime="{x:Null}"
                     MyOtherColorChannel="B"
                     NullProperty="{x:Null}">
                     <d:TestScript.MyStringList>

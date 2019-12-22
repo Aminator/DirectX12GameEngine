@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.Messages;
 using DirectX12GameEngine.Mvvm;
@@ -107,23 +105,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 IsProjectLoaded = true;
 
                 StorageFolderViewModel item = new StorageFolderViewModel(folder);
-                Messenger.Default.Send<ProjectLoadedMessage>(new ProjectLoadedMessage(item));
-
-                await LoadAssemblyAsync(folder);
-            }
-        }
-
-        private async Task LoadAssemblyAsync(StorageFolder folder)
-        {
-            try
-            {
-                StorageFile assemblyFile = await folder.GetFileAsync(Path.Combine(@"bin\Debug\netstandard2.0", folder.Name + ".dll"));
-                StorageFile assemblyFileCopy = await assemblyFile.CopyAsync(ApplicationData.Current.TemporaryFolder, assemblyFile.Name, NameCollisionOption.ReplaceExisting);
-
-                Assembly.LoadFrom(assemblyFileCopy.Path);
-            }
-            finally
-            {
+                Messenger.Default.Send(new ProjectLoadedMessage(item));
             }
         }
     }

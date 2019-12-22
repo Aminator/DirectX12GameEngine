@@ -12,13 +12,13 @@ namespace DirectX12GameEngine.Input
         {
             control = coreWindow;
 
-            control.PointerCaptureLost += Control_PointerCaptureLost;
-            control.PointerEntered += Control_PointerEntered;
-            control.PointerExited += Control_PointerExited;
-            control.PointerMoved += Control_PointerMoved;
-            control.PointerPressed += Control_PointerPressed;
-            control.PointerReleased += Control_PointerReleased;
-            control.PointerWheelChanged += Control_PointerWheelChanged;
+            control.PointerCaptureLost += OnControlPointerCaptureLost;
+            control.PointerEntered += OnControlPointerEntered;
+            control.PointerExited += OnControlPointerExited;
+            control.PointerMoved += OnControlPointerMoved;
+            control.PointerPressed += OnControlPointerPressed;
+            control.PointerReleased += OnControlPointerReleased;
+            control.PointerWheelChanged += OnControlPointerWheelChanged;
         }
 
         public override bool HasCapture => true;
@@ -41,46 +41,46 @@ namespace DirectX12GameEngine.Input
         {
             base.Dispose();
 
-            control.PointerCaptureLost -= Control_PointerCaptureLost;
-            control.PointerEntered -= Control_PointerEntered;
-            control.PointerExited -= Control_PointerExited;
-            control.PointerMoved -= Control_PointerMoved;
-            control.PointerPressed -= Control_PointerPressed;
-            control.PointerReleased -= Control_PointerReleased;
-            control.PointerWheelChanged -= Control_PointerWheelChanged;
+            control.PointerCaptureLost -= OnControlPointerCaptureLost;
+            control.PointerEntered -= OnControlPointerEntered;
+            control.PointerExited -= OnControlPointerExited;
+            control.PointerMoved -= OnControlPointerMoved;
+            control.PointerPressed -= OnControlPointerPressed;
+            control.PointerReleased -= OnControlPointerReleased;
+            control.PointerWheelChanged -= OnControlPointerWheelChanged;
         }
 
-        private void Control_PointerCaptureLost(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
+        private void OnControlPointerCaptureLost(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
             OnPointerCaptureLost(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerEntered(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
+        private void OnControlPointerEntered(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
             OnPointerEntered(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerExited(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
+        private void OnControlPointerExited(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
             OnPointerExited(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerMoved(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
+        private void OnControlPointerMoved(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
             OnPointerMoved(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerPressed(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
+        private void OnControlPointerPressed(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
             OnPointerPressed(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerReleased(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
+        private void OnControlPointerReleased(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
             OnPointerReleased(new UwpPointerEventArgs(e));
         }
 
-        private void Control_PointerWheelChanged(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
+        private void OnControlPointerWheelChanged(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
             OnPointerWheelChanged(new UwpPointerEventArgs(e));
         }

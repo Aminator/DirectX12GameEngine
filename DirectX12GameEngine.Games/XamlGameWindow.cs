@@ -13,8 +13,8 @@ namespace DirectX12GameEngine.Games
         {
             this.swapChainPanel = swapChainPanel;
 
-            swapChainPanel.SizeChanged += SwapChainPanel_SizeChanged;
-            swapChainPanel.CompositionScaleChanged += SwapChainPanel_CompositionScaleChanged;
+            swapChainPanel.SizeChanged += OnSwapChainPanelSizeChanged;
+            swapChainPanel.CompositionScaleChanged += OnSwapChainPanelCompositionScaleChanged;
         }
 
         public override RectangleF ClientBounds
@@ -29,25 +29,25 @@ namespace DirectX12GameEngine.Games
 
         public override void Dispose()
         {
-            CompositionTarget.Rendering -= CompositionTarget_Rendering;
+            CompositionTarget.Rendering -= OnCompositionTargetRendering;
         }
 
         internal override void Run()
         {
-            CompositionTarget.Rendering += CompositionTarget_Rendering;
+            CompositionTarget.Rendering += OnCompositionTargetRendering;
         }
 
-        private void CompositionTarget_Rendering(object? sender, object e)
+        private void OnCompositionTargetRendering(object? sender, object e)
         {
             Tick();
         }
 
-        private void SwapChainPanel_CompositionScaleChanged(SwapChainPanel sender, object e)
+        private void OnSwapChainPanelCompositionScaleChanged(SwapChainPanel sender, object e)
         {
             OnSizeChanged();
         }
 
-        private void SwapChainPanel_SizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
+        private void OnSwapChainPanelSizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e)
         {
             OnSizeChanged();
         }

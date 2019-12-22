@@ -6,29 +6,29 @@ using SharpGen.Runtime;
 
 namespace DirectX12GameEngine.Graphics
 {
-    internal static class Direct3DInterop
+    public static class Direct3DInterop
     {
         private static readonly Guid ID3D11Resource = new Guid("DC8E63F3-D12B-4952-B47B-5E45026A862D");
-
-        [ComImport]
-        [Guid("A9B3D012-3DF2-4EE3-B8D1-8695F457D3C1")]
-        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        [ComVisible(true)]
-        internal interface IDirect3DDxgiInterfaceAccess : IDisposable
-        {
-            IntPtr GetInterface([In] ref Guid iid);
-        }
 
         [ComImport]
         [Guid("F92F19D2-3ADE-45A6-A20C-F6F1EA90554B")]
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         [ComVisible(true)]
-        internal interface ISwapChainPanelNative : IDisposable
+        public interface ISwapChainPanelNative : IDisposable
         {
             Result SetSwapChain([In] IntPtr swapChain);
         }
 
-        internal static IDirect3DDevice CreateDirect3DDevice(IDXGIDevice dxgiDevice)
+        [ComImport]
+        [Guid("A9B3D012-3DF2-4EE3-B8D1-8695F457D3C1")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        [ComVisible(true)]
+        private interface IDirect3DDxgiInterfaceAccess : IDisposable
+        {
+            IntPtr GetInterface([In] ref Guid iid);
+        }
+
+        public static IDirect3DDevice CreateDirect3DDevice(IDXGIDevice dxgiDevice)
         {
             Result result = CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.NativePointer, out IntPtr graphicsDevice);
 
@@ -40,7 +40,7 @@ namespace DirectX12GameEngine.Graphics
             return d3DInteropDevice;
         }
 
-        internal static IDirect3DSurface CreateDirect3DSurface(IDXGISurface dxgiSurface)
+        public static IDirect3DSurface CreateDirect3DSurface(IDXGISurface dxgiSurface)
         {
             Result result = CreateDirect3D11SurfaceFromDXGISurface(dxgiSurface.NativePointer, out IntPtr graphicsSurface);
 
@@ -52,7 +52,7 @@ namespace DirectX12GameEngine.Graphics
             return d3DSurface;
         }
 
-        internal static IDXGIDevice CreateDXGIDevice(IDirect3DDevice direct3DDevice)
+        public static IDXGIDevice CreateDXGIDevice(IDirect3DDevice direct3DDevice)
         {
             IDirect3DDxgiInterfaceAccess dxgiDeviceInterfaceAccess = (IDirect3DDxgiInterfaceAccess)direct3DDevice;
             IntPtr device = dxgiDeviceInterfaceAccess.GetInterface(ID3D11Resource);
@@ -60,7 +60,7 @@ namespace DirectX12GameEngine.Graphics
             return new IDXGIDevice(device);
         }
 
-        internal static IDXGISurface CreateDXGISurface(IDirect3DSurface direct3DSurface)
+        public static IDXGISurface CreateDXGISurface(IDirect3DSurface direct3DSurface)
         {
             IDirect3DDxgiInterfaceAccess dxgiSurfaceInterfaceAccess = (IDirect3DDxgiInterfaceAccess)direct3DSurface;
             IntPtr surface = dxgiSurfaceInterfaceAccess.GetInterface(ID3D11Resource);

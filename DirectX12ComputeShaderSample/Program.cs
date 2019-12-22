@@ -62,8 +62,8 @@ namespace DirectX12ComputeShaderSample
 
             float[] outputArray = new float[width * height];
 
-            using GraphicsBuffer<float> sourceBuffer = GraphicsBuffer.New(device, array.AsSpan(), GraphicsBufferFlags.ShaderResource);
-            using GraphicsBuffer<float> destinationBuffer = GraphicsBuffer.New<float>(device, array.Length * 2, GraphicsBufferFlags.UnorderedAccess);
+            using GraphicsBuffer<float> sourceBuffer = GraphicsBuffer.New(device, array.AsSpan(), DirectX12GameEngine.Graphics.ResourceFlags.ShaderResource);
+            using GraphicsBuffer<float> destinationBuffer = GraphicsBuffer.New<float>(device, array.Length * 2, DirectX12GameEngine.Graphics.ResourceFlags.UnorderedAccess);
 
             GraphicsBuffer<float> slicedDestinationBuffer = destinationBuffer.Slice(20, 60);
             slicedDestinationBuffer = slicedDestinationBuffer.Slice(10, 50);

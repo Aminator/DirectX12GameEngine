@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-#nullable enable
-
 namespace DirectX12GameEngine.Editor.ViewModels.Properties
 {
     public class PropertyViewModelFactory : IPropertyViewModelFactory, IEnumerable<KeyValuePair<Type, IPropertyViewModelFactory>>
@@ -37,7 +35,15 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
 
         public PropertyViewModel Create(object model, PropertyInfo propertyInfo, object? index)
         {
-            object? value = propertyInfo.GetValue(model, index is null ? null : new object[] { index });
+            object? value = null;
+            
+            try
+            {
+                value = propertyInfo.GetValue(model, index is null ? null : new object[] { index });
+            }
+            catch
+            {
+            }
 
             Type type = value?.GetType() ?? propertyInfo.PropertyType;
 

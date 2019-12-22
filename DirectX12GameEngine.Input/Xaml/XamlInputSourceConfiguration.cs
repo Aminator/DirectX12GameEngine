@@ -5,15 +5,15 @@ namespace DirectX12GameEngine.Input
 {
     public class XamlInputSourceConfiguration : IInputSourceConfiguration
     {
-        public XamlInputSourceConfiguration(UIElement uiElement)
+        public XamlInputSourceConfiguration(UIElement element)
         {
             UwpGamepadInputSource gamepadSource = new UwpGamepadInputSource();
             Sources.Add(gamepadSource);
 
-            XamlKeyboardInputSource keyboardSource = new XamlKeyboardInputSource(uiElement);
+            XamlKeyboardInputSource keyboardSource = new XamlKeyboardInputSource(element);
             Sources.Add(keyboardSource);
 
-            XamlPointerInputSource pointerSource = new XamlPointerInputSource(uiElement);
+            XamlPointerInputSource pointerSource = new XamlPointerInputSource(element);
             Sources.Add(pointerSource);
         }
 

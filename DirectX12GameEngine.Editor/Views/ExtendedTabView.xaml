@@ -17,6 +17,8 @@
             <Setter Property="CanReorderTabs" Value="True" />
             <Setter Property="IsAddTabButtonVisible" Value="False" />
             <Setter Property="TabWidthMode" Value="SizeToContent" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
         </Style>
     </winui:TabView.Style>
 </winui:TabView>

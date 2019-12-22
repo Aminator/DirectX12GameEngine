@@ -82,9 +82,9 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsPresenter? Presenter { get; set; }
 
-        internal ID3D12Device NativeDevice { get; }
+        public ID3D12Device NativeDevice { get; }
 
-        internal Vortice.Direct3D11.ID3D11Device NativeDirect3D11Device
+        public Vortice.Direct3D11.ID3D11Device NativeDirect3D11Device
         {
             get
             {
@@ -115,6 +115,7 @@ namespace DirectX12GameEngine.Graphics
         internal DescriptorAllocator ShaderVisibleShaderResourceViewAllocator { get; }
 
         internal DescriptorAllocator ShaderVisibleSamplerAllocator { get; }
+
 
         internal CommandAllocatorPool BundleAllocatorPool { get; }
 

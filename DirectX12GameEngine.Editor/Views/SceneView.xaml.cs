@@ -17,6 +17,11 @@ namespace DirectX12GameEngine.Editor.Views
         {
             InitializeComponent();
 
+            DataContextChanged += (s, e) =>
+            {
+                Bindings.Update();
+            };
+
             SharedShadow.Receivers.Add(SwapChainPanel);
 
             EntityTreeView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
@@ -27,9 +32,9 @@ namespace DirectX12GameEngine.Editor.Views
             //EditorGame game = new EditorGame(new GameContextWithGraphics() { FileProvider = new FileSystemProvider(rootFolder.Model) });
             game.Run();
 
-            ViewModel = new SceneViewModel(game);
+            DataContext = new SceneViewModel(game);
         }
 
-        public SceneViewModel ViewModel { get; }
+        public SceneViewModel ViewModel => (SceneViewModel)DataContext;
     }
 }

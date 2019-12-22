@@ -36,6 +36,11 @@ namespace DirectX12Game
             }
         }
 
+        protected override void EndDraw()
+        {
+            base.EndDraw();
+        }
+
         protected override async Task LoadContentAsync()
         {
             // TODO: DirectX12GameEngine.Assets.dll does not get copied to the output directory if it is never used.

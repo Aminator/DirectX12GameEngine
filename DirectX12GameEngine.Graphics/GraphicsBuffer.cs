@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Graphics
 
         public int SizeInBytes => Description.SizeInBytes;
 
-        public GraphicsBufferFlags Flags => Description.Flags;
+        public ResourceFlags Flags => Description.Flags;
 
         public GraphicsHeapType HeapType => Description.HeapType;
 
@@ -38,29 +38,29 @@ namespace DirectX12GameEngine.Graphics
             return new GraphicsBuffer(device).InitializeFrom(description);
         }
 
-        public static GraphicsBuffer New(GraphicsDevice device, int size, GraphicsBufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static GraphicsBuffer New(GraphicsDevice device, int size, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
             return New(device, new GraphicsBufferDescription(size, bufferFlags, heapType));
         }
 
-        public static GraphicsBuffer New(GraphicsDevice device, int size, int structureByteStride, GraphicsBufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static GraphicsBuffer New(GraphicsDevice device, int size, int structureByteStride, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
             return New(device, new GraphicsBufferDescription(size, bufferFlags, heapType, structureByteStride));
         }
 
-        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, int elementCount, int structureByteStride, GraphicsBufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, int elementCount, int structureByteStride, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             int size = structureByteStride * elementCount;
 
             return new GraphicsBuffer<T>(device, new GraphicsBufferDescription(size, bufferFlags, heapType, structureByteStride));
         }
 
-        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, int elementCount, GraphicsBufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, int elementCount, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             return New<T>(device, elementCount, Unsafe.SizeOf<T>(), bufferFlags, heapType);
         }
 
-        public static unsafe GraphicsBuffer<T> New<T>(GraphicsDevice device, in T data, GraphicsBufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static unsafe GraphicsBuffer<T> New<T>(GraphicsDevice device, in T data, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             fixed (T* pointer = &data)
             {
@@ -68,12 +68,12 @@ namespace DirectX12GameEngine.Graphics
             }
         }
 
-        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, Span<T> data, GraphicsBufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, Span<T> data, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             return New(device, data, Unsafe.SizeOf<T>(), bufferFlags, heapType);
         }
 
-        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, Span<T> data, int structureByteStride, GraphicsBufferFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, Span<T> data, int structureByteStride, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             GraphicsBuffer<T> buffer = New<T>(device, data.Length, structureByteStride, bufferFlags, heapType);
             buffer.SetData(data);
@@ -103,7 +103,7 @@ namespace DirectX12GameEngine.Graphics
 
             if (HeapType == GraphicsHeapType.Default)
             {
-                using GraphicsBuffer<T> readbackBaffer = New<T>(GraphicsDevice, data.Length, GraphicsBufferFlags.None, GraphicsHeapType.Readback);
+                using GraphicsBuffer<T> readbackBaffer = New<T>(GraphicsDevice, data.Length, ResourceFlags.None, GraphicsHeapType.Readback);
                 using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
 
                 copyCommandList.CopyBufferRegion(this, offsetInBytes, readbackBaffer, 0, data.Length * Unsafe.SizeOf<T>());
@@ -134,7 +134,7 @@ namespace DirectX12GameEngine.Graphics
 
             if (HeapType == GraphicsHeapType.Default)
             {
-                using GraphicsBuffer<T> uploadBuffer = New(GraphicsDevice, data, GraphicsBufferFlags.None, GraphicsHeapType.Upload);
+                using GraphicsBuffer<T> uploadBuffer = New(GraphicsDevice, data, ResourceFlags.None, GraphicsHeapType.Upload);
                 using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
 
                 copyCommandList.CopyBufferRegion(uploadBuffer, 0, this, offsetInBytes, data.Length * Unsafe.SizeOf<T>());
@@ -194,22 +194,22 @@ namespace DirectX12GameEngine.Graphics
                 ElementCount = elementCount == 0 ? description.SizeInBytes / description.StructureByteStride : elementCount;
             }
 
-            if (description.Flags.HasFlag(GraphicsBufferFlags.RenderTarget))
+            if (description.Flags.HasFlag(ResourceFlags.RenderTarget))
             {
                 NativeRenderTargetView = CreateRenderTargetView();
             }
 
-            if (description.Flags.HasFlag(GraphicsBufferFlags.ConstantBuffer))
+            if (description.Flags.HasFlag(ResourceFlags.ConstantBuffer))
             {
                 NativeConstantBufferView = CreateConstantBufferView();
             }
 
-            if (description.Flags.HasFlag(GraphicsBufferFlags.ShaderResource))
+            if (description.Flags.HasFlag(ResourceFlags.ShaderResource))
             {
                 NativeShaderResourceView = CreateShaderResourceView();
             }
 
-            if (description.Flags.HasFlag(GraphicsBufferFlags.UnorderedAccess))
+            if (description.Flags.HasFlag(ResourceFlags.UnorderedAccess))
             {
                 NativeUnorderedAccessView = CreateUnorderedAccessView();
             }
@@ -219,16 +219,16 @@ namespace DirectX12GameEngine.Graphics
 
         private static GraphicsBufferDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType, bool isShaderResource = false)
         {
-            GraphicsBufferFlags flags = GraphicsBufferFlags.None;
+            ResourceFlags flags = ResourceFlags.None;
 
-            if (description.Flags.HasFlag(ResourceFlags.AllowUnorderedAccess))
+            if (description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.AllowUnorderedAccess))
             {
-                flags |= GraphicsBufferFlags.UnorderedAccess;
+                flags |= ResourceFlags.UnorderedAccess;
             }
 
-            if (!description.Flags.HasFlag(ResourceFlags.DenyShaderResource) && isShaderResource)
+            if (!description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.DenyShaderResource) && isShaderResource)
             {
-                flags |= GraphicsBufferFlags.ShaderResource;
+                flags |= ResourceFlags.ShaderResource;
             }
 
             return new GraphicsBufferDescription
@@ -241,16 +241,16 @@ namespace DirectX12GameEngine.Graphics
 
         private static ResourceDescription ConvertToNativeDescription(GraphicsBufferDescription description)
         {
-            ResourceFlags flags = ResourceFlags.None;
+            Vortice.Direct3D12.ResourceFlags flags = Vortice.Direct3D12.ResourceFlags.None;
 
-            if (description.Flags.HasFlag(GraphicsBufferFlags.RenderTarget))
+            if (description.Flags.HasFlag(ResourceFlags.RenderTarget))
             {
-                flags |= ResourceFlags.AllowRenderTarget;
+                flags |= Vortice.Direct3D12.ResourceFlags.AllowRenderTarget;
             }
 
-            if (description.Flags.HasFlag(GraphicsBufferFlags.UnorderedAccess))
+            if (description.Flags.HasFlag(ResourceFlags.UnorderedAccess))
             {
-                flags |= ResourceFlags.AllowUnorderedAccess;
+                flags |= Vortice.Direct3D12.ResourceFlags.AllowUnorderedAccess;
             }
 
             return ResourceDescription.Buffer(description.SizeInBytes, flags);

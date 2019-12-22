@@ -46,6 +46,5 @@
 
   <Capabilities>
     <Capability Name="internetClient" />
-    <rescap:Capability Name="windowdecorations" />
   </Capabilities>
 </Package>

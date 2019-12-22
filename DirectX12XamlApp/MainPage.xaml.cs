@@ -16,10 +16,10 @@ namespace DirectX12XamlApp
         {
             InitializeComponent();
 
-            Loaded += MainPage_Loaded;
+            Loaded += OnMainPageLoaded;
         }
 
-        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+        private void OnMainPageLoaded(object sender, RoutedEventArgs e)
         {
             MyGame game = new MyGame(new XamlGameContext(swapChainPanel));
             game.Run();

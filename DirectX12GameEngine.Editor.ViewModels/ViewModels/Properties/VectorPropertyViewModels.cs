@@ -3,6 +3,33 @@ using System.Reflection;
 
 namespace DirectX12GameEngine.Editor.ViewModels.Properties
 {
+    public class Vector2PropertyViewModel : PropertyViewModel<Vector2>
+    {
+        public Vector2PropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)
+        {
+        }
+
+        public float X
+        {
+            get => Value.X;
+            set => Set(X, value, () => Value = new Vector2(value, Y));
+        }
+
+        public float Y
+        {
+            get => Value.Y;
+            set => Set(Y, value, () => Value = new Vector2(X, value));
+        }
+
+        protected override void OnOwnerPropertyChanged()
+        {
+            base.OnOwnerPropertyChanged();
+
+            NotifyPropertyChanged(nameof(X));
+            NotifyPropertyChanged(nameof(Y));
+        }
+    }
+
     public class Vector3PropertyViewModel : PropertyViewModel<Vector3>
     {
         public Vector3PropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)

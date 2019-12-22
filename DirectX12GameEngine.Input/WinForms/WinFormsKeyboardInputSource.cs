@@ -11,22 +11,22 @@ namespace DirectX12GameEngine.Input
         {
             this.control = control;
 
-            control.KeyDown += Control_KeyDown;
-            control.KeyUp += Control_KeyUp;
+            control.KeyDown += OnControlKeyDown;
+            control.KeyUp += OnControlKeyUp;
         }
 
         public override void Dispose()
         {
-            control.KeyDown -= Control_KeyDown;
-            control.KeyUp -= Control_KeyUp;
+            control.KeyDown -= OnControlKeyDown;
+            control.KeyUp -= OnControlKeyUp;
         }
 
-        private void Control_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        private void OnControlKeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             OnKeyDown(new WinFormsKeyEventArgs(e));
         }
 
-        private void Control_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
+        private void OnControlKeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             OnKeyUp(new WinFormsKeyEventArgs(e));
         }

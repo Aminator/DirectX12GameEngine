@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
-
-#nullable enable
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
@@ -17,7 +17,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
         {
             Model = model;
 
-            Children.CollectionChanged += Children_CollectionChanged;
+            Children.CollectionChanged += OnChildrenCollectionChanged;
         }
 
         public new IStorageFolder Model { get; }
@@ -43,6 +43,24 @@ namespace DirectX12GameEngine.Editor.ViewModels
                     }
                 }
             }
+        }
+
+        public async Task<IEnumerable<StorageFileViewModel>> GetFilesAsync()
+        {
+            await FillAsync();
+            return Children.OfType<StorageFileViewModel>();
+        }
+
+        public async Task<IEnumerable<StorageFolderViewModel>> GetFoldersAsync()
+        {
+            await FillAsync();
+            return Children.OfType<StorageFolderViewModel>();
+        }
+
+        public async Task<IEnumerable<StorageItemViewModel>> GetItemsAsync()
+        {
+            await FillAsync();
+            return Children;
         }
 
         public async Task FillAsync()
@@ -89,7 +107,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             item.Parent = null;
         }
 
-        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {

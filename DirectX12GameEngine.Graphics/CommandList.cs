@@ -80,7 +80,7 @@ namespace DirectX12GameEngine.Graphics
                     DepthEndingAccess = renderPassEndingAccessNoAccess,
                     StencilBeginningAccess = renderPassBeginningAccessNoAccess,
                     StencilEndingAccess = renderPassEndingAccessNoAccess,
-                    CpuDescriptor = depthStencilView.NativeDepthStencilView,
+                    CpuDescriptor = depthStencilView.NativeDepthStencilView
                 };
             }
 
@@ -107,14 +107,14 @@ namespace DirectX12GameEngine.Graphics
             }
         }
 
-        public void ClearDepthStencilView(Texture depthStencilBuffer, ClearFlags clearFlags, float depth = 1, byte stencil = 0)
+        public void ClearDepthStencilView(Texture depthStencilBuffer, ClearFlags clearFlags, float depth = 1, byte stencil = 0, params Rectangle[] rectangles)
         {
-            currentCommandList.NativeCommandList.ClearDepthStencilView(depthStencilBuffer.NativeDepthStencilView, (Vortice.Direct3D12.ClearFlags)clearFlags, depth, stencil);
+            currentCommandList.NativeCommandList.ClearDepthStencilView(depthStencilBuffer.NativeDepthStencilView, (Vortice.Direct3D12.ClearFlags)clearFlags, depth, stencil, rectangles.Select(r => (Rect)r).ToArray());
         }
 
-        public unsafe void ClearRenderTargetView(GraphicsResource renderTarget, Vector4 color)
+        public unsafe void ClearRenderTargetView(GraphicsResource renderTarget, in Vector4 color, params Rectangle[] rectangles)
         {
-            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeRenderTargetView, new Color4(color));
+            currentCommandList.NativeCommandList.ClearRenderTargetView(renderTarget.NativeRenderTargetView, new Color4(color), rectangles.Select(r => (Rect)r).ToArray());
         }
 
         public void ClearState()
@@ -407,7 +407,7 @@ namespace DirectX12GameEngine.Graphics
 
             scissorRectangles.CopyTo(ScissorRectangles, 0);
 
-            currentCommandList.NativeCommandList.RSSetScissorRects(scissorRectangles.Select(s => (Rect)s).ToArray());
+            currentCommandList.NativeCommandList.RSSetScissorRects(scissorRectangles.Select(r => (Rect)r).ToArray());
         }
 
         public void SetVertexBuffers(int startSlot, params GraphicsBuffer[] vertexBuffers)

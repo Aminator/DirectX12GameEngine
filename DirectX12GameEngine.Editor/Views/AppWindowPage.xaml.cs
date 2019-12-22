@@ -32,7 +32,7 @@ namespace DirectX12GameEngine.Editor.Views
             if (e.Parameter is TabViewNavigationParameters parameters)
             {
                 TabView.AppWindow = parameters.AppWindow;
-                TabView.AppWindow.Frame.DragRegionVisuals.Add(TitleBar);
+                TabView.AppWindow.Frame.DragRegionVisuals.Add(CustomDragRegion);
 
                 TabView.TabItems.Add(parameters.Tab);
             }
@@ -43,11 +43,22 @@ namespace DirectX12GameEngine.Editor.Views
             await ApplicationViewSwitcher.TryShowAsStandaloneAsync(ApplicationView.GetApplicationViewIdForWindow(CoreApplication.MainView.CoreWindow));
         }
 
-        private void UpdateTitleBarLayout(CoreApplicationViewTitleBar coreTitleBar)
+        private void UpdateTitleBarLayout(CoreApplicationViewTitleBar titleBar)
         {
-            CommandBar.Margin = new Thickness(0, 0, coreTitleBar.SystemOverlayRightInset, 0);
+            if (FlowDirection == FlowDirection.LeftToRight)
+            {
+                CommandBar.Margin = new Thickness(0, 0, titleBar.SystemOverlayRightInset, 0);
+                CustomDragRegion.MinWidth = titleBar.SystemOverlayRightInset;
+                ShellTitleBarInset.MinWidth = titleBar.SystemOverlayLeftInset;
+            }
+            else
+            {
+                CommandBar.Margin = new Thickness(titleBar.SystemOverlayLeftInset, 0, 0, 0);
+                CustomDragRegion.MinWidth = titleBar.SystemOverlayLeftInset;
+                ShellTitleBarInset.MinWidth = titleBar.SystemOverlayRightInset;
+            }
 
-            TitleBar.Height = coreTitleBar.Height;
+            CustomDragRegion.Height = ShellTitleBarInset.Height = titleBar.Height;
         }
     }
 }

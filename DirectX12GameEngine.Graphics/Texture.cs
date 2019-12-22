@@ -45,12 +45,12 @@ namespace DirectX12GameEngine.Graphics
             return new Texture(device).InitializeFrom(description);
         }
 
-        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.ShaderResource, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
             return New(device, TextureDescription.New2D(width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType));
         }
 
-        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, TextureFlags textureFlags = TextureFlags.ShaderResource, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.ShaderResource, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             Texture texture = New2D(device, width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType);
             texture.SetData(data);
@@ -112,22 +112,22 @@ namespace DirectX12GameEngine.Graphics
             NativeResource = resource;
             Description = description;
 
-            if (description.Flags.HasFlag(TextureFlags.DepthStencil))
+            if (description.Flags.HasFlag(ResourceFlags.DepthStencil))
             {
                 NativeDepthStencilView = CreateDepthStencilView();
             }
 
-            if (description.Flags.HasFlag(TextureFlags.RenderTarget))
+            if (description.Flags.HasFlag(ResourceFlags.RenderTarget))
             {
                 NativeRenderTargetView = CreateRenderTargetView();
             }
 
-            if (description.Flags.HasFlag(TextureFlags.ShaderResource))
+            if (description.Flags.HasFlag(ResourceFlags.ShaderResource))
             {
                 NativeShaderResourceView = CreateShaderResourceView();
             }
 
-            if (description.Flags.HasFlag(TextureFlags.UnorderedAccess))
+            if (description.Flags.HasFlag(ResourceFlags.UnorderedAccess))
             {
                 NativeUnorderedAccessView = CreateUnorderedAccessView();
             }
@@ -188,26 +188,26 @@ namespace DirectX12GameEngine.Graphics
 
         private static TextureDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType, bool isShaderResource = false)
         {
-            TextureFlags flags = TextureFlags.None;
+            ResourceFlags flags = ResourceFlags.None;
 
-            if (description.Flags.HasFlag(ResourceFlags.AllowRenderTarget))
+            if (description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.AllowRenderTarget))
             {
-                flags |= TextureFlags.RenderTarget;
+                flags |= ResourceFlags.RenderTarget;
             }
 
-            if (description.Flags.HasFlag(ResourceFlags.AllowUnorderedAccess))
+            if (description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.AllowUnorderedAccess))
             {
-                flags |= TextureFlags.UnorderedAccess;
+                flags |= ResourceFlags.UnorderedAccess;
             }
 
-            if (description.Flags.HasFlag(ResourceFlags.AllowDepthStencil))
+            if (description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.AllowDepthStencil))
             {
-                flags |= TextureFlags.DepthStencil;
+                flags |= ResourceFlags.DepthStencil;
             }
 
-            if (!description.Flags.HasFlag(ResourceFlags.DenyShaderResource) && isShaderResource)
+            if (!description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.DenyShaderResource) && isShaderResource)
             {
-                flags |= TextureFlags.ShaderResource;
+                flags |= ResourceFlags.ShaderResource;
             }
 
             return new TextureDescription
@@ -226,25 +226,25 @@ namespace DirectX12GameEngine.Graphics
 
         private static ResourceDescription ConvertToNativeDescription(TextureDescription description)
         {
-            ResourceFlags flags = ResourceFlags.None;
+            Vortice.Direct3D12.ResourceFlags flags = Vortice.Direct3D12.ResourceFlags.None;
 
-            if (description.Flags.HasFlag(TextureFlags.RenderTarget))
+            if (description.Flags.HasFlag(ResourceFlags.RenderTarget))
             {
-                flags |= ResourceFlags.AllowRenderTarget;
+                flags |= Vortice.Direct3D12.ResourceFlags.AllowRenderTarget;
             }
 
-            if (description.Flags.HasFlag(TextureFlags.UnorderedAccess))
+            if (description.Flags.HasFlag(ResourceFlags.UnorderedAccess))
             {
-                flags |= ResourceFlags.AllowUnorderedAccess;
+                flags |= Vortice.Direct3D12.ResourceFlags.AllowUnorderedAccess;
             }
 
-            if (description.Flags.HasFlag(TextureFlags.DepthStencil))
+            if (description.Flags.HasFlag(ResourceFlags.DepthStencil))
             {
-                flags |= ResourceFlags.AllowDepthStencil;
+                flags |= Vortice.Direct3D12.ResourceFlags.AllowDepthStencil;
 
-                if (!description.Flags.HasFlag(TextureFlags.ShaderResource))
+                if (!description.Flags.HasFlag(ResourceFlags.ShaderResource))
                 {
-                    flags |= ResourceFlags.DenyShaderResource;
+                    flags |= Vortice.Direct3D12.ResourceFlags.DenyShaderResource;
                 }
             }
 

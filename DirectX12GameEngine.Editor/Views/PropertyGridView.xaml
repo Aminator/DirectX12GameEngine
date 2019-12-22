@@ -66,85 +66,127 @@
 
         <DataTemplate x:Key="BooleanPropertyTemplate" x:DataType="properties:BooleanPropertyViewModel">
             <winui:TreeViewItem>
-                <CheckBox Content="{x:Bind PropertyName, Mode=OneWay}" IsChecked="{x:Bind Value, Mode=TwoWay}" />
+                <CheckBox
+                    Content="{x:Bind PropertyName, Mode=OneWay}"
+                    IsChecked="{x:Bind Value, Mode=TwoWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="CharPropertyTemplate" x:DataType="properties:CharPropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <TextBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsReadOnly="{x:Bind IsReadOnly, Mode=OneWay}"
+                    Text="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="StringPropertyTemplate" x:DataType="properties:StringPropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <TextBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsReadOnly="{x:Bind IsReadOnly, Mode=OneWay}"
+                    Text="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="SinglePropertyTemplate" x:DataType="properties:SinglePropertyViewModel">
             <winui:TreeViewItem>
-                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="DoublePropertyTemplate" x:DataType="properties:DoublePropertyViewModel">
             <winui:TreeViewItem>
-                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="DecimalPropertyTemplate" x:DataType="properties:DecimalPropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <TextBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Text="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="BytePropertyTemplate" x:DataType="properties:BytePropertyViewModel">
             <winui:TreeViewItem>
-                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="SBytePropertyTemplate" x:DataType="properties:SBytePropertyViewModel">
             <winui:TreeViewItem>
-                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="Int16PropertyTemplate" x:DataType="properties:Int16PropertyViewModel">
             <winui:TreeViewItem>
-                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="UInt16PropertyTemplate" x:DataType="properties:UInt16PropertyViewModel">
             <winui:TreeViewItem>
-                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="Int32PropertyTemplate" x:DataType="properties:Int32PropertyViewModel">
             <winui:TreeViewItem>
-                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="UInt32PropertyTemplate" x:DataType="properties:UInt32PropertyViewModel">
             <winui:TreeViewItem>
-                <winui:NumberBox Header="{x:Bind PropertyName, Mode=OneWay}" Value="{x:Bind Value, Mode=TwoWay}" />
+                <winui:NumberBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Value="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="Int64PropertyTemplate" x:DataType="properties:Int64PropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <TextBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsReadOnly="{x:Bind IsReadOnly, Mode=OneWay}"
+                    Text="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
         <DataTemplate x:Key="UInt64PropertyTemplate" x:DataType="properties:UInt64PropertyViewModel">
             <winui:TreeViewItem>
-                <TextBox Header="{x:Bind PropertyName, Mode=OneWay}" Text="{x:Bind Value, Mode=TwoWay}" />
+                <TextBox
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsReadOnly="{x:Bind IsReadOnly, Mode=OneWay}"
+                    Text="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
 
@@ -152,6 +194,7 @@
             <winui:TreeViewItem>
                 <ComboBox
                     Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                     ItemsSource="{x:Bind Values, Mode=OneWay}"
                     SelectedItem="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
@@ -168,7 +211,31 @@
 
         <DataTemplate x:Key="DateTimePropertyTemplate" x:DataType="properties:DateTimePropertyViewModel">
             <winui:TreeViewItem>
-                <CalendarDatePicker Date="{x:Bind Value, Mode=TwoWay}" Header="{x:Bind PropertyName, Mode=OneWay}" />
+                <CalendarDatePicker
+                    Date="{x:Bind Value, Mode=TwoWay}"
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="Vector2PropertyTemplate" x:DataType="properties:Vector2PropertyViewModel">
+            <winui:TreeViewItem>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
+
+                    <controls:UniformGrid>
+                        <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                            MemberColor="Red"
+                            MemberName="X"
+                            MemberValue="{x:Bind X, Mode=TwoWay}" />
+                        <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                            MemberColor="Green"
+                            MemberName="Y"
+                            MemberValue="{x:Bind Y, Mode=TwoWay}" />
+                    </controls:UniformGrid>
+                </StackPanel>
             </winui:TreeViewItem>
         </DataTemplate>
 
@@ -179,14 +246,17 @@
 
                     <controls:UniformGrid>
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Red"
                             MemberName="X"
                             MemberValue="{x:Bind X, Mode=TwoWay}" />
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Green"
                             MemberName="Y"
                             MemberValue="{x:Bind Y, Mode=TwoWay}" />
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Blue"
                             MemberName="Z"
                             MemberValue="{x:Bind Z, Mode=TwoWay}" />
@@ -202,18 +272,22 @@
 
                     <controls:UniformGrid>
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Red"
                             MemberName="X"
                             MemberValue="{x:Bind X, Mode=TwoWay}" />
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Green"
                             MemberName="Y"
                             MemberValue="{x:Bind Y, Mode=TwoWay}" />
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Blue"
                             MemberName="Z"
                             MemberValue="{x:Bind Z, Mode=TwoWay}" />
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Gray"
                             MemberName="W"
                             MemberValue="{x:Bind W, Mode=TwoWay}" />
@@ -229,18 +303,22 @@
 
                     <controls:UniformGrid>
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Red"
                             MemberName="X"
                             MemberValue="{x:Bind X, Mode=TwoWay}" />
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Green"
                             MemberName="Y"
                             MemberValue="{x:Bind Y, Mode=TwoWay}" />
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Blue"
                             MemberName="Z"
                             MemberValue="{x:Bind Z, Mode=TwoWay}" />
                         <propertyViews:PropertyMemberTemplate
+                            IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
                             MemberColor="Gray"
                             MemberName="W"
                             MemberValue="{x:Bind W, Mode=TwoWay}" />
@@ -271,6 +349,7 @@
             <local:TemplateDefinition DataTemplate="{StaticResource GuidPropertyTemplate}" DataType="properties:GuidPropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource DateTimePropertyTemplate}" DataType="properties:DateTimePropertyViewModel" />
 
+            <local:TemplateDefinition DataTemplate="{StaticResource Vector2PropertyTemplate}" DataType="properties:Vector2PropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource Vector3PropertyTemplate}" DataType="properties:Vector3PropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource Vector4PropertyTemplate}" DataType="properties:Vector4PropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource QuaternionPropertyTemplate}" DataType="properties:QuaternionPropertyViewModel" />

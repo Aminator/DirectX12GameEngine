@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Reflection;
 
-#nullable enable
-
 namespace DirectX12GameEngine.Editor.ViewModels.Properties
 {
     public class NullPropertyViewModel : PropertyViewModel
@@ -128,7 +126,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         }
     }
 
-    public class DateTimePropertyViewModel : PropertyViewModel<DateTimeOffset?>
+    public class DateTimePropertyViewModel : PropertyViewModel<DateTimeOffset>
     {
         public DateTimePropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)
         {

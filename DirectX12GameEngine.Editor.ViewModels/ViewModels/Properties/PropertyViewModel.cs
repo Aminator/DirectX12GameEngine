@@ -7,19 +7,22 @@ using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Collections;
 
-#nullable enable
-
 namespace DirectX12GameEngine.Editor.ViewModels.Properties
 {
     public abstract class PropertyViewModel : ViewModelBase<object>
     {
         private readonly PropertyInfo propertyInfo;
 
+        private bool canRead;
+        private bool canWrite;
         private object? index;
 
         public PropertyViewModel(object model, PropertyInfo propertyInfo) : base(model)
         {
             this.propertyInfo = propertyInfo;
+
+            CanRead = propertyInfo.CanRead && propertyInfo.GetMethod.IsPublic;
+            CanWrite = propertyInfo.CanWrite && propertyInfo.SetMethod.IsPublic;
 
             if (model is INotifyPropertyChanged notifyPropertyChanged)
             {
@@ -30,6 +33,40 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
                         OnOwnerPropertyChanged();
                     }
                 };
+            }
+        }
+
+        public bool IsReadOnly => !CanWrite;
+
+        public Type Type => Value?.GetType() ?? propertyInfo.PropertyType;
+
+        public bool CanRead
+        {
+            get => canRead;
+            private set => Set(ref canRead, value);
+        }
+
+        public bool CanWrite
+        {
+            get => canWrite;
+            private set
+            {
+                if (Set(ref canWrite, value))
+                {
+                    NotifyPropertyChanged(nameof(IsReadOnly));
+                }
+            }
+        }
+
+        public object? Index
+        {
+            get => index;
+            set
+            {
+                if (Set(ref index, value))
+                {
+                    NotifyPropertyChanged(nameof(PropertyName));
+                }
             }
         }
 
@@ -48,29 +85,36 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
             }
         }
 
-        public object? Index
-        {
-            get => index;
-            set
-            {
-                if (Set(ref index, value))
-                {
-                    NotifyPropertyChanged(nameof(PropertyName));
-                }
-            }
-        }
-
-        public Type Type => Value?.GetType() ?? propertyInfo.PropertyType;
-
         public object? Value
         {
             get => GetValue();
-            set => Set(Value, value, () => SetValue(value));
+            set { if (CanWrite) Set(Value, value, () => SetValue(value)); }
         }
 
-        private object? GetValue() => propertyInfo.GetValue(Model, Index is null ? null : new object[] { Index });
+        private object? GetValue()
+        {
+            if (CanRead)
+            {
+                try
+                {
+                    return propertyInfo.GetValue(Model, Index is null ? null : new object[] { Index });
+                }
+                catch
+                {
+                    CanRead = false;
+                }
+            }
 
-        private void SetValue(object? value) => propertyInfo.SetValue(Model, value, Index is null ? null : new object[] { Index });
+            return null;
+        }
+
+        private void SetValue(object? value)
+        {
+            if (CanWrite)
+            {
+                propertyInfo.SetValue(Model, value, Index is null ? null : new object[] { Index });
+            }
+        }
 
         protected virtual void OnOwnerPropertyChanged()
         {
@@ -86,7 +130,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
 
         public new T Value
         {
-            get => (T)base.Value!;
+            get => (T)(base.Value ?? default(T)!);
             set => base.Value = value;
         }
     }
@@ -127,7 +171,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
             {
                 object value = Value ?? throw new InvalidOperationException("Value was null.");
 
-                var properties = ContentManager.GetDataContractProperties(Type, value);
+                var properties = ContentManager.GetDataContractProperties(Type);
 
                 foreach (PropertyInfo property in properties)
                 {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Editor.ViewModels;
 
@@ -23,9 +22,9 @@ namespace DirectX12GameEngine.Editor.Factories
         {
             using Stream stream = await item.Model.OpenStreamForReadAsync();
 
-            Type type = ContentManager.GetRootObjectType(stream);
+            Type? type = ContentManager.GetRootObjectType(stream);
 
-            if (factories.TryGetValue(type, out IAssetViewFactory factory))
+            if (type != null && factories.TryGetValue(type, out IAssetViewFactory factory))
             {
                 return await factory.CreateAsync(item);
             }

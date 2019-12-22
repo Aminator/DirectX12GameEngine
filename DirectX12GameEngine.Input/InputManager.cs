@@ -30,7 +30,7 @@ namespace DirectX12GameEngine.Input
 
         public InputManager()
         {
-            Sources.CollectionChanged += Sources_CollectionChanged;
+            Sources.CollectionChanged += OnSourcesCollectionChanged;
         }
 
         public InputManager(IInputSourceConfiguration configuration) : this()
@@ -110,7 +110,7 @@ namespace DirectX12GameEngine.Input
             }
         }
 
-        private void Sources_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnSourcesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {

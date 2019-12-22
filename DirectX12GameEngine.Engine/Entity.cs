@@ -29,8 +29,8 @@ namespace DirectX12GameEngine.Engine
 
             Components = new EntityComponentCollection(this);
 
-            Children.CollectionChanged += Children_CollectionChanged;
-            Components.CollectionChanged += Components_CollectionChanged;
+            Children.CollectionChanged += OnChildrenCollectionChanged;
+            Components.CollectionChanged += OnComponentsCollectionChanged;
 
             Components.Add(new TransformComponent());
         }
@@ -163,7 +163,7 @@ namespace DirectX12GameEngine.Engine
             component.Entity = null;
         }
 
-        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -182,7 +182,7 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnComponentsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {

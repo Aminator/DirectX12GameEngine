@@ -5,8 +5,6 @@ using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Collections;
 
-#nullable enable
-
 namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class EntityViewModel : ViewModelBase<Entity>
@@ -24,8 +22,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 child.Parent = this;
             }
 
-            Children.CollectionChanged += Children_CollectionChanged;
-            Model.PropertyChanged += Model_PropertyChanged;
+            Children.CollectionChanged += OnChildrenCollectionChanged;
+            Model.PropertyChanged += OnModelPropertyChanged;
         }
 
         public EntityViewModel? Parent
@@ -76,7 +74,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             entity.Parent = null;
         }
 
-        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -95,7 +93,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             }
         }
 
-        private void Model_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {

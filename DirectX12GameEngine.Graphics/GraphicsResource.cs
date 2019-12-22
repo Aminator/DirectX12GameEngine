@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Graphics
 
         public IntPtr MappedResource { get; private set; }
 
-        protected internal ID3D12Resource NativeResource { get => nativeResource ?? throw new InvalidOperationException(); protected set => nativeResource = value ?? throw new ArgumentNullException(); }
+        public ID3D12Resource NativeResource { get => nativeResource ?? throw new InvalidOperationException(); protected set => nativeResource = value ?? throw new ArgumentNullException(); }
 
         protected internal CpuDescriptorHandle NativeRenderTargetView { get; protected set; }
 

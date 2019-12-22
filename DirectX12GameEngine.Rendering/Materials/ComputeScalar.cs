@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public void Visit(MaterialGeneratorContext context)
         {
-            valueBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Value, GraphicsBufferFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
+            valueBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Value, ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
             context.ConstantBufferViews.Add(valueBuffer);
         }
 

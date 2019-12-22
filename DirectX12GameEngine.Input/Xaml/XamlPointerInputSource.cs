@@ -12,17 +12,17 @@ namespace DirectX12GameEngine.Input
     {
         private readonly UIElement control;
 
-        public XamlPointerInputSource(UIElement uiElement)
+        public XamlPointerInputSource(UIElement element)
         {
-            control = uiElement;
+            control = element;
 
-            control.PointerCaptureLost += Control_PointerCaptureLost;
-            control.PointerEntered += Control_PointerEntered;
-            control.PointerExited += Control_PointerExited;
-            control.PointerMoved += Control_PointerMoved;
-            control.PointerPressed += Control_PointerPressed;
-            control.PointerReleased += Control_PointerReleased;
-            control.PointerWheelChanged += Control_PointerWheelChanged;
+            control.PointerCaptureLost += OnControlPointerCaptureLost;
+            control.PointerEntered += OnControlPointerEntered;
+            control.PointerExited += OnControlPointerExited;
+            control.PointerMoved += OnControlPointerMoved;
+            control.PointerPressed += OnControlPointerPressed;
+            control.PointerReleased += OnControlPointerReleased;
+            control.PointerWheelChanged += OnControlPointerWheelChanged;
         }
 
         public override bool HasCapture => true;
@@ -41,37 +41,50 @@ namespace DirectX12GameEngine.Input
 
         public override void SetPointerCapture() => Window.Current.CoreWindow.SetPointerCapture();
 
-        private void Control_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            control.PointerCaptureLost -= OnControlPointerCaptureLost;
+            control.PointerEntered -= OnControlPointerEntered;
+            control.PointerExited -= OnControlPointerExited;
+            control.PointerMoved -= OnControlPointerMoved;
+            control.PointerPressed -= OnControlPointerPressed;
+            control.PointerReleased -= OnControlPointerReleased;
+            control.PointerWheelChanged -= OnControlPointerWheelChanged;
+        }
+
+        private void OnControlPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
             OnPointerCaptureLost(new XamlPointerEventArgs(e, control));
         }
 
-        private void Control_PointerEntered(object sender, PointerRoutedEventArgs e)
+        private void OnControlPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             OnPointerEntered(new XamlPointerEventArgs(e, control));
         }
 
-        private void Control_PointerExited(object sender, PointerRoutedEventArgs e)
+        private void OnControlPointerExited(object sender, PointerRoutedEventArgs e)
         {
             OnPointerExited(new XamlPointerEventArgs(e, control));
         }
 
-        private void Control_PointerMoved(object sender, PointerRoutedEventArgs e)
+        private void OnControlPointerMoved(object sender, PointerRoutedEventArgs e)
         {
             OnPointerMoved(new XamlPointerEventArgs(e, control));
         }
 
-        private void Control_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void OnControlPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             OnPointerPressed(new XamlPointerEventArgs(e, control));
         }
 
-        private void Control_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void OnControlPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             OnPointerReleased(new XamlPointerEventArgs(e, control));
         }
 
-        private void Control_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        private void OnControlPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             OnPointerWheelChanged(new XamlPointerEventArgs(e, control));
         }
@@ -81,10 +94,10 @@ namespace DirectX12GameEngine.Input
             private readonly PointerRoutedEventArgs args;
             private readonly UIElement control;
 
-            public XamlPointerEventArgs(PointerRoutedEventArgs args, UIElement uiElement)
+            public XamlPointerEventArgs(PointerRoutedEventArgs args, UIElement element)
             {
                 this.args = args;
-                control = uiElement;
+                control = element;
             }
 
             public override bool Handled { get => args.Handled; set => args.Handled = value; }

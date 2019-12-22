@@ -13,7 +13,7 @@ namespace DirectX12GameEngine.Games
         {
             this.coreWindow = coreWindow;
 
-            coreWindow.SizeChanged += CoreWindow_SizeChanged;
+            coreWindow.SizeChanged += OnCoreWindowSizeChanged;
         }
 
         public override RectangleF ClientBounds
@@ -36,7 +36,7 @@ namespace DirectX12GameEngine.Games
             }
         }
 
-        private void CoreWindow_SizeChanged(CoreWindow sender, WindowSizeChangedEventArgs e)
+        private void OnCoreWindowSizeChanged(CoreWindow sender, WindowSizeChangedEventArgs e)
         {
             OnSizeChanged();
         }

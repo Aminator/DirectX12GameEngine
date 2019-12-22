@@ -18,10 +18,28 @@
             x:Key="OpenCommand"
             Command="{x:Bind ViewModel.OpenCommand}"
             Kind="Open" />
+        <XamlUICommand
+            x:Key="ViewCodeCommand"
+            Command="{x:Bind ViewModel.ViewCodeCommand}"
+            Description="View code"
+            Label="View Code">
+            <XamlUICommand.IconSource>
+                <FontIconSource Glyph="&#xE943;" />
+            </XamlUICommand.IconSource>
+        </XamlUICommand>
         <StandardUICommand
             x:Key="DeleteCommand"
             Command="{x:Bind ViewModel.DeleteCommand}"
             Kind="Delete" />
+        <XamlUICommand
+            x:Key="ShowPropertiesCommand"
+            Command="{x:Bind ViewModel.ShowPropertiesCommand}"
+            Description="Show properties"
+            Label="Properties">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Repair" />
+            </XamlUICommand.IconSource>
+        </XamlUICommand>
         <XamlUICommand
             x:Key="RefreshCommand"
             Command="{x:Bind ViewModel.RefreshCommand}"
@@ -46,7 +64,10 @@
                 <winui:TreeViewItem.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutItem Command="{StaticResource ViewCodeCommand}" CommandParameter="{x:Bind}" />
                         <MenuFlyoutItem Command="{StaticResource DeleteCommand}" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Command="{StaticResource ShowPropertiesCommand}" CommandParameter="{x:Bind}" />
                     </MenuFlyout>
                 </winui:TreeViewItem.ContextFlyout>
             </winui:TreeViewItem>
@@ -61,6 +82,19 @@
                     <SymbolIcon Symbol="Folder" />
                     <TextBlock Margin="12,0,0,0" Text="{x:Bind Name, Mode=OneWay}" />
                 </StackPanel>
+                <interactivity:Interaction.Behaviors>
+                    <core:EventTriggerBehavior EventName="DoubleTapped">
+                        <core:InvokeCommandAction Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
+                    </core:EventTriggerBehavior>
+                </interactivity:Interaction.Behaviors>
+                <winui:TreeViewItem.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutItem Command="{StaticResource DeleteCommand}" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Command="{StaticResource ShowPropertiesCommand}" CommandParameter="{x:Bind}" />
+                    </MenuFlyout>
+                </winui:TreeViewItem.ContextFlyout>
             </winui:TreeViewItem>
         </DataTemplate>
 
@@ -71,7 +105,7 @@
     </UserControl.Resources>
 
     <Grid>
-        <RefreshContainer RefreshRequested="RefreshContainer_RefreshRequested">
+        <RefreshContainer RefreshRequested="OnRefreshContainerRefreshRequested">
             <RefreshContainer.ContextFlyout>
                 <MenuFlyout>
                     <MenuFlyoutItem Command="{StaticResource RefreshCommand}" />

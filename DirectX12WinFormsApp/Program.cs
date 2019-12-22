@@ -15,10 +15,10 @@ namespace DirectX12WinFormsApp
             Width = 1200;
             Height = 800;
 
-            Load += MyForm_Load;
+            Load += OnMyFormLoad;
         }
 
-        private async void MyForm_Load(object? sender, EventArgs e)
+        private async void OnMyFormLoad(object? sender, EventArgs e)
         {
             StorageFolder rootFolder = await StorageFolder.GetFolderFromPathAsync(Directory.GetCurrentDirectory());
 

@@ -14,7 +14,7 @@ namespace DirectX12GameEngine.Games
         {
             this.control = control;
 
-            control.ClientSizeChanged += Control_ClientSizeChanged;
+            control.ClientSizeChanged += OnControlClientSizeChanged;
         }
 
         public override RectangleF ClientBounds
@@ -32,20 +32,20 @@ namespace DirectX12GameEngine.Games
 
         public override void Dispose()
         {
-            CompositionTarget.Rendering -= CompositionTarget_Rendering;
+            CompositionTarget.Rendering -= OnCompositionTargetRendering;
         }
 
         internal override void Run()
         {
-            CompositionTarget.Rendering += CompositionTarget_Rendering;
+            CompositionTarget.Rendering += OnCompositionTargetRendering;
         }
 
-        private void CompositionTarget_Rendering(object? sender, EventArgs e)
+        private void OnCompositionTargetRendering(object? sender, EventArgs e)
         {
             Tick();
         }
 
-        private void Control_ClientSizeChanged(object? sender, EventArgs e)
+        private void OnControlClientSizeChanged(object? sender, EventArgs e)
         {
             OnSizeChanged();
         }

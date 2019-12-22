@@ -2,7 +2,7 @@
 {
     public struct GraphicsBufferDescription
     {
-        public GraphicsBufferDescription(int sizeInBytes, GraphicsBufferFlags bufferFlags, GraphicsHeapType heapType, int structureByteStride = 0)
+        public GraphicsBufferDescription(int sizeInBytes, ResourceFlags bufferFlags, GraphicsHeapType heapType, int structureByteStride = 0)
         {
             SizeInBytes = sizeInBytes;
             Flags = bufferFlags;
@@ -12,7 +12,7 @@
 
         public int SizeInBytes;
 
-        public GraphicsBufferFlags Flags;
+        public ResourceFlags Flags;
 
         public GraphicsHeapType HeapType;
 

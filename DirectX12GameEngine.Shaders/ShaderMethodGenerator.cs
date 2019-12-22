@@ -35,7 +35,7 @@ namespace DirectX12GameEngine.Shaders
 
             globalCompilation = CSharpCompilation.Create("ShaderAssembly").WithReferences(metadataReferences);
 
-            AppDomain.CurrentDomain.AssemblyLoad += CurrentDomain_AssemblyLoad;
+            AppDomain.CurrentDomain.AssemblyLoad += OnCurrentDomainAssemblyLoad;
         }
 
         public static IList<Type> GetDependentTypes(MethodInfo methodInfo)
@@ -70,7 +70,7 @@ namespace DirectX12GameEngine.Shaders
             return shaderSource.Replace(Environment.NewLine + "    ", Environment.NewLine).Trim();
         }
 
-        private static void CurrentDomain_AssemblyLoad(object sender, AssemblyLoadEventArgs e)
+        private static void OnCurrentDomainAssemblyLoad(object sender, AssemblyLoadEventArgs e)
         {
             if (!e.LoadedAssembly.IsDynamic)
             {

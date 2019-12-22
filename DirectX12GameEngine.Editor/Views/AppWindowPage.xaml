@@ -17,25 +17,30 @@
                 <SymbolIconSource Symbol="NewWindow" />
             </XamlUICommand.IconSource>
         </XamlUICommand>
+
+        <Style BasedOn="{StaticResource AppBarButtonRevealStyle}" TargetType="AppBarButton" />
     </Page.Resources>
 
     <Grid>
         <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
-            <local:ExtendedTabView x:Name="TabView" Background="Transparent" />
+            <local:ExtendedTabView x:Name="TabView" Background="Transparent">
+                <local:ExtendedTabView.TabStripHeader>
+                    <Grid x:Name="ShellTitleBarInset" Background="Transparent" />
+                </local:ExtendedTabView.TabStripHeader>
+                <local:ExtendedTabView.TabStripFooter>
+                    <Grid>
+                        <Grid x:Name="CustomDragRegion" Background="Transparent" />
+
+                        <CommandBar
+                            x:Name="CommandBar"
+                            HorizontalAlignment="Right"
+                            Background="Transparent"
+                            OverflowButtonVisibility="Collapsed">
+                            <AppBarButton Command="{StaticResource OpenMainWindowCommand}" />
+                        </CommandBar>
+                    </Grid>
+                </local:ExtendedTabView.TabStripFooter>
+            </local:ExtendedTabView>
         </Grid>
-
-        <Grid
-            x:Name="TitleBar"
-            Height="40"
-            VerticalAlignment="Top"
-            Background="Transparent" />
-
-        <CommandBar
-            x:Name="CommandBar"
-            HorizontalAlignment="Right"
-            Background="Transparent"
-            OverflowButtonVisibility="Collapsed">
-            <AppBarButton Command="{StaticResource OpenMainWindowCommand}" />
-        </CommandBar>
     </Grid>
 </Page>

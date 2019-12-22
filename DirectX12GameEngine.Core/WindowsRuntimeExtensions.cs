@@ -2,19 +2,6 @@
 
 namespace DirectX12GameEngine.Core
 {
-    public static class ColorExtensions
-    {
-        public static System.Drawing.Color ToColor(this in Windows.UI.Color value)
-        {
-            return System.Drawing.Color.FromArgb(value.A, value.R, value.G, value.B);
-        }
-
-        public static Windows.UI.Color ToColor(this in System.Drawing.Color value)
-        {
-            return Windows.UI.Color.FromArgb(value.A, value.R, value.G, value.B);
-        }
-    }
-
     public static class PointExtensions
     {
         public static Vector2 ToVector2(this in Windows.Foundation.Point value)

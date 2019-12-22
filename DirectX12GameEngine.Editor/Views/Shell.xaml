@@ -28,14 +28,17 @@
             Shadow="{StaticResource TitleBarShadow}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <local:EditorMenuBar />
+            <Grid x:Name="ShellTitleBarInset" Background="Transparent" />
+
+            <local:EditorMenuBar Grid.Column="1" />
 
             <Grid
-                x:Name="TitleBar"
-                Grid.Column="1"
+                x:Name="CustomDragRegion"
+                Grid.Column="2"
                 Background="Transparent" />
         </Grid>
 

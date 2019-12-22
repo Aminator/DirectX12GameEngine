@@ -23,11 +23,11 @@ namespace DirectX12CoreWindowApp
 
         public void Initialize(CoreApplicationView applicationView)
         {
-            applicationView.Activated += ApplicationView_Activated;
-            CoreApplication.Suspending += CoreApplication_Suspending;
+            applicationView.Activated += OnApplicationViewActivated;
+            CoreApplication.Suspending += OnCoreApplicationSuspending;
         }
 
-        private void ApplicationView_Activated(CoreApplicationView sender, IActivatedEventArgs e)
+        private void OnApplicationViewActivated(CoreApplicationView sender, IActivatedEventArgs e)
         {
             if (HolographicApplicationPreview.IsCurrentViewPresentedOnHolographicDisplay())
             {
@@ -64,7 +64,7 @@ namespace DirectX12CoreWindowApp
         {
         }
 
-        private void CoreApplication_Suspending(object sender, SuspendingEventArgs e)
+        private void OnCoreApplicationSuspending(object sender, SuspendingEventArgs e)
         {
             SuspendingDeferral deferral = e.SuspendingOperation.GetDeferral();
             //game.Dispose();

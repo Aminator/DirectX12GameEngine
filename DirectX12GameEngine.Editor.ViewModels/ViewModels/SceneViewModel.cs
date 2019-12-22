@@ -61,7 +61,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         private void Open(EntityViewModel entity)
         {
-            Messenger.Default.Send(new ShowEntityPropertiesMessage(entity));
+            Messenger.Default.Send(new ShowPropertiesMessage(entity.Model));
         }
 
         private void Delete(EntityViewModel entity)

@@ -27,7 +27,7 @@ namespace DirectX12GameEngine.Editor.Views
 
         public SolutionExplorerViewModel ViewModel => (SolutionExplorerViewModel)DataContext;
 
-        private async void RefreshContainer_RefreshRequested(RefreshContainer sender, RefreshRequestedEventArgs e)
+        private async void OnRefreshContainerRefreshRequested(RefreshContainer sender, RefreshRequestedEventArgs e)
         {
             Deferral deferral = e.GetDeferral();
 

@@ -21,10 +21,10 @@ namespace DirectX12GameEngine.Editor.Views
                 Bindings.Update();
             };
 
-            Loaded += EditorMenuBar_Loaded;
+            Loaded += OnEditorMenuBarLoaded;
         }
 
-        private void EditorMenuBar_Loaded(object sender, RoutedEventArgs e)
+        private void OnEditorMenuBarLoaded(object sender, RoutedEventArgs e)
         {
             foreach (AccessListEntry accessListEntry in ViewModel.ProjectLoader.RecentProjects)
             {

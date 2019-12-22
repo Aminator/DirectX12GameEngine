@@ -129,38 +129,20 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Factories\AssetViewFactory.cs" />
+    <Compile Include="Factories\CodeEditorViewFactory.cs" />
     <Compile Include="Factories\EngineAssetViewFactory.cs" />
     <Compile Include="Factories\IAssetViewFactory.cs" />
     <Compile Include="Factories\SceneViewFactory.cs" />
-    <Compile Include="Messages\CloseViewMessage.cs" />
-    <Compile Include="Messages\LaunchStorageItemMessage.cs" />
-    <Compile Include="Messages\OpenViewMessage.cs" />
-    <Compile Include="Messages\ShowEntityPropertiesMessage.cs" />
-    <Compile Include="ViewModels\MainViewModel.cs" />
-    <Compile Include="ViewModels\EditorViewsViewModel.cs" />
-    <Compile Include="ViewModels\Properties\IPropertyViewModelFactory.cs" />
-    <Compile Include="ViewModels\Properties\PrimitivePropertyViewModels.cs" />
-    <Compile Include="ViewModels\Properties\PropertyViewModelFactory.cs" />
-    <Compile Include="ViewModels\Properties\VectorPropertyViewModels.cs" />
-    <Compile Include="ViewModels\PropertyGridViewModel.cs" />
-    <Compile Include="ViewModels\Properties\PropertyViewModel.cs" />
-    <Compile Include="ViewModels\SceneViewModel.cs" />
-    <Compile Include="ViewModels\SolutionExplorerViewModel.cs" />
-    <Compile Include="ViewModels\StorageFileViewModel.cs" />
-    <Compile Include="ViewModels\StorageFolderViewModel.cs" />
-    <Compile Include="ViewModels\ViewModelLocator.cs" />
     <Compile Include="Views\AppWindowPage.xaml.cs">
       <DependentUpon>AppWindowPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\BackgroundControl.cs" />
+    <Compile Include="Views\CodeEditorView.xaml.cs">
+      <DependentUpon>CodeEditorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\EditorMenuBar.xaml.cs">
       <DependentUpon>EditorMenuBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Messages\ProjectLoadedMessage.cs" />
-    <Compile Include="ViewModels\ProjectLoaderViewModel.cs" />
-    <Compile Include="EditorGame.cs" />
-    <Compile Include="ViewModels\EntityComponentViewModel.cs" />
-    <Compile Include="ViewModels\EntityViewModel.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -182,7 +164,6 @@
     <Compile Include="Views\SolutionExplorerView.xaml.cs">
       <DependentUpon>SolutionExplorerView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModels\StorageItemViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Views\TabViewNavigationParameters.cs" />
   </ItemGroup>
@@ -211,6 +192,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\AppWindowPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CodeEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -267,6 +252,10 @@
       <Project>{b0756b81-8c65-478c-aed4-e3ebdecf30a5}</Project>
       <Name>DirectX12GameEngine.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Editor.ViewModels\DirectX12GameEngine.Editor.ViewModels.csproj">
+      <Project>{e46cf6b1-7194-4c09-9208-dfbb25a373fc}</Project>
+      <Name>DirectX12GameEngine.Editor.ViewModels</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj">
       <Project>{693635ed-fc5e-43ff-a869-b37a2d601ed3}</Project>
       <Name>DirectX12GameEngine.Engine</Name>
@@ -278,6 +267,10 @@
     <ProjectReference Include="..\DirectX12GameEngine.Graphics\DirectX12GameEngine.Graphics.csproj">
       <Project>{107a527c-2d40-44b5-805f-092b9b614947}</Project>
       <Name>DirectX12GameEngine.Graphics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Input\DirectX12GameEngine.Input.csproj">
+      <Project>{db93c2c6-419a-4d51-ad9a-12556771c28d}</Project>
+      <Name>DirectX12GameEngine.Input</Name>
     </ProjectReference>
     <ProjectReference Include="..\DirectX12GameEngine.Mvvm\DirectX12GameEngine.Mvvm.csproj">
       <Project>{b76f669c-40b6-46d5-ba81-06d330d823fb}</Project>

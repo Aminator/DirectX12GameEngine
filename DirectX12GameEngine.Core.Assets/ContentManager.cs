@@ -138,7 +138,7 @@ namespace DirectX12GameEngine.Core.Assets
             }
         }
 
-        public static IEnumerable<PropertyInfo> GetDataContractProperties(Type type, object obj)
+        public static IEnumerable<PropertyInfo> GetDataContractProperties(Type type)
         {
             bool isDataContractPresent = type.IsDefined(typeof(DataContractAttribute));
 
@@ -149,10 +149,10 @@ namespace DirectX12GameEngine.Core.Assets
 
             properties = properties.Where(p => !p.IsDefined(typeof(IgnoreDataMemberAttribute)) && !p.IsSpecialName && !(p.GetIndexParameters().Length > 0));
 
-            return properties.Where(p => p.CanRead && p.GetMethod.IsPublic).Where(p => (p.CanWrite && p.SetMethod.IsPublic) || p.GetValue(obj) is ICollection);
+            return properties.Where(p => p.CanRead && p.GetMethod.IsPublic);
         }
 
-        public static Type GetRootObjectType(Stream stream)
+        public static Type? GetRootObjectType(Stream stream)
         {
             XamlXmlReader reader = new XamlXmlReader(stream);
 

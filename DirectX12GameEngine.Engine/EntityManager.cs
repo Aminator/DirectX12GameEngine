@@ -84,8 +84,8 @@ namespace DirectX12GameEngine.Engine
                 Add(child);
             }
 
-            entity.Children.CollectionChanged += Children_CollectionChanged;
-            entity.Components.CollectionChanged += Components_CollectionChanged;
+            entity.Children.CollectionChanged += OnChildrenCollectionChanged;
+            entity.Components.CollectionChanged += OnComponentsCollectionChanged;
         }
 
         internal void RemoveRoot(Entity entity)
@@ -97,8 +97,8 @@ namespace DirectX12GameEngine.Engine
         {
             if (!entities.Remove(entity)) return;
 
-            entity.Components.CollectionChanged -= Components_CollectionChanged;
-            entity.Children.CollectionChanged -= Children_CollectionChanged;
+            entity.Components.CollectionChanged -= OnComponentsCollectionChanged;
+            entity.Children.CollectionChanged -= OnChildrenCollectionChanged;
 
             foreach (EntityComponent component in entity)
             {
@@ -197,7 +197,7 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -216,7 +216,7 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void Components_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnComponentsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             EntityComponentCollection entityComponentCollection = (EntityComponentCollection)sender;
             Entity entity = entityComponentCollection.Entity;

@@ -7,26 +7,26 @@ namespace DirectX12GameEngine.Input
     {
         private readonly UIElement control;
 
-        public XamlKeyboardInputSource(UIElement uiElement)
+        public XamlKeyboardInputSource(UIElement element)
         {
-            control = uiElement;
+            control = element;
 
-            control.KeyDown += Control_KeyDown;
-            control.KeyUp += Control_KeyUp;
+            control.KeyDown += OnControlKeyDown;
+            control.KeyUp += OnControlKeyUp;
         }
 
         public override void Dispose()
         {
-            control.KeyDown -= Control_KeyDown;
-            control.KeyUp -= Control_KeyUp;
+            control.KeyDown -= OnControlKeyDown;
+            control.KeyUp -= OnControlKeyUp;
         }
 
-        private void Control_KeyDown(object sender, KeyRoutedEventArgs e)
+        private void OnControlKeyDown(object sender, KeyRoutedEventArgs e)
         {
             OnKeyDown(new XamlKeyEventArgs(e));
         }
 
-        private void Control_KeyUp(object sender, KeyRoutedEventArgs e)
+        private void OnControlKeyUp(object sender, KeyRoutedEventArgs e)
         {
             OnKeyUp(new XamlKeyEventArgs(e));
         }

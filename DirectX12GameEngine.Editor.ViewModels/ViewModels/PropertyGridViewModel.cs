@@ -37,8 +37,9 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 { typeof(ulong), (m, p) => new UInt64PropertyViewModel(m, p) },
                 { typeof(Enum), (m, p) => new EnumPropertyViewModel(m, p) },
                 { typeof(Guid), (m, p) => new GuidPropertyViewModel(m, p) },
-                { typeof(DateTimeOffset?), (m, p) => new DateTimePropertyViewModel(m, p) },
+                { typeof(DateTimeOffset), (m, p) => new DateTimePropertyViewModel(m, p) },
 
+                { typeof(Vector2), (m, p) => new Vector3PropertyViewModel(m, p) },
                 { typeof(Vector3), (m, p) => new Vector3PropertyViewModel(m, p) },
                 { typeof(Vector4), (m, p) => new Vector4PropertyViewModel(m, p) },
                 { typeof(Quaternion), (m, p) => new QuaternionPropertyViewModel(m, p) }
@@ -46,7 +47,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
             PropertyViewModelFactory.Default = factory;
 
-            Messenger.Default.Register<ShowEntityPropertiesMessage>(this, m => ShowProperties(m.Entity));
+            Messenger.Default.Register<ShowPropertiesMessage>(this, m => ShowProperties(m.Object));
         }
 
         public Type? RootObjectType
@@ -61,19 +62,19 @@ namespace DirectX12GameEngine.Editor.ViewModels
             set => Set(ref properties, value);
         }
 
-        private void ShowProperties(EntityViewModel entity)
+        private void ShowProperties(object obj)
         {
-            RootObjectType = entity.Model.GetType();
+            RootObjectType = obj.GetType();
 
             Properties = new ObservableCollection<PropertyViewModel>();
 
-            var properties = ContentManager.GetDataContractProperties(RootObjectType, entity.Model);
+            var properties = ContentManager.GetDataContractProperties(RootObjectType);
 
             foreach (PropertyInfo propertyInfo in properties)
             {
-                if (propertyInfo.Name == "Children") continue;
+                if (propertyInfo.Name == "Children" || propertyInfo.Name == "Parent") continue;
 
-                PropertyViewModel propertyViewModel = PropertyViewModelFactory.Default.Create(entity.Model, propertyInfo);
+                PropertyViewModel propertyViewModel = PropertyViewModelFactory.Default.Create(obj, propertyInfo);
                 Properties.Add(propertyViewModel);
             }
         }
