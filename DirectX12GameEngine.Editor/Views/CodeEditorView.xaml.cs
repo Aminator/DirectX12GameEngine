@@ -18,6 +18,7 @@ namespace DirectX12GameEngine.Editor.Views
             DataContextChanged += async (s, e) =>
             {
                 //Bindings.Update();
+
                 if (ViewModel.File != null)
                 {
                     var stream = await ViewModel.File.Model.OpenReadAsync();

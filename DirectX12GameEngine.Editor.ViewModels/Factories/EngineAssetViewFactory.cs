@@ -9,11 +9,11 @@ using DirectX12GameEngine.Editor.ViewModels;
 
 namespace DirectX12GameEngine.Editor.Factories
 {
-    public class EngineAssetViewFactory : IAssetViewFactory
+    public class EngineAssetViewFactory : IEditorViewFactory
     {
-        private readonly Dictionary<Type, IAssetViewFactory> factories = new Dictionary<Type, IAssetViewFactory>();
+        private readonly Dictionary<Type, IEditorViewFactory> factories = new Dictionary<Type, IEditorViewFactory>();
 
-        public void Add(Type type, IAssetViewFactory factory)
+        public void Add(Type type, IEditorViewFactory factory)
         {
             factories.Add(type, factory);
         }
@@ -24,7 +24,7 @@ namespace DirectX12GameEngine.Editor.Factories
 
             Type? type = ContentManager.GetRootObjectType(stream);
 
-            if (type != null && factories.TryGetValue(type, out IAssetViewFactory factory))
+            if (type != null && factories.TryGetValue(type, out IEditorViewFactory factory))
             {
                 return await factory.CreateAsync(item);
             }

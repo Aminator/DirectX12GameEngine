@@ -55,9 +55,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
             }
             else
             {
-                IPropertyViewModelFactory? propertyFactory = factories.FirstOrDefault(x => x.Key.IsAssignableFrom(type)).Value;
-
-                if (propertyFactory != null)
+                if (factories.TryGetValue(type, out IPropertyViewModelFactory? propertyFactory))
                 {
                     propertyViewModel = propertyFactory.Create(model, propertyInfo);
                 }
@@ -65,7 +63,8 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
                 {
                     propertyViewModel = value switch
                     {
-                        null => (PropertyViewModel)new NullPropertyViewModel(model, propertyInfo),
+                        null => new NullPropertyViewModel(model, propertyInfo),
+                        Enum _ => new EnumPropertyViewModel(model, propertyInfo),
                         IList _ => new CollectionPropertyViewModel(model, propertyInfo),
                         _ => new ClassPropertyViewModel(model, propertyInfo)
                     };

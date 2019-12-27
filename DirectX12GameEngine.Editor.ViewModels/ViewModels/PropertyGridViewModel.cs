@@ -35,11 +35,11 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 { typeof(uint), (m, p) => new UInt32PropertyViewModel(m, p) },
                 { typeof(long), (m, p) => new Int64PropertyViewModel(m, p) },
                 { typeof(ulong), (m, p) => new UInt64PropertyViewModel(m, p) },
-                { typeof(Enum), (m, p) => new EnumPropertyViewModel(m, p) },
                 { typeof(Guid), (m, p) => new GuidPropertyViewModel(m, p) },
-                { typeof(DateTimeOffset), (m, p) => new DateTimePropertyViewModel(m, p) },
+                { typeof(DateTime), (m, p) => new DateTimePropertyViewModel(m, p) },
+                { typeof(DateTimeOffset), (m, p) => new DateTimeOffsetPropertyViewModel(m, p) },
 
-                { typeof(Vector2), (m, p) => new Vector3PropertyViewModel(m, p) },
+                { typeof(Vector2), (m, p) => new Vector2PropertyViewModel(m, p) },
                 { typeof(Vector3), (m, p) => new Vector3PropertyViewModel(m, p) },
                 { typeof(Vector4), (m, p) => new Vector4PropertyViewModel(m, p) },
                 { typeof(Quaternion), (m, p) => new QuaternionPropertyViewModel(m, p) }
@@ -72,8 +72,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
             foreach (PropertyInfo propertyInfo in properties)
             {
-                if (propertyInfo.Name == "Children" || propertyInfo.Name == "Parent") continue;
-
                 PropertyViewModel propertyViewModel = PropertyViewModelFactory.Default.Create(obj, propertyInfo);
                 Properties.Add(propertyViewModel);
             }

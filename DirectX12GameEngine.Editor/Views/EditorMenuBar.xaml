@@ -72,8 +72,8 @@
     </winui:MenuBarItem>
 
     <winui:MenuBarItem Title="View">
-        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.EditorViews.IsSolutionExplorerOpen, Mode=TwoWay}" Text="Solution Explorer" />
-        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.EditorViews.IsPropertyGridOpen, Mode=TwoWay}" Text="Property Grid" />
+        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsSolutionExplorerOpen, Mode=TwoWay}" Text="Solution Explorer" />
+        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsPropertyGridOpen, Mode=TwoWay}" Text="Property Grid" />
     </winui:MenuBarItem>
 
     <winui:MenuBarItem Title="Help">

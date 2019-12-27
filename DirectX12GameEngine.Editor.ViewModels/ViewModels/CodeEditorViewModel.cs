@@ -6,7 +6,7 @@ using Windows.Storage;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class CodeEditorViewModel : ViewModelBase
+    public class CodeEditorViewModel : ViewModelBase, IClosable
     {
         private string? text;
 
@@ -28,6 +28,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
             set => Set(ref text, value);
         }
 
+        public bool CanClose => false;
+
         public RelayCommand SaveCommand { get; }
 
         public async Task SaveAsync()
@@ -36,6 +38,11 @@ namespace DirectX12GameEngine.Editor.ViewModels
             {
                 await FileIO.WriteTextAsync(File.Model, Text);
             }
+        }
+
+        public Task<bool> TryCloseAsync()
+        {
+            return Task.FromResult(false);
         }
     }
 }

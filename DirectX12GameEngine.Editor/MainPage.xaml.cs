@@ -1,4 +1,5 @@
 ﻿using DirectX12GameEngine.Editor.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -18,7 +19,7 @@ namespace DirectX12GameEngine.Editor
         {
             InitializeComponent();
 
-            DataContext = ((ViewModelLocator)Application.Current.Resources["ViewModelLocator"]).Main;
+            DataContext = ((App)Application.Current).Locator.Services.GetRequiredService<MainViewModel>();
         }
 
         public MainViewModel ViewModel => (MainViewModel)DataContext;

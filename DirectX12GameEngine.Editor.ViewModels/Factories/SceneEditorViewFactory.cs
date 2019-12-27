@@ -4,27 +4,26 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.ViewModels;
-using DirectX12GameEngine.Editor.Views;
 using Windows.Storage;
 
 #nullable enable
 
 namespace DirectX12GameEngine.Editor.Factories
 {
-    public class SceneViewFactory : IAssetViewFactory
+    public class SceneEditorViewFactory : IEditorViewFactory
     {
         public async Task<object?> CreateAsync(StorageFileViewModel item)
         {
             if (item.Parent is null) return null;
 
-            string path = Path.GetFileNameWithoutExtension(item.Name);
+            string scenePath = Path.GetFileNameWithoutExtension(item.Name);
 
             StorageFolderViewModel rootFolder = item.Parent;
             StorageFileViewModel? projectFile = (await rootFolder.GetFilesAsync()).FirstOrDefault(s => Path.GetExtension(s.Name).Contains("proj"));
 
             while (projectFile is null && rootFolder.Parent != null)
             {
-                path = Path.Combine(rootFolder.Name, path);
+                scenePath = Path.Combine(rootFolder.Name, scenePath);
 
                 rootFolder = rootFolder.Parent;
                 projectFile = (await rootFolder.GetFilesAsync()).FirstOrDefault(s => Path.GetExtension(s.Name).Contains("proj"));
@@ -35,10 +34,7 @@ namespace DirectX12GameEngine.Editor.Factories
                 await LoadAssemblyAsync(rootFolder.Model, Path.GetFileNameWithoutExtension(projectFile.Name));
             }
 
-            SceneView sceneView = new SceneView(rootFolder);
-            Task sceneTask = sceneView.ViewModel.LoadAsync(path);
-
-            return sceneView;
+            return new SceneEditorViewModel(rootFolder, scenePath);
         }
 
         private async Task LoadAssemblyAsync(IStorageFolder folder, string assemblyName)

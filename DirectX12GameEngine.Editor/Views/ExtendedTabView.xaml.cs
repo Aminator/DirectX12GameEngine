@@ -1,11 +1,10 @@
-﻿using Microsoft.Toolkit.Uwp.UI.Extensions;
+﻿using DirectX12GameEngine.Editor.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.UI.WindowManagement.Preview;
@@ -25,19 +24,20 @@ namespace DirectX12GameEngine.Editor.Views
         private const double MinWindowHeight = 48;
 
         private const string TabKey = "Tab";
-
-        private bool isCreatingNewAppWindow;
+        private const string TabViewKey = "TabView";
 
         public ExtendedTabView()
         {
             InitializeComponent();
 
             TabItemsChanged += OnTabItemsChanged;
+            //TabStripDragOver += OnTabStripDragOver;
             TabDragStarting += OnTabDragStarting;
             TabDroppedOutside += OnTabDroppedOutside;
+            TabCloseRequested += OnTabCloseRequested;
         }
 
-        public AppWindow? AppWindow { get; set; }
+        public TabViewViewModel ViewModel => (TabViewViewModel)DataContext;
 
         protected override void OnDragOver(DragEventArgs e)
         {
@@ -50,46 +50,47 @@ namespace DirectX12GameEngine.Editor.Views
         {
             base.OnDrop(e);
 
-            if (e.Data.Properties.TryGetValue(TabKey, out object item) && item is TabViewItem tab)
+            if (e.Data.Properties.TryGetValue(TabKey, out object tab)
+                && e.Data.Properties.TryGetValue(TabViewKey, out object tabView) && tabView is TabViewViewModel originalTabView)
             {
-                TabViewListView source = (TabViewListView)tab.Parent;
-                source.Items.Remove(tab);
-
-                TabItems.Add(tab);
+                originalTabView.Tabs.Remove(tab);
+                ViewModel.Tabs.Add(tab);
             }
         }
 
-        private async void OnTabItemsChanged(TabView sender, Windows.Foundation.Collections.IVectorChangedEventArgs e)
+        private void OnTabItemsChanged(TabView sender, IVectorChangedEventArgs e)
         {
-            if (TabItems.Count == 0 && !isCreatingNewAppWindow)
+            if (e.CollectionChange == CollectionChange.ItemInserted)
             {
-                await TryCloseAsync();
+                SelectedIndex = (int)e.Index;
             }
         }
+
+        //private void OnTabStripDragOver(object sender, DragEventArgs e)
+        //{
+        //    e.AcceptedOperation = DataPackageOperation.Move;
+        //}
 
         private void OnTabDragStarting(TabView sender, TabViewTabDragStartingEventArgs e)
         {
-            e.Data.Properties.Add(TabKey, e.Tab);
+            e.Data.Properties.Add(TabKey, e.Item);
+            e.Data.Properties.Add(TabViewKey, ViewModel);
         }
 
         private async void OnTabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs e)
         {
-            isCreatingNewAppWindow = true;
-
-            TabItems.Remove(e.Tab);
+            ViewModel.Tabs.Remove(e.Item);
 
             double scaling = XamlRoot.RasterizationScale;
-            await TryCreateNewAppWindowAsync(e.Tab, new Size(ActualWidth * scaling, ActualHeight * scaling));
-
-            if (TabItems.Count == 0)
-            {
-                await TryCloseAsync();
-            }
-
-            isCreatingNewAppWindow = false;
+            await TryCreateNewAppWindowAsync(e.Item, new Size(ActualWidth * scaling, ActualHeight * scaling));
         }
 
-        private async Task<bool> TryCreateNewAppWindowAsync(TabViewItem tab, Size size)
+        private async void OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs e)
+        {
+            await ViewModel.TryCloseTabAsync(e.Item);
+        }
+
+        private async Task<bool> TryCreateNewAppWindowAsync(object tab, Size size)
         {
             AppWindow appWindow = await AppWindow.TryCreateAsync();
 
@@ -110,18 +111,6 @@ namespace DirectX12GameEngine.Editor.Views
             bool success = await appWindow.TryShowAsync();
 
             return success;
-        }
-
-        private async Task TryCloseAsync()
-        {
-            if (AppWindow != null)
-            {
-                TabItemsChanged -= OnTabItemsChanged;
-                TabDragStarting -= OnTabDragStarting;
-                TabDroppedOutside -= OnTabDroppedOutside;
-
-                await AppWindow.CloseAsync();
-            }
         }
     }
 }

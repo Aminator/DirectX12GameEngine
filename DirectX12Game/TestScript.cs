@@ -21,7 +21,9 @@ namespace DirectX12Game
 
         public ColorChannel MyOtherColorChannel { get; set; } = ColorChannel.B;
 
-        public DateTimeOffset MyDateTime { get; set; }
+        public DateTime MyDateTime { get; set; } = DateTime.UtcNow;
+
+        public DateTimeOffset MyDateTimeOffset { get; set; } = DateTimeOffset.UtcNow;
 
         public List<string> MyStringList { get; } = new List<string> { "One", "Two", "Three", "Four" };
 

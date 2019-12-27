@@ -1,17 +1,16 @@
-﻿using Microsoft.UI.Xaml.Controls;
-using Windows.UI.WindowManagement;
+﻿using Windows.UI.WindowManagement;
 
 namespace DirectX12GameEngine.Editor.Views
 {
     public class TabViewNavigationParameters
     {
-        public TabViewNavigationParameters(TabViewItem tab, AppWindow appWindow)
+        public TabViewNavigationParameters(object tab, AppWindow appWindow)
         {
             Tab = tab;
             AppWindow = appWindow;
         }
 
-        public TabViewItem Tab { get; }
+        public object Tab { get; }
 
         public AppWindow AppWindow { get; }
     }

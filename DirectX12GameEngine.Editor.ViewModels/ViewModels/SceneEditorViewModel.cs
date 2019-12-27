@@ -4,28 +4,41 @@ using DirectX12GameEngine.Mvvm.Messaging;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
+using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Games;
 
 #nullable enable
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class SceneViewModel : ViewModelBase
+    public class SceneEditorViewModel : ViewModelBase
     {
-        private readonly EditorGame game;
-        private readonly EntityViewModel sceneRootEntity = new EntityViewModel(new Entity("SceneRootEntity"));
-
         private bool isLoading;
         private EntityViewModel? rootEntity;
 
-        public SceneViewModel(EditorGame game)
+        public SceneEditorViewModel(StorageFolderViewModel rootFolder, string scenePath)
         {
-            this.game = game;
-
-            game.SceneSystem.SceneInstance.RootEntity = sceneRootEntity.Model;
+            RootFolder = rootFolder;
+            ScenePath = scenePath;
 
             OpenCommand = new RelayCommand<EntityViewModel>(Open);
             DeleteCommand = new RelayCommand<EntityViewModel>(Delete);
+
+            Game = new EditorGame(new GameContextWithGraphics { FileProvider = new FileSystemProvider(RootFolder.Model) });
+            Game.Run();
+
+            Game.SceneSystem.SceneInstance.RootEntity = SceneRootEntity.Model;
+
+            _ = LoadAsync();
         }
+
+        public EditorGame Game { get; }
+
+        public StorageFolderViewModel RootFolder { get; }
+
+        public string ScenePath { get; }
+
+        public EntityViewModel SceneRootEntity { get; } = new EntityViewModel(new Entity("SceneRootEntity"));
 
         public EntityViewModel? RootEntity
         {
@@ -38,12 +51,12 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 {
                     if (previousRootEntity != null)
                     {
-                        sceneRootEntity.Children.Remove(previousRootEntity);
+                        SceneRootEntity.Children.Remove(previousRootEntity);
                     }
 
                     if (rootEntity != null)
                     {
-                        sceneRootEntity.Children.Add(rootEntity);
+                        SceneRootEntity.Children.Add(rootEntity);
                     }
                 }
             }
@@ -69,12 +82,12 @@ namespace DirectX12GameEngine.Editor.ViewModels
             entity.Parent?.Children.Remove(entity);
         }
 
-        public async Task LoadAsync(string path)
+        public async Task LoadAsync()
         {
             IsLoading = true;
             RootEntity = null;
 
-            Entity scene = await game.Content.LoadAsync<Entity>(path);
+            Entity scene = await Game.Content.LoadAsync<Entity>(ScenePath);
             EntityViewModel sceneViewModel = new EntityViewModel(scene);
 
             RootEntity = sceneViewModel;

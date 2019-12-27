@@ -62,8 +62,6 @@
                         TintOpacity="0.8" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
-
-            <viewmodels:ViewModelLocator x:Key="ViewModelLocator" />
         </ResourceDictionary>
     </Application.Resources>
 

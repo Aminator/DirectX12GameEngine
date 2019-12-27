@@ -6,26 +6,26 @@ using DirectX12GameEngine.Editor.ViewModels;
 
 namespace DirectX12GameEngine.Editor.Factories
 {
-    public class AssetViewFactory : IAssetViewFactory
+    public class EditorViewFactory : IEditorViewFactory
     {
-        private static AssetViewFactory? defaultInstance;
+        private static EditorViewFactory? defaultInstance;
 
-        private readonly Dictionary<string, IAssetViewFactory> factories = new Dictionary<string, IAssetViewFactory>();
+        private readonly Dictionary<string, IEditorViewFactory> factories = new Dictionary<string, IEditorViewFactory>();
 
-        public static AssetViewFactory Default
+        public static EditorViewFactory Default
         {
-            get => defaultInstance ?? (defaultInstance = new AssetViewFactory());
+            get => defaultInstance ?? (defaultInstance = new EditorViewFactory());
             set => defaultInstance = value;
         }
 
-        public void Add(string fileExtension, IAssetViewFactory factory)
+        public void Add(string fileExtension, IEditorViewFactory factory)
         {
             factories.Add(fileExtension, factory);
         }
 
         public async Task<object?> CreateAsync(StorageFileViewModel item)
         {
-            if (factories.TryGetValue(item.Model.FileType, out IAssetViewFactory factory))
+            if (factories.TryGetValue(item.Model.FileType, out IEditorViewFactory factory))
             {
                 return await factory.CreateAsync(item);
             }

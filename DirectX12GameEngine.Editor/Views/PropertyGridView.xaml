@@ -34,6 +34,8 @@
             <Setter Property="AcceptsExpression" Value="True" />
         </Style>
 
+        <local:DateTimeConverter x:Key="DateTimeConverter" />
+
         <DataTemplate x:Key="ClassPropertyTemplate" x:DataType="properties:ClassPropertyViewModel">
             <winui:TreeViewItem
                 HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
@@ -209,7 +211,25 @@
             </winui:TreeViewItem>
         </DataTemplate>
 
+        <DataTemplate x:Key="TimeSpanPropertyTemplate" x:DataType="properties:TimeSpanPropertyViewModel">
+            <winui:TreeViewItem>
+                <TimePicker
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
+                    Time="{x:Bind Value, Mode=TwoWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
         <DataTemplate x:Key="DateTimePropertyTemplate" x:DataType="properties:DateTimePropertyViewModel">
+            <winui:TreeViewItem>
+                <CalendarDatePicker
+                    Date="{x:Bind Value, Mode=TwoWay, Converter={StaticResource DateTimeConverter}}"
+                    Header="{x:Bind PropertyName, Mode=OneWay}"
+                    IsEnabled="{x:Bind CanWrite, Mode=OneWay}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DateTimeOffsetPropertyTemplate" x:DataType="properties:DateTimeOffsetPropertyViewModel">
             <winui:TreeViewItem>
                 <CalendarDatePicker
                     Date="{x:Bind Value, Mode=TwoWay}"
@@ -347,8 +367,9 @@
             <local:TemplateDefinition DataTemplate="{StaticResource UInt64PropertyTemplate}" DataType="properties:UInt64PropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource EnumPropertyTemplate}" DataType="properties:EnumPropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource GuidPropertyTemplate}" DataType="properties:GuidPropertyViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource TimeSpanPropertyTemplate}" DataType="properties:TimeSpanPropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource DateTimePropertyTemplate}" DataType="properties:DateTimePropertyViewModel" />
-
+            <local:TemplateDefinition DataTemplate="{StaticResource DateTimeOffsetPropertyTemplate}" DataType="properties:DateTimeOffsetPropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource Vector2PropertyTemplate}" DataType="properties:Vector2PropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource Vector3PropertyTemplate}" DataType="properties:Vector3PropertyViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource Vector4PropertyTemplate}" DataType="properties:Vector4PropertyViewModel" />

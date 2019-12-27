@@ -128,11 +128,6 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Factories\AssetViewFactory.cs" />
-    <Compile Include="Factories\CodeEditorViewFactory.cs" />
-    <Compile Include="Factories\EngineAssetViewFactory.cs" />
-    <Compile Include="Factories\IAssetViewFactory.cs" />
-    <Compile Include="Factories\SceneViewFactory.cs" />
     <Compile Include="Views\AppWindowPage.xaml.cs">
       <DependentUpon>AppWindowPage.xaml</DependentUpon>
     </Compile>
@@ -140,6 +135,7 @@
     <Compile Include="Views\CodeEditorView.xaml.cs">
       <DependentUpon>CodeEditorView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DataTypeTemplateSelector.cs" />
     <Compile Include="Views\EditorMenuBar.xaml.cs">
       <DependentUpon>EditorMenuBar.xaml</DependentUpon>
     </Compile>
@@ -155,8 +151,8 @@
     <Compile Include="Views\PropertyGridView.xaml.cs">
       <DependentUpon>PropertyGridView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SceneView.xaml.cs">
-      <DependentUpon>SceneView.xaml</DependentUpon>
+    <Compile Include="Views\SceneEditorView.xaml.cs">
+      <DependentUpon>SceneEditorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Shell.xaml.cs">
       <DependentUpon>Shell.xaml</DependentUpon>
@@ -215,7 +211,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\SceneView.xaml">
+    <Page Include="Views\SceneEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

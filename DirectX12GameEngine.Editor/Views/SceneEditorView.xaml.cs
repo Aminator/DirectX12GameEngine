@@ -1,7 +1,5 @@
 ﻿using System.Numerics;
-using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Editor.ViewModels;
-using DirectX12GameEngine.Games;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 
@@ -11,9 +9,9 @@ using Windows.UI.Xaml.Input;
 
 namespace DirectX12GameEngine.Editor.Views
 {
-    public sealed partial class SceneView : UserControl
+    public sealed partial class SceneEditorView : UserControl
     {
-        public SceneView(StorageFolderViewModel rootFolder)
+        public SceneEditorView()
         {
             InitializeComponent();
 
@@ -27,14 +25,8 @@ namespace DirectX12GameEngine.Editor.Views
             EntityTreeView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
 
             ((StandardUICommand)Resources["OpenCommand"]).KeyboardAccelerators.Clear();
-
-            EditorGame game = new EditorGame(new XamlGameContext(SwapChainPanel) { FileProvider = new FileSystemProvider(rootFolder.Model) });
-            //EditorGame game = new EditorGame(new GameContextWithGraphics() { FileProvider = new FileSystemProvider(rootFolder.Model) });
-            game.Run();
-
-            DataContext = new SceneViewModel(game);
         }
 
-        public SceneViewModel ViewModel => (SceneViewModel)DataContext;
+        public SceneEditorViewModel ViewModel => (SceneEditorViewModel)DataContext;
     }
 }

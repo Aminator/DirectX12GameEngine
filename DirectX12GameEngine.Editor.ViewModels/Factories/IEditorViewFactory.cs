@@ -5,7 +5,7 @@ using DirectX12GameEngine.Editor.ViewModels;
 
 namespace DirectX12GameEngine.Editor.Factories
 {
-    public interface IAssetViewFactory
+    public interface IEditorViewFactory
     {
         public Task<object?> CreateAsync(StorageFileViewModel item);
     }

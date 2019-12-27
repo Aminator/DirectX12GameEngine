@@ -1,10 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using DirectX12GameEngine.Editor.Factories;
 using DirectX12GameEngine.Editor.Messages;
+using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
 using DirectX12GameEngine.Mvvm.Messaging;
-
-#nullable enable
+using Windows.System;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
@@ -14,8 +16,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public SolutionExplorerViewModel()
         {
-            OpenCommand = new RelayCommand<StorageItemViewModel>(Open);
-            ViewCodeCommand = new RelayCommand<StorageFileViewModel>(ViewCode);
+            OpenCommand = new RelayCommand<StorageItemViewModel>(async file => await OpenAsync(file));
+            ViewCodeCommand = new RelayCommand<StorageFileViewModel>(async file => await ViewCodeAsync(file));
             DeleteCommand = new RelayCommand<StorageItemViewModel>(Delete);
             ShowPropertiesCommand = new RelayCommand<StorageItemViewModel>(ShowProperties);
 
@@ -26,7 +28,17 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 RootFolder = m.RootFolder;
                 RootFolder.IsExpanded = true;
             });
+
+            EngineAssetViewFactory engineAssetViewFactory = new EngineAssetViewFactory();
+            engineAssetViewFactory.Add(typeof(Entity), new SceneEditorViewFactory());
+
+            CodeEditorViewFactory codeEditorViewFactory = new CodeEditorViewFactory();
+
+            EditorViewFactory.Default.Add(".xaml", engineAssetViewFactory);
+            EditorViewFactory.Default.Add(".cs", codeEditorViewFactory);
         }
+
+        public TabViewViewModel MainTabView { get; } = new TabViewViewModel();
 
         public StorageFolderViewModel? RootFolder
         {
@@ -44,14 +56,39 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public RelayCommand RefreshCommand { get; }
 
-        public void Open(StorageItemViewModel item)
+        public async Task OpenAsync(StorageItemViewModel item)
         {
-            Messenger.Default.Send(new LaunchStorageItemMessage(item));
+            if (item is StorageFileViewModel file)
+            {
+                object? editor = await EditorViewFactory.Default.CreateAsync(file);
+
+                if (editor != null)
+                {
+                    MainTabView.Tabs.Add(editor);
+                }
+                else
+                {
+                    await Launcher.LaunchFileAsync(file.Model);
+                }
+            }
+            else if (item is StorageFolderViewModel folder)
+            {
+                await Launcher.LaunchFolderAsync(folder.Model);
+            }
         }
 
-        public void ViewCode(StorageFileViewModel file)
+        public async Task ViewCodeAsync(StorageFileViewModel file)
         {
-            Messenger.Default.Send(new ViewCodeMessage(file));
+            object? editor = await new CodeEditorViewFactory().CreateAsync(file);
+
+            if (editor != null)
+            {
+                MainTabView.Tabs.Add(editor);
+            }
+            else
+            {
+                await Launcher.LaunchFileAsync(file.Model);
+            }
         }
 
         public void Delete(StorageItemViewModel item)

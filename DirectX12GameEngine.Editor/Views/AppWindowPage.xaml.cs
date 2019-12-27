@@ -1,11 +1,19 @@
 ﻿using System;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Threading.Tasks;
+using DirectX12GameEngine.Editor.ViewModels;
 using Windows.ApplicationModel.Core;
+using Windows.Foundation;
 using Windows.UI.ViewManagement;
+using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
+
+#nullable enable
 
 namespace DirectX12GameEngine.Editor.Views
 {
@@ -18,6 +26,9 @@ namespace DirectX12GameEngine.Editor.Views
         {
             InitializeComponent();
 
+            DataContext = new TabViewViewModel();
+            ViewModel.Tabs.CollectionChanged += OnTabsChanged;
+
             CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
 
             UpdateTitleBarLayout(titleBar);
@@ -25,17 +36,42 @@ namespace DirectX12GameEngine.Editor.Views
             titleBar.LayoutMetricsChanged += (s, e) => UpdateTitleBarLayout(s);
         }
 
+        public TabViewViewModel ViewModel => (TabViewViewModel)DataContext;
+
+        public AppWindow? AppWindow { get; set; }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
             if (e.Parameter is TabViewNavigationParameters parameters)
             {
-                TabView.AppWindow = parameters.AppWindow;
-                TabView.AppWindow.Frame.DragRegionVisuals.Add(CustomDragRegion);
+                if (AppWindow != parameters.AppWindow)
+                {
+                    AppWindow = parameters.AppWindow;
+                    AppWindow.CloseRequested += OnAppWindowCloseRequested;
+                    AppWindow.Frame.DragRegionVisuals.Add(CustomDragRegion);
+                }
 
-                TabView.TabItems.Add(parameters.Tab);
+                ViewModel.Tabs.Add(parameters.Tab);
             }
+        }
+
+        private async void OnTabsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (AppWindow != null && ViewModel.Tabs.Count == 0)
+            {
+                await AppWindow.CloseAsync();
+            }
+        }
+
+        private async void OnAppWindowCloseRequested(AppWindow sender, AppWindowCloseRequestedEventArgs e)
+        {
+            Deferral deferral = e.GetDeferral();
+
+            e.Cancel = !await ViewModel.TryCloseAsync();
+
+            deferral.Complete();
         }
 
         private async void OpenMainWindow()

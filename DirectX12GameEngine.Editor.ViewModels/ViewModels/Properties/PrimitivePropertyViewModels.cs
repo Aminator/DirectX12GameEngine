@@ -126,9 +126,23 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         }
     }
 
-    public class DateTimePropertyViewModel : PropertyViewModel<DateTimeOffset>
+    public class TimeSpanPropertyViewModel : PropertyViewModel<TimeSpan>
+    {
+        public TimeSpanPropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)
+        {
+        }
+    }
+
+    public class DateTimePropertyViewModel : PropertyViewModel<DateTime>
     {
         public DateTimePropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)
+        {
+        }
+    }
+
+    public class DateTimeOffsetPropertyViewModel : PropertyViewModel<DateTimeOffset>
+    {
+        public DateTimeOffsetPropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)
         {
         }
     }

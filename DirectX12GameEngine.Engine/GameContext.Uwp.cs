@@ -15,7 +15,7 @@ namespace DirectX12GameEngine.Games
             : base(control ?? CoreWindow.GetForCurrentThread())
         {
             PresentationParameters.BackBufferWidth = (int)Control.Bounds.Width;
-            PresentationParameters.BackBufferHeight = (int)Control.Bounds.Width;
+            PresentationParameters.BackBufferHeight = (int)Control.Bounds.Height;
         }
 
         public override void ConfigureServices(IServiceCollection services)
@@ -36,7 +36,7 @@ namespace DirectX12GameEngine.Games
             HolographicSpace = holographicSpace ?? HolographicSpace.CreateForCoreWindow(Control);
 
             PresentationParameters.BackBufferWidth = (int)Control.Bounds.Width;
-            PresentationParameters.BackBufferHeight = (int)Control.Bounds.Width;
+            PresentationParameters.BackBufferHeight = (int)Control.Bounds.Height;
 
             PresentationParameters.Stereo = HolographicDisplay.GetDefault().IsStereo;
         }

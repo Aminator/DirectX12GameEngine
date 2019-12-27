@@ -50,7 +50,7 @@
 
             <Grid>
                 <Grid x:Name="AssetEditorPanel" />
-                <local:ExtendedTabView x:Name="AssetEditorTabView" Background="Transparent" />
+                <local:ExtendedTabView x:Name="AssetEditorTabView" DataContext="{x:Bind ViewModel.SolutionExplorer.MainTabView}" />
             </Grid>
 
             <Grid
@@ -58,7 +58,7 @@
                 Grid.Column="1"
                 Background="{ThemeResource AcrylicSolutionExplorerBackground}"
                 Shadow="{StaticResource SolutionExplorerShadow}">
-                <local:ExtendedTabView x:Name="SolutionExplorerTabView" Background="Transparent" />
+                <local:ExtendedTabView x:Name="SolutionExplorerTabView" DataContext="{x:Bind ViewModel.MainTabView}" />
                 <Grid.Transitions>
                     <TransitionCollection>
                         <PaneThemeTransition Edge="Left" />

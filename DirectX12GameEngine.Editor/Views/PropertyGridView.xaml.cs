@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using DirectX12GameEngine.Editor.ViewModels;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Markup;
+using Windows.UI.Xaml.Data;
 
 #nullable enable
 
@@ -27,39 +24,16 @@ namespace DirectX12GameEngine.Editor.Views
         public PropertyGridViewModel ViewModel => (PropertyGridViewModel)DataContext;
     }
 
-    [ContentProperty(Name = nameof(TemplateDefinitions))]
-    public class DataTypeTemplateSelector : DataTemplateSelector
+    public class DateTimeConverter : IValueConverter
     {
-        public TemplateDefintionCollection TemplateDefinitions { get; } = new TemplateDefintionCollection();
-
-        protected override DataTemplate SelectTemplateCore(object item)
+        public object Convert(object value, Type targetType, object parameter, string language)
         {
-            TemplateDefinition? templateDefinition = TemplateDefinitions.FirstOrDefault(t => t.DataType.IsInstanceOfType(item));
-
-            return templateDefinition?.DataTemplate ?? base.SelectTemplateCore(item);
-        }
-    }
-
-    public class TemplateDefintionCollection : Collection<TemplateDefinition>
-    {
-    }
-
-    public class TemplateDefinition : DependencyObject
-    {
-        public static readonly DependencyProperty DataTypeProperty = DependencyProperty.Register(nameof(DataType), typeof(Type), typeof(TemplateDefinition), new PropertyMetadata(null));
-
-        public static readonly DependencyProperty DataTemplateProperty = DependencyProperty.Register(nameof(DataTemplate), typeof(DataTemplate), typeof(TemplateDefinition), new PropertyMetadata(null));
-
-        public Type DataType
-        {
-            get => (Type)GetValue(DataTypeProperty);
-            set => SetValue(DataTypeProperty, value);
+            return (DateTimeOffset)(DateTime)value;
         }
 
-        public DataTemplate DataTemplate
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            get => (DataTemplate)GetValue(DataTemplateProperty);
-            set => SetValue(DataTemplateProperty, value);
+            return ((DateTimeOffset)value).UtcDateTime;
         }
     }
 }
