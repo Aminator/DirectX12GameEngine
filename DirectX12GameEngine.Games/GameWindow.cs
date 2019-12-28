@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Games
             Dispose();
         }
 
-        internal abstract void Run();
+        public abstract void Run();
 
         protected virtual void OnSizeChanged()
         {

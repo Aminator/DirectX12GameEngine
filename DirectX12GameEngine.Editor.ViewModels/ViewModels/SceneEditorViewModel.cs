@@ -25,11 +25,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             DeleteCommand = new RelayCommand<EntityViewModel>(Delete);
 
             Game = new EditorGame(new GameContextWithGraphics { FileProvider = new FileSystemProvider(RootFolder.Model) });
-            Game.Run();
-
             Game.SceneSystem.SceneInstance.RootEntity = SceneRootEntity.Model;
-
-            _ = LoadAsync();
         }
 
         public EditorGame Game { get; }

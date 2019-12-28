@@ -35,7 +35,7 @@ namespace DirectX12GameEngine.Games
             CompositionTarget.Rendering -= OnCompositionTargetRendering;
         }
 
-        internal override void Run()
+        public override void Run()
         {
             CompositionTarget.Rendering += OnCompositionTargetRendering;
         }

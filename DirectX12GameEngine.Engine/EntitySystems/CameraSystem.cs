@@ -22,7 +22,10 @@ namespace DirectX12GameEngine.Engine
             {
                 float? screenAspectRatio = null;
 
-                screenAspectRatio = graphicsDevice.CommandList.Viewports[0].Width / graphicsDevice.CommandList.Viewports[0].Height;
+                if (graphicsDevice.CommandList.Viewports.Length > 0)
+                {
+                    screenAspectRatio = graphicsDevice.CommandList.Viewports[0].Width / graphicsDevice.CommandList.Viewports[0].Height;
+                }
 
                 cameraComponent.Update(screenAspectRatio);
             }

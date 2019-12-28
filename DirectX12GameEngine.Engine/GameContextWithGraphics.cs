@@ -5,7 +5,9 @@ namespace DirectX12GameEngine.Games
 {
     public class GameContextWithGraphics : GameContextWithFileProvider
     {
-        public GraphicsDevice GraphicsDevice { get; } = new GraphicsDevice();
+        private GraphicsDevice? graphicsDevice;
+
+        public GraphicsDevice GraphicsDevice { get => graphicsDevice ??= new GraphicsDevice(); set => graphicsDevice = value; }
 
         public PresentationParameters PresentationParameters { get; } = new PresentationParameters();
 
@@ -19,11 +21,13 @@ namespace DirectX12GameEngine.Games
 
     public class GameContextWithGraphics<TControl> : GameContextWithFileProvider<TControl> where TControl : class
     {
+        private GraphicsDevice? graphicsDevice;
+
         public GameContextWithGraphics(TControl control) : base(control)
         {
         }
 
-        public GraphicsDevice GraphicsDevice { get; } = new GraphicsDevice();
+        public GraphicsDevice GraphicsDevice { get => graphicsDevice ??= new GraphicsDevice(); set => graphicsDevice = value; }
 
         public PresentationParameters PresentationParameters { get; } = new PresentationParameters();
 

@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Games
             {
                 return new RectangleF(0, 0,
                     Math.Max(1.0f, (float)swapChainPanel.ActualWidth * swapChainPanel.CompositionScaleX + 0.5f),
-                    Math.Max(1, (float)swapChainPanel.ActualHeight * swapChainPanel.CompositionScaleY + 0.5f));
+                    Math.Max(1.0f, (float)swapChainPanel.ActualHeight * swapChainPanel.CompositionScaleY + 0.5f));
             }
         }
 
@@ -32,7 +32,7 @@ namespace DirectX12GameEngine.Games
             CompositionTarget.Rendering -= OnCompositionTargetRendering;
         }
 
-        internal override void Run()
+        public override void Run()
         {
             CompositionTarget.Rendering += OnCompositionTargetRendering;
         }

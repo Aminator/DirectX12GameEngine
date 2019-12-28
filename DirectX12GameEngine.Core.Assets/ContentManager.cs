@@ -19,7 +19,7 @@ namespace DirectX12GameEngine.Core.Assets
 
         static ContentManager()
         {
-            AddTypeConverters(typeof(Vector3Converter), typeof(Vector4Converter), typeof(QuaternionConverter), typeof(Matrix4x4Converter));
+            AddTypeConverters(typeof(Vector2Converter), typeof(Vector3Converter), typeof(Vector4Converter), typeof(QuaternionConverter), typeof(Matrix4x4Converter));
         }
 
         public ContentManager(IServiceProvider services, IFileProvider fileProvider)

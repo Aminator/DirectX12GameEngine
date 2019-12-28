@@ -27,7 +27,7 @@ namespace DirectX12GameEngine.Games
             }
         }
 
-        internal override void Run()
+        public override void Run()
         {
             while (!IsExiting)
             {

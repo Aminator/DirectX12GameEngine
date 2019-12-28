@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;

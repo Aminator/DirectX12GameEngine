@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Engine
         public Game(GameContext context) : base(context)
         {
             GraphicsDevice = Services.GetService<GraphicsDevice>();
-            
+
             if (GraphicsDevice != null)
             {
                 GraphicsDevice.Presenter = Services.GetService<GraphicsPresenter>();
@@ -25,7 +25,7 @@ namespace DirectX12GameEngine.Engine
             GameSystems.Add(Script);
         }
 
-        public GraphicsDevice? GraphicsDevice { get; set; }
+        public GraphicsDevice? GraphicsDevice { get; }
 
         public InputManager Input { get; }
 
@@ -42,11 +42,9 @@ namespace DirectX12GameEngine.Engine
                 if (GraphicsDevice.Presenter != null)
                 {
                     GraphicsDevice.Presenter.Dispose();
-                    GraphicsDevice.Presenter = null;
                 }
 
                 GraphicsDevice.Dispose();
-                GraphicsDevice = null;
             }
         }
 

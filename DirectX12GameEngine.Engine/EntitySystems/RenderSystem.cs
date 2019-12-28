@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -8,8 +9,7 @@ using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
-
-using CommandList = DirectX12GameEngine.Graphics.CommandList;
+using Vortice.Mathematics;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -26,10 +26,10 @@ namespace DirectX12GameEngine.Engine
 
         public RenderSystem(GraphicsDevice device, SceneSystem sceneSystem) : base(typeof(TransformComponent))
         {
+            if (device is null) throw new ArgumentNullException(nameof(device));
+
             graphicsDevice = device;
             this.sceneSystem = sceneSystem;
-
-            if (graphicsDevice is null) throw new InvalidOperationException();
 
             DirectionalLightGroupBuffer = GraphicsBuffer.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload);
             GlobalBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload);
@@ -47,8 +47,6 @@ namespace DirectX12GameEngine.Engine
 
         public override void Draw(GameTime gameTime)
         {
-            if (graphicsDevice is null) return;
-
             UpdateGlobals(gameTime);
             UpdateLights();
             UpdateViewProjectionMatrices();
@@ -57,13 +55,16 @@ namespace DirectX12GameEngine.Engine
 
             if (componentsWithSameModel.Length < 1) return;
 
-            int batchCount = Math.Min(Environment.ProcessorCount, componentsWithSameModel.Length);
-            int batchSize = (int)Math.Ceiling((double)componentsWithSameModel.Length / batchCount);
-
             Texture? depthStencilBuffer = graphicsDevice.CommandList.DepthStencilBuffer;
             GraphicsResource[] renderTargets = graphicsDevice.CommandList.RenderTargets;
-            var viewports = graphicsDevice.CommandList.Viewports;
-            var scissorRectangles = graphicsDevice.CommandList.ScissorRectangles;
+
+            if (renderTargets.Length < 1) return;
+
+            Viewport[] viewports = graphicsDevice.CommandList.Viewports;
+            Rectangle[] scissorRectangles = graphicsDevice.CommandList.ScissorRectangles;
+
+            int batchCount = Math.Min(Environment.ProcessorCount, componentsWithSameModel.Length);
+            int batchSize = (int)Math.Ceiling((double)componentsWithSameModel.Length / batchCount);
 
             for (int i = commandLists.Count; i < batchCount; i++)
             {

@@ -35,6 +35,11 @@ namespace DirectX12GameEngine.Input
 
         public InputManager(IInputSourceConfiguration configuration) : this()
         {
+            AddSourcesFromConfiguration(configuration);
+        }
+
+        public void AddSourcesFromConfiguration(IInputSourceConfiguration configuration)
+        {
             foreach (IInputSource inputSource in configuration.Sources)
             {
                 Sources.Add(inputSource);
@@ -82,14 +87,14 @@ namespace DirectX12GameEngine.Input
         {
             switch (source)
             {
+                case IGamepadInputSource gamepadSource:
+                    gamepadSources.Add(gamepadSource);
+                    break;
                 case IKeyboardInputSource keyboardSource:
                     keyboardSources.Add(keyboardSource);
                     break;
                 case IPointerInputSource pointerSource:
                     pointerSources.Add(pointerSource);
-                    break;
-                case IGamepadInputSource gamepadSource:
-                    gamepadSources.Add(gamepadSource);
                     break;
             }
         }
@@ -98,14 +103,14 @@ namespace DirectX12GameEngine.Input
         {
             switch (source)
             {
+                case IGamepadInputSource gamepadSource:
+                    gamepadSources.Remove(gamepadSource);
+                    break;
                 case IKeyboardInputSource keyboardDevice:
                     keyboardSources.Remove(keyboardDevice);
                     break;
                 case IPointerInputSource pointerSource:
                     pointerSources.Remove(pointerSource);
-                    break;
-                case IGamepadInputSource gamepadSource:
-                    gamepadSources.Remove(gamepadSource);
                     break;
             }
         }
@@ -125,6 +130,11 @@ namespace DirectX12GameEngine.Input
                     {
                         OnInputSourceRemoved(source);
                     }
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    gamepadSources.Clear();
+                    keyboardSources.Clear();
+                    pointerSources.Clear();
                     break;
             }
         }

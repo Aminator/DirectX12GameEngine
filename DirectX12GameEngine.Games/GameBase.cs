@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core.Assets;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,19 +17,12 @@ namespace DirectX12GameEngine.Games
 
         public GameBase(GameContext context)
         {
-            Context = context;
+            context.ConfigureServices(ServiceDescriptors);
+            ConfigureServices(ServiceDescriptors);
 
-            ServiceCollection services = new ServiceCollection();
-            ConfigureServices(services);
-
-            Services = services.BuildServiceProvider();
+            Services = ServiceDescriptors.BuildServiceProvider();
 
             Window = Services.GetService<GameWindow>();
-
-            if (Window != null)
-            {
-                Window.TickRequested += (s, e) => Tick();
-            }
 
             Content = Services.GetRequiredService<IContentManager>();
         }
@@ -37,11 +31,11 @@ namespace DirectX12GameEngine.Games
 
         public IList<GameSystemBase> GameSystems { get; } = new List<GameSystemBase>();
 
-        public GameContext Context { get; }
+        public GameWindow? Window { get; set; }
 
-        public GameWindow? Window { get; private set; }
+        public IServiceCollection ServiceDescriptors { get; } = new ServiceCollection();
 
-        public IServiceProvider Services { get; }
+        public IServiceProvider Services { get; private set; }
 
         public GameTime Time { get; } = new GameTime();
 
@@ -53,9 +47,6 @@ namespace DirectX12GameEngine.Games
             {
                 gameSystem.Dispose();
             }
-
-            Window?.Exit();
-            Window = null;
         }
 
         public void Run()
@@ -83,22 +74,26 @@ namespace DirectX12GameEngine.Games
             if (IsRunning)
             {
                 isExiting = true;
-                Window?.Exit();
+
+                lock (tickLock)
+                {
+                    CheckEndRun();
+                }
             }
         }
 
         public void Tick()
         {
-            try
+            lock (tickLock)
             {
-                lock (tickLock)
+                if (isExiting)
                 {
-                    if (isExiting)
-                    {
-                        CheckEndRun();
-                        return;
-                    }
+                    CheckEndRun();
+                    return;
+                }
 
+                try
+                {
                     TimeSpan elapsedTime = stopwatch.Elapsed - Time.Total;
                     Time.Update(stopwatch.Elapsed, elapsedTime);
 
@@ -107,17 +102,22 @@ namespace DirectX12GameEngine.Games
                     BeginDraw();
                     Draw(Time);
                 }
-            }
-            finally
-            {
-                EndDraw();
+                finally
+                {
+                    EndDraw();
 
-                CheckEndRun();
+                    CheckEndRun();
+                }
             }
         }
 
         protected virtual void Initialize()
         {
+            if (Window != null)
+            {
+                Window.TickRequested += OnTickRequested;
+            }
+
             foreach (GameSystemBase gameSystem in GameSystems)
             {
                 gameSystem.Initialize();
@@ -178,8 +178,6 @@ namespace DirectX12GameEngine.Games
 
         protected virtual void ConfigureServices(IServiceCollection services)
         {
-            Context.ConfigureServices(services);
-
             services.AddSingleton<GameBase>(this);
             services.AddSingleton<IContentManager, ContentManager>();
         }
@@ -189,9 +187,23 @@ namespace DirectX12GameEngine.Games
             if (isExiting && IsRunning)
             {
                 EndRun();
-                IsRunning = false;
+
+                if (Window != null)
+                {
+                    Window.Exit();
+                    Window.TickRequested -= OnTickRequested;
+                }
+
                 stopwatch.Stop();
+
+                IsRunning = false;
+                isExiting = false;
             }
+        }
+
+        private void OnTickRequested(object? sender, EventArgs e)
+        {
+            Tick();
         }
     }
 }
