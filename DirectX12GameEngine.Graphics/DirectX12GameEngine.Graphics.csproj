@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -10,13 +10,13 @@
 
   <ItemGroup>
     <PackageReference Include="Nito.AsyncEx" Version="5.0.0" />
-    <PackageReference Include="Vortice.Direct2D1" Version="1.4.0" />
-    <PackageReference Include="Vortice.Direct3D11" Version="1.4.0" />
-    <PackageReference Include="Vortice.Direct3D12" Version="1.4.0" />
+    <PackageReference Include="Vortice.Direct2D1" Version="1.5.0" />
+    <PackageReference Include="Vortice.Direct3D11" Version="1.5.0" />
+    <PackageReference Include="Vortice.Direct3D12" Version="1.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DirectX12GameEngine.Core.Assets\DirectX12GameEngine.Core.Assets.csproj" />
+    <ProjectReference Include="..\DirectX12GameEngine.Serialization\DirectX12GameEngine.Serialization.csproj" />
   </ItemGroup>
 
 </Project>

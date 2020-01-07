@@ -1,12 +1,11 @@
 ﻿using System.Numerics;
+using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Editor.ViewModels;
+using Windows.ApplicationModel.Core;
+using Windows.Foundation;
+using Windows.UI.Core.Preview;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.ApplicationModel.Core;
-using Windows.UI.ViewManagement;
-using Windows.UI.Core.Preview;
-using Windows.Foundation;
-using DirectX12GameEngine.Core;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -28,10 +27,12 @@ namespace DirectX12GameEngine.Editor.Views
             SolutionExplorerTabView.TabItemsChanged += (s, e) => SolutionExplorerColumnDefinition.Width = GridLength.Auto;
 
             TitleBarShadow.Receivers.Add(ContentPanel);
-            SolutionExplorerShadow.Receivers.Add(AssetEditorPanel);
+            SolutionExplorerShadow.Receivers.Add(MainEditorPanel);
+            TerminalShadow.Receivers.Add(ContentEditorPanel);
 
             TitleBarPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
             SolutionExplorerPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
+            TerminalPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
 
             CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
 
@@ -48,7 +49,7 @@ namespace DirectX12GameEngine.Editor.Views
         {
             Deferral deferral = e.GetDeferral();
 
-            e.Handled = await ViewModel.MainTabView.GetUnclosableTabsAsync().CountAsync() > 0
+            e.Handled = await ViewModel.SolutionExplorerTabView.GetUnclosableTabsAsync().CountAsync() > 0
                 || await ViewModel.SolutionExplorer.MainTabView.GetUnclosableTabsAsync().CountAsync() > 0;
 
             deferral.Complete();

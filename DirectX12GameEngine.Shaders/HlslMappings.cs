@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace DirectX12GameEngine.Shaders
@@ -115,9 +116,6 @@ namespace DirectX12GameEngine.Shaders
 
         public static bool ContainsKey(string name)
         {
-            int indexOfOpenBracket = name.IndexOf('<');
-            name = indexOfOpenBracket >= 0 ? name.Remove(indexOfOpenBracket) + "`1" : name;
-
             return knownTypes.ContainsKey(name);
         }
 
@@ -128,19 +126,12 @@ namespace DirectX12GameEngine.Shaders
 
             string mappedName = knownTypes.TryGetValue(fullTypeName, out string mapped) ? mapped : fullTypeName.Replace(".", "::");
 
-            return type.IsGenericType ? mappedName + $"<{GetMappedName(type.GetGenericArguments()[0])}>" : mappedName;
+            return type.IsGenericType ? mappedName + $"<{string.Join(", ", type.GetGenericArguments().Select(t => GetMappedName(t)))}>" : mappedName;
         }
 
         public static string GetMappedName(string name)
         {
-            int indexOfOpenBracket = name.IndexOf('<');
-
-            string genericArguments = indexOfOpenBracket >= 0 ? name.Substring(indexOfOpenBracket) : "";
-            name = indexOfOpenBracket >= 0 ? name.Remove(indexOfOpenBracket) + "`1" : name;
-
-            string mappedName = knownTypes.TryGetValue(name, out string mapped) ? mapped : name.Replace(".", "::");
-
-            return mappedName + genericArguments;
+            return knownTypes.TryGetValue(name, out string mapped) ? mapped : name.Replace(".", "::");
         }
     }
 

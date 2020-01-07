@@ -8,26 +8,34 @@ namespace DirectX12GameEngine.Shaders
 {
     public static class SyntaxNodeExtensions
     {
-        public static TRoot ReplaceType<TRoot>(this TRoot node, TypeSyntax type) where TRoot : SyntaxNode
+        public static TRoot ReplaceType<TRoot>(this TRoot node, TypeSyntax type, TypeInfo typeInfo) where TRoot : SyntaxNode
         {
-            string value = HlslKnownTypes.GetMappedName(type.ToString());
+            TypeSyntax mappedType = type.GetMappedType(typeInfo);
 
-            if (value == type.ToString())
-            {
-                return node;
-            }
-            else
-            {
-                return node.ReplaceNode(type, SyntaxFactory.ParseTypeName(value).WithTriviaFrom(type));
-            }
+            return mappedType.ToString() == type.ToString() ? node : node.ReplaceNode(type, type.GetMappedType(typeInfo).WithTriviaFrom(type));
         }
 
-        public static bool TryGetMappedMemberName(this MemberAccessExpressionSyntax node, SemanticModel semanticModel, out ISymbol? memberSymbol, out string? mappedName)
+        public static TypeSyntax GetMappedType(this TypeSyntax type, TypeInfo typeInfo)
         {
-            SymbolInfo memberSymbolInfo = semanticModel.GetSymbolInfo(node.Name);
+            TypeSyntax mappedType = typeInfo.GetMappedType();
 
-            memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault();
-            INamedTypeSymbol? containingTypeSymbol = memberSymbol?.ContainingType;
+            return mappedType.ToString() == type.ToString() ? type : mappedType.WithTriviaFrom(type);
+        }
+
+        public static TypeSyntax GetMappedType(this TypeInfo typeInfo)
+        {
+            if (typeInfo.Type is null) throw new InvalidOperationException();
+
+            string fullTypeName = typeInfo.Type.ToString();
+            string value = HlslKnownTypes.GetMappedName(fullTypeName);
+
+            return SyntaxFactory.ParseTypeName(value);
+        }
+
+        public static bool TryGetMappedMemberName(this MemberAccessExpressionSyntax node, SymbolInfo memberSymbolInfo, out ISymbol memberSymbol, out string? mappedName)
+        {
+            memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault() ?? throw new InvalidOperationException();
+            INamedTypeSymbol? containingTypeSymbol = memberSymbol.ContainingType;
 
             mappedName = null;
 

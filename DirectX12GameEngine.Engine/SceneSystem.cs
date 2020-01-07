@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Serialization;
 using DirectX12GameEngine.Games;
 using Microsoft.Extensions.DependencyInjection;
 

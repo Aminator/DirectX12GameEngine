@@ -17,7 +17,21 @@ namespace DirectX12GameEngine.Engine
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public IEnumerable<TransformComponent> Children => this;
+        public IEnumerable<TransformComponent> Children
+        {
+            get
+            {
+                if (Entity is null) yield break;
+
+                foreach (Entity entity in Entity.Children)
+                {
+                    if (entity.Transform != null)
+                    {
+                        yield return entity.Transform;
+                    }
+                }
+            }
+        }
 
         [IgnoreDataMember]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -43,18 +57,7 @@ namespace DirectX12GameEngine.Engine
 
         public override string ToString() => $"Position: {Position}, Rotation: {RotationEuler}, Scale: {Scale}";
 
-        public IEnumerator<TransformComponent> GetEnumerator()
-        {
-            if (Entity is null) yield break;
-
-            foreach (Entity entity in Entity.Children)
-            {
-                if (entity.Transform != null)
-                {
-                    yield return entity.Transform;
-                }
-            }
-        }
+        public IEnumerator<TransformComponent> GetEnumerator() => Children.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

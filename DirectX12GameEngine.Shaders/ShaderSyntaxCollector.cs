@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,7 +14,7 @@ namespace DirectX12GameEngine.Shaders
             this.compilation = compilation;
         }
 
-        public IList<Type> CollectedTypes { get; } = new List<Type>();
+        public ISet<ITypeSymbol> CollectedTypes { get; } = new HashSet<ITypeSymbol>();
 
         private SemanticModel GetSemanticModel(SyntaxNode node) => compilation.GetSemanticModel(node.SyntaxTree);
 
@@ -23,17 +22,11 @@ namespace DirectX12GameEngine.Shaders
         {
             base.VisitMemberAccessExpression(node);
 
-            if (!node.TryGetMappedMemberName(GetSemanticModel(node), out ISymbol? memberSymbol, out _))
+            if (!node.TryGetMappedMemberName(GetSemanticModel(node).GetSymbolInfo(node.Name), out ISymbol memberSymbol, out _))
             {
-                if (memberSymbol?.ContainingType != null)
+                if (memberSymbol.ContainingType != null)
                 {
-                    string fullTypeName = memberSymbol.ContainingType.ToDisplayString(
-                        new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces))
-                        + ", " + memberSymbol.ContainingType.ContainingAssembly.Identity.ToString();
-
-                    Type? type = Type.GetType(fullTypeName);
-
-                    CollectedTypes.Add(type);
+                    CollectedTypes.Add(memberSymbol.ContainingType);
                 }
             }
         }

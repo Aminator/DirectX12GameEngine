@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:DirectX12GameEngine.Editor"
-    xmlns:viewmodels="using:DirectX12GameEngine.Editor.ViewModels"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls">
 
     <Application.Resources>
@@ -48,8 +47,8 @@
                     <AcrylicBrush
                         x:Key="AcrylicSolutionExplorerBackground"
                         BackgroundSource="HostBackdrop"
-                        FallbackColor="#FF33353b"
-                        TintColor="#FF33353b"
+                        FallbackColor="#FF33353B"
+                        TintColor="#FF33353B"
                         TintLuminosityOpacity="0.95"
                         TintOpacity="0.8" />
 
@@ -57,7 +56,7 @@
                         x:Key="AcrylicWindowBackground"
                         BackgroundSource="HostBackdrop"
                         FallbackColor="#FF2F3136"
-                        TintColor="#FF2a2c31"
+                        TintColor="#FF2A2C31"
                         TintLuminosityOpacity="0.95"
                         TintOpacity="0.8" />
                 </ResourceDictionary>

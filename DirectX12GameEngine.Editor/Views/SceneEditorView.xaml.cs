@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using DirectX12GameEngine.Core.Assets;
 using DirectX12GameEngine.Editor.ViewModels;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Graphics;

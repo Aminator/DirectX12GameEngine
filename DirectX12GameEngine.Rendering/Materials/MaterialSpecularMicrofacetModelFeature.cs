@@ -22,6 +22,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         public IMaterialSpecularMicrofacetNormalDistributionFunction NormalDistribution { get; set; } = new MaterialSpecularMicrofacetNormalDistributionGgx();
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector3 ComputeDirectLightContribution()
         {
             Vector3 specularColor = MaterialPixelStream.MaterialSpecularVisible;
@@ -36,6 +37,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMember]
+        [ShaderMethod]
         public Vector3 ComputeEnvironmentLightContribution()
         {
             return default;

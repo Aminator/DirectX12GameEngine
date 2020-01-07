@@ -1,4 +1,4 @@
-﻿using DirectX12GameEngine.Core.Assets;
+﻿using DirectX12GameEngine.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel;
 using Windows.Storage;

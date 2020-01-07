@@ -12,8 +12,6 @@ using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 using Windows.UI.StartScreen;
 
-#nullable enable
-
 namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class ProjectLoaderViewModel : ViewModelBase

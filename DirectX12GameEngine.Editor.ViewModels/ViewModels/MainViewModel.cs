@@ -3,6 +3,7 @@ using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
 using DirectX12GameEngine.Mvvm.Messaging;
 using Windows.ApplicationModel.Core;
+using Windows.Storage;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
@@ -18,7 +19,9 @@ namespace DirectX12GameEngine.Editor.ViewModels
             RegisterMessages();
         }
 
-        public TabViewViewModel MainTabView { get; } = new TabViewViewModel();
+        public TabViewViewModel SolutionExplorerTabView { get; } = new TabViewViewModel();
+
+        public TabViewViewModel TerminalTabView { get; } = new TabViewViewModel();
 
         public ProjectLoaderViewModel ProjectLoader { get; } = new ProjectLoaderViewModel();
 
@@ -37,11 +40,11 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 {
                     if (isPropertyGridOpen)
                     {
-                        MainTabView.Tabs.Add(PropertyGrid);
+                        SolutionExplorerTabView.Tabs.Add(PropertyGrid);
                     }
                     else
                     {
-                        MainTabView.Tabs.Remove(PropertyGrid);
+                        SolutionExplorerTabView.Tabs.Remove(PropertyGrid);
                     }
                 }
             }
@@ -56,11 +59,11 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 {
                     if (isSolutionExplorerOpen)
                     {
-                        MainTabView.Tabs.Add(SolutionExplorer);
+                        SolutionExplorerTabView.Tabs.Add(SolutionExplorer);
                     }
                     else
                     {
-                        MainTabView.Tabs.Remove(SolutionExplorer);
+                        SolutionExplorerTabView.Tabs.Remove(SolutionExplorer);
                     }
                 }
             }
@@ -73,7 +76,13 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         private void RegisterMessages()
         {
-            Messenger.Default.Register<ProjectLoadedMessage>(this, m => { IsPropertyGridOpen = true; IsSolutionExplorerOpen = true; });
+            Messenger.Default.Register<ProjectLoadedMessage>(this, m =>
+            {
+                IsPropertyGridOpen = true;
+                IsSolutionExplorerOpen = true;
+
+                TerminalTabView.Tabs.Add(new TerminalViewModel(m.RootFolder));
+            });
         }
     }
 }

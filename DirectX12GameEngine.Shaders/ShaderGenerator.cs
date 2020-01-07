@@ -1,16 +1,26 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DirectX12GameEngine.Shaders
 {
     public class ShaderGenerator
     {
-        public const string DelegateEntryPointName = "Main";
-        public const string DelegateTypeName = "Shader";
+        public const string AnonymousMethodEntryPointName = "Main";
+        public const string AnonymousMethodDeclaringTypeName = "Shader";
+
+        public const BindingFlags DefaultBindingFlagsWithContract = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+        public const BindingFlags DefaultBindingFlagsWithoutContract = BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
+
+        private static readonly Regex AnonymousMethodNameRegex = new Regex(@"<\w+>", RegexOptions.Compiled);
+        private static readonly Regex AnonymousMethodIndexRegex = new Regex(@"\d+$", RegexOptions.Compiled);
 
         private readonly object shader;
         private readonly Type shaderType;
@@ -120,9 +130,9 @@ namespace DirectX12GameEngine.Shaders
                 WriteMethod(methodInfo, null, null, true);
             }
 
-            if (action != null)
+            if (action != null && !action.Method.IsDefined(typeof(ShaderMemberAttribute)))
             {
-                WriteMethod(action.Method, EntryPointAttributes, DelegateEntryPointName, true);
+                WriteMethod(action.Method, EntryPointAttributes, AnonymousMethodEntryPointName, true);
             }
 
             stringWriter.GetStringBuilder().TrimEnd();
@@ -134,15 +144,15 @@ namespace DirectX12GameEngine.Shaders
 
             ShaderAttribute? shaderAttribute = EntryPointAttributes.OfType<ShaderAttribute>().FirstOrDefault();
 
-            if (shaderAttribute != null)
+            if (shaderAttribute != null && action != null && !action.Method.IsDefined(typeof(ShaderMemberAttribute)))
             {
-                result.EntryPoints[shaderAttribute.Name] = DelegateEntryPointName;
+                result.EntryPoints[shaderAttribute.Name] = AnonymousMethodEntryPointName;
             }
 
             return result;
         }
 
-        public static void GetEntryPoints(ShaderGeneratorResult result, Type shaderType, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+        public static void GetEntryPoints(ShaderGeneratorResult result, Type shaderType, BindingFlags bindingFlags = DefaultBindingFlagsWithContract)
         {
             foreach (MethodInfo shaderMethodInfo in shaderType.GetMethods(bindingFlags)
                 .Where(m => m.IsDefined(typeof(ShaderAttribute)))
@@ -485,11 +495,11 @@ namespace DirectX12GameEngine.Shaders
 
         private void CollectMethod(MethodInfo methodInfo)
         {
-            ShaderMethodAttribute? shaderMethodAttribute = methodInfo.GetCustomAttribute<ShaderMethodAttribute?>();
+            ShaderMethodAttribute? shaderMethodAttribute = GetShaderMethodAttribute(methodInfo);
 
-            IEnumerable<Type> dependentTypes = shaderMethodAttribute?.DependentTypes.Length > 0
+            IEnumerable<Type> dependentTypes = shaderMethodAttribute?.DependentTypes != null
                 ? shaderMethodAttribute.DependentTypes
-                : ShaderMethodGenerator.GetDependentTypes(methodInfo);
+                : ShaderMethodGenerator.GetDependentTypes(methodInfo).Select(t => Type.GetType(ShaderMethodGenerator.GetFullTypeName(t)));
 
             dependentTypes = dependentTypes.Concat(methodInfo.GetParameters().Select(p => p.ParameterType).Concat(new[] { methodInfo.ReturnType })).Distinct();
 
@@ -528,50 +538,21 @@ namespace DirectX12GameEngine.Shaders
 
             WriteParameters(methodInfo);
 
-            if (methodInfo.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(ShaderSemanticAttribute), true).FirstOrDefault(a => HlslKnownSemantics.ContainsKey(a.GetType())) is ShaderSemanticAttribute returnTypeAttribute)
+            if (methodInfo.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(ShaderSemanticAttribute), false).FirstOrDefault(a => HlslKnownSemantics.ContainsKey(a.GetType())) is ShaderSemanticAttribute returnTypeAttribute)
             {
                 writer.Write(GetHlslSemantic(returnTypeAttribute));
             }
 
-            //if (isTopLevel)
-            //{
-            //    writer.WriteLine();
-            //    writer.WriteLine("{");
-            //    writer.Indent++;
-                
-            //    if (methodInfo.ReturnType != typeof(void))
-            //    {
-            //        writer.Write("return ");
-            //    }
-
-            //    writer.Write($"{methodInfo.DeclaringType.FullName.Replace(".", "::")}::{methodName}");
-            //    writer.Write("(");
-
-            //    ParameterInfo[] parameterInfos = methodInfo.GetParameters();
-
-            //    if (parameterInfos.Length > 0)
-            //    {
-            //        foreach (ParameterInfo parameterInfo in parameterInfos)
-            //        {
-            //            writer.Write(parameterInfo.Name);
-            //            writer.Write(", ");
-            //        }
-
-            //        stringWriter.GetStringBuilder().Length -= 2;
-            //    }
-
-            //    writer.WriteLine(");");
-
-            //    writer.Indent--;
-            //    writer.WriteLine("}");
-            //}
-            //else
             if (methodInfo.GetMethodBody() != null)
             {
                 string methodBody = GetMethodBody(methodInfo);
 
                 writer.WriteLine();
+                writer.WriteLine("{");
+                writer.Indent++;
                 writer.WriteLine(methodBody);
+                writer.Indent--;
+                writer.WriteLine("}");
             }
             else
             {
@@ -583,19 +564,85 @@ namespace DirectX12GameEngine.Shaders
 
         private string GetMethodBody(MethodInfo methodInfo)
         {
-            ShaderMethodAttribute? shaderMethodAttribute = methodInfo.GetCustomAttribute<ShaderMethodAttribute?>();
-
-            string shaderSource = shaderMethodAttribute?.ShaderSource ?? ShaderMethodGenerator.GetMethodBody(methodInfo);
+            string shaderSource = GetShaderMethodAttribute(methodInfo)?.ShaderSource ?? ShaderMethodGenerator.GetMethodBody(methodInfo);
 
             // Indent every line
-            string indent = "";
+            StringBuilder indent = new StringBuilder();
 
-            for (int i = 0; i < writer.Indent; i++)
+            for (int i = 0; i < writer.Indent + 1; i++)
             {
-                indent += IndentedTextWriter.DefaultTabString;
+                indent.Append(IndentedTextWriter.DefaultTabString);
             }
 
-            return shaderSource.Replace(Environment.NewLine, Environment.NewLine + indent).Trim();
+            return shaderSource.Replace(Environment.NewLine, Environment.NewLine + indent.ToString()).Trim();
+        }
+
+        private static ShaderMethodAttribute? GetShaderMethodAttribute(MethodInfo methodInfo)
+        {
+            if (methodInfo.IsDefined(typeof(CompilerGeneratedAttribute)) || methodInfo.DeclaringType.IsDefined(typeof(CompilerGeneratedAttribute)))
+            {
+                string methodName = AnonymousMethodNameRegex.Match(methodInfo.Name).Value.Trim('<', '>');
+                int anonymousMethodIndex = int.Parse(AnonymousMethodIndexRegex.Match(methodInfo.Name).Value, CultureInfo.InvariantCulture);
+
+                MethodInfo? containingMethodInfo = methodInfo.DeclaringType.GetMethod(methodName, DefaultBindingFlagsWithContract)
+                    ?? methodInfo.DeclaringType.DeclaringType.GetMethod(methodName, DefaultBindingFlagsWithContract);
+
+                if (containingMethodInfo is null) throw new InvalidOperationException($"The containing method {methodName} of the anonymous method {methodInfo.Name} was not found.");
+
+                var shaderMethodAttributes = containingMethodInfo.GetCustomAttributes<AnonymousShaderMethodAttribute>();
+
+                foreach (AnonymousShaderMethodAttribute shaderMethodAttribute in shaderMethodAttributes)
+                {
+                    if (shaderMethodAttribute.AnonymousMethodIndex == anonymousMethodIndex)
+                    {
+                        if (shaderMethodAttribute.ShaderSource != null)
+                        {
+                            return shaderMethodAttribute;
+                        }
+                        else
+                        {
+                            var globalAttributes = containingMethodInfo.DeclaringType.Assembly.GetCustomAttributes<GlobalAnonymousShaderMethodAttribute>();
+
+                            foreach (GlobalAnonymousShaderMethodAttribute globalAttribute in globalAttributes)
+                            {
+                                if (globalAttribute.AnonymousMethodIndex == shaderMethodAttribute.AnonymousMethodIndex
+                                    && globalAttribute.DeclaringType == containingMethodInfo.DeclaringType
+                                    && containingMethodInfo.ReflectedType.GetMethod(globalAttribute.MethodName, DefaultBindingFlagsWithContract, null, globalAttribute.ParameterTypes, null) == containingMethodInfo)
+                                {
+                                    return globalAttribute;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                ShaderMethodAttribute? shaderMethodAttribute = methodInfo.GetCustomAttribute<ShaderMethodAttribute?>();
+
+                if (shaderMethodAttribute != null)
+                {
+                    if (shaderMethodAttribute.ShaderSource != null)
+                    {
+                        return shaderMethodAttribute;
+                    }
+                    else
+                    {
+                        var globalAttributes = methodInfo.DeclaringType.Assembly.GetCustomAttributes<GlobalShaderMethodAttribute>();
+
+                        foreach (GlobalShaderMethodAttribute globalAttribute in globalAttributes)
+                        {
+                            if (globalAttribute.DeclaringType == methodInfo.DeclaringType
+                                && methodInfo.ReflectedType.GetMethod(globalAttribute.MethodName, DefaultBindingFlagsWithContract, null, globalAttribute.ParameterTypes, null) == methodInfo)
+                            {
+                                return globalAttribute;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         private void WriteAttribute(Attribute attribute)

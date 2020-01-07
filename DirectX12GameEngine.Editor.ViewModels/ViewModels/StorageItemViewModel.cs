@@ -1,8 +1,6 @@
 ﻿using DirectX12GameEngine.Mvvm;
 using Windows.Storage;
 
-#nullable enable
-
 namespace DirectX12GameEngine.Editor.ViewModels
 {
     public abstract class StorageItemViewModel : ViewModelBase<IStorageItem>

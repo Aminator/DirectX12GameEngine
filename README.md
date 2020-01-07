@@ -2,7 +2,7 @@
 
 **DirectX12GameEngine** is a game engine completely written in C# utilizing the Direct3D 12 API for rendering graphics. It supports UWP either rendered directly to the `CoreWindow` or embedded in XAML with a `SwapChainPanel`. It also supports Win32 with WinForms. Some stand-out features are a shader generator that generates HLSL shaders out of .NET code, holographic rendering for HoloLens and Windows Mixed Reality and an editor made with UWP XAML.
 
-![DirectX12GameEngine Editor](DirectX12GameEngine_Editor.png)
+![DirectX12GameEngine Editor](DirectX12GameEngine.Editor.png)
 
 ## Engine Projects
 

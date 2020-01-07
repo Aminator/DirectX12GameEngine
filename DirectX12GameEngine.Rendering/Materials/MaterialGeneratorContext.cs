@@ -6,7 +6,7 @@ using DirectX12GameEngine.Shaders;
 using Vortice.Direct3D12;
 using Vortice.DXGI;
 using Vortice.Dxc;
-using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Serialization;
 using System.IO;
 
 namespace DirectX12GameEngine.Rendering.Materials

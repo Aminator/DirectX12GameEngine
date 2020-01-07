@@ -1,82 +1,98 @@
-﻿using ICSharpCode.Decompiler;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Text;
+using System.Text.RegularExpressions;
+using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.Metadata;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text.RegularExpressions;
 
 namespace DirectX12GameEngine.Shaders
 {
     public static class ShaderMethodGenerator
     {
-        private static readonly Regex ClosureTypeDeclarationRegex = new Regex(@"(?<=private sealed class )<\w*>[\w_]+", RegexOptions.Compiled);
-        private static readonly Regex LambdaMethodDeclarationRegex = new Regex(@"(private|internal) void <\w+>[\w_|]+(?=\()", RegexOptions.Compiled);
+        private static readonly Regex AnonymousMethodDeclaringTypeDeclarationRegex = new Regex(@"(?<=private sealed class )<\w*>[\w_]+", RegexOptions.Compiled);
+        private static readonly Regex AnonymousMethodDeclarationRegex = new Regex(@"(private|internal) void <\w+>[\w_|]+(?=\()", RegexOptions.Compiled);
 
         private static readonly Dictionary<string, CSharpDecompiler> decompilers = new Dictionary<string, CSharpDecompiler>();
         private static readonly Dictionary<Type, Compilation> decompiledTypes = new Dictionary<Type, Compilation>();
+        private static readonly Dictionary<string, MetadataReference> loadedMetadataReferences = new Dictionary<string, MetadataReference>();
+        private static readonly Dictionary<string, List<MetadataReference>> loadedMetadataReferencesPerAssembly = new Dictionary<string, List<MetadataReference>>();
 
-        private static Compilation globalCompilation;
-
-        static ShaderMethodGenerator()
+        public static string GetFullTypeName(ITypeSymbol typeSymbol)
         {
-            if (string.IsNullOrEmpty(Assembly.GetEntryAssembly().Location))
-            {
-                throw new PlatformNotSupportedException("Shader method generation in AOT compiled apps is not supported.");
-            }
+            string fullTypeName = typeSymbol.ToDisplayString(
+                new SymbolDisplayFormat(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces))
+                + ", " + typeSymbol.ContainingAssembly.Identity.ToString();
 
-            var assemblyPaths = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => a.Location);
-            var metadataReferences = assemblyPaths.Select(p => MetadataReference.CreateFromFile(p)).ToArray();
-
-            globalCompilation = CSharpCompilation.Create("ShaderAssembly").WithReferences(metadataReferences);
-
-            AppDomain.CurrentDomain.AssemblyLoad += OnCurrentDomainAssemblyLoad;
+            return fullTypeName;
         }
 
-        public static IList<Type> GetDependentTypes(MethodInfo methodInfo)
+        public static ISet<ITypeSymbol> GetDependentTypes(MethodInfo methodInfo)
         {
             Compilation compilation = GetCompilation(methodInfo.DeclaringType);
-            MethodDeclarationSyntax methodNode = GetMethodDeclaration(methodInfo, compilation.SyntaxTrees.Single());
+            SyntaxNode methodBody = GetMethodBody(methodInfo, compilation.SyntaxTrees.Single());
 
+            return GetDependentTypes(compilation, methodBody);
+        }
+
+        public static ISet<ITypeSymbol> GetDependentTypes(Compilation compilation, SyntaxNode methodBody)
+        {
             ShaderSyntaxCollector syntaxCollector = new ShaderSyntaxCollector(compilation);
-            syntaxCollector.Visit(methodNode.Body);
+            syntaxCollector.Visit(methodBody);
 
-            return syntaxCollector.CollectedTypes.Distinct().ToList();
+            return syntaxCollector.CollectedTypes;
         }
 
         public static string GetMethodBody(MethodInfo methodInfo)
         {
             Compilation compilation = GetCompilation(methodInfo.DeclaringType);
-            MethodDeclarationSyntax methodNode = GetMethodDeclaration(methodInfo, compilation.SyntaxTrees.Single());
+            SyntaxNode methodBody = GetMethodBody(methodInfo, compilation.SyntaxTrees.Single());
 
+            return GetMethodBody(compilation, methodBody);
+        }
+
+        public static string GetMethodBody(Compilation compilation, SyntaxNode methodBody)
+        {
             ShaderSyntaxRewriter syntaxRewriter = new ShaderSyntaxRewriter(compilation);
-            SyntaxNode newBody = syntaxRewriter.Visit(methodNode.Body);
+            SyntaxNode newBody = syntaxRewriter.Visit(methodBody);
 
             string shaderSource = newBody.ToFullString();
 
-            // TODO: See why the System namespace in System.Math is not present in UWP projects.
-            shaderSource = shaderSource.Replace("Math.Max", "max");
-            shaderSource = shaderSource.Replace("Math.Pow", "pow");
-            shaderSource = shaderSource.Replace("Math.Sin", "sin");
-
-            shaderSource = shaderSource.Replace("vector", "vec");
-            shaderSource = Regex.Replace(shaderSource, @"\d+[fF]", m => m.Value.Replace("f", ""));
-
-            return shaderSource.Replace(Environment.NewLine + "    ", Environment.NewLine).Trim();
+            return FormatShaderString(shaderSource);
         }
 
-        private static void OnCurrentDomainAssemblyLoad(object sender, AssemblyLoadEventArgs e)
+        public static SyntaxNode GetMethodBody(MethodInfo methodInfo, SyntaxTree syntaxTree)
         {
-            if (!e.LoadedAssembly.IsDynamic)
+            SyntaxNode root = syntaxTree.GetRoot();
+
+            MethodDeclarationSyntax methodNode = root.DescendantNodes().OfType<MethodDeclarationSyntax>()
+                .First(n => (n.Identifier.ValueText == methodInfo.Name || n.Identifier.ValueText == ShaderGenerator.AnonymousMethodEntryPointName)
+                    && n.ParameterList.Parameters.Count == methodInfo.GetParameters().Length);
+
+            return methodNode.Body!;
+        }
+
+        public static string FormatShaderString(string shaderString)
+        {
+            shaderString = shaderString.Replace("vector", "vec");
+            shaderString = Regex.Replace(shaderString, @"\d+[fF]", m => m.Value.Replace("f", ""));
+
+            StringBuilder indent = new StringBuilder("    ");
+
+            for (int i = 0; i < shaderString.Length; i++)
             {
-                PortableExecutableReference metadataReference = MetadataReference.CreateFromFile(e.LoadedAssembly.Location);
-                globalCompilation = globalCompilation.AddReferences(metadataReference);
+                if (shaderString[i] != ' ') break;
+
+                indent.Append(' ');
             }
+
+            return shaderString.Trim().Trim('{', '}').Trim().Replace(Environment.NewLine + indent.ToString(), Environment.NewLine);
         }
 
         private static Compilation GetCompilation(Type type)
@@ -96,11 +112,14 @@ namespace DirectX12GameEngine.Shaders
 
                     string sourceCode = decompiler.DecompileAsString(handle);
 
-                    sourceCode = ClosureTypeDeclarationRegex.Replace(sourceCode, ShaderGenerator.DelegateTypeName);
-                    sourceCode = LambdaMethodDeclarationRegex.Replace(sourceCode, $"internal void {ShaderGenerator.DelegateEntryPointName}");
+                    sourceCode = AnonymousMethodDeclaringTypeDeclarationRegex.Replace(sourceCode, ShaderGenerator.AnonymousMethodDeclaringTypeName);
+                    sourceCode = AnonymousMethodDeclarationRegex.Replace(sourceCode, $"internal void {ShaderGenerator.AnonymousMethodEntryPointName}");
 
-                    SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode, CSharpParseOptions.Default.WithLanguageVersion(Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp8));
-                    compilation = globalCompilation.AddSyntaxTrees(syntaxTree);
+                    SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
+
+                    IList<MetadataReference> metadataReferences = GetMetadataReferences(type.Assembly, type.Assembly.GetName(), typeof(object).Assembly.GetName());
+
+                    compilation = CSharpCompilation.Create("ShaderAssembly", new[] { syntaxTree }, metadataReferences);
 
                     decompiledTypes.Add(type, compilation);
                 }
@@ -109,25 +128,49 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        private static MethodDeclarationSyntax GetMethodDeclaration(MethodInfo methodInfo, SyntaxTree syntaxTree)
+        private static IList<MetadataReference> GetMetadataReferences(Assembly assembly, params AssemblyName[] additionalAssemblyNames)
         {
-            SyntaxNode root = syntaxTree.GetRoot();
+            if (!loadedMetadataReferencesPerAssembly.TryGetValue(assembly.FullName, out List<MetadataReference> metadataReferences))
+            {
+                metadataReferences = new List<MetadataReference>();
+                loadedMetadataReferencesPerAssembly.Add(assembly.FullName, metadataReferences);
 
-            MethodDeclarationSyntax methodNode = root.DescendantNodes().OfType<MethodDeclarationSyntax>()
-                .First(n => (n.Identifier.ValueText == methodInfo.Name || n.Identifier.ValueText == ShaderGenerator.DelegateEntryPointName)
-                    && n.ParameterList.Parameters.Count == methodInfo.GetParameters().Length);
+                IEnumerable<AssemblyName> referencedAssemblies = assembly.GetReferencedAssemblies().Concat(additionalAssemblyNames);
 
-            return methodNode;
+                foreach (AssemblyName referencedAssemblyName in referencedAssemblies)
+                {
+                    if (referencedAssemblyName.Name == "netstandard")
+                    {
+                        metadataReferences.AddRange(GetMetadataReferences(Assembly.Load(referencedAssemblyName)));
+                    }
+
+                    metadataReferences.Add(GetMetadataReference(referencedAssemblyName));
+                }
+            }
+
+            return metadataReferences;
+        }
+
+        private static MetadataReference GetMetadataReference(AssemblyName assemblyName)
+        {
+            if (!loadedMetadataReferences.TryGetValue(assemblyName.FullName, out MetadataReference metadataReference))
+            {
+                Assembly assembly = Assembly.Load(assemblyName);
+
+                metadataReference = MetadataReference.CreateFromFile(assembly.Location);
+                loadedMetadataReferences.Add(assemblyName.FullName, metadataReference);
+            }
+
+            return metadataReference;
         }
 
         private static CSharpDecompiler CreateDecompiler(string assemblyPath)
         {
             UniversalAssemblyResolver resolver = new UniversalAssemblyResolver(assemblyPath, false, "netstandard");
 
-            DecompilerSettings decompilerSettings = new DecompilerSettings(ICSharpCode.Decompiler.CSharp.LanguageVersion.CSharp8_0)
+            DecompilerSettings decompilerSettings = new DecompilerSettings()
             {
-                ObjectOrCollectionInitializers = false,
-                UsingDeclarations = false
+                ObjectOrCollectionInitializers = false
             };
 
             decompilerSettings.CSharpFormattingOptions.IndentationString = "    ";

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Serialization;
 using DirectX12GameEngine.Editor.ViewModels;
 
 #nullable enable

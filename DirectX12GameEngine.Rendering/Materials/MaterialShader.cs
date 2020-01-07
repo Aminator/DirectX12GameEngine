@@ -38,19 +38,16 @@ namespace DirectX12GameEngine.Rendering.Materials
             Vector4 positionWS = Vector4.Transform(new Vector4(input.Position, 1.0f), WorldMatrices[actualId]);
             Vector4 shadingPosition = Vector4.Transform(positionWS, ViewProjectionTransforms[targetId].ViewProjectionMatrix);
 
-            VSOutput output = new VSOutput
-            {
-                PositionWS = positionWS,
-                ShadingPosition = shadingPosition,
+            VSOutput output = new VSOutput();
 
-                Normal = input.Normal,
-                NormalWS = Vector3.TransformNormal(input.Normal, WorldMatrices[actualId]),
-                Tangent = input.Tangent,
-                TexCoord = input.TexCoord,
-
-                InstanceId = input.InstanceId,
-                TargetId = targetId
-            };
+            output.PositionWS = positionWS;
+            output.ShadingPosition = shadingPosition;
+            output.Normal = input.Normal;
+            output.NormalWS = Vector3.TransformNormal(input.Normal, WorldMatrices[actualId]);
+            output.Tangent = input.Tangent;
+            output.TexCoord = input.TexCoord;
+            output.InstanceId = input.InstanceId;
+            output.TargetId = targetId;
 
             return output;
         }

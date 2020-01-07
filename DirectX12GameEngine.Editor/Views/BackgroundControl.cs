@@ -1,10 +1,9 @@
 ﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Controls;
 
 namespace DirectX12GameEngine.Editor.Views
 {
-    public class BackgroundControl : ButtonBase
+    public class BackgroundControl : Control
     {
         public BackgroundControl()
         {
@@ -12,17 +11,6 @@ namespace DirectX12GameEngine.Editor.Views
             VerticalAlignment = VerticalAlignment.Stretch;
 
             UseSystemFocusVisuals = true;
-        }
-
-        protected override void OnKeyDown(KeyRoutedEventArgs e)
-        {
-        }
-
-        protected override void OnPointerPressed(PointerRoutedEventArgs e)
-        {
-            base.OnPointerPressed(e);
-
-            e.Handled = false;
         }
     }
 }

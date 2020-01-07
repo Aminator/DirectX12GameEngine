@@ -4,10 +4,8 @@ using DirectX12GameEngine.Mvvm.Messaging;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
-using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Serialization;
 using DirectX12GameEngine.Games;
-
-#nullable enable
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {

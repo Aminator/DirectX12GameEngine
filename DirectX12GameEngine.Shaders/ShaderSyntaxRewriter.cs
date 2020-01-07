@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -19,37 +17,50 @@ namespace DirectX12GameEngine.Shaders
 
         public override SyntaxNode? VisitCastExpression(CastExpressionSyntax node)
         {
-            node = (CastExpressionSyntax)base.VisitCastExpression(node)!;
-            return node.ReplaceType(node.Type);
+            CastExpressionSyntax newNode = (CastExpressionSyntax)base.VisitCastExpression(node)!;
+            return newNode.ReplaceType(newNode.Type, GetSemanticModel(node).GetTypeInfo(node.Type));
         }
 
         public override SyntaxNode? VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax node)
         {
-            node = (LocalDeclarationStatementSyntax)base.VisitLocalDeclarationStatement(node)!;
-            return node.ReplaceType(node.Declaration.Type);
+            LocalDeclarationStatementSyntax newNode = (LocalDeclarationStatementSyntax)base.VisitLocalDeclarationStatement(node)!;
+            return newNode.ReplaceType(newNode.Declaration.Type, GetSemanticModel(node).GetTypeInfo(node.Declaration.Type));
         }
 
         public override SyntaxNode? VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
         {
-            node = (ObjectCreationExpressionSyntax)base.VisitObjectCreationExpression(node)!;
-            node = node.ReplaceType(node.Type);
+            ObjectCreationExpressionSyntax newNode = (ObjectCreationExpressionSyntax)base.VisitObjectCreationExpression(node)!;
+            TypeSyntax mappedType = newNode.Type.GetMappedType(GetSemanticModel(node).GetTypeInfo(node));
 
-            if (node.ArgumentList!.Arguments.Count == 0)
+            if (newNode.ArgumentList!.Arguments.Count == 0)
             {
-                return SyntaxFactory.CastExpression(node.Type, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
+                return SyntaxFactory.CastExpression(mappedType, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
             }
             else
             {
-                return SyntaxFactory.InvocationExpression(node.Type, node.ArgumentList);
+                return SyntaxFactory.InvocationExpression(mappedType, newNode.ArgumentList);
             }
+        }
+
+        public override SyntaxNode? VisitLiteralExpression(LiteralExpressionSyntax node)
+        {
+            if (node.IsKind(SyntaxKind.DefaultLiteralExpression))
+            {
+                TypeSyntax mappedType = GetSemanticModel(node).GetTypeInfo(node).GetMappedType();
+
+                CastExpressionSyntax castExpressionSyntax = SyntaxFactory.CastExpression(mappedType, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
+                return SyntaxFactory.ParenthesizedExpression(castExpressionSyntax);
+            }
+
+            return base.VisitLiteralExpression(node);
         }
 
         public override SyntaxNode? VisitDefaultExpression(DefaultExpressionSyntax node)
         {
-            node = (DefaultExpressionSyntax)base.VisitDefaultExpression(node)!;
-            node = node.ReplaceType(node.Type);
+            DefaultExpressionSyntax newNode = (DefaultExpressionSyntax)base.VisitDefaultExpression(node)!;
+            TypeSyntax mappedType = newNode.Type.GetMappedType(GetSemanticModel(node).GetTypeInfo(node));
 
-            CastExpressionSyntax castExpressionSyntax = SyntaxFactory.CastExpression(node.Type, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
+            CastExpressionSyntax castExpressionSyntax = SyntaxFactory.CastExpression(mappedType, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
             return SyntaxFactory.ParenthesizedExpression(castExpressionSyntax);
         }
 
@@ -57,38 +68,32 @@ namespace DirectX12GameEngine.Shaders
         {
             MemberAccessExpressionSyntax newBaseNode = (MemberAccessExpressionSyntax)base.VisitMemberAccessExpression(node)!;
 
-            SyntaxNode? newNode = null;
+            SyntaxNode newNode;
 
-            if (node.Expression is BaseExpressionSyntax)
+            if (node.TryGetMappedMemberName(GetSemanticModel(node).GetSymbolInfo(node.Name), out ISymbol memberSymbol, out string? mappedName))
             {
-                SymbolInfo memberSymbolInfo = GetSemanticModel(node.Name).GetSymbolInfo(node.Name);
-                ISymbol memberSymbol = memberSymbolInfo.Symbol ?? memberSymbolInfo.CandidateSymbols.FirstOrDefault() ?? throw new InvalidOperationException();
-
-                newNode = SyntaxFactory.IdentifierName($"{memberSymbol.ContainingType.ToString().Replace(".", "::")}::{node.Name}");
+                if (memberSymbol.IsStatic)
+                {
+                    newNode = SyntaxFactory.IdentifierName(mappedName);
+                }
+                else
+                {
+                    newNode = SyntaxFactory.IdentifierName($"{newBaseNode.Expression}{mappedName}");
+                }
             }
             else
             {
-                if (node.TryGetMappedMemberName(GetSemanticModel(node), out ISymbol? memberSymbol, out string? mappedName))
+                if (node.Expression is BaseExpressionSyntax || memberSymbol.IsStatic && memberSymbol.ContainingType != null)
                 {
-                    if (memberSymbol!.IsStatic)
-                    {
-                        newNode = SyntaxFactory.IdentifierName(mappedName);
-                    }
-                    else
-                    {
-                        newNode = SyntaxFactory.IdentifierName($"{newBaseNode.Expression}{mappedName}");
-                    }
+                    newNode = SyntaxFactory.IdentifierName($"{memberSymbol.ContainingType.ToString().Replace(".", "::")}::{node.Name}");
                 }
-                else if (memberSymbol != null)
+                else
                 {
-                    if (memberSymbol.IsStatic || memberSymbol.ContainingSymbol.IsStatic)
-                    {
-                        newNode = SyntaxFactory.IdentifierName($"{newBaseNode.Expression}::{newBaseNode.Name}");
-                    }
+                    return newBaseNode;
                 }
             }
 
-            return newNode?.WithTriviaFrom(newBaseNode) ?? newBaseNode;
+            return newNode.WithTriviaFrom(newBaseNode);
         }
     }
 }

@@ -9,57 +9,15 @@ namespace DirectX12GameEngine.Shaders
     {
         public static Type GetElementOrDeclaredType(this Type type) => type.IsArray ? type.GetElementType() : type;
 
-        public static bool IsOverride(this MethodInfo methodInfo)
+        public static IEnumerable<Type> GetBaseTypes(this Type type)
         {
-            return methodInfo != methodInfo.GetBaseDefinition();
-        }
-
-        public static IList<MethodInfo> GetBaseMethods(this MethodInfo methodInfo)
-        {
-            List<MethodInfo> methodInfos = new List<MethodInfo>();
-
-            if (methodInfo.IsOverride())
-            {
-                MethodInfo? currentMethodInfo = methodInfo.DeclaringType.BaseType?.GetMethod(methodInfo.Name);
-
-                while (currentMethodInfo != null)
-                {
-                    methodInfos.Add(currentMethodInfo);
-                    currentMethodInfo = currentMethodInfo.DeclaringType.BaseType?.GetMethod(currentMethodInfo.Name);
-                }
-            }
-
-            return methodInfos;
-        }
-
-        public static IList<Type> GetBaseTypes(this Type type)
-        {
-            List<Type> baseTypes = new List<Type>();
-
             Type baseType = type.BaseType;
 
             while (baseType != null && baseType != typeof(object) && baseType != typeof(ValueType))
             {
-                baseTypes.Add(baseType);
+                yield return baseType;
                 baseType = baseType.BaseType;
             }
-
-            return baseTypes;
-        }
-
-        public static IEnumerable<Type> GetNestedTypesInTypeHierarchy(this Type type, BindingFlags bindingFlags)
-        {
-            IEnumerable<Type> nestedTypes = type.GetNestedTypes(bindingFlags);
-
-            Type parent = type.BaseType;
-
-            while (parent != null)
-            {
-                nestedTypes = parent.GetNestedTypes(bindingFlags).Concat(nestedTypes);
-                parent = parent.BaseType;
-            }
-
-            return nestedTypes;
         }
 
         public static IEnumerable<MemberInfo> GetMembersInTypeHierarchy(this Type type, BindingFlags bindingFlags)

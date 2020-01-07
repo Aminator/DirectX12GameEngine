@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Serialization;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering.Materials;
 

@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Serialization;
 using Vortice.Direct3D12;
 using Vortice.DXGI;
 

@@ -13,16 +13,15 @@ namespace DirectX12GameEngine.Engine
 
         protected override void InsertItem(int index, EntityComponent item)
         {
-            TransformComponent? oldTransformComponent = Entity.Transform;
+            if (Contains(item)) return;
+
+            TransformComponent oldTransformComponent = Entity.Transform;
 
             base.InsertItem(index, item);
 
-            if (item is TransformComponent)
+            if (item is TransformComponent && item != oldTransformComponent)
             {
-                if (oldTransformComponent != null)
-                {
-                    Remove(oldTransformComponent);
-                }
+                Remove(oldTransformComponent);
             }
         }
     }

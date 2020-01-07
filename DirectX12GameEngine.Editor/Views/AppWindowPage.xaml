@@ -21,26 +21,29 @@
         <Style BasedOn="{StaticResource AppBarButtonRevealStyle}" TargetType="AppBarButton" />
     </Page.Resources>
 
-    <Grid>
-        <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
-            <local:ExtendedTabView x:Name="TabView" Background="Transparent">
-                <local:ExtendedTabView.TabStripHeader>
-                    <Grid x:Name="ShellTitleBarInset" Background="Transparent" />
-                </local:ExtendedTabView.TabStripHeader>
-                <local:ExtendedTabView.TabStripFooter>
-                    <Grid>
-                        <Grid x:Name="CustomDragRegion" Background="Transparent" />
+    <Grid local:ShellLight.IsTarget="True" Background="{ThemeResource AcrylicSolutionExplorerBackground}">
+        <Grid.Lights>
+            <local:ShellAmbientLight />
+            <local:ShellPointLight />
+            <local:ShellPointLight DelayTime="0:0:3" />        
+        </Grid.Lights>
+        <local:EditorTabView x:Name="TabView" Background="Transparent">
+            <local:EditorTabView.TabStripHeader>
+                <Grid x:Name="ShellTitleBarInset" Background="Transparent" />
+            </local:EditorTabView.TabStripHeader>
+            <local:EditorTabView.TabStripFooter>
+                <Grid>
+                    <Grid x:Name="CustomDragRegion" Background="Transparent" />
 
-                        <CommandBar
-                            x:Name="CommandBar"
-                            HorizontalAlignment="Right"
-                            Background="Transparent"
-                            OverflowButtonVisibility="Collapsed">
-                            <AppBarButton Command="{StaticResource OpenMainWindowCommand}" />
-                        </CommandBar>
-                    </Grid>
-                </local:ExtendedTabView.TabStripFooter>
-            </local:ExtendedTabView>
-        </Grid>
+                    <CommandBar
+                        x:Name="CommandBar"
+                        HorizontalAlignment="Right"
+                        Background="Transparent"
+                        OverflowButtonVisibility="Collapsed">
+                        <AppBarButton Command="{StaticResource OpenMainWindowCommand}" />
+                    </CommandBar>
+                </Grid>
+            </local:EditorTabView.TabStripFooter>
+        </local:EditorTabView>
     </Grid>
 </Page>

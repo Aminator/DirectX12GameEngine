@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
-using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Serialization;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Collections;
 
@@ -144,6 +144,8 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         {
         }
 
+        public ObservableCollection<PropertyViewModel> Properties { get; } = new ObservableCollection<PropertyViewModel>();
+
         public bool HasUnrealizedChildren
         {
             get => hasUnrealizedChildren;
@@ -182,8 +184,6 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
                 HasUnrealizedChildren = false;
             }
         }
-
-        public ObservableCollection<PropertyViewModel> Properties { get; } = new ObservableCollection<PropertyViewModel>();
     }
 
     public class CollectionPropertyViewModel : PropertyViewModel

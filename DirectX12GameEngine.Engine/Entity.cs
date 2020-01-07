@@ -17,7 +17,6 @@ namespace DirectX12GameEngine.Engine
 
         private Guid id = Guid.NewGuid();
         private string name;
-        private TransformComponent? transform;
 
         public Entity() : this("Entity")
         {
@@ -32,7 +31,8 @@ namespace DirectX12GameEngine.Engine
             Children.CollectionChanged += OnChildrenCollectionChanged;
             Components.CollectionChanged += OnComponentsCollectionChanged;
 
-            Components.Add(new TransformComponent());
+            Transform = new TransformComponent();
+            Components.Add(Transform);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -65,7 +65,7 @@ namespace DirectX12GameEngine.Engine
 
         public EntityManager? EntityManager { get; internal set; }
 
-        public TransformComponent Transform { get => transform!; }
+        public TransformComponent Transform { get; private set; }
 
         public IEnumerator<EntityComponent> GetEnumerator() => Components.GetEnumerator();
 
@@ -76,7 +76,7 @@ namespace DirectX12GameEngine.Engine
             Components.Add(component);
         }
 
-        public T Get<T>() where T : EntityComponent
+        public T Get<T>() where T : EntityComponent?
         {
             return this.OfType<T>().FirstOrDefault();
         }
@@ -142,7 +142,7 @@ namespace DirectX12GameEngine.Engine
 
             if (component is TransformComponent transformComponent)
             {
-                transform = transformComponent;
+                Transform = transformComponent;
             }
 
             component.Entity = this;
@@ -157,7 +157,10 @@ namespace DirectX12GameEngine.Engine
 
             if (component is TransformComponent)
             {
-                transform = Get<TransformComponent>();
+                if (Get<TransformComponent?>() is null)
+                {
+                    throw new InvalidOperationException("An entity always has to have a transform component.");
+                }
             }
 
             component.Entity = null;

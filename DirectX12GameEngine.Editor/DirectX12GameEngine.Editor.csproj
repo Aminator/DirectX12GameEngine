@@ -142,8 +142,8 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ExtendedTabView.xaml.cs">
-      <DependentUpon>ExtendedTabView.xaml</DependentUpon>
+    <Compile Include="Views\EditorTabView.xaml.cs">
+      <DependentUpon>EditorTabView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Properties\PropertyMemberTemplate.xaml.cs">
       <DependentUpon>PropertyMemberTemplate.xaml</DependentUpon>
@@ -157,11 +157,15 @@
     <Compile Include="Views\Shell.xaml.cs">
       <DependentUpon>Shell.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ShellLight.cs" />
     <Compile Include="Views\SolutionExplorerView.xaml.cs">
       <DependentUpon>SolutionExplorerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Views\TabViewNavigationParameters.cs" />
+    <Compile Include="Views\TerminalView.xaml.cs">
+      <DependentUpon>TerminalView.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -199,7 +203,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ExtendedTabView.xaml">
+    <Page Include="Views\EditorTabView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -223,6 +227,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\TerminalView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
@@ -239,10 +247,6 @@
     <ProjectReference Include="..\DirectX12GameEngine.Assets\DirectX12GameEngine.Assets.csproj">
       <Project>{1e0e861d-2635-4b57-afc1-73aeecd56018}</Project>
       <Name>DirectX12GameEngine.Assets</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DirectX12GameEngine.Core.Assets\DirectX12GameEngine.Core.Assets.csproj">
-      <Project>{83caaffe-6c8e-4b1e-a595-d7b3b0cf1ae5}</Project>
-      <Name>DirectX12GameEngine.Core.Assets</Name>
     </ProjectReference>
     <ProjectReference Include="..\DirectX12GameEngine.Core\DirectX12GameEngine.Core.csproj">
       <Project>{b0756b81-8c65-478c-aed4-e3ebdecf30a5}</Project>
@@ -276,9 +280,9 @@
       <Project>{1b6c6198-f2fb-4abb-88ad-0078fa42ac48}</Project>
       <Name>DirectX12GameEngine.Rendering</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DirectX12GameEngine.Shaders\DirectX12GameEngine.Shaders.csproj">
-      <Project>{4312e468-ac7a-4c62-aaad-4bebfd0239b5}</Project>
-      <Name>DirectX12GameEngine.Shaders</Name>
+    <ProjectReference Include="..\DirectX12GameEngine.Serialization\DirectX12GameEngine.Serialization.csproj">
+      <Project>{f6fe2d80-661b-4b7f-8017-ee1f9bceda77}</Project>
+      <Name>DirectX12GameEngine.Serialization</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

@@ -2,13 +2,11 @@
 using System.Collections.ObjectModel;
 using System.Numerics;
 using System.Reflection;
-using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Serialization;
 using DirectX12GameEngine.Editor.Messages;
 using DirectX12GameEngine.Mvvm.Messaging;
 using DirectX12GameEngine.Editor.ViewModels.Properties;
 using DirectX12GameEngine.Mvvm;
-
-#nullable enable
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
@@ -36,6 +34,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 { typeof(long), (m, p) => new Int64PropertyViewModel(m, p) },
                 { typeof(ulong), (m, p) => new UInt64PropertyViewModel(m, p) },
                 { typeof(Guid), (m, p) => new GuidPropertyViewModel(m, p) },
+                { typeof(TimeSpan), (m, p) => new TimeSpanPropertyViewModel(m, p) },
                 { typeof(DateTime), (m, p) => new DateTimePropertyViewModel(m, p) },
                 { typeof(DateTimeOffset), (m, p) => new DateTimeOffsetPropertyViewModel(m, p) },
 

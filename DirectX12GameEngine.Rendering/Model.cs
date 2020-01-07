@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using DirectX12GameEngine.Core.Assets;
+using DirectX12GameEngine.Serialization;
 
 namespace DirectX12GameEngine.Rendering
 {
