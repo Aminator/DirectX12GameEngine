@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
-using DirectX12GameEngine.Editor.ViewModels;
 
 #nullable enable
 
-namespace DirectX12GameEngine.Editor.Factories
+namespace DirectX12GameEngine.Editor.ViewModels.Factories
 {
     public interface IEditorViewFactory
     {

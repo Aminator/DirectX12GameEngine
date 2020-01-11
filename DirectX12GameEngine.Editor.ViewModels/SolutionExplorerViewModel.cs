@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Editor.Factories;
-using DirectX12GameEngine.Editor.Messages;
+using DirectX12GameEngine.Editor.ViewModels.Factories;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
-using DirectX12GameEngine.Mvvm.Messaging;
 using Windows.System;
 
 namespace DirectX12GameEngine.Editor.ViewModels
@@ -16,18 +14,12 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public SolutionExplorerViewModel()
         {
-            OpenCommand = new RelayCommand<StorageItemViewModel>(async file => await OpenAsync(file));
-            ViewCodeCommand = new RelayCommand<StorageFileViewModel>(async file => await ViewCodeAsync(file));
+            OpenCommand = new RelayCommand<StorageItemViewModel>(file => _ = OpenAsync(file));
+            ViewCodeCommand = new RelayCommand<StorageFileViewModel>(file => _ = ViewCodeAsync(file));
             DeleteCommand = new RelayCommand<StorageItemViewModel>(Delete);
             ShowPropertiesCommand = new RelayCommand<StorageItemViewModel>(ShowProperties);
 
-            RefreshCommand = new RelayCommand(async () => await RefreshAsync(), () => RootFolder != null);
-
-            Messenger.Default.Register<ProjectLoadedMessage>(this, m =>
-            {
-                RootFolder = m.RootFolder;
-                RootFolder.IsExpanded = true;
-            });
+            RefreshCommand = new RelayCommand(() => _ = RefreshAsync(), () => RootFolder != null);
 
             EngineAssetViewFactory engineAssetViewFactory = new EngineAssetViewFactory();
             engineAssetViewFactory.Add(typeof(Entity), new SceneEditorViewFactory());
@@ -98,7 +90,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public void ShowProperties(StorageItemViewModel item)
         {
-            Messenger.Default.Send(new ShowPropertiesMessage(item.Model));
         }
 
         public async Task RefreshAsync()

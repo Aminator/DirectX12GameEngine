@@ -9,9 +9,9 @@ using Windows.UI.Xaml.Data;
 
 namespace DirectX12GameEngine.Editor.Views
 {
-    public sealed partial class PropertyGridView : UserControl
+    public sealed partial class PropertiesView : UserControl
     {
-        public PropertyGridView()
+        public PropertiesView()
         {
             InitializeComponent();
 
@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Editor.Views
             };
         }
 
-        public PropertyGridViewModel ViewModel => (PropertyGridViewModel)DataContext;
+        public PropertiesViewModel ViewModel => (PropertiesViewModel)DataContext;
     }
 
     public class DateTimeConverter : IValueConverter

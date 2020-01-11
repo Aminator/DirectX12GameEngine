@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Serialization;
-using DirectX12GameEngine.Editor.ViewModels;
 
 #nullable enable
 
-namespace DirectX12GameEngine.Editor.Factories
+namespace DirectX12GameEngine.Editor.ViewModels.Factories
 {
     public class EngineAssetViewFactory : IEditorViewFactory
     {

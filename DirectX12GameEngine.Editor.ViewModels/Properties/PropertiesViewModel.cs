@@ -3,19 +3,17 @@ using System.Collections.ObjectModel;
 using System.Numerics;
 using System.Reflection;
 using DirectX12GameEngine.Serialization;
-using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Mvvm.Messaging;
 using DirectX12GameEngine.Editor.ViewModels.Properties;
 using DirectX12GameEngine.Mvvm;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class PropertyGridViewModel : ViewModelBase
+    public class PropertiesViewModel : ViewModelBase
     {
         private Type? rootObjectType;
         private ObservableCollection<PropertyViewModel>? properties;
 
-        public PropertyGridViewModel()
+        public PropertiesViewModel()
         {
             PropertyViewModelFactory factory = new PropertyViewModelFactory
             {
@@ -45,8 +43,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
             };
 
             PropertyViewModelFactory.Default = factory;
-
-            Messenger.Default.Register<ShowPropertiesMessage>(this, m => ShowProperties(m.Object));
         }
 
         public Type? RootObjectType
@@ -61,19 +57,13 @@ namespace DirectX12GameEngine.Editor.ViewModels
             set => Set(ref properties, value);
         }
 
-        private void ShowProperties(object obj)
+        public void ShowProperties(object obj)
         {
             RootObjectType = obj.GetType();
 
-            Properties = new ObservableCollection<PropertyViewModel>();
+            ClassPropertyViewModel classPropertyViewModel = new ClassPropertyViewModel(obj, null);
 
-            var properties = ContentManager.GetDataContractProperties(RootObjectType);
-
-            foreach (PropertyInfo propertyInfo in properties)
-            {
-                PropertyViewModel propertyViewModel = PropertyViewModelFactory.Default.Create(obj, propertyInfo);
-                Properties.Add(propertyViewModel);
-            }
+            Properties = classPropertyViewModel.Properties;
         }
     }
 }

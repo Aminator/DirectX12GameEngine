@@ -10,35 +10,35 @@ namespace DirectX12GameEngine.Mvvm
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void NotifyPropertyChanged([CallerMemberName] string? propertyName = null)
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        protected virtual void NotifyPropertyChanged<T>(Expression<Func<T>> raiser)
+        protected virtual void OnPropertyChanged<T>(Expression<Func<T>> raiser)
         {
-            var propName = ((MemberExpression)raiser.Body).Member.Name;
-            NotifyPropertyChanged(propName);
+            var propertyName = ((MemberExpression)raiser.Body).Member.Name;
+            OnPropertyChanged(propertyName);
         }
 
-        protected bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+        protected bool Set<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
             if (!EqualityComparer<T>.Default.Equals(field, value))
             {
                 field = value;
-                NotifyPropertyChanged(name);
+                OnPropertyChanged(propertyName);
                 return true;
             }
 
             return false;
         }
 
-        protected bool Set<T>(T currentValue, T newValue, Action setAction, [CallerMemberName] string? property = null)
+        protected bool Set<T>(T currentValue, T newValue, Action setAction, [CallerMemberName] string? propertyName = null)
         {
             if (!EqualityComparer<T>.Default.Equals(currentValue, newValue))
             {
                 setAction.Invoke();
-                NotifyPropertyChanged(property);
+                OnPropertyChanged(propertyName);
                 return true;
             }
 

@@ -10,12 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="GltfLoader">
-      <HintPath>..\Libs\GltfLoader.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\Gltf\GltfLoader\GltfLoader.csproj" />
   </ItemGroup>
 
 </Project>

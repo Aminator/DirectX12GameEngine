@@ -5,7 +5,7 @@ using DirectX12GameEngine.Graphics;
 
 #nullable enable
 
-namespace DirectX12GameEngine.Editor
+namespace DirectX12GameEngine.Editor.ViewModels.Games
 {
     public class EditorGame : Game
     {

@@ -13,9 +13,9 @@
     mc:Ignorable="d">
 
     <winui:TabView.Resources>
-        <DataTemplate x:Name="PropertyGridTemplate" x:DataType="viewmodels:PropertyGridViewModel">
+        <DataTemplate x:Name="PropertiesTemplate" x:DataType="viewmodels:PropertiesViewModel">
             <winui:TabViewItem Header="Properties">
-                <local:PropertyGridView />
+                <local:PropertiesView />
             </winui:TabViewItem>
         </DataTemplate>
 
@@ -44,7 +44,7 @@
         </DataTemplate>
 
         <local:DataTypeTemplateSelector x:Name="EditorTemplateSelector">
-            <local:TemplateDefinition DataTemplate="{StaticResource PropertyGridTemplate}" DataType="viewmodels:PropertyGridViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource PropertiesTemplate}" DataType="viewmodels:PropertiesViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource SolutionExplorerTemplate}" DataType="viewmodels:SolutionExplorerViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource TerminalTemplate}" DataType="viewmodels:TerminalViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource CodeEditorTemplate}" DataType="viewmodels:CodeEditorViewModel" />

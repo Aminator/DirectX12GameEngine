@@ -145,11 +145,11 @@
     <Compile Include="Views\EditorTabView.xaml.cs">
       <DependentUpon>EditorTabView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Properties\PropertyMemberTemplate.xaml.cs">
+    <Compile Include="Views\PropertyMemberTemplate.xaml.cs">
       <DependentUpon>PropertyMemberTemplate.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\PropertyGridView.xaml.cs">
-      <DependentUpon>PropertyGridView.xaml</DependentUpon>
+    <Compile Include="Views\PropertiesView.xaml.cs">
+      <DependentUpon>PropertiesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SceneEditorView.xaml.cs">
       <DependentUpon>SceneEditorView.xaml</DependentUpon>
@@ -207,11 +207,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Properties\PropertyMemberTemplate.xaml">
+    <Page Include="Views\PropertyMemberTemplate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\PropertyGridView.xaml">
+    <Page Include="Views\PropertiesView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

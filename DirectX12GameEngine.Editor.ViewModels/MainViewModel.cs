@@ -1,9 +1,6 @@
-﻿using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Mvvm;
+﻿using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
-using DirectX12GameEngine.Mvvm.Messaging;
 using Windows.ApplicationModel.Core;
-using Windows.Storage;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
@@ -16,7 +13,16 @@ namespace DirectX12GameEngine.Editor.ViewModels
         {
             CloseApplicationCommand = new RelayCommand(CloseApplication);
 
-            RegisterMessages();
+            ProjectLoader.ProjectLoaded += (s, e) =>
+            {
+                SolutionExplorer.RootFolder = e.RootFolder;
+                SolutionExplorer.RootFolder.IsExpanded = true;
+
+                IsPropertyGridOpen = true;
+                IsSolutionExplorerOpen = true;
+
+                TerminalTabView.Tabs.Add(new TerminalViewModel(e.RootFolder));
+            };
         }
 
         public TabViewViewModel SolutionExplorerTabView { get; } = new TabViewViewModel();
@@ -25,7 +31,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public ProjectLoaderViewModel ProjectLoader { get; } = new ProjectLoaderViewModel();
 
-        public PropertyGridViewModel PropertyGrid { get; } = new PropertyGridViewModel();
+        public PropertiesViewModel PropertyGrid { get; } = new PropertiesViewModel();
 
         public SolutionExplorerViewModel SolutionExplorer { get; } = new SolutionExplorerViewModel();
 
@@ -72,17 +78,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
         private void CloseApplication()
         {
             CoreApplication.Exit();
-        }
-
-        private void RegisterMessages()
-        {
-            Messenger.Default.Register<ProjectLoadedMessage>(this, m =>
-            {
-                IsPropertyGridOpen = true;
-                IsSolutionExplorerOpen = true;
-
-                TerminalTabView.Tabs.Add(new TerminalViewModel(m.RootFolder));
-            });
         }
     }
 }

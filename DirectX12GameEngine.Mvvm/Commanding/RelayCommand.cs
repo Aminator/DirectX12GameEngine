@@ -5,31 +5,36 @@ namespace DirectX12GameEngine.Mvvm.Commanding
 {
     public class RelayCommand : ICommand
     {
-        private readonly Func<bool>? canExecute;
-        private readonly Action execute;
-
-        public RelayCommand(Action execute)
+        public RelayCommand() : this(null, null)
         {
-            this.execute = execute;
         }
 
-        public RelayCommand(Action execute, Func<bool> canExecute) : this(execute)
+        public RelayCommand(Action? execute) : this(execute, null)
         {
-            this.canExecute = canExecute;
+        }
+
+        public RelayCommand(Action? execute, Func<bool>? canExecute)
+        {
+            ExecuteRequested = execute;
+            CanExecuteRequested = canExecute;
         }
 
         public event EventHandler? CanExecuteChanged;
 
+        public event Func<bool>? CanExecuteRequested;
+
+        public event Action? ExecuteRequested;
+
         public bool CanExecute(object? parameter)
         {
-            return canExecute is null ? true : canExecute();
+            return CanExecuteRequested is null ? true : CanExecuteRequested.Invoke();
         }
 
         public void Execute(object? parameter)
         {
             if (CanExecute(parameter))
             {
-                execute();
+                ExecuteRequested?.Invoke();
             }
         }
 
@@ -41,37 +46,57 @@ namespace DirectX12GameEngine.Mvvm.Commanding
 
     public class RelayCommand<T> : ICommand
     {
-        private readonly Func<T, bool>? canExecute;
-        private readonly Action<T> execute;
-
-        public RelayCommand(Action<T> execute)
+        public RelayCommand() : this(null, null)
         {
-            this.execute = execute;
         }
 
-        public RelayCommand(Action<T> execute, Func<T, bool> canExecute) : this(execute)
+        public RelayCommand(Action<T>? execute) : this(execute, null)
         {
-            this.canExecute = canExecute;
+        }
+
+        public RelayCommand(Action<T>? execute, Func<T, bool>? canExecute)
+        {
+            ExecuteRequested = execute;
+            CanExecuteRequested = canExecute;
         }
 
         public event EventHandler? CanExecuteChanged;
 
+        public event Func<T, bool>? CanExecuteRequested;
+
+        public event Action<T>? ExecuteRequested;
+
         public bool CanExecute(object parameter)
         {
-            return canExecute is null ? true : canExecute((T)parameter);
+            return CanExecuteRequested?.Invoke((T)parameter) ?? true;
         }
 
         public void Execute(object parameter)
         {
             if (CanExecute(parameter))
             {
-                execute((T)parameter);
+                ExecuteRequested?.Invoke((T)parameter);
             }
         }
 
         public void NotifyCanExecuteChanged()
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    public class ObjectRelayCommand : RelayCommand<object>
+    {
+        public ObjectRelayCommand()
+        {
+        }
+
+        public ObjectRelayCommand(Action<object>? execute) : base(execute)
+        {
+        }
+
+        public ObjectRelayCommand(Action<object>? execute, Func<object, bool>? canExecute) : base(execute, canExecute)
+        {
         }
     }
 }

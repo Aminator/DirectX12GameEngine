@@ -3,12 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Editor.ViewModels;
 using Windows.Storage;
 
 #nullable enable
 
-namespace DirectX12GameEngine.Editor.Factories
+namespace DirectX12GameEngine.Editor.ViewModels.Factories
 {
     public class SceneEditorViewFactory : IEditorViewFactory
     {

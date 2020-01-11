@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Editor.Messages;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
 using DirectX12GameEngine.Mvvm.Messaging;
@@ -28,6 +27,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
             OpenProjectWithPickerCommand = new RelayCommand(async () => await OpenProjectWithPickerAsync());
             OpenRecentProjectCommand = new RelayCommand<string>(async token => await OpenRecentProjectAsync(token));
         }
+
+        public event EventHandler<ProjectLoadedEventArgs>? ProjectLoaded;
 
         public bool IsProjectLoaded
         {
@@ -102,8 +103,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
             {
                 IsProjectLoaded = true;
 
-                StorageFolderViewModel item = new StorageFolderViewModel(folder);
-                Messenger.Default.Send(new ProjectLoadedMessage(item));
+                StorageFolderViewModel rootFolder = new StorageFolderViewModel(folder);
+                ProjectLoaded?.Invoke(this, new ProjectLoadedEventArgs(rootFolder));
             }
         }
     }

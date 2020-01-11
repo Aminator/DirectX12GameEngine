@@ -98,10 +98,10 @@ namespace DirectX12GameEngine.Editor.ViewModels
             switch (e.PropertyName)
             {
                 case nameof(Id):
-                    NotifyPropertyChanged(nameof(Id));
+                    OnPropertyChanged(nameof(Id));
                     break;
                 case nameof(Name):
-                    NotifyPropertyChanged(nameof(Name));
+                    OnPropertyChanged(nameof(Name));
                     break;
             }
         }

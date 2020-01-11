@@ -11,34 +11,42 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
 {
     public abstract class PropertyViewModel : ViewModelBase<object>
     {
-        private readonly PropertyInfo propertyInfo;
+        private readonly PropertyInfo? propertyInfo;
 
         private bool canRead;
         private bool canWrite;
         private object? index;
 
-        public PropertyViewModel(object model, PropertyInfo propertyInfo) : base(model)
+        public PropertyViewModel(object model, PropertyInfo? propertyInfo) : base(model)
         {
             this.propertyInfo = propertyInfo;
 
-            CanRead = propertyInfo.CanRead && propertyInfo.GetMethod.IsPublic;
-            CanWrite = propertyInfo.CanWrite && propertyInfo.SetMethod.IsPublic;
-
-            if (model is INotifyPropertyChanged notifyPropertyChanged)
+            if (propertyInfo is null)
             {
-                notifyPropertyChanged.PropertyChanged += (s, e) =>
+                CanRead = true;
+                CanWrite = false;
+            }
+            else
+            {
+                CanRead = propertyInfo.CanRead && propertyInfo.GetMethod.IsPublic;
+                CanWrite = propertyInfo.CanWrite && propertyInfo.SetMethod.IsPublic;
+
+                if (model is INotifyPropertyChanged notifyPropertyChanged)
                 {
-                    if (e.PropertyName == propertyInfo.Name)
+                    notifyPropertyChanged.PropertyChanged += (s, e) =>
                     {
-                        OnOwnerPropertyChanged();
-                    }
-                };
+                        if (e.PropertyName == propertyInfo.Name)
+                        {
+                            OnOwnerPropertyChanged();
+                        }
+                    };
+                }
             }
         }
 
         public bool IsReadOnly => !CanWrite;
 
-        public Type Type => Value?.GetType() ?? propertyInfo.PropertyType;
+        public Type Type => Value?.GetType() ?? propertyInfo?.PropertyType ?? typeof(object);
 
         public bool CanRead
         {
@@ -53,7 +61,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
             {
                 if (Set(ref canWrite, value))
                 {
-                    NotifyPropertyChanged(nameof(IsReadOnly));
+                    OnPropertyChanged(nameof(IsReadOnly));
                 }
             }
         }
@@ -65,7 +73,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
             {
                 if (Set(ref index, value))
                 {
-                    NotifyPropertyChanged(nameof(PropertyName));
+                    OnPropertyChanged(nameof(PropertyName));
                 }
             }
         }
@@ -74,7 +82,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         {
             get
             {
-                string propertyName = propertyInfo.Name;
+                string propertyName = propertyInfo?.Name ?? Type.Name;
 
                 if (Index != null)
                 {
@@ -97,7 +105,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
             {
                 try
                 {
-                    return propertyInfo.GetValue(Model, Index is null ? null : new object[] { Index });
+                    return propertyInfo is null ? Model : propertyInfo.GetValue(Model, Index is null ? null : new object[] { Index });
                 }
                 catch
                 {
@@ -112,13 +120,13 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         {
             if (CanWrite)
             {
-                propertyInfo.SetValue(Model, value, Index is null ? null : new object[] { Index });
+                propertyInfo?.SetValue(Model, value, Index is null ? null : new object[] { Index });
             }
         }
 
         protected virtual void OnOwnerPropertyChanged()
         {
-            NotifyPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(Value));
         }
     }
 
@@ -140,7 +148,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         private bool hasUnrealizedChildren = true;
         private bool isExpanded;
 
-        public ClassPropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)
+        public ClassPropertyViewModel(object model, PropertyInfo? propertyInfo) : base(model, propertyInfo)
         {
         }
 
@@ -192,7 +200,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         private bool hasUnrealizedChildren = true;
         private bool isExpanded;
 
-        public CollectionPropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)
+        public CollectionPropertyViewModel(object model, PropertyInfo? propertyInfo) : base(model, propertyInfo)
         {
         }
 

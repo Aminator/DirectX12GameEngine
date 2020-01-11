@@ -1,11 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
+  <Import Project="..\..\DirectX12GameEngine.Shaders\Build\DirectX12GameEngine.Shaders.props" />
+
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ShaderGeneratorAssembly>$(MSBuildThisFileDirectory)..\..\DirectX12GameEngine.Shaders\bin\$(Configuration)\netstandard2.0\DirectX12GameEngine.Shaders.dll</ShaderGeneratorAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,10 +19,6 @@
     <Content Include="Log\ShaderCache\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="DirectX12GameEngine.Shaders" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>

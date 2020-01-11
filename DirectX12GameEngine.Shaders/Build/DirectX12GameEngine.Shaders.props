@@ -1,11 +1,11 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" TreatAsLocalProperty="ShaderAssembly">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ShaderAssembly>$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\DirectX12GameEngine.Shaders.dll</ShaderAssembly>
+    <ShaderGeneratorAssembly>$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\DirectX12GameEngine.Shaders.dll</ShaderGeneratorAssembly>
     <GeneratedShadersOutput>$(BaseIntermediateOutputPath)GeneratedShaders.g.cs</GeneratedShadersOutput>
     <EnableShaderGeneration>true</EnableShaderGeneration>
   </PropertyGroup>
   
-  <UsingTask TaskName="DirectX12GameEngine.Shaders.Tasks.GenerateShaders" AssemblyFile="$(ShaderAssembly)" />
+  <UsingTask TaskName="DirectX12GameEngine.Shaders.Tasks.GenerateShaders" AssemblyFile="$(ShaderGeneratorAssembly)" />
   
   <Target Condition="$(EnableShaderGeneration)" Name="GenerateShaderAttributes" DependsOnTargets="_GenerateShaderAttributes" BeforeTargets="CoreCompile">
     <ItemGroup>

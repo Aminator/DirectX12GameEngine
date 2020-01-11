@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace DirectX12GameEngine.Editor
+namespace DirectX12GameEngine.Editor.ViewModels
 {
     public interface IClosable
     {

@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="DirectX12GameEngine.Editor.Views.PropertyGridView"
+    x:Class="DirectX12GameEngine.Editor.Views.PropertiesView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"

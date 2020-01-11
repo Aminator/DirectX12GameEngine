@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
-using DirectX12GameEngine.Editor.Messages;
-using DirectX12GameEngine.Mvvm.Messaging;
+using DirectX12GameEngine.Games;
+using DirectX12GameEngine.Editor.ViewModels.Games;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
 using DirectX12GameEngine.Serialization;
-using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
@@ -68,7 +67,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         private void Open(EntityViewModel entity)
         {
-            Messenger.Default.Send(new ShowPropertiesMessage(entity.Model));
         }
 
         private void Delete(EntityViewModel entity)

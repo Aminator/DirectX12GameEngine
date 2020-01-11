@@ -25,8 +25,8 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         {
             base.OnOwnerPropertyChanged();
 
-            NotifyPropertyChanged(nameof(X));
-            NotifyPropertyChanged(nameof(Y));
+            OnPropertyChanged(nameof(X));
+            OnPropertyChanged(nameof(Y));
         }
     }
 
@@ -58,9 +58,9 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         {
             base.OnOwnerPropertyChanged();
 
-            NotifyPropertyChanged(nameof(X));
-            NotifyPropertyChanged(nameof(Y));
-            NotifyPropertyChanged(nameof(Z));
+            OnPropertyChanged(nameof(X));
+            OnPropertyChanged(nameof(Y));
+            OnPropertyChanged(nameof(Z));
         }
     }
 
@@ -98,10 +98,10 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         {
             base.OnOwnerPropertyChanged();
 
-            NotifyPropertyChanged(nameof(X));
-            NotifyPropertyChanged(nameof(Y));
-            NotifyPropertyChanged(nameof(Z));
-            NotifyPropertyChanged(nameof(W));
+            OnPropertyChanged(nameof(X));
+            OnPropertyChanged(nameof(Y));
+            OnPropertyChanged(nameof(Z));
+            OnPropertyChanged(nameof(W));
         }
     }
 
@@ -139,10 +139,10 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         {
             base.OnOwnerPropertyChanged();
 
-            NotifyPropertyChanged(nameof(X));
-            NotifyPropertyChanged(nameof(Y));
-            NotifyPropertyChanged(nameof(Z));
-            NotifyPropertyChanged(nameof(W));
+            OnPropertyChanged(nameof(X));
+            OnPropertyChanged(nameof(Y));
+            OnPropertyChanged(nameof(Z));
+            OnPropertyChanged(nameof(W));
         }
     }
 }
