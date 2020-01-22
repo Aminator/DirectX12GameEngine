@@ -179,6 +179,10 @@
       <Project>{107a527c-2d40-44b5-805f-092b9b614947}</Project>
       <Name>DirectX12GameEngine.Graphics</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\DirectX12GameEngine.Input\DirectX12GameEngine.Input.csproj">
+      <Project>{db93c2c6-419a-4d51-ad9a-12556771c28d}</Project>
+      <Name>DirectX12GameEngine.Input</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj">
       <Project>{1b6c6198-f2fb-4abb-88ad-0078fa42ac48}</Project>
       <Name>DirectX12GameEngine.Rendering</Name>
@@ -186,6 +190,14 @@
     <ProjectReference Include="..\..\DirectX12GameEngine.Serialization\DirectX12GameEngine.Serialization.csproj">
       <Project>{f6fe2d80-661b-4b7f-8017-ee1f9bceda77}</Project>
       <Name>DirectX12GameEngine.Serialization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DirectX12GameEngine.Shaders\DirectX12GameEngine.Shaders.csproj">
+      <Project>{4312e468-ac7a-4c62-aaad-4bebfd0239b5}</Project>
+      <Name>DirectX12GameEngine.Shaders</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Gltf\GltfLoader\GltfLoader.csproj">
+      <Project>{e7e4c2b9-42b6-4666-93d9-326ba8fe8329}</Project>
+      <Name>GltfLoader</Name>
     </ProjectReference>
     <ProjectReference Include="..\DirectX12Game\DirectX12Game.csproj">
       <Project>{2a1c2bc6-ccac-4dd4-8400-3e1fde9a3ecc}</Project>

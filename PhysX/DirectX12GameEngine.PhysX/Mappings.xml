@@ -1,0 +1,331 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<config id="PhysXMapping" xmlns="urn:SharpGen.Config">
+  <assembly>DirectX12GameEngine.PhysX</assembly>
+  <namespace>DirectX12GameEngine.PhysX</namespace>
+
+  <sdk name="StdLib" />
+  <sdk name="WindowsSdk" version="10.0.18362.0" />
+
+  <include-dir>$(THIS_CONFIG_PATH)\..\PhysX\physx\include</include-dir>
+  <include-dir>$(THIS_CONFIG_PATH)\..\PhysX\pxshared\include</include-dir>
+
+  <include file="foundation/Px.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="foundation/PxAllocatorCallback.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="foundation/PxBitAndData.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="foundation/PxErrorCallback.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="foundation/PxErrors.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="foundation/PxIO.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="foundation/PxMat33.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="foundation/PxMat44.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="foundation/PxProfiler.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="foundation/PxTransform.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+
+  <include file="common/PxBase.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="common/PxCollection.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="common/PxCoreUtilityTypes.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="common/PxPhysicsInsertionCallback.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="common/PxRenderBuffer.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="common/PxStringTable.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="common/PxTolerancesScale.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+
+  <include file="geometry/PxBoxGeometry.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxBVHStructure.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxCapsuleGeometry.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxConvexMesh.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxConvexMeshGeometry.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxGeometry.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxGeometryHelpers.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxGeometryQuery.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxHeightField.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxHeightFieldDesc.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxHeightFieldFlag.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxHeightFieldGeometry.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxHeightFieldSample.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxMeshQuery.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxMeshScale.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxPlaneGeometry.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxSimpleTriangleMesh.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxSphereGeometry.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxTriangle.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxTriangleMesh.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geometry/PxTriangleMeshGeometry.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+
+  <include file="solver/PxSolverDefs.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+
+  <include file="task/PxCpuDispatcher.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="task/PxTask.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="task/PxTaskDefine.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="task/PxTaskManager.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+
+  <include file="geomutils/GuContactBuffer.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="geomutils/GuContactPoint.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+
+  <include file="extensions/PxDefaultAllocator.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="extensions/PxDefaultCpuDispatcher.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="extensions/PxDefaultErrorCallback.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="extensions/PxJoint.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  
+  <include file="collision/PxCollisionDefs.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+
+  <include file="PxActor.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxAggregate.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxArticulation.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxArticulationBase.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxArticulationJoint.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxArticulationJointReducedCoordinate.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxArticulationLink.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxArticulationReducedCoordinate.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxBroadPhase.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxClient.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxConstraint.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxConstraintDesc.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxContact.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxContactModifyCallback.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxDeletionListener.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxFiltering.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxForceMode.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxFoundation.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxImmediateMode.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxLockedData.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxMaterial.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxPhysics.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxPhysicsAPI.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxPhysicsSerialization.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxPhysicsVersion.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxPhysXConfig.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxPruningStructure.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxQueryFiltering.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxQueryReport.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxRigidActor.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxRigidBody.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxRigidDynamic.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxRigidStatic.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxScene.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxSceneDesc.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxSceneLock.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxShape.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxSimulationEventCallback.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxSimulationStatistics.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+  <include file="PxVisualizationParameter.h" namespace="DirectX12GameEngine.PhysX" attach="true" />
+
+  <extension>
+    <create class="DirectX12GameEngine.PhysX.PhysX" visibility="public static" />
+
+    <define struct="System.Numerics.Vector2" sizeof="8" />
+    <define struct="System.Numerics.Vector3" sizeof="12" />
+    <define struct="System.Numerics.Vector4" sizeof="16" />
+    <define struct="System.Numerics.Quaternion" sizeof="16" />
+    <define struct="System.Numerics.Matrix3x2" sizeof="24" />
+    <define struct="System.Numerics.Matrix4x4" sizeof="64" />
+    <define struct="System.Numerics.Plane" sizeof="12" />
+    <define struct="Vortice.Mathematics.BoundingBox" sizeof="24" />
+
+    <define struct="DirectX12GameEngine.PhysX.Padding3" sizeof="3" />
+
+    <define struct="DirectX12GameEngine.PhysX.PxRigidActorPair" />
+    <define struct="DirectX12GameEngine.PhysX.PxShapePair" />
+    <define struct="DirectX12GameEngine.PhysX.PxTransformPair" sizeof="28" />
+    
+    <define interface="DirectX12GameEngine.PhysX.PxDefaultAllocator" /> 
+    <define interface="DirectX12GameEngine.PhysX.PxDefaultErrorCallback" /> 
+
+    <define enum="DirectX12GameEngine.PhysX.DummyEnum" underlying="System.Int32" />
+    
+    <define enum="DirectX12GameEngine.PhysX.PxErrors" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxConcreteType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxGeometryType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxHeightFieldFormat" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxArticulationDriveType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxConstraintFlags" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxArticulationMotions" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxArticulationJointType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxArticulationFlags" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxArticulationAxis" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxPairFilteringMode" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxBroadPhaseType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxFrictionType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxSolverType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxPruningStructureType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxSceneQueryUpdateMode" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxPairFlags" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxTaskType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxJointActorIndex" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxActorType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxArticulationJointDriveType" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxForceMode" underlying="System.Int32" />
+    <define enum="DirectX12GameEngine.PhysX.PxBodyState" underlying="System.Int32" />
+  </extension>
+
+  <bindings>
+    <bind from="PxVec2" to="System.Numerics.Vector2" />
+    <bind from="PxVec3" to="System.Numerics.Vector3" />
+    <bind from="PxVec4" to="System.Numerics.Vector4" />
+    <bind from="PxQuat" to="System.Numerics.Quaternion" />
+    <bind from="PxPlane" to="System.Numerics.Plane" />
+    <bind from="PxBounds3" to="Vortice.Mathematics.BoundingBox" />
+
+    <bind from="ArticulationV" to="System.Int32" />
+    <bind from="ShapeInteraction" to="System.Int32" />
+    
+    <bind from="PxSolverConstraintDesc" to="System.Int32" />
+    
+    <bind from="PxDefaultAllocator" to="DirectX12GameEngine.PhysX.PxDefaultAllocator" />
+    <bind from="PxDefaultErrorCallback" to="DirectX12GameEngine.PhysX.PxDefaultErrorCallback" />
+
+    <bind from="Enum" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    
+    <bind from="PxErrorCode" to="DirectX12GameEngine.PhysX.PxErrors" />
+    <bind from="PxConcreteType" to="DirectX12GameEngine.PhysX.PxConcreteType" />
+    <bind from="PxGeometryType" to="DirectX12GameEngine.PhysX.PxGeometryType" />
+    <bind from="PxHeightFieldFormat" to="DirectX12GameEngine.PhysX.PxHeightFieldFormat" />
+    <bind from="PxArticulationDriveType" to="DirectX12GameEngine.PhysX.PxArticulationDriveType" />
+    <bind from="PxConstraintFlag" to="DirectX12GameEngine.PhysX.PxConstraintFlags" />
+    <bind from="PxArticulationMotion" to="DirectX12GameEngine.PhysX.PxArticulationMotions" />
+    <bind from="PxArticulationJointType" to="DirectX12GameEngine.PhysX.PxArticulationJointType" />
+    <bind from="PxArticulationFlag" to="DirectX12GameEngine.PhysX.PxArticulationFlags" />
+    <bind from="PxArticulationAxis" to="DirectX12GameEngine.PhysX.PxArticulationAxis" />
+    <bind from="PxPairFilteringMode" to="DirectX12GameEngine.PhysX.PxPairFilteringMode" />
+    <bind from="PxBroadPhaseType" to="DirectX12GameEngine.PhysX.PxBroadPhaseType" />
+    <bind from="PxFrictionType" to="DirectX12GameEngine.PhysX.PxFrictionType" />
+    <bind from="PxSolverType" to="DirectX12GameEngine.PhysX.PxSolverType" />
+    <bind from="PxPruningStructureType" to="DirectX12GameEngine.PhysX.PxPruningStructureType" />
+    <bind from="PxSceneQueryUpdateMode" to="DirectX12GameEngine.PhysX.PxSceneQueryUpdateMode" />
+    <bind from="PxPairFlag" to="DirectX12GameEngine.PhysX.PxPairFlags" />
+    <bind from="PxTaskType" to="DirectX12GameEngine.PhysX.PxTaskType" />
+    <bind from="PxJointActorIndex" to="DirectX12GameEngine.PhysX.PxJointActorIndex" />
+    <bind from="PxActorType" to="DirectX12GameEngine.PhysX.PxActorType" />
+    <bind from="PxArticulationJointDriveType" to="DirectX12GameEngine.PhysX.PxArticulationJointDriveType" />
+    <bind from="PxForceMode" to="DirectX12GameEngine.PhysX.PxForceMode" />
+    <bind from="BodyState" to="DirectX12GameEngine.PhysX.PxBodyState" />
+
+    <bind from="PxBitAndDataT&lt;unsigned char, '\x80'&gt;" to="System.Byte" />
+    <bind from="PxPadding&lt;'\x03'&gt;" to="DirectX12GameEngine.PhysX.Padding3" />
+
+    <bind from="PxFlags&lt;physx::PxConvexMeshGeometryFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxHeightFieldFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxMeshGeometryFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxMeshFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxTriangleMeshFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxActorFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxArticulationFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxQueryFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxHitFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxSceneFlag::Enum, unsigned int&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxContactPairHeaderFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxContactPairFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxPairFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxTriggerPairFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxRigidBodyFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxArticulationCache::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxConstraintFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxPvdInstrumentationFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxPvdSceneFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxFilterFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxDataAccessFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxMaterialFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxShapeFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxDeletionEventFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxRigidDynamicLockFlag::Enum, unsigned char&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+    <bind from="PxFlags&lt;physx::PxActorTypeFlag::Enum, unsigned short&gt;" to="DirectX12GameEngine.PhysX.DummyEnum" />
+  </bindings>
+
+  <mapping>
+    <remove field="PxConvexMeshGeometry::convexMesh" />
+    <remove field="PxHeightFieldGeometry::heightField" />
+    <remove field="PxSceneDesc::cudaContextManager" />
+
+    <remove method=".*::set.*Flag" />
+    <remove method=".*::getImpl" />
+    <remove method="PxScene::getCudaContextManager" />
+    <remove method="PxScene::createBatchQuery" />
+    <remove method="PxScene::getFilterShader" />
+    <remove method="PxScene::getScenePvdClient" />
+    <remove method="PxConstraintConnector::getPrep" />
+    <remove method="PxConstraintConnector::updatePvdProperties" />
+
+    <remove function="getBinaryMetaData_PxBase" />
+    <remove function="PxRegisterPhysicsSerializers" />
+    <remove function="PxUnregisterPhysicsSerializers" />
+
+    <remove struct="PxTypeInfo&lt;.*" />
+
+    <map function="Px.*" dll='"PhysX_32.dll"' group="DirectX12GameEngine.PhysX.PhysX" />
+    <map function="PxCreateFoundation" dll='"PhysXFoundation_32.dll"' group="DirectX12GameEngine.PhysX.PhysX" />
+    <map function="PxGetFoundation" dll='"PhysXFoundation_32.dll"' group="DirectX12GameEngine.PhysX.PhysX" />
+
+    <map param="PxCreateBasePhysics::pvd" type="void" optional="true" />
+    
+    <map method="PxFoundation::getErrorLevel" type="PxErrorCode" override-native-type="true" />
+    <map param="PxFoundation::setErrorLevel::mask" type="PxErrorCode" override-native-type="true" />
+    <map param="PxErrorCallback::reportError::code" type="PxErrorCode" override-native-type="true" />
+    <map param="PxPhysicsInsertionCallback::buildObjectFromData::type" type="PxConcreteType" override-native-type="true" />
+    <map field="PxGeometry::mType" type="PxGeometryType" override-native-type="true" />
+    <map field="PxHeightFieldDesc::format" type="PxHeightFieldFormat" override-native-type="true" />
+    <map field="PxArticulationDrive::driveType" type="PxArticulationDriveType" override-native-type="true" />
+    <map field="PxConstraintShaderTable::flag" type="PxConstraintFlag" override-native-type="true" />
+    <map field="PxFeatherstoneArticulationJointData::type" type="PxArticulationJointType" override-native-type="true" />
+    <map field="PxFeatherstoneArticulationJointData::motion" type="PxArticulationMotion" override-native-type="true" />
+    <map field="PxSceneDesc::kineKineFilteringMode" type="PxPairFilteringMode" override-native-type="true" />
+    <map field="PxSceneDesc::staticKineFilteringMode" type="PxPairFilteringMode" override-native-type="true" />
+    <map field="PxSceneDesc::broadPhaseType" type="PxBroadPhaseType" override-native-type="true" />
+    <map field="PxSceneDesc::frictionType" type="PxFrictionType" override-native-type="true" />
+    <map field="PxSceneDesc::solverType" type="PxSolverType" override-native-type="true" />
+    <map field="PxSceneDesc::staticStructure" type="PxPruningStructureType" override-native-type="true" />
+    <map field="PxSceneDesc::dynamicStructure" type="PxPruningStructureType" override-native-type="true" />
+    <map field="PxSceneDesc::sceneQueryUpdateMode" type="PxSceneQueryUpdateMode" override-native-type="true" />
+    <map field="PxTriggerPair::status" type="PxPairFlag" override-native-type="true" />
+    <map method="PxHeightField::getFormat" type="PxHeightFieldFormat" override-native-type="true" />
+    <map param="PxTaskManager::submitNamedTask::type" type="PxTaskType" override-native-type="true" />
+    <map param="PxTaskManager::submitUnnamedTask::type" type="PxTaskType" override-native-type="true" />
+    <map param="PxJoint::getLocalPose::actor" type="PxJointActorIndex" override-native-type="true" />
+    <map param="PxJoint::setLocalPose::actor" type="PxJointActorIndex" override-native-type="true" />
+    <map method="PxActor::getType" name="GetActorType" type="PxActorType" override-native-type="true" />
+    <map method="PxArticulationJoint::getDriveType" type="PxArticulationJointDriveType" override-native-type="true" />
+    <map param="PxArticulationJoint::setDriveType::driveType" type="PxArticulationJointDriveType" override-native-type="true" />
+    <map method="PxArticulationJointReducedCoordinate::getJointType" type="PxArticulationJointType" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::setJointType::jointType" type="PxArticulationJointDriveType" override-native-type="true" />
+    <map method="PxArticulationJointReducedCoordinate::getMotion" type="PxArticulationMotion" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::getMotion::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::setMotion::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::setMotion::motion" type="PxArticulationMotion" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::getLimit::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::setLimit::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::getDrive::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::getDrive::driveType" type="PxArticulationDriveType" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::setDrive::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::setDrive::driveType" type="PxArticulationDriveType" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::getDriveTarget::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::setDriveTarget::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::getDriveVelocity::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxArticulationJointReducedCoordinate::setDriveVelocity::axis" type="PxArticulationAxis" override-native-type="true" />
+    <map param="PxRigidBody::addForce::mode" type="PxForceMode" override-native-type="true" />
+    <map param="PxRigidBody::addTorque::mode" type="PxForceMode" override-native-type="true" />
+    <map param="PxRigidBody::clearForce::mode" type="PxForceMode" override-native-type="true" />
+    <map param="PxRigidBody::clearTorque::mode" type="PxForceMode" override-native-type="true" />
+    <map param="PxRigidBody::setForceAndTorque::mode" type="PxForceMode" override-native-type="true" />
+
+    <map interface="PxHitCallback&lt;physx::PxOverlapHit&gt;" name="PxOverlapCallback" />
+    <map interface="PxHitCallback&lt;physx::PxRaycastHit&gt;" name="PxRaycastCallback" />
+    <map interface="PxHitCallback&lt;physx::PxSweepHit&gt;" name="PxSweepCallback" />
+
+    <map struct="PxHitBuffer&lt;physx::PxOverlapHit&gt;" name="PxOverlapBuffer" />
+    <map struct="PxHitBuffer&lt;physx::PxRaycastHit&gt;" name="PxRaycastBuffer" />
+    <map struct="PxHitBuffer&lt;physx::PxSweepHit&gt;" name="PxSweepBuffer" />
+
+    <map struct="PxFixedSizeLookupTable&lt;8&gt;" name="PxFixedSizeLookupTable" />
+    <map struct="PxTypedStridedData&lt;unsigned short&gt;" name="PxTypedStridedData" />
+
+    <map enum="PxEMPTY" name="PxEmpty" />
+    <map enum="PxIDENTITY" name="PxIdentity" />
+    <map enum="PxZERO" name="PxZero" />
+
+    <map struct="PxContactModifyPair" marshal="true" />
+    <map struct="PxContactPair" marshal="true" />
+    <map struct="PxContactPairHeader" marshal="true" />
+  
+    <map interface="PxAllocatorCallback" callback="true" callback-dual="true" autogen-shadow="true" />
+    <map param="PxAllocatorCallback::deallocate::ptr" name="pointer" />
+    
+    <map interface="PxErrorCallback" callback="true" callback-dual="true" autogen-shadow="true" /> 
+  </mapping>
+</config>

@@ -284,6 +284,14 @@
       <Project>{f6fe2d80-661b-4b7f-8017-ee1f9bceda77}</Project>
       <Name>DirectX12GameEngine.Serialization</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Shaders\DirectX12GameEngine.Shaders.csproj">
+      <Project>{4312e468-ac7a-4c62-aaad-4bebfd0239b5}</Project>
+      <Name>DirectX12GameEngine.Shaders</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gltf\GltfLoader\GltfLoader.csproj">
+      <Project>{e7e4c2b9-42b6-4666-93d9-326ba8fe8329}</Project>
+      <Name>GltfLoader</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

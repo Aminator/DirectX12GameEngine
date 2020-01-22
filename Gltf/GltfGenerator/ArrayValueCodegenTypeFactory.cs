@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json;
 
-namespace GeneratorLib
+namespace GltfGenerator
 {
     public class ArrayValueCodegenTypeFactory
     {

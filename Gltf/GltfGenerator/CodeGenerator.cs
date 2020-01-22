@@ -4,9 +4,10 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CSharp;
 
-namespace GeneratorLib
+namespace GltfGenerator
 {
     public class CodeGenerator
     {
@@ -221,6 +222,8 @@ namespace GeneratorLib
 
         public Dictionary<string, CodeTypeDeclaration> GeneratedClasses { get; set; }
 
+        private static readonly Regex GltfReplacementRegex = new Regex("gltf", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         public CodeCompileUnit RawClass(string fileName, out string className)
         {
             var root = FileSchemas[fileName];
@@ -229,7 +232,7 @@ namespace GeneratorLib
             schemaNamespace.Imports.Add(new CodeNamespaceImport("System.Linq"));
             schemaNamespace.Imports.Add(new CodeNamespaceImport("System.Runtime.Serialization"));
 
-            className = Helpers.ToPascalCase(root.Title.Replace("gltf", "Gltf", StringComparison.OrdinalIgnoreCase));
+            className = Helpers.ToPascalCase(GltfReplacementRegex.Replace(root.Title, "Gltf"));
 
             var schemaClass = new CodeTypeDeclaration(className)
             {

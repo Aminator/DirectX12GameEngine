@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="Nito.AsyncEx" Version="5.0.0" />
-    <PackageReference Include="Vortice.Direct2D1" Version="1.5.0" />
     <PackageReference Include="Vortice.Direct3D11" Version="1.5.0" />
     <PackageReference Include="Vortice.Direct3D12" Version="1.5.0" />
   </ItemGroup>

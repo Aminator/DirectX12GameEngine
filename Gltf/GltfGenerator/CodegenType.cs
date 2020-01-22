@@ -1,6 +1,6 @@
 ﻿using System.CodeDom;
 
-namespace GeneratorLib
+namespace GltfGenerator
 {
     public class CodegenType
     {

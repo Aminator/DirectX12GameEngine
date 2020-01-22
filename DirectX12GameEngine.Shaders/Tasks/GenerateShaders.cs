@@ -22,7 +22,7 @@ namespace DirectX12GameEngine.Shaders.Tasks
         public ITaskItem[]? ReferencedAssemblies { get; set; }
 
         [Output]
-        public ITaskItem? Output { get; private set; }
+        public ITaskItem? Output { get; set; }
 
         public override bool Execute()
         {

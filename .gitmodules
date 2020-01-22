@@ -1,3 +1,6 @@
 [submodule "Gltf/Gltf"]
 	path = Gltf/Gltf
 	url = https://github.com/KhronosGroup/glTF
+[submodule "PhysX/PhysX"]
+	path = PhysX/PhysX
+	url = https://github.com/NVIDIAGameWorks/PhysX

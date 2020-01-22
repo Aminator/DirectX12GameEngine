@@ -1,18 +1,18 @@
 ﻿using System.CodeDom;
 using System.Text;
 
-namespace GeneratorLib
+namespace GltfGenerator
 {
     public static class Helpers
     {
         public static string GetFieldName(string name)
         {
-            return "_" + name[..1].ToLower() + name[1..];
+            return "_" + char.ToLower(name[0]) + name.Substring(1);
         }
 
         public static string ToPascalCase(string name)
         {
-            if (name.Contains(' ') || name.Contains('_') || name == name.ToUpper())
+            if (name.Contains(" ") || name.Contains("_") || name == name.ToUpper())
             {
                 var words = name.ToLower().Split(' ', '_');
 
@@ -20,20 +20,19 @@ namespace GeneratorLib
 
                 foreach (string word in words)
                 {
-                    sb.Append(word[..1].ToUpper());
-                    sb.Append(word[1..]);
+                    sb.Append(char.ToUpper(word[0]));
+                    sb.Append(word.Substring(1));
                 }
 
                 return sb.ToString();
             }
             else
             {
-                return name[..1].ToUpper() + name[1..];
+                return char.ToUpper(name[0]) + name.Substring(1);
             }
         }
 
-        public static CodeMemberMethod CreateMethodThatChecksIfTheValueOfAMemberIsNotEqualToAnotherExpression(
-           string name, CodeExpression expression)
+        public static CodeMemberMethod CreateMethodThatChecksIfTheValueOfAMemberIsNotEqualToAnotherExpression(string name, CodeExpression expression)
         {
             return new CodeMemberMethod
             {

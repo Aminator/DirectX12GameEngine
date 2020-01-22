@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\GltfGenerator\Build\GltfGenerator.props" />
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
@@ -9,11 +11,16 @@
     <PackageIconUrl>https://github.com/KhronosGroup/glTF/blob/master/specification/figures/gltf.png</PackageIconUrl>
     <PackageTags>GLTF loader C#</PackageTags>
     <Version>2.0.0</Version>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>  
+    <GltfGeneratorAssembly>$(MSBuildThisFileDirectory)..\GltfGenerator\bin\$(Configuration)\netstandard2.0\GltfGenerator.dll</GltfGeneratorAssembly>
+    <GltfSchema>$(MSBuildThisFileDirectory)..\Gltf\specification\2.0\schema\glTF.schema.json</GltfSchema>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="4.6.0" />
-  </ItemGroup>  
+    <PackageReference Include="System.Text.Json" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GltfGenerator\GltfGenerator.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
 
 </Project>

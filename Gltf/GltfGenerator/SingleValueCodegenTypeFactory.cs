@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace GeneratorLib
+namespace GltfGenerator
 {
     public class SingleValueCodegenTypeFactory
     {

@@ -1,0 +1,21 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <GltfGeneratorAssembly>$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\GltfGenerator.dll</GltfGeneratorAssembly>
+    <GeneratedGltfOutputPath>$(BaseIntermediateOutputPath)GltfGenerator\</GeneratedGltfOutputPath>
+    <GltfSchema></GltfSchema>
+    <EnableGltfGeneration>true</EnableGltfGeneration>
+  </PropertyGroup>
+
+  <UsingTask TaskName="GltfGenerator.Tasks.GenerateGltf" AssemblyFile="$(GltfGeneratorAssembly)" />
+
+  <Target Condition="$(EnableGltfGeneration)" Name="GenerateGltfTypes" DependsOnTargets="_GenerateGltfTypes" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Include="$(GeneratedGltfOutputPath)**" />
+      <FileWrites Include="$(GeneratedGltfOutputPath)**" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateGltfTypes" Inputs="@(Compile)" Outputs="$(GeneratedGltfOutputPath)**">
+    <GenerateGltf Inputs="@(Compile)" GltfSchema="$(GltfSchema)" Output="$(GeneratedGltfOutputPath)" />
+  </Target>
+</Project>
