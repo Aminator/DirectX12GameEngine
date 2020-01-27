@@ -11,6 +11,8 @@
     <ShaderGeneratorAssembly>$(MSBuildThisFileDirectory)..\..\DirectX12GameEngine.Shaders\bin\$(Configuration)\netstandard2.0\DirectX12GameEngine.Shaders.dll</ShaderGeneratorAssembly>
   </PropertyGroup>
 
+  <Import Project="..\..\DirectX12GameEngine.Shaders\Build\DirectX12GameEngine.Shaders.targets" />
+
   <ItemGroup>
     <Content Include="Assets\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -24,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\DirectX12GameEngine.Assets\DirectX12GameEngine.Assets.csproj" />
     <ProjectReference Include="..\..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
+    <ProjectReference Include="..\..\DirectX12GameEngine.Physics\DirectX12GameEngine.Physics.csproj" />
   </ItemGroup>
 
 </Project>

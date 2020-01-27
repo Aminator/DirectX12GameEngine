@@ -38,12 +38,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
             set => Set(ref isSelected, value);
         }
 
-        public Guid Id
-        {
-            get => Model.Id;
-            set => Set(Model.Id, value, () => Model.Id = value);
-        }
-
         public string Name
         {
             get => Model.Name;
@@ -97,9 +91,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
         {
             switch (e.PropertyName)
             {
-                case nameof(Id):
-                    OnPropertyChanged(nameof(Id));
-                    break;
                 case nameof(Name):
                     OnPropertyChanged(nameof(Name));
                     break;

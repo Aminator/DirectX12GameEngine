@@ -7,15 +7,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Engine
 {
-    public sealed class Entity : IEnumerable<EntityComponent>, IIdentifiable, INotifyPropertyChanged
+    public sealed class Entity : IEnumerable<EntityComponent>, INotifyPropertyChanged
     {
         private Entity? parent;
 
-        private Guid id = Guid.NewGuid();
         private string name;
 
         public Entity() : this("Entity")
@@ -36,10 +34,6 @@ namespace DirectX12GameEngine.Engine
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
-
-        [IgnoreDataMember]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Guid Id { get => id; set => Set(ref id, value); }
 
         public string Name { get => name; set => Set(ref name, value); }
 

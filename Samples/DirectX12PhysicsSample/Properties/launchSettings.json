@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DirectX12PhysicsSample": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

@@ -34,6 +34,11 @@
                             Rotation="0,0.7068252,0,0.7073882"
                             Scale="15,15,15" />
                         <ModelComponent Model="Assets\Models\Icon_Failure_Model" />
+                        <!--<RigidBodyComponent Mass="100">
+                            <RigidBodyComponent.ColliderShape>
+                                <SphereColliderShape Radius="100" />
+                            </RigidBodyComponent.ColliderShape>
+                        </RigidBodyComponent>-->
                     </Entity.Components>
                 </Entity>
             </Entity.Children>
@@ -43,6 +48,11 @@
                     Rotation="0,0.5475091,0,-0.8367973"
                     Scale="2,2,2" />
                 <ModelComponent Model="Assets\Models\Cliffhouse_Model" />
+                <!--<RigidBodyComponent Mass="0">
+                    <RigidBodyComponent.ColliderShape>
+                        <SphereColliderShape Radius="100" />
+                    </RigidBodyComponent.ColliderShape>
+                </RigidBodyComponent>-->
                 <d:RotatorScript />
             </Entity.Components>
         </Entity>

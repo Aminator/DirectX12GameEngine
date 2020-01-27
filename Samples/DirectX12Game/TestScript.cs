@@ -8,6 +8,7 @@ using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Materials;
 using Microsoft.Extensions.DependencyInjection;
 using DirectX12GameEngine.Input;
+using DirectX12GameEngine.Physics;
 
 #nullable enable
 
@@ -142,6 +143,37 @@ namespace DirectX12Game
                     break;
                 case VirtualKey.K:
                     await Content.ReloadAsync(scene);
+                    break;
+                case VirtualKey.C:
+                    Entity? tRex = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "T-Rex");
+
+                    var rigidBody = new RigidBodyComponent
+                    {
+                        ColliderShape = new SphereColliderShape(50.0f),
+                        Mass = 100.0f
+                    };
+
+                    tRex?.Add(rigidBody);
+
+                    Entity? child = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Child2");
+
+                    var rigidBody2 = new RigidBodyComponent
+                    {
+                        ColliderShape = new SphereColliderShape(100.0f),
+                        Mass = 50.0f
+                    };
+
+                    child?.Add(rigidBody2);
+
+                    Entity? childBelow = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Child1");
+
+                    var staticCollider = new StaticColliderComponent
+                    {
+                        ColliderShape = new SphereColliderShape(80.0f)
+                    };
+
+                    childBelow?.Add(staticCollider);
+
                     break;
             }
         }

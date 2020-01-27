@@ -1,0 +1,20 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="DirectX12GameEngine.Shaders.Tasks.GenerateShaders" AssemblyFile="$(ShaderGeneratorAssembly)" />
+
+  <Target Condition="$(EnableShaderGeneration)" Name="GenerateShaderAttributes" DependsOnTargets="_GenerateShaderAttributes" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Include="$(GeneratedShadersOutput)" />
+      <FileWrites Include="$(GeneratedShadersOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateShaderAttributes" DependsOnTargets="GatherReferences" Inputs="@(Compile)" Outputs="$(GeneratedShadersOutput)">
+    <GenerateShaders Inputs="@(Compile)" ReferencedAssemblies="@(ReferencedAssemblies)" Output="$(GeneratedShadersOutput)" />
+  </Target>
+
+  <Target Name="GatherReferences" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <ReferencedAssemblies Include="@(ReferencePath)" />
+    </ItemGroup>
+  </Target>
+</Project>

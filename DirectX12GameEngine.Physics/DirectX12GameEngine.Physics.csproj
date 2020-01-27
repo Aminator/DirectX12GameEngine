@@ -9,7 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PhysX\DirectX12GameEngine.PhysX\DirectX12GameEngine.PhysX.csproj" />
+    <PackageReference Include="BepuPhysics" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
   </ItemGroup>
 
 </Project>

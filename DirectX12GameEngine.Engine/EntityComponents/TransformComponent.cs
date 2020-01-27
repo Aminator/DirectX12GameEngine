@@ -68,6 +68,21 @@ namespace DirectX12GameEngine.Engine
                 * Matrix4x4.CreateTranslation(Position);
         }
 
+        public void UpdateLocalFromWorldMatrix()
+        {
+            if (Parent is null)
+            {
+                LocalMatrix = WorldMatrix;
+            }
+            else
+            {
+                if (Matrix4x4.Invert(Parent.WorldMatrix, out Matrix4x4 inverseParentMatrix))
+                {
+                    LocalMatrix = WorldMatrix * inverseParentMatrix;
+                }
+            }
+        }
+
         public void UpdateWorldMatrix()
         {
             UpdateLocalMatrix();

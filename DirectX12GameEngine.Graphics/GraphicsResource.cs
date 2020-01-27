@@ -17,11 +17,11 @@ namespace DirectX12GameEngine.Graphics
             GraphicsDevice = device;
         }
 
-        public GraphicsDevice GraphicsDevice { get => graphicsDevice ?? throw new InvalidOperationException(); set => graphicsDevice = value ?? throw new ArgumentNullException(); }
+        public GraphicsDevice GraphicsDevice { get => graphicsDevice ?? throw new InvalidOperationException(); set => graphicsDevice = value; }
 
         public IntPtr MappedResource { get; private set; }
 
-        public ID3D12Resource NativeResource { get => nativeResource ?? throw new InvalidOperationException(); protected set => nativeResource = value ?? throw new ArgumentNullException(); }
+        public ID3D12Resource NativeResource { get => nativeResource ?? throw new InvalidOperationException(); protected set => nativeResource = value; }
 
         protected internal CpuDescriptorHandle NativeRenderTargetView { get; protected set; }
 

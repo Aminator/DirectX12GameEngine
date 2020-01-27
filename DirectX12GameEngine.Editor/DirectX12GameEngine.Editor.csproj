@@ -276,6 +276,10 @@
       <Project>{b76f669c-40b6-46d5-ba81-06d330d823fb}</Project>
       <Name>DirectX12GameEngine.Mvvm</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DirectX12GameEngine.Physics\DirectX12GameEngine.Physics.csproj">
+      <Project>{2237dee2-7c23-4a94-a2bc-e3ced8f9d622}</Project>
+      <Name>DirectX12GameEngine.Physics</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj">
       <Project>{1b6c6198-f2fb-4abb-88ad-0078fa42ac48}</Project>
       <Name>DirectX12GameEngine.Rendering</Name>

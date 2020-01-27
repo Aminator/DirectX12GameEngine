@@ -6,13 +6,16 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <NoWarn>NU5100;NU5119</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="Build\**" PackagePath="build\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Build\DirectX12GameEngine.Shaders.targets" />
   </ItemGroup>
 
   <ItemGroup>
