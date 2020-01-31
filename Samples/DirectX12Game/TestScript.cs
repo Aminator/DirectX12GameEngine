@@ -1,14 +1,14 @@
-﻿using DirectX12GameEngine.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using DirectX12GameEngine.Engine;
-using DirectX12GameEngine.Rendering;
-using DirectX12GameEngine.Rendering.Materials;
-using Microsoft.Extensions.DependencyInjection;
 using DirectX12GameEngine.Input;
 using DirectX12GameEngine.Physics;
+using DirectX12GameEngine.Rendering;
+using DirectX12GameEngine.Rendering.Materials;
+using DirectX12GameEngine.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 
 #nullable enable
 
@@ -72,13 +72,6 @@ namespace DirectX12Game
                                 strength.Value = 0.8f;
                             }
                         }
-                    }
-                    break;
-                case VirtualKey.R:
-                    Entity? cliffhouse = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Cliffhouse");
-                    if (cliffhouse != null)
-                    {
-                        cliffhouse.Parent?.Children.Remove(cliffhouse);
                     }
                     break;
                 case VirtualKey.T:
@@ -174,6 +167,17 @@ namespace DirectX12Game
 
                     childBelow?.Add(staticCollider);
 
+                    break;
+                case VirtualKey.R:
+                    PhysicsSimulation? simulation = this.GetSimulation();
+
+                    Matrix4x4 cameraMatrix = cameraEntity!.Transform.WorldMatrix;
+                    Vector3 forwardVector = new Vector3(-cameraMatrix.M31, -cameraMatrix.M32, -cameraMatrix.M33);
+
+                    if (simulation != null && simulation.RayCast(cameraMatrix.Translation, forwardVector, float.MaxValue, out RayHit hit))
+                    {
+                        hit.Collider.Entity?.Parent?.Children.Remove(hit.Collider.Entity!);
+                    }
                     break;
             }
         }

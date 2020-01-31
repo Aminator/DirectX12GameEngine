@@ -7,6 +7,7 @@ using BepuPhysics.CollisionDetection;
 using BepuPhysics.Constraints;
 using BepuPhysics.Trees;
 using BepuUtilities.Memory;
+using Microsoft.Collections.Extensions;
 
 namespace DirectX12GameEngine.Physics
 {
@@ -25,6 +26,10 @@ namespace DirectX12GameEngine.Physics
             InternalSimulation = Simulation.Create(bufferPool, narrowPhaseCallbacks, poseIntegratorCallbacks);
         }
 
+        public DictionarySlim<int, RigidBodyComponent> RigidBodies { get; } = new DictionarySlim<int, RigidBodyComponent>();
+
+        public DictionarySlim<int, StaticColliderComponent> StaticColliders { get; } = new DictionarySlim<int, StaticColliderComponent>();
+
         internal Simulation InternalSimulation { get; }
 
         public void Dispose()
@@ -33,14 +38,26 @@ namespace DirectX12GameEngine.Physics
             bufferPool.Clear();
         }
 
-        public HitResult RayCast(in Vector3 origin, in Vector3 direction, float maximumT)
+        public RayHit RayCast(in Vector3 origin, in Vector3 direction, float maximumT)
         {
-            using var memory = MemoryPool<HitResult>.Shared.Rent(128);
+            RayCast(origin, direction, maximumT, out RayHit hit);
 
-            RayHitHandler rayHitHandler = new RayHitHandler(memory.Memory);
+            return hit;
+        }
+
+        public bool RayCast(in Vector3 origin, in Vector3 direction, float maximumT, out RayHit hit)
+        {
+            using var memory = MemoryPool<RayHit>.Shared.Rent(1);
+            RayCast(origin, direction, maximumT, memory.Memory);
+
+            hit = memory.Memory.Span[0];
+            return hit.Succeeded;
+        }
+
+        public void RayCast(in Vector3 origin, in Vector3 direction, float maximumT, Memory<RayHit> hits)
+        {
+            RayHitHandler rayHitHandler = new RayHitHandler(this, hits);
             InternalSimulation.RayCast(origin, direction, maximumT, ref rayHitHandler);
-
-            return rayHitHandler.Hits.Span[0];
         }
 
         public void Timestep(TimeSpan deltaTime)
@@ -50,12 +67,15 @@ namespace DirectX12GameEngine.Physics
 
         private struct RayHitHandler : IRayHitHandler
         {
-            public RayHitHandler(Memory<HitResult> hits) : this()
+            public RayHitHandler(PhysicsSimulation simulation, Memory<RayHit> hits) : this()
             {
+                Simulation = simulation;
                 Hits = hits;
             }
 
-            public Memory<HitResult> Hits { get; set; }
+            public PhysicsSimulation Simulation { get; }
+
+            public Memory<RayHit> Hits { get; }
 
             public int IntersectionCount { get; private set; }
 
@@ -71,21 +91,15 @@ namespace DirectX12GameEngine.Physics
 
             public void OnRayHit(in RayData ray, ref float maximumT, float t, in Vector3 normal, CollidableReference collidable, int childIndex)
             {
-                maximumT = t;
-                ref HitResult hit = ref Hits.Span[ray.Id];
+                ref RayHit hit = ref Hits.Span[IntersectionCount++];
 
-                if (t < hit.T)
-                {
-                    if (hit.T == float.MaxValue)
-                    {
-                        IntersectionCount++;
-                    }
+                hit.Normal = normal;
+                hit.T = t;
+                hit.Succeeded = true;
 
-                    hit.Normal = normal;
-                    hit.T = t;
-                    //hit.Collidable = collidable;
-                    hit.Hit = true;
-                }
+                hit.Collider = collidable.Mobility == CollidableMobility.Static
+                    ? (PhysicsComponent)Simulation.StaticColliders.GetOrAddValueRef(collidable.Handle)
+                    : Simulation.RigidBodies.GetOrAddValueRef(collidable.Handle);
             }
         }
 

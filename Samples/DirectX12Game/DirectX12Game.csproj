@@ -9,6 +9,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ShaderGeneratorAssembly>$(MSBuildThisFileDirectory)..\..\DirectX12GameEngine.Shaders\bin\$(Configuration)\netstandard2.0\DirectX12GameEngine.Shaders.dll</ShaderGeneratorAssembly>
+    <EnableShaderGeneration>false</EnableShaderGeneration>
   </PropertyGroup>
 
   <Import Project="..\..\DirectX12GameEngine.Shaders\Build\DirectX12GameEngine.Shaders.targets" />

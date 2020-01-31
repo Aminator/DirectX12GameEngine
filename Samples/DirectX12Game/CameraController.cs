@@ -132,6 +132,12 @@ namespace DirectX12Game
                 case VirtualKey.Down:
                     MoveCamera(10.0f);
                     break;
+                case VirtualKey.Shift:
+                    if (Camera?.Entity != null) Camera.Entity.Transform.Position += Vector3.UnitY * 10.0f;
+                    break;
+                case VirtualKey.Control:
+                    if (Camera?.Entity != null) Camera.Entity.Transform.Position -= Vector3.UnitY * 10.0f;
+                    break;
                 case VirtualKey.Escape:
                     if (Input.Pointer != null)
                     {

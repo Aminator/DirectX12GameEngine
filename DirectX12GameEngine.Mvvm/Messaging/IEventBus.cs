@@ -6,10 +6,17 @@ namespace DirectX12GameEngine.Mvvm.Messaging
     {
         public IEvent<TEventArgs> GetEvent<TEventArgs>();
 
-        public void Publish<TEventArgs>(TEventArgs e);
+        public void Publish<TEventArgs>(object sender, TEventArgs e);
 
-        public void Subscribe<TEventArgs>(EventHandler<TEventArgs> eventHandler);
+        public void Subscribe<TEventArgs>(EventHandler<TEventArgs> handler);
 
-        public void Unsubscribe<TEventArgs>(EventHandler<TEventArgs> eventHandler);
+        public void Unsubscribe<TEventArgs>(EventHandler<TEventArgs> handler);
+    }
+
+    public interface IEvent<TEventArgs>
+    {
+        public event EventHandler<TEventArgs>? Invoked;
+
+        public void Publish(object sender, TEventArgs e);
     }
 }

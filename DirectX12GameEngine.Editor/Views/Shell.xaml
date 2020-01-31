@@ -21,12 +21,12 @@
         <ThemeShadow x:Name="TerminalShadow" />
     </UserControl.Resources>
 
-    <Grid x:Name="RootPanel" local:ShellLight.IsTarget="True">
-        <Grid.Lights>
+    <Grid x:Name="RootPanel">
+        <!--<Grid.Lights>
             <local:ShellAmbientLight />
             <local:ShellPointLight />
             <local:ShellPointLight DelayTime="0:0:3" />
-        </Grid.Lights>
+        </Grid.Lights>-->
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

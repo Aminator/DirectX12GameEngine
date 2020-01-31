@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
+﻿using System.Numerics;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
 
@@ -8,8 +6,6 @@ namespace DirectX12GameEngine.Physics
 {
     public class PhysicsSystem : EntitySystem<PhysicsComponent>
     {
-        private readonly List<RigidBodyComponent> rigidBodies = new List<RigidBodyComponent>();
-
         public PhysicsSystem() : base(typeof(TransformComponent))
         {
             Order = -10000;
@@ -19,16 +15,16 @@ namespace DirectX12GameEngine.Physics
 
         public override void Update(GameTime gameTime)
         {
+            foreach (var rigidBody in Simulation.RigidBodies)
+            {
+                rigidBody.Value.PhysicsWorldTransform = rigidBody.Value.Entity!.Transform.WorldMatrix;
+            }
+
             Simulation.Timestep(gameTime.Elapsed);
 
-            UpdateRigidBodyTransforms();
-        }
-
-        private void UpdateRigidBodyTransforms()
-        {
-            foreach (var rigidBody in rigidBodies)
+            foreach (var rigidBody in Simulation.RigidBodies)
             {
-                rigidBody.UpdateTransformComponent();
+                rigidBody.Value.UpdateTransformComponent();
             }
         }
 
@@ -36,22 +32,12 @@ namespace DirectX12GameEngine.Physics
         {
             component.Simulation = Simulation;
             component.Attach();
-
-            if (component is RigidBodyComponent rigidBody)
-            {
-                rigidBodies.Add(rigidBody);
-            }
         }
 
         protected override void OnEntityComponentRemoved(PhysicsComponent component)
         {
             component.Detach();
             component.Simulation = null;
-
-            if (component is RigidBodyComponent rigidBody)
-            {
-                rigidBodies.Remove(rigidBody);
-            }
         }
     }
 

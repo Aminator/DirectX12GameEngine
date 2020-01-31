@@ -5,6 +5,8 @@ using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
 using DirectX12GameEngine.Serialization;
+using DirectX12GameEngine.Mvvm.Messaging;
+using DirectX12GameEngine.Editor.ViewModels.Properties;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
@@ -67,6 +69,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         private void Open(EntityViewModel entity)
         {
+            EventBus.Default.Publish(this, new PropertiesViewRequestedEventArgs(entity.Model));
         }
 
         private void Delete(EntityViewModel entity)

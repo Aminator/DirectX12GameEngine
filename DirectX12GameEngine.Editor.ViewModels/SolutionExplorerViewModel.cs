@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.ViewModels.Factories;
+using DirectX12GameEngine.Editor.ViewModels.Properties;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
+using DirectX12GameEngine.Mvvm.Messaging;
 using Windows.System;
 
 namespace DirectX12GameEngine.Editor.ViewModels
@@ -90,6 +92,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public void ShowProperties(StorageItemViewModel item)
         {
+            EventBus.Default.Publish(this, new PropertiesViewRequestedEventArgs(item.Model));
         }
 
         public async Task RefreshAsync()

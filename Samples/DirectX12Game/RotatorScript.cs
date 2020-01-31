@@ -9,9 +9,9 @@ namespace DirectX12Game
         {
             if (Entity is null) return;
 
-            //float deltaTime = (float)Game.Time.Elapsed.TotalSeconds;
+            float deltaTime = (float)Game.Time.Elapsed.TotalSeconds;
 
-            //Entity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, deltaTime * 0.2f);
+            Entity.Transform.Rotation *= Quaternion.CreateFromAxisAngle(Vector3.UnitY, deltaTime * 0.2f);
         }
     }
 }

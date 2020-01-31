@@ -107,6 +107,7 @@ namespace DirectX12GameEngine.Physics
                 : BodyDescription.CreateDynamic(pose, ColliderShape?.ComputeIntertia(mass) ?? default, collidable, activity);
 
             Handle = Simulation!.InternalSimulation.Bodies.Add(description);
+            Simulation.RigidBodies.GetOrAddValueRef(Handle) = this;
         }
 
         protected override void OnDetach()
@@ -114,6 +115,7 @@ namespace DirectX12GameEngine.Physics
             base.OnDetach();
 
             Simulation!.InternalSimulation.Bodies.Remove(Handle);
+            Simulation.RigidBodies.Remove(Handle);
         }
     }
 }

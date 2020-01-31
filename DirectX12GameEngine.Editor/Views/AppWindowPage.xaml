@@ -21,12 +21,12 @@
         <Style BasedOn="{StaticResource AppBarButtonRevealStyle}" TargetType="AppBarButton" />
     </Page.Resources>
 
-    <Grid local:ShellLight.IsTarget="True" Background="{ThemeResource AcrylicSolutionExplorerBackground}">
-        <Grid.Lights>
+    <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
+        <!--<Grid.Lights>
             <local:ShellAmbientLight />
             <local:ShellPointLight />
-            <local:ShellPointLight DelayTime="0:0:3" />        
-        </Grid.Lights>
+            <local:ShellPointLight DelayTime="0:0:3" />
+        </Grid.Lights>-->
         <local:EditorTabView x:Name="TabView" Background="Transparent">
             <local:EditorTabView.TabStripHeader>
                 <Grid x:Name="ShellTitleBarInset" Background="Transparent" />

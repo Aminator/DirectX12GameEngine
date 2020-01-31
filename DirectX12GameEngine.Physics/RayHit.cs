@@ -2,14 +2,14 @@
 
 namespace DirectX12GameEngine.Physics
 {
-    public struct HitResult
+    public struct RayHit
     {
         public Vector3 Normal { get; set; }
 
         public float T { get; set; }
 
-        public PhysicsComponent Collider { get; set; }
+        public bool Succeeded { get; set; }
 
-        public bool Hit { get; set; }
+        public PhysicsComponent Collider { get; set; }
     }
 }

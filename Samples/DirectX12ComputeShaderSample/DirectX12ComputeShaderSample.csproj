@@ -11,6 +11,8 @@
     <ShaderGeneratorAssembly>$(MSBuildThisFileDirectory)..\..\DirectX12GameEngine.Shaders\bin\$(Configuration)\netstandard2.0\DirectX12GameEngine.Shaders.dll</ShaderGeneratorAssembly>
   </PropertyGroup>
 
+  <Import Project="..\..\DirectX12GameEngine.Shaders\Build\DirectX12GameEngine.Shaders.targets" />
+
   <ItemGroup>
     <ProjectReference Include="..\..\DirectX12GameEngine.Graphics\DirectX12GameEngine.Graphics.csproj" />
     <ProjectReference Include="..\..\DirectX12GameEngine.Shaders\DirectX12GameEngine.Shaders.csproj" />

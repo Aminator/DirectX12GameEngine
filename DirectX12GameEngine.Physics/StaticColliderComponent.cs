@@ -60,6 +60,7 @@ namespace DirectX12GameEngine.Physics
             StaticDescription description = new StaticDescription(translation, rotation.ToQuaternion(), ColliderShape.ShapeIndex, 0.1f);
 
             Handle = Simulation!.InternalSimulation.Statics.Add(description);
+            Simulation.StaticColliders.GetOrAddValueRef(Handle) = this;
         }
 
         protected override void OnDetach()
@@ -67,6 +68,7 @@ namespace DirectX12GameEngine.Physics
             base.OnDetach();
 
             Simulation!.InternalSimulation.Statics.Remove(Handle);
+            Simulation.StaticColliders.Remove(Handle);
         }
     }
 }
