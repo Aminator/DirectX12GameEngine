@@ -5,4 +5,6 @@
     <GltfSchema></GltfSchema>
     <EnableGltfGeneration>true</EnableGltfGeneration>
   </PropertyGroup>
+
+  <UsingTask TaskName="GltfGenerator.Tasks.GenerateGltf" AssemblyFile="$(GltfGeneratorAssembly)" />
 </Project>

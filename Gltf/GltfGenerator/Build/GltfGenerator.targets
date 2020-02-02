@@ -1,14 +1,12 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <UsingTask TaskName="GltfGenerator.Tasks.GenerateGltf" AssemblyFile="$(GltfGeneratorAssembly)" />
-
-  <Target Condition="$(EnableGltfGeneration)" Name="GenerateGltfTypes" DependsOnTargets="_GenerateGltfTypes" BeforeTargets="CoreCompile">
+  <Target Condition="$(EnableGltfGeneration)" Name="GenerateGltfTypes" DependsOnTargets="_GenerateGltfTypes" BeforeTargets="BeforeCompile;CoreCompile">
     <ItemGroup>
       <Compile Include="$(GeneratedGltfOutputPath)**" />
       <FileWrites Include="$(GeneratedGltfOutputPath)**" />
     </ItemGroup>
   </Target>
 
-  <Target Name="_GenerateGltfTypes" DependsOnTargets="ResolveReferences" Inputs="@(Compile)" Outputs="$(GeneratedGltfOutputPath)**">
+  <Target Name="_GenerateGltfTypes" Inputs="@(Compile)" Outputs="$(GeneratedGltfOutputPath)**">    
     <GenerateGltf Inputs="@(Compile)" GltfSchema="$(GltfSchema)" Output="$(GeneratedGltfOutputPath)" />
   </Target>
 </Project>

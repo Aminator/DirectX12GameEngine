@@ -17,10 +17,8 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
-    <PackageCertificateKeyFile>DirectX12CoreWindowApp_TemporaryKey.pfx</PackageCertificateKeyFile>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
-    <PackageCertificateThumbprint>BAE72DC5E50E57993452E597A5A7395F54283965</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -148,9 +146,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="DirectX12CoreWindowApp_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj">

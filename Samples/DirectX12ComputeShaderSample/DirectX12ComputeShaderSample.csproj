@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\DirectX12GameEngine.Shaders\Build\DirectX12GameEngine.Shaders.props" />
+  <Import Project="..\..\DirectX12GameEngine.Shaders.Tasks\Build\DirectX12GameEngine.Shaders.Tasks.props" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,14 +8,19 @@
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <ShaderGeneratorAssembly>$(MSBuildThisFileDirectory)..\..\DirectX12GameEngine.Shaders\bin\$(Configuration)\netstandard2.0\DirectX12GameEngine.Shaders.dll</ShaderGeneratorAssembly>
+    <ShaderGeneratorAssembly>$(MSBuildThisFileDirectory)..\..\DirectX12GameEngine.Shaders.Tasks\bin\$(Configuration)\netstandard2.0\DirectX12GameEngine.Shaders.Tasks.dll</ShaderGeneratorAssembly>
   </PropertyGroup>
 
-  <Import Project="..\..\DirectX12GameEngine.Shaders\Build\DirectX12GameEngine.Shaders.targets" />
+  <Import Project="..\..\DirectX12GameEngine.Shaders.Tasks\Build\DirectX12GameEngine.Shaders.Tasks.targets" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\DirectX12GameEngine.Graphics\DirectX12GameEngine.Graphics.csproj" />
     <ProjectReference Include="..\..\DirectX12GameEngine.Shaders\DirectX12GameEngine.Shaders.csproj" />
+    <ProjectReference Include="..\..\DirectX12GameEngine.Shaders.Tasks\DirectX12GameEngine.Shaders.Tasks.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <Target Name="BuildShaderGeneratorAssemblies" BeforeTargets="_GenerateShaderAttributes">
+    <MSBuild Projects="..\..\DirectX12GameEngine.Shaders.Tasks\DirectX12GameEngine.Shaders.Tasks.csproj" Targets="Build" />
+  </Target>
 
 </Project>

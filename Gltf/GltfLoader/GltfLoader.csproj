@@ -11,8 +11,8 @@
     <PackageIconUrl>https://github.com/KhronosGroup/glTF/blob/master/specification/figures/gltf.png</PackageIconUrl>
     <PackageTags>GLTF loader C#</PackageTags>
     <Version>2.0.0</Version>
-    <GltfGeneratorAssembly>$(MSBuildThisFileDirectory)..\GltfGenerator\bin\$(Configuration)\netstandard2.0\GltfGenerator.dll</GltfGeneratorAssembly>
     <GltfSchema>$(MSBuildThisFileDirectory)..\Gltf\specification\2.0\schema\glTF.schema.json</GltfSchema>
+    <GltfGeneratorAssembly>$(MSBuildThisFileDirectory)..\GltfGenerator\bin\$(Configuration)\netstandard2.0\GltfGenerator.dll</GltfGeneratorAssembly>
   </PropertyGroup>
 
   <Import Project="..\GltfGenerator\Build\GltfGenerator.targets" />
@@ -21,8 +21,8 @@
     <PackageReference Include="System.Text.Json" Version="4.7.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\GltfGenerator\GltfGenerator.csproj" ReferenceOutputAssembly="false" />
-  </ItemGroup>
+  <Target Name="BuildGltfGeneratorAssemblies" BeforeTargets="_GenerateGltfTypes">
+    <MSBuild Projects="..\GltfGenerator\GltfGenerator.csproj" Targets="Build" />
+  </Target>
 
 </Project>
