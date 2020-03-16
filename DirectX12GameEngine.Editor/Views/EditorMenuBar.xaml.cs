@@ -16,26 +16,21 @@ namespace DirectX12GameEngine.Editor.Views
         {
             InitializeComponent();
 
-            DataContextChanged += (s, e) =>
-            {
-                Bindings.Update();
-            };
-
-            Loaded += OnEditorMenuBarLoaded;
+            Loaded += OnLoaded;
         }
 
-        private void OnEditorMenuBarLoaded(object sender, RoutedEventArgs e)
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            foreach (AccessListEntry accessListEntry in ViewModel.ProjectLoader.RecentProjects)
+            foreach (AccessListEntry accessListEntry in ViewModel.SolutionLoader.RecentSolutions)
             {
                 MenuFlyoutItem item = new MenuFlyoutItem
                 {
                     Text = accessListEntry.Metadata,
-                    Command = ViewModel.ProjectLoader.OpenRecentProjectCommand,
+                    Command = ViewModel.SolutionLoader.OpenRecentSolutionCommand,
                     CommandParameter = accessListEntry.Token
                 };
 
-                openRecentFlyoutItem.Items.Add(item);
+                OpenRecentFlyoutItem.Items.Add(item);
             }
         }
 

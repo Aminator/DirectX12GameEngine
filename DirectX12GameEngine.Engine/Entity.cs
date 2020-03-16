@@ -198,17 +198,17 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        private void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private bool Set<T>(ref T field, T value, [CallerMemberName] string name = "")
+        private bool Set<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
         {
             if (!EqualityComparer<T>.Default.Equals(field, value))
             {
                 field = value;
-                NotifyPropertyChanged(name);
+                OnPropertyChanged(propertyName);
                 return true;
             }
 

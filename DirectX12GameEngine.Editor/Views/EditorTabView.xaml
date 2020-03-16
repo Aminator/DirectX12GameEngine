@@ -13,39 +13,46 @@
     mc:Ignorable="d">
 
     <winui:TabView.Resources>
-        <DataTemplate x:Name="PropertiesTemplate" x:DataType="viewmodels:PropertiesViewModel">
-            <winui:TabViewItem Header="Properties">
-                <local:PropertiesView />
-            </winui:TabViewItem>
-        </DataTemplate>
-
-        <DataTemplate x:Name="SolutionExplorerTemplate" x:DataType="viewmodels:SolutionExplorerViewModel">
+        <DataTemplate x:Key="SolutionExplorerTemplate" x:DataType="viewmodels:SolutionExplorerViewModel">
             <winui:TabViewItem Header="Solution Explorer">
                 <local:SolutionExplorerView />
             </winui:TabViewItem>
         </DataTemplate>
 
-        <DataTemplate x:Name="TerminalTemplate" x:DataType="viewmodels:TerminalViewModel">
+        <DataTemplate x:Key="PropertiesTemplate" x:DataType="viewmodels:PropertiesViewModel">
+            <winui:TabViewItem Header="Properties">
+                <local:PropertiesView />
+            </winui:TabViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SdkManagerTemplate" x:DataType="viewmodels:SdkManagerViewModel">
+            <winui:TabViewItem Header="SDK Manager">
+                <local:SdkManagerView />
+            </winui:TabViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="TerminalTemplate" x:DataType="viewmodels:TerminalViewModel">
             <winui:TabViewItem Header="Terminal">
                 <local:TerminalView />
             </winui:TabViewItem>
         </DataTemplate>
 
-        <DataTemplate x:Name="CodeEditorTemplate" x:DataType="viewmodels:CodeEditorViewModel">
+        <DataTemplate x:Key="CodeEditorTemplate" x:DataType="viewmodels:CodeEditorViewModel">
             <winui:TabViewItem Header="{x:Bind File.Name}">
                 <local:CodeEditorView />
             </winui:TabViewItem>
         </DataTemplate>
 
-        <DataTemplate x:Name="SceneEditorTemplate" x:DataType="viewmodels:SceneEditorViewModel">
+        <DataTemplate x:Key="SceneEditorTemplate" x:DataType="viewmodels:SceneEditorViewModel">
             <winui:TabViewItem Header="{x:Bind io:Path.GetFileName(ScenePath)}">
                 <local:SceneEditorView />
             </winui:TabViewItem>
         </DataTemplate>
 
-        <local:DataTypeTemplateSelector x:Name="EditorTemplateSelector">
-            <local:TemplateDefinition DataTemplate="{StaticResource PropertiesTemplate}" DataType="viewmodels:PropertiesViewModel" />
+        <local:DataTypeTemplateSelector x:Key="EditorTemplateSelector">
             <local:TemplateDefinition DataTemplate="{StaticResource SolutionExplorerTemplate}" DataType="viewmodels:SolutionExplorerViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource PropertiesTemplate}" DataType="viewmodels:PropertiesViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource SdkManagerTemplate}" DataType="viewmodels:SdkManagerViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource TerminalTemplate}" DataType="viewmodels:TerminalViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource CodeEditorTemplate}" DataType="viewmodels:CodeEditorViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource SceneEditorTemplate}" DataType="viewmodels:SceneEditorViewModel" />

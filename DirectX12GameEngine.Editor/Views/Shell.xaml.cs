@@ -19,11 +19,6 @@ namespace DirectX12GameEngine.Editor.Views
         {
             InitializeComponent();
 
-            DataContextChanged += (s, e) =>
-            {
-                Bindings.Update();
-            };
-
             SolutionExplorerTabView.TabItemsChanged += (s, e) => SolutionExplorerColumnDefinition.Width = GridLength.Auto;
 
             TitleBarShadow.Receivers.Add(ContentPanel);

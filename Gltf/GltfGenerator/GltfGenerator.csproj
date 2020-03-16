@@ -18,11 +18,5 @@
     <PackageReference Include="System.CodeDom" Version="4.7.0" />
     <PackageReference Include="System.Text.Json" Version="4.7.0" />
   </ItemGroup>
-  
-  <Target Name="CopyReferences" AfterTargets="Build">
-    <ItemGroup>
-      <Content Include="$(OutputPath)**" PackagePath="tasks\" />
-    </ItemGroup>
-  </Target>
 
 </Project>

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using BepuPhysics;
+using DirectX12GameEngine.Core;
 
 namespace DirectX12GameEngine.Physics
 {
@@ -38,12 +40,9 @@ namespace DirectX12GameEngine.Physics
             {
                 if (Simulation != null)
                 {
-                    Matrix4x4.Decompose(value, out _, out Quaternion rotation, out Vector3 translation);
-
                     Simulation.InternalSimulation.Statics.GetDescription(Handle, out StaticDescription description);
 
-                    description.Pose.Position = translation;
-                    description.Pose.Orientation = rotation.ToQuaternion();
+                    (_, Unsafe.As<BepuUtilities.Quaternion, Quaternion>(ref description.Pose.Orientation), description.Pose.Position) = value;
 
                     Simulation.InternalSimulation.Statics.ApplyDescription(Handle, description);
                 }

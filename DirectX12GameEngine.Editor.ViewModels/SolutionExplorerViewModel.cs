@@ -12,24 +12,30 @@ namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class SolutionExplorerViewModel : ViewModelBase
     {
+        private readonly EditorViewFactory editorViewFactory;
         private StorageFolderViewModel? rootFolder;
 
-        public SolutionExplorerViewModel()
+        public SolutionExplorerViewModel(EditorViewFactory editorViewFactory)
         {
-            OpenCommand = new RelayCommand<StorageItemViewModel>(file => _ = OpenAsync(file));
-            ViewCodeCommand = new RelayCommand<StorageFileViewModel>(file => _ = ViewCodeAsync(file));
-            DeleteCommand = new RelayCommand<StorageItemViewModel>(Delete);
-            ShowPropertiesCommand = new RelayCommand<StorageItemViewModel>(ShowProperties);
-
-            RefreshCommand = new RelayCommand(() => _ = RefreshAsync(), () => RootFolder != null);
+            this.editorViewFactory = editorViewFactory;
 
             EngineAssetViewFactory engineAssetViewFactory = new EngineAssetViewFactory();
             engineAssetViewFactory.Add(typeof(Entity), new SceneEditorViewFactory());
 
             CodeEditorViewFactory codeEditorViewFactory = new CodeEditorViewFactory();
 
-            EditorViewFactory.Default.Add(".xaml", engineAssetViewFactory);
-            EditorViewFactory.Default.Add(".cs", codeEditorViewFactory);
+            editorViewFactory.Add(".xaml", engineAssetViewFactory);
+            editorViewFactory.Add(".cs", codeEditorViewFactory);
+            editorViewFactory.Add(".vb", codeEditorViewFactory);
+            editorViewFactory.Add(".csproj", codeEditorViewFactory);
+            editorViewFactory.Add(".vbproj", codeEditorViewFactory);
+
+            OpenCommand = new RelayCommand<StorageItemViewModel>(file => _ = OpenAsync(file));
+            ViewCodeCommand = new RelayCommand<StorageFileViewModel>(file => _ = ViewCodeAsync(file));
+            DeleteCommand = new RelayCommand<StorageItemViewModel>(Delete);
+            ShowPropertiesCommand = new RelayCommand<StorageItemViewModel>(ShowProperties);
+
+            RefreshCommand = new RelayCommand(() => _ = RefreshAsync(), () => RootFolder != null);
         }
 
         public TabViewViewModel MainTabView { get; } = new TabViewViewModel();
@@ -54,7 +60,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
         {
             if (item is StorageFileViewModel file)
             {
-                object? editor = await EditorViewFactory.Default.CreateAsync(file);
+                object? editor = await editorViewFactory.CreateAsync(file.Model);
 
                 if (editor != null)
                 {
@@ -73,7 +79,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public async Task ViewCodeAsync(StorageFileViewModel file)
         {
-            object? editor = await new CodeEditorViewFactory().CreateAsync(file);
+            object? editor = await new CodeEditorViewFactory().CreateAsync(file.Model, editorViewFactory.Services);
 
             if (editor != null)
             {

@@ -1,0 +1,71 @@
+﻿<UserControl
+    x:Class="DirectX12GameEngine.Editor.Views.SdkManagerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:DirectX12GameEngine.Editor.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:DirectX12GameEngine.Editor.ViewModels"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <XamlUICommand
+            x:Key="DownloadSdkCommand"
+            Command="{x:Bind ViewModel.DownloadSdkCommand}"
+            Label="Download SDK" />
+
+        <StandardUICommand
+            x:Key="RemoveSdkCommand"
+            Command="{x:Bind ViewModel.RemoveSdkCommand}"
+            Kind="Delete" />
+    </UserControl.Resources>
+
+    <Grid>
+        <StackPanel>
+            <StackPanel Padding="12" Spacing="12">
+                <TextBox x:Name="SdkTextBox" Header="SDK Version" />
+                <Button Command="{StaticResource DownloadSdkCommand}" CommandParameter="{x:Bind SdkTextBox.Text, Mode=OneWay}" />
+            </StackPanel>
+
+            <Border
+                Margin="12,0"
+                BorderBrush="Gray"
+                BorderThickness="0.5" />
+
+            <ListView ItemsSource="{x:Bind ViewModel.RecentSdks}" SelectedItem="{x:Bind ViewModel.ActiveSdk, Mode=TwoWay}">
+                <ListView.Header>
+                    <TextBlock
+                        Margin="12"
+                        Style="{StaticResource SubtitleTextBlockStyle}"
+                        Text="Recent SDKs" />
+                </ListView.Header>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="viewmodels:SdkViewModel">
+                        <ListViewItem HorizontalContentAlignment="Stretch">
+                            <StackPanel Padding="0,12" Spacing="12">
+                                <TextBlock Text="{x:Bind Version}" />
+                                <ProgressBar
+                                    Maximum="1"
+                                    Minimum="0"
+                                    Value="{x:Bind DownloadProgess, Mode=OneWay}" />
+                                <ProgressBar
+                                    Maximum="1"
+                                    Minimum="0"
+                                    Value="{x:Bind InstallProgess, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <ListViewItem.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Command="{StaticResource RemoveSdkCommand}" CommandParameter="{x:Bind}" />
+                                </MenuFlyout>
+                            </ListViewItem.ContextFlyout>
+                        </ListViewItem>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+    </Grid>
+</UserControl>

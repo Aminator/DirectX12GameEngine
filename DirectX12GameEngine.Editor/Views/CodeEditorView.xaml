@@ -2,18 +2,178 @@
     x:Class="DirectX12GameEngine.Editor.Views.CodeEditorView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:DirectX12GameEngine.Editor.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:DirectX12GameEngine.Editor.ViewModels"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <ResourceDictionary x:Key="CodeResourceDictionary">
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <viewmodels:CodeTextFormat x:Key="class name" ForegroundColor="#FF2B91AF" />
+                    <viewmodels:CodeTextFormat x:Key="comment" ForegroundColor="#FF008000" />
+                    <viewmodels:CodeTextFormat x:Key="constant name" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="delegate name" ForegroundColor="#FF2B91AF" />
+                    <viewmodels:CodeTextFormat x:Key="enum member name" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="enum name" ForegroundColor="#FF2B91AF" />
+                    <viewmodels:CodeTextFormat x:Key="event name" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="excluded code" ForegroundColor="#FF808080" />
+                    <viewmodels:CodeTextFormat x:Key="extension method name" ForegroundColor="#FF74531F" />
+                    <viewmodels:CodeTextFormat x:Key="field name" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="identifier" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="interface name" ForegroundColor="#FF2B91AF" />
+                    <viewmodels:CodeTextFormat x:Key="keyword" ForegroundColor="#FF0000FF" />
+                    <viewmodels:CodeTextFormat x:Key="keyword - control" ForegroundColor="#FF8F08C4" />
+                    <viewmodels:CodeTextFormat x:Key="label name" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="local name" ForegroundColor="#FF1F377F" />
+                    <viewmodels:CodeTextFormat x:Key="method name" ForegroundColor="#FF74531F" />
+                    <viewmodels:CodeTextFormat x:Key="module name" ForegroundColor="#FF2B91AF" />
+                    <viewmodels:CodeTextFormat x:Key="namespace name" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="number" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="operator" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="operator - overloaded" ForegroundColor="#FF74531F" />
+                    <viewmodels:CodeTextFormat x:Key="parameter name" ForegroundColor="#FF1F377F" />
+                    <viewmodels:CodeTextFormat x:Key="preprocessor keyword" ForegroundColor="#FF808080" />
+                    <viewmodels:CodeTextFormat x:Key="preprocessor text" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="property name" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="punctuation" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="static symbol" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="string" ForegroundColor="#FFA31515" />
+                    <viewmodels:CodeTextFormat x:Key="string - escape character" ForegroundColor="#FFB776FB" />
+                    <viewmodels:CodeTextFormat x:Key="string - verbatim" ForegroundColor="#FF800000" />
+                    <viewmodels:CodeTextFormat x:Key="struct name" ForegroundColor="#FF2B91AF" />
+                    <viewmodels:CodeTextFormat x:Key="text" ForegroundColor="#FF000000" />
+                    <viewmodels:CodeTextFormat x:Key="type parameter name" ForegroundColor="#FF2B91AF" />
+                    <viewmodels:CodeTextFormat x:Key="whitespace" ForegroundColor="#00000000" />
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Dark">
+                    <viewmodels:CodeTextFormat x:Key="class name" ForegroundColor="#FF4EC9B0" />
+                    <viewmodels:CodeTextFormat x:Key="comment" ForegroundColor="#FF57A64A" />
+                    <viewmodels:CodeTextFormat x:Key="constant name" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="delegate name" ForegroundColor="#FF4EC9B0" />
+                    <viewmodels:CodeTextFormat x:Key="enum member name" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="enum name" ForegroundColor="#FFB8D7A3" />
+                    <viewmodels:CodeTextFormat x:Key="event name" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="excluded code" ForegroundColor="#FF9B9B9B" />
+                    <viewmodels:CodeTextFormat x:Key="extension method name" ForegroundColor="#FFDCDCAA" />
+                    <viewmodels:CodeTextFormat x:Key="field name" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="identifier" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="interface name" ForegroundColor="#FFB8D7A3" />
+                    <viewmodels:CodeTextFormat x:Key="keyword" ForegroundColor="#FF569CD6" />
+                    <viewmodels:CodeTextFormat x:Key="keyword - control" ForegroundColor="#FFD8A0DF" />
+                    <viewmodels:CodeTextFormat x:Key="label name" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="local name" ForegroundColor="#FF9CDCFE" />
+                    <viewmodels:CodeTextFormat x:Key="method name" ForegroundColor="#FFDCDCAA" />
+                    <viewmodels:CodeTextFormat x:Key="module name" ForegroundColor="#FF4EC9B0" />
+                    <viewmodels:CodeTextFormat x:Key="namespace name" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="number" ForegroundColor="#FFB5CEA8" />
+                    <viewmodels:CodeTextFormat x:Key="operator" ForegroundColor="#FFB4B4B4" />
+                    <viewmodels:CodeTextFormat x:Key="operator - overloaded" ForegroundColor="#FFDCDCAA" />
+                    <viewmodels:CodeTextFormat x:Key="parameter name" ForegroundColor="#FF9CDCFE" />
+                    <viewmodels:CodeTextFormat x:Key="preprocessor keyword" ForegroundColor="#FF9B9B9B" />
+                    <viewmodels:CodeTextFormat x:Key="preprocessor text" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="property name" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="punctuation" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="static symbol" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="string" ForegroundColor="#FFD69D85" />
+                    <viewmodels:CodeTextFormat x:Key="string - escape character" ForegroundColor="#FFFFD68F" />
+                    <viewmodels:CodeTextFormat x:Key="string - verbatim" ForegroundColor="#FFD69D85" />
+                    <viewmodels:CodeTextFormat x:Key="struct name" ForegroundColor="#FF86C691" />
+                    <viewmodels:CodeTextFormat x:Key="text" ForegroundColor="#FFDCDCDC" />
+                    <viewmodels:CodeTextFormat x:Key="type parameter name" ForegroundColor="#FFB8D7A3" />
+                    <viewmodels:CodeTextFormat x:Key="whitespace" ForegroundColor="#00000000" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <converters:FormatStringConverter x:Key="FormatStringConverter" />
+            <local:Int32ToBooleanComparisonConverter x:Name="Int32ToBooleanComparisonConverter" CurrentValue="{x:Bind ViewModel.TabSize, Mode=OneWay}" />
+            <local:EncodingToBooleanComparisonConverter x:Name="EncodingToBooleanComparisonConverter" CurrentValue="{x:Bind ViewModel.Encoding, Mode=OneWay}" />
+            <local:NewLineModeToBooleanComparisonConverter x:Name="NewLineModeToBooleanComparisonConverter" CurrentValue="{x:Bind ViewModel.NewLineMode, Mode=OneWay}" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
         <RichEditBox
             x:Name="CodeEditor"
+            ActualThemeChanged="{x:Bind ReapplySyntaxHighlighting}"
+            CharacterReceived="OnCodeEditorCharacterReceived"
             FontFamily="Consolas"
             IsSpellCheckEnabled="False"
-            TextWrapping="NoWrap" />
+            KeyDown="OnCodeEditorKeyDown"
+            SelectionChanged="OnCodeEditorSelectionChanged"
+            SelectionChanging="OnCodeEditorSelectionChanging"
+            TextChanged="OnCodeEditorTextChanged"
+            TextChanging="OnCodeEditorTextChanging"
+            TextWrapping="NoWrap">
+            <ToolTipService.ToolTip>
+                <ToolTip
+                    x:Name="CodeEditorToolTip"
+                    Closed="OnCodeEditorToolTipClosed"
+                    Opened="OnCodeEditorToolTipOpened"
+                    Placement="Bottom" />
+            </ToolTipService.ToolTip>
+        </RichEditBox>
+
+        <CommandBar Grid.Row="1" Background="Transparent">
+            <CommandBar.Content>
+                <StackPanel Orientation="Horizontal">
+                    <AppBarButton Style="{StaticResource AppBarButtonRevealStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <FontIcon Glyph="&#xEA39;" />
+                            <TextBlock Text="{x:Bind ViewModel.CurrentDiagnostics.Count, Mode=OneWay}" />
+                        </StackPanel>
+                    </AppBarButton>
+                    <AppBarButton Style="{StaticResource AppBarButtonRevealStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <FontIcon Glyph="&#xE7BA;" />
+                            <TextBlock Text="{x:Bind ViewModel.CurrentDiagnostics.Count, Mode=OneWay}" />
+                        </StackPanel>
+                    </AppBarButton>
+                </StackPanel>
+            </CommandBar.Content>
+            <CommandBar.PrimaryCommands>
+                <AppBarButton Content="{x:Bind ViewModel.TabSize, Mode=OneWay, Converter={StaticResource FormatStringConverter}, ConverterParameter=Spaces: 0}">
+                    <AppBarButton.Flyout>
+                        <MenuFlyout>
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.TabSize, Mode=TwoWay, Converter={StaticResource Int32ToBooleanComparisonConverter}, ConverterParameter=1}" Text="1" />
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.TabSize, Mode=TwoWay, Converter={StaticResource Int32ToBooleanComparisonConverter}, ConverterParameter=2}" Text="2" />
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.TabSize, Mode=TwoWay, Converter={StaticResource Int32ToBooleanComparisonConverter}, ConverterParameter=3}" Text="3" />
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.TabSize, Mode=TwoWay, Converter={StaticResource Int32ToBooleanComparisonConverter}, ConverterParameter=4}" Text="4" />
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <AppBarButton Content="{x:Bind local:EncodingHelper.GetName(ViewModel.Encoding), Mode=OneWay}">
+                    <AppBarButton.Flyout>
+                        <MenuFlyout>
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.Encoding, Mode=TwoWay, Converter={StaticResource EncodingToBooleanComparisonConverter}, ConverterParameter=UTF-8}" Text="UTF-8" />
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.Encoding, Mode=TwoWay, Converter={StaticResource EncodingToBooleanComparisonConverter}, ConverterParameter=UTF-8 BOM}" Text="UTF-8 BOM" />
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.Encoding, Mode=TwoWay, Converter={StaticResource EncodingToBooleanComparisonConverter}, ConverterParameter=UTF-16 LE}" Text="UTF-16 LE" />
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.Encoding, Mode=TwoWay, Converter={StaticResource EncodingToBooleanComparisonConverter}, ConverterParameter=UTF-16 BE}" Text="UTF-16 BE" />
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <AppBarButton Content="{x:Bind local:StringHelper.ToUpper(ViewModel.NewLineMode), Mode=OneWay}">
+                    <AppBarButton.Flyout>
+                        <MenuFlyout>
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.NewLineMode, Mode=TwoWay, Converter={StaticResource NewLineModeToBooleanComparisonConverter}, ConverterParameter=Cr}" Text="CR" />
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.NewLineMode, Mode=TwoWay, Converter={StaticResource NewLineModeToBooleanComparisonConverter}, ConverterParameter=Lf}" Text="LF" />
+                            <winui:RadioMenuFlyoutItem IsChecked="{x:Bind ViewModel.NewLineMode, Mode=TwoWay, Converter={StaticResource NewLineModeToBooleanComparisonConverter}, ConverterParameter=Crlf}" Text="CRLF" />
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+            </CommandBar.PrimaryCommands>
+        </CommandBar>
     </Grid>
 </UserControl>

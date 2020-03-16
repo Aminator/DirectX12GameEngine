@@ -60,7 +60,7 @@ namespace DirectX12GameEngine.Serialization
 
             if (!await ExistsAsync(path))
             {
-                throw new FileNotFoundException();
+                throw new FileNotFoundException($"The asset file {path} could not be found.", path);
             }
 
             using Stream stream = await FileProvider.OpenStreamAsync(path + FileExtension, FileMode.Open, FileAccess.Read);

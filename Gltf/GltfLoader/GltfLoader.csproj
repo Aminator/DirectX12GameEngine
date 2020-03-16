@@ -21,8 +21,4 @@
     <PackageReference Include="System.Text.Json" Version="4.7.0" />
   </ItemGroup>
 
-  <Target Name="BuildGltfGeneratorAssemblies" BeforeTargets="_GenerateGltfTypes">
-    <MSBuild Projects="..\GltfGenerator\GltfGenerator.csproj" Targets="Build" />
-  </Target>
-
 </Project>

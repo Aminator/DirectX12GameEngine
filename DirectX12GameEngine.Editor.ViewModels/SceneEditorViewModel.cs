@@ -7,6 +7,7 @@ using DirectX12GameEngine.Mvvm.Commanding;
 using DirectX12GameEngine.Serialization;
 using DirectX12GameEngine.Mvvm.Messaging;
 using DirectX12GameEngine.Editor.ViewModels.Properties;
+using Windows.Storage;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
@@ -15,7 +16,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
         private bool isLoading;
         private EntityViewModel? rootEntity;
 
-        public SceneEditorViewModel(StorageFolderViewModel rootFolder, string scenePath)
+        public SceneEditorViewModel(IStorageFolder rootFolder, string scenePath)
         {
             RootFolder = rootFolder;
             ScenePath = scenePath;
@@ -23,13 +24,13 @@ namespace DirectX12GameEngine.Editor.ViewModels
             OpenCommand = new RelayCommand<EntityViewModel>(Open);
             DeleteCommand = new RelayCommand<EntityViewModel>(Delete);
 
-            Game = new EditorGame(new GameContextWithGraphics { FileProvider = new FileSystemProvider(RootFolder.Model) });
+            Game = new EditorGame(new GameContextWithGraphics { FileProvider = new FileSystemProvider(RootFolder) });
             Game.SceneSystem.SceneInstance.RootEntity = SceneRootEntity.Model;
         }
 
         public EditorGame Game { get; }
 
-        public StorageFolderViewModel RootFolder { get; }
+        public IStorageFolder RootFolder { get; }
 
         public string ScenePath { get; }
 

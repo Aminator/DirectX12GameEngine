@@ -5,6 +5,7 @@
     xmlns:animations="using:Microsoft.Toolkit.Uwp.UI.Animations"
     xmlns:behaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:extensions="using:Microsoft.Toolkit.Uwp.UI.Extensions"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
@@ -19,6 +20,8 @@
         <ThemeShadow x:Name="TitleBarShadow" />
         <ThemeShadow x:Name="SolutionExplorerShadow" />
         <ThemeShadow x:Name="TerminalShadow" />
+
+        <converters:BoolNegationConverter x:Name="BoolNegationConverter" />
     </UserControl.Resources>
 
     <Grid x:Name="RootPanel">
@@ -43,13 +46,17 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <Grid x:Name="ShellTitleBarInset" Background="Transparent" />
+            <Grid
+                x:Name="ShellTitleBarInset"
+                VerticalAlignment="Top"
+                Background="Transparent" />
 
             <local:EditorMenuBar Grid.Column="1" />
 
             <Grid
                 x:Name="CustomDragRegion"
                 Grid.Column="2"
+                VerticalAlignment="Top"
                 Background="Transparent" />
         </Grid>
 
@@ -67,6 +74,11 @@
 
                 <Grid x:Name="ContentEditorPanel" Background="{ThemeResource AcrylicWindowBackground}">
                     <local:EditorTabView x:Name="ContentEditorTabView" DataContext="{x:Bind ViewModel.SolutionExplorer.MainTabView}" />
+
+                    <ProgressRing
+                        Width="72"
+                        Height="72"
+                        IsActive="{x:Bind ViewModel.SolutionLoader.IsSolutionLoading, Mode=OneWay}" />
                 </Grid>
 
                 <Grid

@@ -1,5 +1,5 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Condition="$(EnableGltfGeneration)" Name="GenerateGltfTypes" DependsOnTargets="_GenerateGltfTypes" BeforeTargets="BeforeCompile;CoreCompile">
+  <Target Condition="$(EnableGltfGeneration)" Name="GenerateGltfTypes" DependsOnTargets="_GenerateGltfTypes" BeforeTargets="CoreCompile">
     <ItemGroup>
       <Compile Include="$(GeneratedGltfOutputPath)**" />
       <FileWrites Include="$(GeneratedGltfOutputPath)**" />

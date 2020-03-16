@@ -1,5 +1,5 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Condition="$(EnableShaderGeneration)" Name="GenerateShaderAttributes" DependsOnTargets="_GenerateShaderAttributes" BeforeTargets="BeforeCompile;CoreCompile">
+  <Target Condition="$(EnableShaderGeneration)" Name="GenerateShaderAttributes" DependsOnTargets="_GenerateShaderAttributes" BeforeTargets="CoreCompile">
     <ItemGroup>
       <Compile Include="$(GeneratedShadersOutput)" />
       <FileWrites Include="$(GeneratedShadersOutput)" />

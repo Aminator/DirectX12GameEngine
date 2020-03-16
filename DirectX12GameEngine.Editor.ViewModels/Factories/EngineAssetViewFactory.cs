@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Serialization;
+using Windows.Storage;
 
 #nullable enable
 
@@ -17,15 +18,15 @@ namespace DirectX12GameEngine.Editor.ViewModels.Factories
             factories.Add(type, factory);
         }
 
-        public async Task<object?> CreateAsync(StorageFileViewModel item)
+        public async Task<object?> CreateAsync(IStorageFile item, IServiceProvider services)
         {
-            using Stream stream = await item.Model.OpenStreamForReadAsync();
+            using Stream stream = await item.OpenStreamForReadAsync();
 
             Type? type = ContentManager.GetRootObjectType(stream);
 
             if (type != null && factories.TryGetValue(type, out IEditorViewFactory factory))
             {
-                return await factory.CreateAsync(item);
+                return await factory.CreateAsync(item, services);
             }
 
             return null;

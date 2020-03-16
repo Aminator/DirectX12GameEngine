@@ -11,6 +11,9 @@ namespace DirectX12GameEngine.Engine
     [DefaultEntitySystem(typeof(TransformSystem))]
     public sealed class TransformComponent : EntityComponent, IEnumerable<TransformComponent>, INotifyPropertyChanged
     {
+        private Matrix4x4 localMatrix = Matrix4x4.Identity;
+        private Matrix4x4 worldMatrix = Matrix4x4.Identity;
+
         private Vector3 position;
         private Quaternion rotation = Quaternion.Identity;
         private Vector3 scale = Vector3.One;
@@ -39,21 +42,21 @@ namespace DirectX12GameEngine.Engine
 
         [IgnoreDataMember]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Matrix4x4 LocalMatrix { get; set; } = Matrix4x4.Identity;
+        public ref Matrix4x4 LocalMatrix => ref localMatrix;
 
         [IgnoreDataMember]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Matrix4x4 WorldMatrix { get; set; } = Matrix4x4.Identity;
+        public ref Matrix4x4 WorldMatrix => ref worldMatrix;
 
         public Vector3 Position { get => position; set => Set(ref position, value); }
-
+               
         public Quaternion Rotation { get => rotation; set => Set(ref rotation, value); }
 
         public Vector3 Scale { get => scale; set => Set(ref scale, value); }
 
         [IgnoreDataMember]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Vector3 RotationEuler { get => Rotation.ToEuler(); set { if (Set(ref rotation, value.ToQuaternion(), nameof(Rotation))) NotifyPropertyChanged(); } }
+        public Vector3 RotationEuler { get => Rotation.ToEuler(); set => Rotation = value.ToQuaternion(); }
 
         public override string ToString() => $"Position: {Position}, Rotation: {RotationEuler}, Scale: {Scale}";
 
@@ -81,6 +84,8 @@ namespace DirectX12GameEngine.Engine
                     LocalMatrix = WorldMatrix * inverseParentMatrix;
                 }
             }
+
+            (Scale, Rotation, Position) = LocalMatrix;
         }
 
         public void UpdateWorldMatrix()
@@ -106,17 +111,17 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        private void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private bool Set<T>(ref T field, T value, [CallerMemberName] string name = "")
+        private bool Set<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
         {
             if (!EqualityComparer<T>.Default.Equals(field, value))
             {
                 field = value;
-                NotifyPropertyChanged(name);
+                OnPropertyChanged(propertyName);
                 return true;
             }
 

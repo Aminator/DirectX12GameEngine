@@ -21,5 +21,10 @@ namespace DirectX12GameEngine.Editor.ViewModels
         {
             get => Model.Name;
         }
+
+        public string Path
+        {
+            get => Model.Path;
+        }
     }
 }

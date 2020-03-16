@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Windows.Storage;
@@ -11,29 +10,24 @@ namespace DirectX12GameEngine.Editor.ViewModels.Factories
 {
     public class SceneEditorViewFactory : IEditorViewFactory
     {
-        public async Task<object?> CreateAsync(StorageFileViewModel item)
+        public async Task<object?> CreateAsync(IStorageFile item, IServiceProvider services)
         {
-            if (item.Parent is null) return null;
+            StorageFolder? parentFolder = await (item as IStorageItem2)?.GetParentAsync();
 
-            string scenePath = Path.GetFileNameWithoutExtension(item.Name);
+            if (parentFolder is null) return null;
 
-            StorageFolderViewModel rootFolder = item.Parent;
-            StorageFileViewModel? projectFile = (await rootFolder.GetFilesAsync()).FirstOrDefault(s => Path.GetExtension(s.Name).Contains("proj"));
+            StorageFile? projectFile = await parentFolder.GetFileWithExtensionInHierarchyAsync("proj");
 
-            while (projectFile is null && rootFolder.Parent != null)
-            {
-                scenePath = Path.Combine(rootFolder.Name, scenePath);
+            if (projectFile is null) throw new FileNotFoundException("No project file could be found.");
 
-                rootFolder = rootFolder.Parent;
-                projectFile = (await rootFolder.GetFilesAsync()).FirstOrDefault(s => Path.GetExtension(s.Name).Contains("proj"));
-            }
+            StorageFolder projectFolder = await projectFile.GetParentAsync();
 
-            if (projectFile != null)
-            {
-                await LoadAssemblyAsync(rootFolder.Model, Path.GetFileNameWithoutExtension(projectFile.Name));
-            }
+            await LoadAssemblyAsync(projectFolder, Path.GetFileNameWithoutExtension(projectFile.Name));
 
-            return new SceneEditorViewModel(rootFolder, scenePath);
+            string scenePath = StorageExtensions.GetRelativePath(projectFolder.Path, item.Path);
+            scenePath = Path.Combine(Path.GetDirectoryName(scenePath), Path.GetFileNameWithoutExtension(scenePath));
+
+            return new SceneEditorViewModel(projectFolder, scenePath);
         }
 
         private async Task LoadAssemblyAsync(IStorageFolder folder, string assemblyName)

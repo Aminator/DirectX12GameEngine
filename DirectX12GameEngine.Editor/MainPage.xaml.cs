@@ -30,7 +30,7 @@ namespace DirectX12GameEngine.Editor
 
             if (e.Parameter is string token && !string.IsNullOrEmpty(token))
             {
-                await ViewModel.ProjectLoader.OpenRecentProjectAsync(token);
+                await ViewModel.SolutionLoader.OpenRecentSolutionAsync(token);
             }
         }
     }

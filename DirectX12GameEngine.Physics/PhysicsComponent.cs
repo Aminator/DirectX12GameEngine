@@ -35,15 +35,10 @@ namespace DirectX12GameEngine.Physics
 
         public void UpdateTransformComponent()
         {
-            Matrix4x4.Decompose(Entity!.Transform.WorldMatrix, out Vector3 scale, out Quaternion rotation, out Vector3 translation);
+            Matrix4x4.Decompose(Entity!.Transform.WorldMatrix, out Vector3 scale, out _, out _);
 
             Entity.Transform.WorldMatrix = Matrix4x4.CreateScale(scale) * PhysicsWorldTransform;
             Entity.Transform.UpdateLocalFromWorldMatrix();
-
-            Matrix4x4.Decompose(Entity.Transform.LocalMatrix, out scale, out rotation, out translation);
-
-            Entity.Transform.Position = translation;
-            Entity.Transform.Rotation = rotation;
         }
 
         internal void Attach()

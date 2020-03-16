@@ -24,7 +24,7 @@ namespace DirectX12GameEngine.Editor.Views
     {
     }
 
-    public class TemplateDefinition : DependencyObject
+    public class TemplateDefinition
     {
         public Type? DataType { get; set; }
 

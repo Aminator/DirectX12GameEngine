@@ -22,11 +22,7 @@
                 <KeyboardAccelerator Key="N" Modifiers="Control" />
             </XamlUICommand.KeyboardAccelerators>
         </XamlUICommand>
-        <StandardUICommand
-            x:Key="OpenCommand"
-            Command="{x:Bind ViewModel.ProjectLoader.OpenProjectWithPickerCommand}"
-            Kind="Open" />
-        <StandardUICommand x:Key="SaveCommand" Kind="Save" />
+
         <XamlUICommand
             x:Key="CloseCommand"
             Command="{x:Bind ViewModel.CloseApplicationCommand}"
@@ -40,6 +36,52 @@
             </XamlUICommand.KeyboardAccelerators>
         </XamlUICommand>
 
+        <StandardUICommand
+            x:Key="OpenCommand"
+            Command="{x:Bind ViewModel.SolutionLoader.OpenSolutionWithPickerCommand}"
+            Kind="Open" />
+
+        <XamlUICommand
+            x:Key="ReloadSolutionCommand"
+            Command="{x:Bind ViewModel.SolutionLoader.ReloadSolutionCommand}"
+            Description="Reload the current solution"
+            Label="Reload Solution">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Refresh" />
+            </XamlUICommand.IconSource>
+        </XamlUICommand>
+
+        <XamlUICommand
+            x:Key="RestoreNuGetPackagesCommand"
+            Command="{x:Bind ViewModel.SolutionLoader.RestoreNuGetPackagesCommand}"
+            Description="Restore NuGet packages for the current solution"
+            Label="Restore NuGet Packages">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Refresh" />
+            </XamlUICommand.IconSource>
+        </XamlUICommand>
+
+        <XamlUICommand
+            x:Key="DownloadNewestSdkCommand"
+            Command="{x:Bind ViewModel.SdkManager.DownloadNewestSdkCommand}"
+            Description="Download newest .NET SDK from Microsoft"
+            Label="Download Newest SDK">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Download" />
+            </XamlUICommand.IconSource>
+        </XamlUICommand>
+
+        <XamlUICommand
+            x:Key="OpenSdkCommand"
+            Command="{x:Bind ViewModel.SdkManager.OpenSdkWithPickerCommand}"
+            Description="Download newest .NET SDK from Microsoft"
+            Label="Open SDK">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="OpenFile" />
+            </XamlUICommand.IconSource>
+        </XamlUICommand>
+
+        <StandardUICommand x:Key="SaveCommand" Kind="Save" />
         <StandardUICommand x:Key="UndoCommand" Kind="Undo" />
         <StandardUICommand x:Key="RedoCommand" Kind="Redo" />
         <StandardUICommand x:Key="CutCommand" Kind="Cut" />
@@ -52,7 +94,7 @@
         <MenuFlyoutItem Command="{StaticResource NewCommand}" />
         <MenuFlyoutItem Command="{StaticResource OpenCommand}" />
         <MenuFlyoutSubItem
-            x:Name="openRecentFlyoutItem"
+            x:Name="OpenRecentFlyoutItem"
             Icon="OpenFile"
             Text="Open Recent" />
         <MenuFlyoutItem Command="{StaticResource SaveCommand}" />
@@ -73,7 +115,16 @@
 
     <winui:MenuBarItem Title="View">
         <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsSolutionExplorerOpen, Mode=TwoWay}" Text="Solution Explorer" />
-        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsPropertyGridOpen, Mode=TwoWay}" Text="Property Grid" />
+        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsPropertiesViewOpen, Mode=TwoWay}" Text="Properties View" />
+        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsSdkManagerOpen, Mode=TwoWay}" Text="SDK Manager" />
+    </winui:MenuBarItem>
+
+    <winui:MenuBarItem Title="Build">
+        <MenuFlyoutItem Command="{StaticResource ReloadSolutionCommand}" />
+        <MenuFlyoutItem Command="{StaticResource RestoreNuGetPackagesCommand}" />
+        <MenuFlyoutSeparator />
+        <MenuFlyoutItem Command="{StaticResource DownloadNewestSdkCommand}" />
+        <MenuFlyoutItem Command="{StaticResource OpenSdkCommand}" />
     </winui:MenuBarItem>
 
     <winui:MenuBarItem Title="Help">

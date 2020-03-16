@@ -17,11 +17,6 @@ namespace DirectX12GameEngine.Editor.Views
         {
             InitializeComponent();
 
-            DataContextChanged += (s, e) =>
-            {
-                Bindings.Update();
-            };
-
             ((StandardUICommand)Resources["OpenCommand"]).KeyboardAccelerators.Clear();
         }
 

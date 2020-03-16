@@ -14,11 +14,6 @@ namespace DirectX12GameEngine.Editor.Views
         public PropertiesView()
         {
             InitializeComponent();
-
-            DataContextChanged += (s, e) =>
-            {
-                Bindings.Update();
-            };
         }
 
         public PropertiesViewModel ViewModel => (PropertiesViewModel)DataContext;

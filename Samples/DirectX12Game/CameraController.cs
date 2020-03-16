@@ -90,9 +90,7 @@ namespace DirectX12Game
         {
             if (Camera != null && Camera.Entity != null)
             {
-                Vector3 position = Camera.Entity.Transform.Position;
-                position.Z += value;
-                Camera.Entity.Transform.Position = position;
+                Camera.Entity.Transform.Position += Vector3.UnitZ * value;
             }
         }
 
