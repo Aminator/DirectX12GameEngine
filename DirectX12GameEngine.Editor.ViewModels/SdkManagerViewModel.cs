@@ -25,7 +25,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             {
                 foreach (string path in Directory.GetDirectories(sdksPath))
                 {
-                    SdkViewModel sdk = new SdkViewModel(Version.Parse(new DirectoryInfo(path).Name), path)
+                    SdkViewModel sdk = new SdkViewModel(new DirectoryInfo(path).Name, path)
                     {
                         DownloadProgess = 1,
                         InstallProgess = 1
@@ -84,7 +84,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
         public async Task DownloadSdkAsync(string version)
         {
             StorageFolder sdksFolder = await GetSdksFolderAsync();
-            SdkViewModel sdk = new SdkViewModel(Version.Parse(version), Path.Combine(sdksFolder.Path, version));
+            SdkViewModel sdk = new SdkViewModel(version, Path.Combine(sdksFolder.Path, version));
 
             if (!RecentSdks.Contains(sdk))
             {
@@ -147,7 +147,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             if (folder != null)
             {
                 StorageFolder sdksFolder = await GetSdksFolderAsync();
-                SdkViewModel sdk = new SdkViewModel(Version.Parse(folder.Name), Path.Combine(sdksFolder.Path, folder.Name))
+                SdkViewModel sdk = new SdkViewModel(folder.Name, Path.Combine(sdksFolder.Path, folder.Name))
                 {
                     DownloadProgess = 1
                 };

@@ -8,17 +8,17 @@ namespace DirectX12GameEngine.Editor.ViewModels
         private double downloadProgess;
         private double installProgess;
 
-        public SdkViewModel(Version version) : this(version, null)
+        public SdkViewModel(string version) : this(version, null)
         {
         }
 
-        public SdkViewModel(Version version, string? path)
+        public SdkViewModel(string version, string? path)
         {
             Version = version;
             Path = path;
         }
 
-        public Version Version { get; }
+        public string Version { get; }
 
         public string? Path { get; set; }
 
