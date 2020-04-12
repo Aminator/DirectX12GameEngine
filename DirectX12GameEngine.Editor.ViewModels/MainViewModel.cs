@@ -6,31 +6,23 @@ namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
-        private bool isSolutionExplorerOpen;
-        private bool isPropertiesViewOpen;
-        private bool isSdkManagerOpen;
-
         public MainViewModel(
             SolutionLoaderViewModel solutionLoader,
             SolutionExplorerViewModel solutionExplorer,
-            PropertiesViewModel propertiesView,
-            SdkManagerViewModel sdkManager)
+            PropertyManagerViewModel propertyManager,
+            SdkManagerViewModel sdkManager,
+            TabViewManagerViewModel tabViewManager)
         {
             SolutionLoader = solutionLoader;
             SolutionExplorer = solutionExplorer;
-            PropertiesView = propertiesView;
+            PropertyManager = propertyManager;
             SdkManager = sdkManager;
+            TabViewManager = tabViewManager;
 
             SolutionLoader.RootFolderLoaded += (s, e) =>
             {
-                SolutionExplorer.RootFolder = new StorageFolderViewModel(e.RootFolder)
-                {
-                    IsExpanded = true
-                };
-
-                IsSolutionExplorerOpen = true;
-
-                TerminalTabView.Tabs.Add(new TerminalViewModel(e.RootFolder, SolutionLoader));
+                TabViewManager.OpenTab(SolutionExplorer);
+                TabViewManager.TerminalTabView.Tabs.Add(new TerminalViewModel(e.RootFolder, SolutionLoader));
             };
 
             CloseApplicationCommand = new RelayCommand(CloseApplication);
@@ -40,70 +32,11 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public SolutionExplorerViewModel SolutionExplorer { get; }
 
-        public PropertiesViewModel PropertiesView { get; }
+        public PropertyManagerViewModel PropertyManager { get; }
 
         public SdkManagerViewModel SdkManager { get; }
 
-        public TabViewViewModel SolutionExplorerTabView { get; } = new TabViewViewModel();
-
-        public TabViewViewModel TerminalTabView { get; } = new TabViewViewModel();
-
-        public bool IsSolutionExplorerOpen
-        {
-            get => isSolutionExplorerOpen;
-            set
-            {
-                if (Set(ref isSolutionExplorerOpen, value))
-                {
-                    if (isSolutionExplorerOpen)
-                    {
-                        SolutionExplorerTabView.Tabs.Add(SolutionExplorer);
-                    }
-                    else
-                    {
-                        SolutionExplorerTabView.Tabs.Remove(SolutionExplorer);
-                    }
-                }
-            }
-        }
-
-        public bool IsPropertiesViewOpen
-        {
-            get => isPropertiesViewOpen;
-            set
-            {
-                if (Set(ref isPropertiesViewOpen, value))
-                {
-                    if (isPropertiesViewOpen)
-                    {
-                        SolutionExplorerTabView.Tabs.Add(PropertiesView);
-                    }
-                    else
-                    {
-                        SolutionExplorerTabView.Tabs.Remove(PropertiesView);
-                    }
-                }
-            }
-        }
-
-        public bool IsSdkManagerOpen
-        {
-            get => isSdkManagerOpen;
-            set
-            {
-                if (Set(ref isSdkManagerOpen, value))
-                {
-                    if (isSdkManagerOpen)
-                    {
-                        SolutionExplorerTabView.Tabs.Add(SdkManager);
-                    }
-                    else
-                    {
-                        SolutionExplorerTabView.Tabs.Remove(SdkManager);
-                    }
-                }
-            }
-        }
+        public TabViewManagerViewModel TabViewManager { get; }
 
         public RelayCommand CloseApplicationCommand { get; }
 

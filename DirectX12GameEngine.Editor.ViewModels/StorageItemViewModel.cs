@@ -7,7 +7,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
     {
         private StorageFolderViewModel? parent;
 
-        public StorageItemViewModel(IStorageItem model) : base(model)
+        protected StorageItemViewModel(IStorageItem model) : base(model)
         {
         }
 
@@ -25,6 +25,11 @@ namespace DirectX12GameEngine.Editor.ViewModels
         public string Path
         {
             get => Model.Path;
+        }
+
+        public void OnNameChanged()
+        {
+            OnPropertyChanged(nameof(Name));
         }
     }
 }

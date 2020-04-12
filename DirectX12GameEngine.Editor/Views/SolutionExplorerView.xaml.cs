@@ -3,7 +3,6 @@ using DirectX12GameEngine.Editor.ViewModels;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
 
 #nullable enable
 
@@ -16,8 +15,6 @@ namespace DirectX12GameEngine.Editor.Views
         public SolutionExplorerView()
         {
             InitializeComponent();
-
-            ((StandardUICommand)Resources["OpenCommand"]).KeyboardAccelerators.Clear();
         }
 
         public SolutionExplorerViewModel ViewModel => (SolutionExplorerViewModel)DataContext;
@@ -26,7 +23,10 @@ namespace DirectX12GameEngine.Editor.Views
         {
             Deferral deferral = e.GetDeferral();
 
-            await ViewModel.RefreshAsync();
+            if (ViewModel.RootFolder != null)
+            {
+                await ViewModel.RootFolder.FillAsync();
+            }
 
             deferral.Complete();
         }

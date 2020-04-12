@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Vortice.Direct3D11" Version="1.6.0" PrivateAssets="compile" />
+    <PackageReference Include="Vortice.Direct3D12" Version="1.6.0" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DirectX12GameEngine.Input\DirectX12GameEngine.Input.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj" />
   </ItemGroup>

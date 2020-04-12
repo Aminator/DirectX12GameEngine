@@ -1,5 +1,4 @@
-﻿using System;
-using Vortice.Direct3D11;
+﻿using Vortice.Direct3D11;
 using Vortice.Direct3D12;
 using Vortice.DXGI;
 using Windows.Graphics.DirectX.Direct3D11;
@@ -116,7 +115,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
                 PresentationParameters.BackBufferWidth,
                 PresentationParameters.BackBufferHeight,
                 PresentationParameters.BackBufferFormat,
-                ResourceFlags.RenderTarget,
+                ResourceFlags.AllowRenderTarget,
                 1,
                 (short)HolographicBufferCount);
         }

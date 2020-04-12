@@ -21,9 +21,9 @@ namespace DirectX12GameEngine.Mvvm.Commanding
 
         public event EventHandler? CanExecuteChanged;
 
-        public event Func<bool>? CanExecuteRequested;
+        public Func<bool>? CanExecuteRequested { get; set; }
 
-        public event Action? ExecuteRequested;
+        public Action? ExecuteRequested { get; set; }
 
         public bool CanExecute(object? parameter)
         {
@@ -62,9 +62,9 @@ namespace DirectX12GameEngine.Mvvm.Commanding
 
         public event EventHandler? CanExecuteChanged;
 
-        public event Func<T, bool>? CanExecuteRequested;
+        public Func<T, bool>? CanExecuteRequested { get; set; }
 
-        public event Action<T>? ExecuteRequested;
+        public Action<T>? ExecuteRequested { get; set; }
 
         public bool CanExecute(object parameter)
         {

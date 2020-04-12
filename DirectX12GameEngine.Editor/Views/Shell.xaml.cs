@@ -25,10 +25,6 @@ namespace DirectX12GameEngine.Editor.Views
             SolutionExplorerShadow.Receivers.Add(MainEditorPanel);
             TerminalShadow.Receivers.Add(ContentEditorPanel);
 
-            TitleBarPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
-            SolutionExplorerPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
-            TerminalPanel.Translation += new Vector3(0.0f, 0.0f, 32.0f);
-
             CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
 
             UpdateTitleBarLayout(titleBar);
@@ -44,8 +40,8 @@ namespace DirectX12GameEngine.Editor.Views
         {
             Deferral deferral = e.GetDeferral();
 
-            e.Handled = await ViewModel.SolutionExplorerTabView.GetUnclosableTabsAsync().CountAsync() > 0
-                || await ViewModel.SolutionExplorer.MainTabView.GetUnclosableTabsAsync().CountAsync() > 0;
+            e.Handled = await ViewModel.TabViewManager.MainTabView.GetUnclosableTabsAsync().CountAsync() > 0
+                || await ViewModel.TabViewManager.SolutionExplorerTabView.GetUnclosableTabsAsync().CountAsync() > 0;
 
             deferral.Complete();
         }

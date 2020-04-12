@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Serialization;
 using DirectX12GameEngine.Shaders;
 using Vortice.Direct3D12;
 using Vortice.DXGI;
-using Vortice.Dxc;
-using DirectX12GameEngine.Serialization;
-using System.IO;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
@@ -129,15 +128,15 @@ namespace DirectX12GameEngine.Rendering.Materials
                 compiledShader.Shaders.ContainsKey("domain") ? compiledShader.Shaders["domain"] : null);
         }
 
-        private DxcShaderStage GetShaderStage(string shader) => shader switch
+        private ShaderStage GetShaderStage(string shader) => shader switch
         {
-            "vertex" => DxcShaderStage.VertexShader,
-            "pixel" => DxcShaderStage.PixelShader,
-            "geometry" => DxcShaderStage.GeometryShader,
-            "hull" => DxcShaderStage.HullShader,
-            "domain" => DxcShaderStage.DomainShader,
-            "compute" => DxcShaderStage.ComputeShader,
-            _ => DxcShaderStage.Library
+            "vertex" => ShaderStage.VertexShader,
+            "pixel" => ShaderStage.PixelShader,
+            "geometry" => ShaderStage.GeometryShader,
+            "hull" => ShaderStage.HullShader,
+            "domain" => ShaderStage.DomainShader,
+            "compute" => ShaderStage.ComputeShader,
+            _ => ShaderStage.Library
         };
 
         public ID3D12RootSignature CreateRootSignature()

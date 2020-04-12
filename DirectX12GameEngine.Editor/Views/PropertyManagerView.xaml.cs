@@ -9,14 +9,14 @@ using Windows.UI.Xaml.Data;
 
 namespace DirectX12GameEngine.Editor.Views
 {
-    public sealed partial class PropertiesView : UserControl
+    public sealed partial class PropertyManagerView : UserControl
     {
-        public PropertiesView()
+        public PropertyManagerView()
         {
             InitializeComponent();
         }
 
-        public PropertiesViewModel ViewModel => (PropertiesViewModel)DataContext;
+        public PropertyManagerViewModel ViewModel => (PropertyManagerViewModel)DataContext;
     }
 
     public class DateTimeConverter : IValueConverter

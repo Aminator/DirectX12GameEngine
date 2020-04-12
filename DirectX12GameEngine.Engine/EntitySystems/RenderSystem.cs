@@ -9,7 +9,6 @@ using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
-using Vortice.Mathematics;
 
 namespace DirectX12GameEngine.Engine
 {
@@ -31,10 +30,10 @@ namespace DirectX12GameEngine.Engine
             graphicsDevice = device;
             this.sceneSystem = sceneSystem;
 
-            DirectionalLightGroupBuffer = GraphicsBuffer.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload);
-            GlobalBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload);
-            ViewProjectionTransformBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>(), ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload);
-            DefaultSampler = new SamplerState(graphicsDevice, Vortice.Direct3D12.SamplerDescription.Default);
+            DirectionalLightGroupBuffer = GraphicsBuffer.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, ResourceFlags.None, GraphicsHeapType.Upload);
+            GlobalBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), ResourceFlags.None, GraphicsHeapType.Upload);
+            ViewProjectionTransformBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>(), ResourceFlags.None, GraphicsHeapType.Upload);
+            DefaultSampler = new SamplerState(graphicsDevice);
         }
 
         public GraphicsBuffer DirectionalLightGroupBuffer { get; }
@@ -105,7 +104,7 @@ namespace DirectX12GameEngine.Engine
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.New(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>(), ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload);
+                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.New(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>(), ResourceFlags.None, GraphicsHeapType.Upload);
                         }
 
                         CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];
@@ -121,12 +120,9 @@ namespace DirectX12GameEngine.Engine
                                 modelComponents.Count(),
                                 passIndex);
 
-                            CompiledCommandList? bundle = bundleCommandList.Close();
+                            CompiledCommandList bundle = bundleCommandList.Close();
 
-                            if (bundle != null)
-                            {
-                                newBundles[passIndex] = bundle;
-                            }
+                            newBundles[passIndex] = bundle;
                         }
 
                         models.Add(model, (newBundles, newWorldMatrixBuffers));
@@ -157,6 +153,7 @@ namespace DirectX12GameEngine.Engine
                         // Without bundles:
                         //RecordCommandList(model, commandList, worldMatrixBuffers, modelComponents.Count(), passIndex);
 
+                        // With bundles:
                         commandList.ExecuteBundle(bundles[passIndex]);
 
                         commandList.EndRenderPass();
@@ -166,8 +163,8 @@ namespace DirectX12GameEngine.Engine
                 compiledCommandLists[batchIndex] = commandList.Close();
             }
 
-            graphicsDevice.CommandList.Flush(true);
-            graphicsDevice.ExecuteCommandLists(true, compiledCommandLists);
+            graphicsDevice.CommandList.Flush();
+            graphicsDevice.DirectCommandQueue.ExecuteCommandLists(compiledCommandLists);
 
             graphicsDevice.CommandList.Reset();
             graphicsDevice.CommandList.ClearState();
@@ -224,10 +221,10 @@ namespace DirectX12GameEngine.Engine
 
             if (bundles != null)
             {
-                foreach (CompiledCommandList bundle in bundles)
-                {
-                    //bundle.Builder.Dispose();
-                }
+                //foreach (CompiledCommandList bundle in bundles)
+                //{
+                //    bundle.Builder.Dispose();
+                //}
             }
         }
 

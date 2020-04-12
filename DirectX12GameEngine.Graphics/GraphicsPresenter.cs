@@ -47,7 +47,7 @@ namespace DirectX12GameEngine.Graphics
         {
             return Texture.New2D(GraphicsDevice,
                 PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight, PresentationParameters.DepthStencilFormat,
-                ResourceFlags.DepthStencil, 1, PresentationParameters.Stereo ? (short)2 : (short)1);
+                ResourceFlags.AllowDepthStencil | ResourceFlags.DenyShaderResource, 1, PresentationParameters.Stereo ? (short)2 : (short)1);
         }
 
         protected abstract void ResizeBackBuffer(int width, int height);

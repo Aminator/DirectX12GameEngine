@@ -4,6 +4,6 @@
     {
         public Entity? Entity { get; internal set; }
 
-        public virtual bool IsEnabled { get; set; } = true;
+        //public virtual bool IsEnabled { get; set; } = true;
     }
 }

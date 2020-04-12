@@ -77,7 +77,7 @@ namespace DirectX12GameEngine.Engine
         {
             base.EndDraw();
 
-            GraphicsDevice?.CommandList.Flush(true);
+            GraphicsDevice?.CommandList.Flush();
             GraphicsDevice?.Presenter?.Present();
         }
 

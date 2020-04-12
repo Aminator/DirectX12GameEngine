@@ -38,18 +38,18 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <Grid Background="{ThemeResource AcrylicSolutionExplorerBackground}">
-            <winui:TreeView
-                x:Name="EntityTreeView"
-                ItemsSource="{x:Bind ViewModel.RootEntity.Children, Mode=OneWay}"
-                Shadow="{StaticResource SharedShadow}">
+        <Grid
+            Background="{ThemeResource AcrylicSolutionExplorerBackground}"
+            Shadow="{StaticResource SharedShadow}"
+            Translation="0,0,32">
+            <winui:TreeView ItemsSource="{x:Bind ViewModel.RootEntity.Children}">
                 <winui:TreeView.ItemTemplate>
                     <DataTemplate x:DataType="viewmodels:EntityViewModel">
                         <winui:TreeViewItem
                             AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
                             Content="{x:Bind Name, Mode=OneWay}"
                             IsSelected="{x:Bind IsSelected, Mode=TwoWay}"
-                            ItemsSource="{x:Bind Children, Mode=OneWay}">
+                            ItemsSource="{x:Bind Children}">
                             <interactivity:Interaction.Behaviors>
                                 <core:EventTriggerBehavior EventName="Tapped">
                                     <core:InvokeCommandAction Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />

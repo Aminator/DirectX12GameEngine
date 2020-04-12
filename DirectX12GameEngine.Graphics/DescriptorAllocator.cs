@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using SharpGen.Runtime;
 using Vortice.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
-    internal sealed class DescriptorAllocator : IDisposable
+    public sealed class DescriptorAllocator : IDisposable
     {
         private const int DescriptorsPerHeap = 4096;
 
@@ -16,9 +18,12 @@ namespace DirectX12GameEngine.Graphics
                 throw new ArgumentOutOfRangeException(nameof(descriptorCount), $"Descriptor count must be between 1 and {DescriptorsPerHeap}.");
             }
 
+            Type = descriptorHeapType;
+            Flags = descriptorHeapFlags;
+
             DescriptorHandleIncrementSize = device.NativeDevice.GetDescriptorHandleIncrementSize((Vortice.Direct3D12.DescriptorHeapType)descriptorHeapType);
 
-            DescriptorHeapDescription descriptorHeapDescription = new DescriptorHeapDescription((Vortice.Direct3D12.DescriptorHeapType)descriptorHeapType, descriptorCount, descriptorHeapFlags);
+            DescriptorHeapDescription descriptorHeapDescription = new DescriptorHeapDescription((Vortice.Direct3D12.DescriptorHeapType)descriptorHeapType, descriptorCount, (Vortice.Direct3D12.DescriptorHeapFlags)descriptorHeapFlags);
 
             DescriptorHeap = device.NativeDevice.CreateDescriptorHeap(descriptorHeapDescription);
 
@@ -29,18 +34,22 @@ namespace DirectX12GameEngine.Graphics
 
         public int DescriptorCapacity { get; private set; }
 
+        public int DescriptorHandleIncrementSize { get; }
+
+        public DescriptorHeapType Type { get; }
+
+        public DescriptorHeapFlags Flags { get; }
+
         internal ID3D12DescriptorHeap DescriptorHeap { get; }
 
-        internal int DescriptorHandleIncrementSize { get; }
-
-        public GpuDescriptorHandle GetGpuDescriptorHandle(CpuDescriptorHandle descriptor)
+        public long GetGpuDescriptorHandle(IntPtr descriptor)
         {
-            if (!DescriptorHeap.Description.Flags.HasFlag(DescriptorHeapFlags.ShaderVisible)) throw new InvalidOperationException();
+            if (!Flags.HasFlag(DescriptorHeapFlags.ShaderVisible)) throw new InvalidOperationException();
 
-            return DescriptorHeap.GetGPUDescriptorHandleForHeapStart() + (descriptor.Ptr - DescriptorHeap.GetCPUDescriptorHandleForHeapStart().Ptr);
+            return DescriptorHeap.GetGPUDescriptorHandleForHeapStart().Ptr + ((PointerSize)descriptor - DescriptorHeap.GetCPUDescriptorHandleForHeapStart().Ptr);
         }
 
-        public CpuDescriptorHandle Allocate(int count)
+        public IntPtr Allocate(int count)
         {
             lock (allocatorLock)
             {
@@ -54,7 +63,7 @@ namespace DirectX12GameEngine.Graphics
                     Reset();
                 }
 
-                CpuDescriptorHandle descriptor = DescriptorHeap.GetCPUDescriptorHandleForHeapStart() + CurrentDescriptorCount * DescriptorHandleIncrementSize;
+                IntPtr descriptor = DescriptorHeap.GetCPUDescriptorHandleForHeapStart().Ptr + CurrentDescriptorCount * DescriptorHandleIncrementSize;
 
                 CurrentDescriptorCount += count;
 
@@ -62,7 +71,7 @@ namespace DirectX12GameEngine.Graphics
             }
         }
 
-        public CpuDescriptorHandle AllocateSlot(int slot)
+        public IntPtr AllocateSlot(int slot)
         {
             lock (allocatorLock)
             {
@@ -71,9 +80,9 @@ namespace DirectX12GameEngine.Graphics
                     throw new ArgumentOutOfRangeException(nameof(slot), "Slot must be between 0 and the total descriptor count - 1.");
                 }
 
-                CpuDescriptorHandle cpuDescriptorHandle = DescriptorHeap.GetCPUDescriptorHandleForHeapStart() + slot * DescriptorHandleIncrementSize;
+                IntPtr descriptor = DescriptorHeap.GetCPUDescriptorHandleForHeapStart().Ptr + slot * DescriptorHandleIncrementSize;
 
-                return cpuDescriptorHandle;
+                return descriptor;
             }
         }
 
@@ -86,5 +95,12 @@ namespace DirectX12GameEngine.Graphics
         {
             DescriptorHeap.Dispose();
         }
+    }
+
+    internal static class DescriptorExtensions
+    {
+        public static CpuDescriptorHandle ToCpuDescriptorHandle(this IntPtr value) => Unsafe.As<IntPtr, CpuDescriptorHandle>(ref value);
+
+        public static GpuDescriptorHandle ToGpuDescriptorHandle(this long value) => Unsafe.As<long, GpuDescriptorHandle>(ref value);
     }
 }

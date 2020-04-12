@@ -1,6 +1,6 @@
 ﻿namespace DirectX12GameEngine.Serialization
 {
-    public abstract class AssetWithSource<T> : Asset<T>
+    public abstract class AssetWithSource : Asset
     {
         public string Source { get; set; } = "";
 

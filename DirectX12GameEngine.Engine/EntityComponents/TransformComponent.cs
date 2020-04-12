@@ -37,15 +37,12 @@ namespace DirectX12GameEngine.Engine
         }
 
         [IgnoreDataMember]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public TransformComponent? Parent { get => Entity?.Parent?.Transform; set { if (Entity != null) Entity.Parent = value?.Entity; } }
 
         [IgnoreDataMember]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ref Matrix4x4 LocalMatrix => ref localMatrix;
 
         [IgnoreDataMember]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ref Matrix4x4 WorldMatrix => ref worldMatrix;
 
         public Vector3 Position { get => position; set => Set(ref position, value); }
@@ -55,7 +52,6 @@ namespace DirectX12GameEngine.Engine
         public Vector3 Scale { get => scale; set => Set(ref scale, value); }
 
         [IgnoreDataMember]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Vector3 RotationEuler { get => Rotation.ToEuler(); set => Rotation = value.ToQuaternion(); }
 
         public override string ToString() => $"Position: {Position}, Rotation: {RotationEuler}, Scale: {Scale}";

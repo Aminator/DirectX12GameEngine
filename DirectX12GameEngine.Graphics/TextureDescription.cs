@@ -20,7 +20,7 @@
 
         public GraphicsHeapType HeapType;
 
-        public static TextureDescription New2D(int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.ShaderResource, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static TextureDescription New2D(int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.None, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
             return new TextureDescription
             {
@@ -46,7 +46,7 @@
                 DepthOrArraySize = description.DepthOrArraySize,
                 MipLevels = description.MipLevels,
                 Format = description.Format,
-                Flags = ResourceFlags.ShaderResource,
+                Flags = ResourceFlags.None,
                 SampleDescription = new SampleDescription(1, 0),
                 HeapType = GraphicsHeapType.Default
             };

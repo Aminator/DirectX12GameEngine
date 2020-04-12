@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Portable.Xaml;
 using Portable.Xaml.Markup;
@@ -26,7 +27,7 @@ namespace DirectX12GameEngine.Serialization
 
                     Type type = destinationTypeProvider.GetDestinationType();
 
-                    return xamlSchemaContext.ContentManager.DeserializeAsync(path, type, xamlSchemaContext.ParentReference, null).Result;
+                    return Task.Run(() => xamlSchemaContext.ContentManager.DeserializeAsync(path, type, xamlSchemaContext.ParentReference)).Result;
                 }
             }
 

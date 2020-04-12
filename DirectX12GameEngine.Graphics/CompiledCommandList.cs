@@ -2,7 +2,7 @@
 
 namespace DirectX12GameEngine.Graphics
 {
-    public sealed class CompiledCommandList
+    public class CompiledCommandList
     {
         internal CompiledCommandList(CommandList builder, ID3D12CommandAllocator nativeCommandAllocator, ID3D12GraphicsCommandList nativeCommandList)
         {
@@ -11,10 +11,10 @@ namespace DirectX12GameEngine.Graphics
             NativeCommandList = nativeCommandList;
         }
 
-        internal CommandList Builder { get; set; }
+        internal CommandList Builder { get; }
 
-        internal ID3D12CommandAllocator NativeCommandAllocator { get; set; }
+        internal ID3D12CommandAllocator NativeCommandAllocator { get; }
 
-        internal ID3D12GraphicsCommandList NativeCommandList { get; set; }
+        internal ID3D12GraphicsCommandList NativeCommandList { get; }
     }
 }

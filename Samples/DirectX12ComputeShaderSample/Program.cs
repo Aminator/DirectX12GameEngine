@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
 using Vortice.Direct3D12;
-using Vortice.Dxc;
-
 using CommandListType = DirectX12GameEngine.Graphics.CommandListType;
 
 namespace DirectX12ComputeShaderSample
@@ -63,8 +61,8 @@ namespace DirectX12ComputeShaderSample
 
             float[] outputArray = new float[width * height];
 
-            using GraphicsBuffer<float> sourceBuffer = GraphicsBuffer.New(device, array.AsSpan(), DirectX12GameEngine.Graphics.ResourceFlags.ShaderResource);
-            using GraphicsBuffer<float> destinationBuffer = GraphicsBuffer.New<float>(device, array.Length * 2, DirectX12GameEngine.Graphics.ResourceFlags.UnorderedAccess);
+            using GraphicsBuffer<float> sourceBuffer = GraphicsBuffer.New(device, array.AsSpan(), DirectX12GameEngine.Graphics.ResourceFlags.None);
+            using GraphicsBuffer<float> destinationBuffer = GraphicsBuffer.New<float>(device, array.Length * 2, DirectX12GameEngine.Graphics.ResourceFlags.AllowUnorderedAccess);
 
             GraphicsBuffer<float> slicedDestinationBuffer = destinationBuffer.Slice(20, 60);
             slicedDestinationBuffer = slicedDestinationBuffer.Slice(10, 50);
@@ -85,7 +83,7 @@ namespace DirectX12ComputeShaderSample
 
             // Compile shader
 
-            byte[] shaderBytecode = ShaderCompiler.Compile(DxcShaderStage.ComputeShader, result.ShaderSource, result.EntryPoints["compute"]);
+            byte[] shaderBytecode = ShaderCompiler.Compile(ShaderStage.ComputeShader, result.ShaderSource, result.EntryPoints["compute"]);
 
             DescriptorRange1[] descriptorRanges = new DescriptorRange1[]
             {

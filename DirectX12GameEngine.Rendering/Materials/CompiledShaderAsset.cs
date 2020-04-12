@@ -7,13 +7,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    public class CompiledShaderAsset : Asset<CompiledShader>
+    public class CompiledShaderAsset : Asset
     {
         public Dictionary<string, string> ShaderSources { get; } = new Dictionary<string, string>();
 
-        public override async Task CreateAssetAsync(CompiledShader obj, IServiceProvider services)
+        public override async Task<object> CreateAssetAsync(IServiceProvider services)
         {
             IContentManager contentManager = services.GetRequiredService<IContentManager>();
+
+            CompiledShader compiledShader = new CompiledShader();
 
             foreach (var shaderSource in ShaderSources)
             {
@@ -21,9 +23,10 @@ namespace DirectX12GameEngine.Rendering.Materials
                 using MemoryStream memoryStream = new MemoryStream();
 
                 await stream.CopyToAsync(memoryStream);
-
-                obj.Shaders[shaderSource.Key] = memoryStream.ToArray();
+                compiledShader.Shaders[shaderSource.Key] = memoryStream.ToArray();
             }
+
+            return compiledShader;
         }
     }
 }

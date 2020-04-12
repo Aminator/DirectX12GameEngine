@@ -46,7 +46,7 @@ namespace DirectX12GameEngine.Graphics
 
             DXGI.CreateDXGIFactory2(false, out IDXGIFactory2 factory);
             Direct3DInterop.ISwapChainPanelNative nativePanel = (Direct3DInterop.ISwapChainPanelNative)swapChainPanel;
-            using IDXGISwapChain1 tempSwapChain = factory.CreateSwapChainForComposition(device.NativeDirectCommandQueue, swapChainDescription);
+            using IDXGISwapChain1 tempSwapChain = factory.CreateSwapChainForComposition(device.DirectCommandQueue.NativeCommandQueue, swapChainDescription);
             factory.Dispose();
 
             IDXGISwapChain3 swapChain = tempSwapChain.QueryInterface<IDXGISwapChain3>();

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.ViewModels;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
@@ -26,9 +24,6 @@ namespace DirectX12GameEngine.Editor.Views
         {
             InitializeComponent();
 
-            DataContext = new TabViewViewModel();
-            ViewModel.Tabs.CollectionChanged += OnTabsChanged;
-
             CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
 
             UpdateTitleBarLayout(titleBar);
@@ -46,14 +41,15 @@ namespace DirectX12GameEngine.Editor.Views
 
             if (e.Parameter is TabViewNavigationParameters parameters)
             {
+                DataContext = parameters.TabView;
+                ViewModel.Tabs.CollectionChanged += OnTabsChanged;
+
                 if (AppWindow != parameters.AppWindow)
                 {
                     AppWindow = parameters.AppWindow;
                     AppWindow.CloseRequested += OnAppWindowCloseRequested;
                     AppWindow.Frame.DragRegionVisuals.Add(CustomDragRegion);
                 }
-
-                ViewModel.Tabs.Add(parameters.Tab);
             }
         }
 

@@ -1,16 +1,9 @@
 ﻿using DirectX12GameEngine.Editor.ViewModels;
 using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Windows.UI;
-using Windows.UI.WindowManagement;
-using Windows.UI.WindowManagement.Preview;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Hosting;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -20,9 +13,6 @@ namespace DirectX12GameEngine.Editor.Views
 {
     public sealed partial class EditorTabView : TabView
     {
-        private const double MinWindowWidth = 440;
-        private const double MinWindowHeight = 48;
-
         private const string TabKey = "Tab";
         private const string TabViewKey = "TabView";
 
@@ -38,6 +28,13 @@ namespace DirectX12GameEngine.Editor.Views
         }
 
         public TabViewViewModel ViewModel => (TabViewViewModel)DataContext;
+
+        protected override void OnGotFocus(RoutedEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            ViewModel.Focus();
+        }
 
         protected override void OnDragOver(DragEventArgs e)
         {
@@ -77,40 +74,18 @@ namespace DirectX12GameEngine.Editor.Views
             e.Data.Properties.Add(TabViewKey, ViewModel);
         }
 
-        private async void OnTabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs e)
+        private void OnTabDroppedOutside(TabView sender, TabViewTabDroppedOutsideEventArgs e)
         {
             ViewModel.Tabs.Remove(e.Item);
 
             double scaling = XamlRoot.RasterizationScale;
-            await TryCreateNewAppWindowAsync(e.Item, new Size(ActualWidth * scaling, ActualHeight * scaling));
+
+            ViewModel.OnTabDroppedOutside(new TabDroppedOutsideEventArgs(e.Item, new Size(ActualWidth * scaling, ActualHeight * scaling)));
         }
 
         private async void OnTabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs e)
         {
             await ViewModel.TryCloseTabAsync(e.Item);
-        }
-
-        private async Task<bool> TryCreateNewAppWindowAsync(object tab, Size size)
-        {
-            AppWindow appWindow = await AppWindow.TryCreateAsync();
-
-            appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
-            appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-            appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
-            Frame frame = new Frame();
-            frame.Navigate(typeof(AppWindowPage), new TabViewNavigationParameters(tab, appWindow));
-
-            ElementCompositionPreview.SetAppWindowContent(appWindow, frame);
-
-            WindowManagementPreview.SetPreferredMinSize(appWindow, new Size(MinWindowWidth, MinWindowHeight));
-            appWindow.RequestSize(size);
-
-            appWindow.RequestMoveAdjacentToCurrentView();
-
-            bool success = await appWindow.TryShowAsync();
-
-            return success;
         }
     }
 }

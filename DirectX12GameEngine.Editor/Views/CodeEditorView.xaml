@@ -96,6 +96,10 @@
             <local:Int32ToBooleanComparisonConverter x:Name="Int32ToBooleanComparisonConverter" CurrentValue="{x:Bind ViewModel.TabSize, Mode=OneWay}" />
             <local:EncodingToBooleanComparisonConverter x:Name="EncodingToBooleanComparisonConverter" CurrentValue="{x:Bind ViewModel.Encoding, Mode=OneWay}" />
             <local:NewLineModeToBooleanComparisonConverter x:Name="NewLineModeToBooleanComparisonConverter" CurrentValue="{x:Bind ViewModel.NewLineMode, Mode=OneWay}" />
+
+            <MenuFlyout x:Name="CompletionListFlyout" OverlayInputPassThroughElement="{x:Bind CodeEditor}" />
+
+            <ThemeShadow x:Name="FindAndReplaceFlyoutShadow" />
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -105,13 +109,20 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!--<ScrollViewer
+            HorizontalScrollBarVisibility="Visible"
+            HorizontalScrollMode="Enabled"
+            MinZoomFactor="1"
+            VerticalScrollBarVisibility="Visible"
+            VerticalScrollMode="Enabled"
+            ZoomMode="Enabled">-->
         <RichEditBox
             x:Name="CodeEditor"
             ActualThemeChanged="{x:Bind ReapplySyntaxHighlighting}"
             CharacterReceived="OnCodeEditorCharacterReceived"
             FontFamily="Consolas"
+            IsHandwritingViewEnabled="False"
             IsSpellCheckEnabled="False"
-            KeyDown="OnCodeEditorKeyDown"
             SelectionChanged="OnCodeEditorSelectionChanged"
             SelectionChanging="OnCodeEditorSelectionChanging"
             TextChanged="OnCodeEditorTextChanged"
@@ -122,9 +133,150 @@
                     x:Name="CodeEditorToolTip"
                     Closed="OnCodeEditorToolTipClosed"
                     Opened="OnCodeEditorToolTipOpened"
-                    Placement="Bottom" />
+                    Placement="Bottom">
+                    <TextBlock x:Name="CodeEditorToolTipTextBlock" />
+                </ToolTip>
             </ToolTipService.ToolTip>
         </RichEditBox>
+        <!--</ScrollViewer>-->
+
+        <Grid
+            x:Name="FindAndReplaceFlyout"
+            Margin="12"
+            Padding="8"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Background="{ThemeResource SystemControlAcrylicElementBrush}"
+            ColumnSpacing="8"
+            CornerRadius="4"
+            Shadow="{StaticResource FindAndReplaceFlyoutShadow}"
+            Translation="0,0,32"
+            Visibility="{x:Bind ViewModel.FindAndReplace.IsVisible, Mode=OneWay}">
+            <Grid.Resources>
+                <Style BasedOn="{StaticResource ButtonRevealStyle}" TargetType="Button">
+                    <Setter Property="Width" Value="32" />
+                    <Setter Property="Height" Value="32" />
+                    <Setter Property="Padding" Value="4" />
+                </Style>
+                <Style BasedOn="{StaticResource ToggleButtonRevealStyle}" TargetType="ToggleButton">
+                    <Setter Property="Width" Value="32" />
+                    <Setter Property="Height" Value="32" />
+                    <Setter Property="Padding" Value="4" />
+                </Style>
+                <Style TargetType="FontIcon">
+                    <Setter Property="FontSize" Value="16" />
+                </Style>
+            </Grid.Resources>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ToggleButton IsChecked="{x:Bind ViewModel.FindAndReplace.IsReplaceVisible, Mode=TwoWay}" ToolTipService.ToolTip="Toggle to switch between find and replace modes">
+                <Grid>
+                    <FontIcon
+                        x:Name="ChevronUp"
+                        Glyph="&#xE70E;"
+                        Visibility="{x:Bind ViewModel.FindAndReplace.IsReplaceVisible, Mode=OneWay}" />
+                    <FontIcon
+                        x:Name="ChevronDown"
+                        Glyph="&#xE70D;"
+                        Visibility="{x:Bind local:VisibilityHelper.NegateVisibility(ChevronUp.Visibility), Mode=OneWay}" />
+                </Grid>
+            </ToggleButton>
+
+            <TextBox
+                x:Name="SearchTextBox"
+                Grid.Column="1"
+                Width="200"
+                PlaceholderText="Find..."
+                Text="{x:Bind ViewModel.FindAndReplace.SearchTerm, Mode=TwoWay}"
+                TextChanged="{x:Bind HighlightSearchBoxMatches}"
+                ToolTipService.ToolTip="Search term" />
+
+            <StackPanel
+                Grid.Column="2"
+                Orientation="Horizontal"
+                Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="1">
+                    <Button CornerRadius="2,0,0,2" ToolTipService.ToolTip="Find previous">
+                        <FontIcon Glyph="&#xE70E;" />
+                    </Button>
+                    <Button CornerRadius="0,2,2,0" ToolTipService.ToolTip="Find next">
+                        <FontIcon Glyph="&#xE70D;" />
+                    </Button>
+                </StackPanel>
+                <Button Click="{x:Bind HideFindAndReplaceFlyout}" ToolTipService.ToolTip="Close">
+                    <FontIcon Glyph="&#xE711;" />
+                </Button>
+            </StackPanel>
+
+            <TextBox
+                x:Name="ReplacementTextBox"
+                Grid.Row="1"
+                Grid.Column="1"
+                Width="200"
+                Margin="0,8,0,0"
+                PlaceholderText="Replace..."
+                Text="{x:Bind ViewModel.FindAndReplace.ReplacementTerm, Mode=TwoWay}"
+                ToolTipService.ToolTip="Replacement term"
+                Visibility="{x:Bind ViewModel.FindAndReplace.IsReplaceVisible, Mode=OneWay}" />
+
+            <StackPanel
+                Grid.Row="1"
+                Grid.Column="2"
+                Margin="0,8,0,0"
+                Orientation="Horizontal"
+                Spacing="8"
+                Visibility="{x:Bind ViewModel.FindAndReplace.IsReplaceVisible, Mode=OneWay}">
+                <Button>
+                    <FontIcon Glyph="&#xE8AC;" ToolTipService.ToolTip="Replace next" />
+                </Button>
+                <Button>
+                    <FontIcon Glyph="&#xEF1F;" ToolTipService.ToolTip="Replace all" />
+                </Button>
+            </StackPanel>
+
+            <StackPanel
+                Grid.Row="2"
+                Grid.Column="1"
+                Margin="0,8,0,0"
+                Orientation="Horizontal"
+                Spacing="8">
+                <ToggleButton
+                    x:Name="MatchCaseToggleButton"
+                    Checked="{x:Bind HighlightSearchBoxMatches}"
+                    IsChecked="{x:Bind ViewModel.FindAndReplace.MatchCase, Mode=TwoWay}"
+                    ToolTipService.ToolTip="Match case"
+                    Unchecked="{x:Bind HighlightSearchBoxMatches}">
+                    <FontIcon Glyph="&#xE8E9;" />
+                </ToggleButton>
+                <ToggleButton
+                    x:Name="MatchWordToggleButton"
+                    Checked="{x:Bind HighlightSearchBoxMatches}"
+                    IsChecked="{x:Bind ViewModel.FindAndReplace.MatchWord, Mode=TwoWay}"
+                    ToolTipService.ToolTip="Match whole world"
+                    Unchecked="{x:Bind HighlightSearchBoxMatches}">
+                    <FontIcon Glyph="&#xE8E9;" />
+                </ToggleButton>
+                <ToggleButton
+                    x:Name="UseRegexToggleButton"
+                    Checked="{x:Bind HighlightSearchBoxMatches}"
+                    IsChecked="{x:Bind ViewModel.FindAndReplace.UseRegex, Mode=TwoWay}"
+                    ToolTipService.ToolTip="Use Regular Expressions"
+                    Unchecked="{x:Bind HighlightSearchBoxMatches}">
+                    <FontIcon Glyph="&#xE8E9;" />
+                </ToggleButton>
+            </StackPanel>
+        </Grid>
 
         <CommandBar Grid.Row="1" Background="Transparent">
             <CommandBar.Content>

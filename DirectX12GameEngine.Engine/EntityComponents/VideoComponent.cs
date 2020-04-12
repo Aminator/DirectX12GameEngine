@@ -1,6 +1,6 @@
-﻿using DirectX12GameEngine.Graphics;
-using System;
+﻿using System;
 using System.Threading;
+using DirectX12GameEngine.Graphics;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 

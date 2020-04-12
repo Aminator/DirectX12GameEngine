@@ -71,7 +71,7 @@ namespace DirectX12GameEngine.Graphics
         {
             for (int i = 0; i < BufferCount; i++)
             {
-                renderTargets[i] = new Texture(GraphicsDevice).InitializeFrom(SwapChain.GetBuffer<ID3D12Resource>(i), PresentationParameters.BackBufferFormat.IsSRgb());
+                renderTargets[i] = Texture.CreateFromResource(GraphicsDevice, SwapChain.GetBuffer<ID3D12Resource>(i), PresentationParameters.BackBufferFormat.IsSRgb());
             }
         }
     }

@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="DirectX12GameEngine.Editor.Views.PropertiesView"
+    x:Class="DirectX12GameEngine.Editor.Views.PropertyManagerView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
@@ -44,7 +44,7 @@
             <winui:TreeViewItem
                 HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
                 IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
-                ItemsSource="{x:Bind Properties, Mode=OneWay}">
+                ItemsSource="{x:Bind Properties}">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
                     <TextBlock Text="{x:Bind Type.Name, Mode=OneWay}" />
@@ -56,7 +56,7 @@
             <winui:TreeViewItem
                 HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
                 IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
-                ItemsSource="{x:Bind Items, Mode=OneWay}">
+                ItemsSource="{x:Bind Items}">
                 <TextBlock Text="{x:Bind PropertyName, Mode=OneWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
@@ -201,7 +201,7 @@
                 <ComboBox
                     Header="{x:Bind PropertyName, Mode=OneWay}"
                     IsEnabled="{x:Bind CanWrite, Mode=OneWay}"
-                    ItemsSource="{x:Bind Values, Mode=OneWay}"
+                    ItemsSource="{x:Bind Values}"
                     SelectedItem="{x:Bind Value, Mode=TwoWay}" />
             </winui:TreeViewItem>
         </DataTemplate>
@@ -384,7 +384,7 @@
     <Grid>
         <controls:UniformGrid />
 
-        <winui:TreeView ItemTemplateSelector="{StaticResource PropertyTemplateSelector}" ItemsSource="{x:Bind ViewModel.Properties, Mode=OneWay}">
+        <winui:TreeView ItemTemplateSelector="{StaticResource PropertyTemplateSelector}" ItemsSource="{x:Bind ViewModel.RootObject.Properties, Mode=OneWay}">
             <winui:TreeView.ItemContainerStyle>
                 <Style TargetType="winui:TreeViewItem">
                     <Setter Property="Background" Value="Transparent" />

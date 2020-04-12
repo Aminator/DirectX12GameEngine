@@ -31,7 +31,7 @@ namespace DirectX12GameEngine.Graphics
             };
 
             DXGI.CreateDXGIFactory2(false, out IDXGIFactory2 factory);
-            using IDXGISwapChain1 tempSwapChain = factory.CreateSwapChainForHwnd(device.NativeDirectCommandQueue, windowHandle, swapChainDescription);
+            using IDXGISwapChain1 tempSwapChain = factory.CreateSwapChainForHwnd(device.DirectCommandQueue.NativeCommandQueue, windowHandle, swapChainDescription);
             factory.Dispose();
 
             return tempSwapChain.QueryInterface<IDXGISwapChain3>();

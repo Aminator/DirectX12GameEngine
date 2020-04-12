@@ -20,8 +20,11 @@ namespace DirectX12GameEngine.Serialization
                 XamlServices.Transform(reader, writer);
             }
 
-            Reference reference = new Reference(path, obj, true);
+            Reference reference = new Reference(path, true);
             AddReference(reference);
+
+            reference.Object = obj;
+            loadedAssetReferences[reference.Object] = reference;
         }
     }
 }

@@ -22,8 +22,6 @@ namespace DirectX12GameEngine.Editor.Views
 
             SharedShadow.Receivers.Add(SwapChainPanel);
 
-            EntityTreeView.Translation += new Vector3(0.0f, 0.0f, 32.0f);
-
             ((StandardUICommand)Resources["OpenCommand"]).KeyboardAccelerators.Clear();
 
             Loaded += OnLoaded;

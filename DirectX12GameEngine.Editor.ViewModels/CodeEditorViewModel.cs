@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -9,78 +9,39 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Mvvm;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
+using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Text;
-using Nito.AsyncEx;
 using Windows.Storage;
 using Windows.UI;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class CodeEditorViewModel : ViewModelBase, IClosable
+    public class CodeEditorViewModel : ViewModelBase, IFileEditor, ICodeEditor
     {
-        private readonly AsyncLock changeLock = new AsyncLock();
-
-        private readonly Stack<Document> documentStack = new Stack<Document>();
-
+        private string? currentText;
         private int tabSize = 4;
         private Encoding? encoding;
         private NewLineMode newLineMode = NewLineMode.Crlf;
-        private string? currentText;
 
         public CodeEditorViewModel(IStorageFile file, SolutionLoaderViewModel solutionLoader)
         {
             File = file;
             SolutionLoader = solutionLoader;
-            SolutionLoader.Workspace.WorkspaceChanged += OnWorkspaceChanged;
-
-            Solution solution = SolutionLoader.Workspace.CurrentSolution;
-            Document? document = solution.GetDocument(GetDocumentId(solution));
-
-            if (document != null)
-            {
-                documentStack.Push(document);
-            }
-        }
-
-        private async void OnWorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
-        {
-            using (await changeLock.LockAsync())
-            {
-                DocumentId? id = GetDocumentId(e.NewSolution);
-                Document? document = e.NewSolution.GetDocument(id);
-
-                if (document != null)
-                {
-                    bool isClassificationChanged = e.DocumentId != id || e.Kind != WorkspaceChangeKind.DocumentChanged;
-                    bool isTextChanged = e.DocumentId != id && e.Kind != WorkspaceChangeKind.DocumentChanged;
-
-                    if (isClassificationChanged || isTextChanged)
-                    {
-                        documentStack.Push(document);
-
-                        if (isTextChanged)
-                        {
-                            SourceText sourceText = await document.GetTextAsync();
-                            Encoding = sourceText.Encoding;
-                        }
-
-                        DocumentChanged?.Invoke(sender, new DocumentChangedEventArgs(isClassificationChanged, isTextChanged));
-                    }
-                }
-            }
+            CodeEditor = new RoslynCodeEditor(file, solutionLoader);
+            CodeEditor.DocumentChanged += OnCodeEditorDocumentChanged;
         }
 
         public event EventHandler<DocumentChangedEventArgs>? DocumentChanged;
 
+        public ICodeEditor? CodeEditor { get; set; }
+
         public SolutionLoaderViewModel SolutionLoader { get; }
 
-        public bool CanClose => false;
-
-        public IStorageFile File { get; set; }
+        public IStorageFile File { get; }
 
         public ObservableCollection<Diagnostic> CurrentDiagnostics { get; } = new ObservableCollection<Diagnostic>();
 
-        public Document? CurrentDocument => documentStack.Count > 0 ? documentStack.Peek() : null;
+        public FindAndReplaceViewModel FindAndReplace { get; } = new FindAndReplaceViewModel();
 
         public string? CurrentText
         {
@@ -106,182 +67,150 @@ namespace DirectX12GameEngine.Editor.ViewModels
             set => Set(ref newLineMode, value);
         }
 
-        public async Task SaveAsync()
+        public bool SupportsAction(EditActions action) => action switch
         {
-            if (documentStack.Count == 0)
+            EditActions.Save => true,
+            EditActions.Close => true,
+            _ => false
+        };
+
+        public async Task<bool> TryEditAsync(EditActions action)
+        {
+            switch (action)
             {
-                using Stream stream = await File.OpenStreamForWriteAsync();
-                using StreamWriter writer = new StreamWriter(stream, Encoding);
-                await writer.WriteAsync(CurrentText);
+                case EditActions.Save:
+                    await SaveAsync();
+                    return true;
+                case EditActions.Close:
+                    if (CurrentText != null)
+                    {
+                        string text = await LoadTextAsync();
+
+                        if (text != CurrentText)
+                        {
+                            await ApplyChangesAsync(new TextChange(new TextSpan(0, CurrentText.Length), text), Encoding);
+                        }
+                    }
+                    return true;
+                default:
+                    return false;
             }
         }
 
-        public Task<bool> TryCloseAsync()
+        public async Task SaveAsync()
         {
-            return Task.FromResult(true);
+            if (CurrentText != null)
+            {
+                using Stream stream = await File.OpenStreamForWriteAsync();
+                await SaveAsync(stream);
+            }
+        }
+
+        private async Task SaveAsync(Stream stream)
+        {
+            stream.SetLength(0);
+
+            using StreamWriter writer = new StreamWriter(stream, Encoding);
+            await writer.WriteAsync(CurrentText);
         }
 
         public async Task<string> LoadTextAsync()
         {
-            if (documentStack.Count > 0)
-            {
-                Document document = documentStack.Peek();
-                SourceText sourceText = await document.GetTextAsync();
+            using Stream stream = await File.OpenStreamForReadAsync();
+            using StreamReader reader = new StreamReader(stream, Encoding.Default);
 
-                CurrentText = sourceText.ToString();
-                Encoding = sourceText.Encoding;
-            }
-            else
-            {
-                using Stream stream = await File.OpenStreamForReadAsync();
-                using StreamReader reader = new StreamReader(stream, Encoding.Default);
+            string text = await reader.ReadToEndAsync();
+            Encoding = reader.CurrentEncoding;
 
-                CurrentText = await reader.ReadToEndAsync();
-                Encoding = reader.CurrentEncoding;
-            }
-
-            return CurrentText;
+            return text;
         }
 
-        public async Task ApplyChangesAsync(TextChange change)
+        public Task ApplyChangesAsync(TextChange change, Encoding? encoding)
         {
-            if (!(change.Span.IsEmpty && string.IsNullOrEmpty(change.NewText)))
-            {
-                using (await changeLock.LockAsync())
-                {
-                    if (documentStack.Count > 0)
-                    {
-                        Document document = documentStack.Peek();
-
-                        SourceText text = await document.GetTextAsync();
-                        SourceText newText = text.WithChanges(change);
-
-                        Document newDocument = document.WithText(newText);
-
-                        if (SolutionLoader.Workspace.TryApplyChanges(newDocument.Project.Solution))
-                        {
-                            Solution solution = SolutionLoader.Workspace.CurrentSolution;
-
-                            DocumentId? id = GetDocumentId(solution);
-                            documentStack.Push(solution.GetDocument(id)!);
-
-                            DocumentChanged?.Invoke(SolutionLoader.Workspace, new DocumentChangedEventArgs(true, false));
-                        }
-                    }
-                    else
-                    {
-                        using Stream stream = await File.OpenStreamForWriteAsync();
-                        using StreamWriter writer = new StreamWriter(stream, Encoding);
-                        await writer.WriteAsync(CurrentText);
-                    }
-                }
-            }
+            return CodeEditor != null ? CodeEditor.ApplyChangesAsync(change, Encoding) : Task.CompletedTask;
         }
 
-        public async Task GetCompletionListAsync()
+        public Task<CompletionList?> GetCompletionListAsync(int position)
         {
-
-            await Task.CompletedTask;
+            return CodeEditor != null ? CodeEditor.GetCompletionListAsync(position) : Task.FromResult<CompletionList?>(null);
         }
 
-        public async Task<IEnumerable<Diagnostic>> GetDiagnosticsAsync(int position)
+        public ImmutableArray<CompletionItem> FilterCompletionItems(ImmutableArray<CompletionItem> items, string filterText)
         {
-            var diagnostics = await GetDiagnosticsAsync();
+            return CodeEditor != null ? CodeEditor.FilterCompletionItems(items, filterText) : ImmutableArray<CompletionItem>.Empty;
+        }
 
-            return diagnostics.Where(d => d.Location.SourceSpan.Contains(position));
+        public Task<CompletionChange?> GetCompletionChangeAsync(CompletionItem item)
+        {
+            return CodeEditor != null ? CodeEditor.GetCompletionChangeAsync(item) : Task.FromResult<CompletionChange?>(null);
+        }
+
+        public Task<SyntaxNode?> GetSyntaxNodeAsync(TextSpan span)
+        {
+            return CodeEditor != null ? CodeEditor.GetSyntaxNodeAsync(span) : Task.FromResult<SyntaxNode?>(null);
+        }
+
+        public Task<SemanticModel?> GetSemanticModelAsync()
+        {
+            return CodeEditor != null ? CodeEditor.GetSemanticModelAsync() : Task.FromResult<SemanticModel?>(null);
         }
 
         public async Task<IEnumerable<Diagnostic>> GetDiagnosticsAsync()
         {
-            if (documentStack.Count > 0)
+            var diagnostics = await (CodeEditor != null ? CodeEditor.GetDiagnosticsAsync() : Task.FromResult(Enumerable.Empty<Diagnostic>()));
+
+            CurrentDiagnostics.Clear();
+
+            foreach (Diagnostic diagnostic in diagnostics)
             {
-                Document document = documentStack.Peek();
-
-                SyntaxTree? syntaxTree = await document.GetSyntaxTreeAsync();
-
-                if (syntaxTree != null)
-                {
-                    var diagnostics = syntaxTree.GetDiagnostics();
-
-                    CurrentDiagnostics.Clear();
-
-                    foreach (Diagnostic diagnostic in diagnostics)
-                    {
-                        CurrentDiagnostics.Add(diagnostic);
-                    }
-
-                    return diagnostics;
-                }
+                CurrentDiagnostics.Add(diagnostic);
             }
 
-            return Enumerable.Empty<Diagnostic>();
+            return diagnostics;
         }
 
-        public async Task<IEnumerable<ClassifiedSpan>> GetChangedClassifiedSpansAsync()
+        public Task<IEnumerable<ClassifiedSpan>> GetChangedClassifiedSpansAsync()
         {
-            if (documentStack.Count >= 2)
+            return CodeEditor != null ? CodeEditor.GetChangedClassifiedSpansAsync() : Task.FromResult(Enumerable.Empty<ClassifiedSpan>());
+        }
+
+        public Task<IEnumerable<ClassifiedSpan>> GetClassifiedSpansAsync()
+        {
+            return CodeEditor != null ? CodeEditor.GetClassifiedSpansAsync() : Task.FromResult(Enumerable.Empty<ClassifiedSpan>());
+        }
+
+        private void OnCodeEditorDocumentChanged(object sender, DocumentChangedEventArgs e)
+        {
+            if (e.NewEncoding != null)
             {
-                Document[] documents = documentStack.ToArray();
-
-                Document newDocument = documents[0];
-                Document oldDocument = documents[1];
-
-                SourceText newText = await newDocument.GetTextAsync();
-                var newClassifiedSpans = await Classifier.GetClassifiedSpansAsync(newDocument, new TextSpan(0, newText.Length));
-
-                SourceText oldText = await oldDocument.GetTextAsync();
-                var oldClassifiedSpans = await Classifier.GetClassifiedSpansAsync(oldDocument, new TextSpan(0, oldText.Length));
-
-                var textChanges = newText.GetChangeRanges(oldText);
-
-                return GetChangedClassifiedSpans(textChanges.FirstOrDefault(), oldClassifiedSpans, newClassifiedSpans);
+                Encoding = e.NewEncoding;
             }
 
-            return await GetClassifiedSpansAsync();
+            DocumentChanged?.Invoke(this, e);
         }
+    }
 
-        public async Task<IEnumerable<ClassifiedSpan>> GetClassifiedSpansAsync()
+    public class DocumentChangedEventArgs : EventArgs
+    {
+        public DocumentChangedEventArgs(bool isClassificationChanged, string? newText, Encoding? newEncoding)
         {
-            if (documentStack.Count > 0)
-            {
-                Document document = documentStack.Peek();
-                SourceText text = await document.GetTextAsync();
-
-                return await Classifier.GetClassifiedSpansAsync(document, new TextSpan(0, text.Length));
-            }
-
-            return Enumerable.Empty<ClassifiedSpan>();
+            IsClassificationChanged = isClassificationChanged;
+            NewText = newText;
+            NewEncoding = newEncoding;
         }
 
-        private static IEnumerable<ClassifiedSpan> GetChangedClassifiedSpans(TextChangeRange textChange, IEnumerable<ClassifiedSpan> oldClassifiedSpans, IEnumerable<ClassifiedSpan> newClassifiedSpans)
-        {
-            int offset = textChange.NewLength - textChange.Span.Length;
+        public bool IsClassificationChanged { get; }
 
-            foreach (ClassifiedSpan span in newClassifiedSpans)
-            {
-                ClassifiedSpan offsettedSpan = span;
+        public string? NewText { get; }
 
-                if (span.TextSpan.Start > textChange.Span.End)
-                {
-                    offsettedSpan = new ClassifiedSpan(span.ClassificationType, new TextSpan(span.TextSpan.Start - offset, span.TextSpan.Length));
-                }
+        public Encoding? NewEncoding { get; }
+    }
 
-                if (!oldClassifiedSpans.Contains(offsettedSpan))
-                {
-                    yield return span;
-                }
-            }
-        }
-
-        private DocumentId? GetDocumentId(Solution solution)
-        {
-            if (solution.FilePath is null) return null;
-
-            string relativeDocumentFilePath = StorageExtensions.GetRelativePath(SolutionLoader.RootFolder!.Path, File.Path);
-            string documentFilePath = Path.Combine(Path.GetDirectoryName(solution.FilePath), relativeDocumentFilePath);
-
-            return solution.GetDocumentIdsWithFilePath(documentFilePath).FirstOrDefault();
-        }
+    public enum NewLineMode
+    {
+        Cr,
+        Lf,
+        Crlf
     }
 
     public class CodeTextFormat
@@ -296,25 +225,5 @@ namespace DirectX12GameEngine.Editor.ViewModels
         }
 
         public Color ForegroundColor { get; set; }
-    }
-
-    public class DocumentChangedEventArgs : EventArgs
-    {
-        public DocumentChangedEventArgs(bool isClassificationChanged, bool isTextChanged)
-        {
-            IsClassificationChanged = isClassificationChanged;
-            IsTextChanged = isTextChanged;
-        }
-
-        public bool IsClassificationChanged { get; }
-
-        public bool IsTextChanged { get; }
-    }
-
-    public enum NewLineMode
-    {
-        Cr,
-        Lf,
-        Crlf
     }
 }

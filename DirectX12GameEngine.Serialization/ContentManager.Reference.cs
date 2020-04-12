@@ -72,26 +72,21 @@ namespace DirectX12GameEngine.Serialization
 
         private void AddReference(Reference reference)
         {
-            lock (loadedAssetPaths)
+            if (loadedAssetPaths.TryGetValue(reference.Path, out Reference previousReference))
             {
-                if (loadedAssetPaths.TryGetValue(reference.Path, out Reference previousReference))
-                {
-                    reference.Next = previousReference.Next;
-                    reference.Previous = previousReference;
+                reference.Next = previousReference.Next;
+                reference.Previous = previousReference;
 
-                    if (previousReference.Next != null)
-                    {
-                        previousReference.Next.Previous = reference;
-                    }
-
-                    previousReference.Next = reference;
-                }
-                else
+                if (previousReference.Next != null)
                 {
-                    loadedAssetPaths[reference.Path] = reference;
+                    previousReference.Next.Previous = reference;
                 }
 
-                loadedAssetReferences[reference.Object] = reference;
+                previousReference.Next = reference;
+            }
+            else
+            {
+                loadedAssetPaths[reference.Path] = reference;
             }
         }
 
@@ -127,22 +122,23 @@ namespace DirectX12GameEngine.Serialization
                 }
             }
 
+            if (reference.Object is null) throw new InvalidOperationException();
+
             loadedAssetReferences.Remove(reference.Object);
         }
 
         internal class Reference
         {
-            public Reference(string path, object obj, bool isPublicReference)
+            public Reference(string path, bool isPublicReference)
             {
                 Path = path;
-                Object = obj;
                 PublicReferenceCount = isPublicReference ? 1 : 0;
                 PrivateReferenceCount = isPublicReference ? 0 : 1;
             }
 
             public string Path { get; }
 
-            public object Object { get; }
+            public object? Object { get; set; }
 
             public int PublicReferenceCount { get; set; }
 

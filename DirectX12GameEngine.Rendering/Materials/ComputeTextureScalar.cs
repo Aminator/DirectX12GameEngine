@@ -36,7 +36,7 @@ namespace DirectX12GameEngine.Rendering.Materials
                 context.ShaderResourceViews.Add(Texture);
             }
 
-            colorChannelBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Channel, ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
+            colorChannelBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Channel, ResourceFlags.None, GraphicsHeapType.Upload);
             context.ConstantBufferViews.Add(colorChannelBuffer);
         }
 

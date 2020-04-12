@@ -81,7 +81,11 @@
             </XamlUICommand.IconSource>
         </XamlUICommand>
 
-        <StandardUICommand x:Key="SaveCommand" Kind="Save" />
+        <StandardUICommand
+            x:Key="SaveCommand"
+            Command="{x:Bind ViewModel.TabViewManager.SaveCommand}"
+            Kind="Save" />
+
         <StandardUICommand x:Key="UndoCommand" Kind="Undo" />
         <StandardUICommand x:Key="RedoCommand" Kind="Redo" />
         <StandardUICommand x:Key="CutCommand" Kind="Cut" />
@@ -114,9 +118,18 @@
     </winui:MenuBarItem>
 
     <winui:MenuBarItem Title="View">
-        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsSolutionExplorerOpen, Mode=TwoWay}" Text="Solution Explorer" />
-        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsPropertiesViewOpen, Mode=TwoWay}" Text="Properties View" />
-        <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsSdkManagerOpen, Mode=TwoWay}" Text="SDK Manager" />
+        <MenuFlyoutItem
+            Command="{x:Bind ViewModel.TabViewManager.OpenTabCommand}"
+            CommandParameter="{x:Bind ViewModel.SolutionExplorer}"
+            Text="Solution Explorer" />
+        <MenuFlyoutItem
+            Command="{x:Bind ViewModel.TabViewManager.OpenTabCommand}"
+            CommandParameter="{x:Bind ViewModel.PropertyManager}"
+            Text="Property Manager" />
+        <MenuFlyoutItem
+            Command="{x:Bind ViewModel.TabViewManager.OpenTabCommand}"
+            CommandParameter="{x:Bind ViewModel.SdkManager}"
+            Text="SDK Manager" />
     </winui:MenuBarItem>
 
     <winui:MenuBarItem Title="Build">

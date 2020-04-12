@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -7,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using Portable.Xaml;
 
 namespace DirectX12GameEngine.Serialization
@@ -70,26 +68,7 @@ namespace DirectX12GameEngine.Serialization
 
         public async Task<object> LoadAsync(Type type, string path)
         {
-            return await DeserializeAsync(path, type, null, null);
-        }
-
-        public async Task<bool> ReloadAsync(object asset, string? newPath = null)
-        {
-            if (!loadedAssetReferences.TryGetValue(asset, out Reference reference))
-            {
-                return false;
-            }
-
-            string path = newPath ?? reference.Path;
-
-            await DeserializeExistingObjectAsync(reference.Path, path, asset);
-
-            if (path != reference.Path)
-            {
-                loadedAssetPaths.Remove(reference.Path);
-            }
-
-            return true;
+            return await DeserializeAsync(path, type, null);
         }
 
         public async Task SaveAsync(string path, object asset)
@@ -121,7 +100,7 @@ namespace DirectX12GameEngine.Serialization
 
         public void Unload(string path)
         {
-            if (!loadedAssetPaths.TryGetValue(path, out Reference reference))
+            if (!loadedAssetPaths.TryGetValue(path, out Reference reference) || reference.Object is null)
             {
                 throw new InvalidOperationException("Content is not loaded.");
             }
@@ -163,7 +142,7 @@ namespace DirectX12GameEngine.Serialization
 
             Type type = reader.Type.UnderlyingType;
 
-            stream.Seek(0, SeekOrigin.Begin);
+            stream.Position = 0;
 
             return type;
         }
@@ -179,6 +158,78 @@ namespace DirectX12GameEngine.Serialization
             public ContentManager ContentManager { get; }
 
             public Reference? ParentReference { get; }
+
+            protected override ICustomAttributeProvider GetCustomAttributeProvider(Type type)
+            {
+                return new TypeAttributeProvider(type);
+            }
+
+            protected override ICustomAttributeProvider GetCustomAttributeProvider(MemberInfo member)
+            {
+                return new MemberAttributeProvider(member);
+            }
+        }
+
+        private class TypeAttributeProvider : ICustomAttributeProvider
+        {
+            private readonly Type type;
+
+            public TypeAttributeProvider(Type type)
+            {
+                this.type = type;
+            }
+
+            public object[] GetCustomAttributes(bool inherit)
+            {
+                return type.GetCustomAttributes(inherit);
+            }
+
+            public object[] GetCustomAttributes(Type attributeType, bool inherit)
+            {
+                return type.GetCustomAttributes(attributeType, inherit);
+            }
+
+            public bool IsDefined(Type attributeType, bool inherit)
+            {
+                return type.IsDefined(attributeType, inherit);
+            }
+        }
+
+        private class MemberAttributeProvider : ICustomAttributeProvider
+        {
+            private readonly MemberInfo memberInfo;
+
+            public MemberAttributeProvider(MemberInfo memberInfo)
+            {
+                this.memberInfo = memberInfo;
+            }
+
+            public object[] GetCustomAttributes(bool inherit)
+            {
+                var attributes = memberInfo.GetCustomAttributes(inherit);
+                return GetAdditionalAttributes(attributes, inherit);
+            }
+
+            public object[] GetCustomAttributes(Type attributeType, bool inherit)
+            {
+                var attributes = memberInfo.GetCustomAttributes(attributeType, inherit);
+                return GetAdditionalAttributes(attributes, inherit);
+            }
+
+            public bool IsDefined(Type attributeType, bool inherit)
+            {
+                return memberInfo.IsDefined(attributeType, inherit);
+            }
+
+            private object[] GetAdditionalAttributes(object[] attributes, bool inherit)
+            {
+                if (!memberInfo.IsDefined(typeof(DesignerSerializationVisibilityAttribute), inherit) && memberInfo.IsDefined(typeof(IgnoreDataMemberAttribute), inherit))
+                {
+                    return attributes.Concat(new[] { new DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden) }).ToArray();
+                }
+
+                return attributes;
+            }
         }
     }
 }

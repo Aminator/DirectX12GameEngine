@@ -20,6 +20,18 @@
         </Style>
 
         <StandardUICommand
+            x:Key="AddFileCommand"
+            Command="{x:Bind ViewModel.AddFileCommand}"
+            Kind="Open"
+            Label="Add File" />
+
+        <StandardUICommand
+            x:Key="AddFolderCommand"
+            Command="{x:Bind ViewModel.AddFolderCommand}"
+            Kind="Open"
+            Label="Add Folder" />
+
+        <StandardUICommand
             x:Key="OpenCommand"
             Command="{x:Bind ViewModel.OpenCommand}"
             Kind="Open" />
@@ -60,10 +72,10 @@
         </XamlUICommand>
 
         <DataTemplate x:Key="FileTemplate" x:DataType="viewmodels:StorageFileViewModel">
-            <winui:TreeViewItem>
-                <StackPanel Orientation="Horizontal">
+            <winui:TreeViewItem AllowDrop="False">
+                <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="Document" />
-                    <TextBlock Margin="12,0,0,0" Text="{x:Bind Name, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
                 </StackPanel>
                 <interactivity:Interaction.Behaviors>
                     <core:EventTriggerBehavior EventName="DoubleTapped">
@@ -86,10 +98,10 @@
             <winui:TreeViewItem
                 HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"
                 IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
-                ItemsSource="{x:Bind Children, Mode=OneWay}">
-                <StackPanel Orientation="Horizontal">
+                ItemsSource="{x:Bind Children}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="Folder" />
-                    <TextBlock Margin="12,0,0,0" Text="{x:Bind Name, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
                 </StackPanel>
                 <interactivity:Interaction.Behaviors>
                     <core:EventTriggerBehavior EventName="DoubleTapped">
@@ -98,10 +110,14 @@
                 </interactivity:Interaction.Behaviors>
                 <winui:TreeViewItem.ContextFlyout>
                     <MenuFlyout>
+                        <MenuFlyoutItem Command="{StaticResource AddFileCommand}" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutItem Command="{StaticResource AddFolderCommand}" CommandParameter="{x:Bind}" />
                         <MenuFlyoutItem Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
                         <MenuFlyoutItem Command="{StaticResource DeleteCommand}" CommandParameter="{x:Bind}" />
                         <MenuFlyoutSeparator />
                         <MenuFlyoutItem Command="{StaticResource ShowPropertiesCommand}" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Command="{StaticResource RefreshCommand}" CommandParameter="{x:Bind}" />
                     </MenuFlyout>
                 </winui:TreeViewItem.ContextFlyout>
             </winui:TreeViewItem>
@@ -117,7 +133,13 @@
         <RefreshContainer RefreshRequested="OnRefreshContainerRefreshRequested">
             <RefreshContainer.ContextFlyout>
                 <MenuFlyout>
-                    <MenuFlyoutItem Command="{StaticResource RefreshCommand}" />
+                    <MenuFlyoutItem Command="{StaticResource AddFileCommand}" CommandParameter="{x:Bind ViewModel.RootFolder, Mode=OneWay}" />
+                    <MenuFlyoutItem Command="{StaticResource AddFolderCommand}" CommandParameter="{x:Bind ViewModel.RootFolder, Mode=OneWay}" />
+                    <MenuFlyoutItem Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind ViewModel.RootFolder, Mode=OneWay}" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Command="{StaticResource ShowPropertiesCommand}" CommandParameter="{x:Bind ViewModel.RootFolder, Mode=OneWay}" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Command="{StaticResource RefreshCommand}" CommandParameter="{x:Bind ViewModel.RootFolder, Mode=OneWay}" />
                 </MenuFlyout>
             </RefreshContainer.ContextFlyout>
             <winui:TreeView ItemTemplateSelector="{StaticResource StorageItemTemplateSelector}" ItemsSource="{x:Bind ViewModel.RootFolder.Children, Mode=OneWay}">

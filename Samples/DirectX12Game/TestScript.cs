@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using DirectX12GameEngine.Assets;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Input;
 using DirectX12GameEngine.Physics;
@@ -23,8 +24,6 @@ namespace DirectX12Game
         public ColorChannel MyOtherColorChannel { get; set; } = ColorChannel.B;
 
         public DateTime MyDateTime { get; set; } = DateTime.UtcNow;
-
-        public DateTimeOffset MyDateTimeOffset { get; set; } = DateTimeOffset.UtcNow;
 
         public TimeSpan MyTimeSpan { get; set; } = new TimeSpan(3, 4, 5);
 
@@ -124,18 +123,36 @@ namespace DirectX12Game
                     }
                     break;
                 case VirtualKey.I:
+                    if (scene != null)
                     {
-                        if (scene != null)
+                        await Content.SaveAsync(@"Assets\CustomScene", scene);
+                    }
+                    break;
+                case VirtualKey.U:
+                    Model? model = await Content.GetAsync<Model?>(@"Assets\Models\SwimmingShark_Model");
+
+                    if (model != null)
+                    {
+                        await Content.SaveAsync(@"Assets\CustomSwimmingSharkModel", model);
+                    }
+                    break;
+                case VirtualKey.X:
+                    Model? sharkModel = await Content.GetAsync<Model?>(@"Assets\Models\SwimmingShark_Model");
+
+                    if (sharkModel != null)
+                    {
+                        ModelAsset modelAsset = new ModelAsset { Source = @"Assets\Resources\Models\SwimmingShark.glb" };
+
+                        foreach (Material material in sharkModel.Materials)
                         {
-                            await Content.SaveAsync(@"Assets\CustomScene", scene);
+                            modelAsset.Materials.Add(material);
                         }
+
+                        await Content.SaveAsync(@"Assets\CustomSwimmingSharkModelAsset", modelAsset);
                     }
                     break;
                 case VirtualKey.G:
                     GC.Collect();
-                    break;
-                case VirtualKey.K:
-                    await Content.ReloadAsync(scene);
                     break;
                 case VirtualKey.C:
                     Entity? tRex = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "T-Rex");

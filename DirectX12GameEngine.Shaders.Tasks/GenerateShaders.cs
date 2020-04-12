@@ -36,8 +36,8 @@ namespace DirectX12GameEngine.Shaders.Tasks
 
             Compilation compilation = CSharpCompilation.Create("ShaderAssembly", syntaxTrees, metadataReferences);
 
-            INamedTypeSymbol shaderMethodAttributeType = compilation.GetTypeByMetadataName(typeof(ShaderMethodAttribute).FullName);
-            INamedTypeSymbol anonymousShaderMethodAttributeType = compilation.GetTypeByMetadataName(typeof(AnonymousShaderMethodAttribute).FullName);
+            INamedTypeSymbol? shaderMethodAttributeType = compilation.GetTypeByMetadataName(typeof(ShaderMethodAttribute).FullName);
+            INamedTypeSymbol? anonymousShaderMethodAttributeType = compilation.GetTypeByMetadataName(typeof(AnonymousShaderMethodAttribute).FullName);
 
             var shaderMethodAttributes = GetAttributes(compilation)
                 .Where(a => compilation.GetSemanticModel(a.SyntaxTree).GetTypeInfo(a).Type!.Equals(shaderMethodAttributeType, SymbolEqualityComparer.Default)
@@ -47,8 +47,11 @@ namespace DirectX12GameEngine.Shaders.Tasks
 
             foreach (AttributeSyntax shaderMethodAttribute in shaderMethodAttributes)
             {
-                MethodDeclarationSyntax method = (MethodDeclarationSyntax)shaderMethodAttribute.Parent.Parent;
-                IMethodSymbol methodSymbol = compilation.GetSemanticModel(method.SyntaxTree).GetDeclaredSymbol(method);
+                MethodDeclarationSyntax? method = (MethodDeclarationSyntax?)shaderMethodAttribute.Parent?.Parent;
+                if (method is null) continue;
+
+                IMethodSymbol? methodSymbol = compilation.GetSemanticModel(method.SyntaxTree).GetDeclaredSymbol(method);
+                if (methodSymbol is null) continue;
 
                 ITypeSymbol attributeTypeSymbol = compilation.GetSemanticModel(shaderMethodAttribute.SyntaxTree).GetTypeInfo(shaderMethodAttribute).Type!;
 

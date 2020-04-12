@@ -15,6 +15,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class SdkManagerViewModel : ViewModelBase
     {
+        private const string ActiveSdkVersionKey = "ActiveSdkVersion";
+
         private SdkViewModel? activeSdk;
 
         public SdkManagerViewModel()
@@ -35,12 +37,28 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 }
             }
 
-            SdkViewModel? newestSdk = RecentSdks.OrderByDescending(s => s.Version).FirstOrDefault();
-
-            if (newestSdk != null)
+            if (ApplicationData.Current.LocalSettings.Values.TryGetValue(ActiveSdkVersionKey, out object storedActiveSdkVersion))
             {
-                SetSdkEnvironmentVariables(newestSdk);
-                ActiveSdk = newestSdk;
+                SdkViewModel? sdk = RecentSdks.FirstOrDefault(s => s.Version == (string)storedActiveSdkVersion);
+
+                if (sdk != null)
+                {
+                    ActiveSdk = sdk;
+                }
+                else
+                {
+                    ApplicationData.Current.LocalSettings.Values.Remove(ActiveSdkVersionKey);
+                }
+            }
+
+            if (ActiveSdk is null)
+            {
+                SdkViewModel? newestSdk = RecentSdks.OrderByDescending(s => s.Version).FirstOrDefault();
+
+                if (newestSdk != null)
+                {
+                    ActiveSdk = newestSdk;
+                }
             }
 
             DownloadNewestSdkCommand = new RelayCommand(() => _ = DownloadNewestSdkAsync());
@@ -66,6 +84,15 @@ namespace DirectX12GameEngine.Editor.ViewModels
             {
                 if (Set(ref activeSdk, value))
                 {
+                    if (activeSdk != null)
+                    {
+                        ApplicationData.Current.LocalSettings.Values[ActiveSdkVersionKey] = activeSdk.Version;
+                    }
+                    else
+                    {
+                        ApplicationData.Current.LocalSettings.Values.Remove(ActiveSdkVersionKey);
+                    }
+
                     SetSdkEnvironmentVariables(activeSdk);
                 }
             }
@@ -176,7 +203,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             }
         }
 
-        private void SetSdkEnvironmentVariables(SdkViewModel? sdk)
+        public void SetSdkEnvironmentVariables(SdkViewModel? sdk)
         {
             Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", sdk is null ? null : Path.Combine(sdk.Path, "MSBuild.dll"));
             Environment.SetEnvironmentVariable("MSBuildExtensionsPath", sdk?.Path);

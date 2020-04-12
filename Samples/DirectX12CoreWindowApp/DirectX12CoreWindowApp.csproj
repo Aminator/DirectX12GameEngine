@@ -19,6 +19,15 @@
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <PackageCertificateKeyFile>DirectX12CoreWindowApp_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x86|arm</AppxBundlePlatforms>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -142,10 +151,9 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <Content Include="..\DirectX12Game\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" />
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.10" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj">
@@ -156,10 +164,17 @@
       <Project>{6d3387fc-c108-4ec0-ae82-66184570cf6c}</Project>
       <Name>DirectX12GameEngine.Games</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\DirectX12GameEngine.Shaders\DirectX12GameEngine.Shaders.csproj">
+      <Project>{4312e468-ac7a-4c62-aaad-4bebfd0239b5}</Project>
+      <Name>DirectX12GameEngine.Shaders</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DirectX12Game\DirectX12Game.csproj">
       <Project>{30f0ecd3-e8a8-4790-bbbb-57dcb363fc15}</Project>
       <Name>DirectX12Game</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DirectX12CoreWindowApp_TemporaryKey.pfx" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

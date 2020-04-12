@@ -17,8 +17,6 @@ namespace DirectX12GameEngine.Serialization
 
         Task<object> LoadAsync(Type type, string path);
 
-        Task<bool> ReloadAsync(object asset, string? newPath = null);
-
         Task SaveAsync(string path, object asset);
 
         bool TryGetAssetPath(object asset, out string? path);

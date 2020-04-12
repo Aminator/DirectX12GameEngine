@@ -10,12 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Assets
 {
-    [AssetContentType(typeof(Material))]
-    public class MaterialAsset : AssetWithSource<Material>
+    public class MaterialAsset : AssetWithSource
     {
         public MaterialAttributes Attributes { get; set; } = new MaterialAttributes();
 
-        public async override Task CreateAssetAsync(Material material, IServiceProvider services)
+        public async override Task<object> CreateAssetAsync(IServiceProvider services)
         {
             IContentManager contentManager = services.GetRequiredService<IContentManager>();
             GraphicsDevice device = services.GetRequiredService<GraphicsDevice>();
@@ -50,12 +49,7 @@ namespace DirectX12GameEngine.Assets
                 }
             }
 
-            material.Passes.Clear();
-
-            material.Descriptor = descriptor;
-
-            MaterialGeneratorContext context = new MaterialGeneratorContext(device, material, contentManager);
-            await MaterialGenerator.GenerateAsync(descriptor, context);
+            return await Material.CreateAsync(device, descriptor, contentManager);
         }
 
         private static int GetIndex(ref string path)

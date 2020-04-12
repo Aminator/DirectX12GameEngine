@@ -6,9 +6,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
     {
         public StorageFileViewModel(IStorageFile model) : base(model)
         {
-            Model = model;
         }
 
-        public new IStorageFile Model { get; }
+        public new IStorageFile Model => (IStorageFile)base.Model;
     }
 }

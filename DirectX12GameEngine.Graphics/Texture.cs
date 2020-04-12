@@ -9,15 +9,21 @@ using Vortice.DXGI;
 namespace DirectX12GameEngine.Graphics
 {
     [TypeConverter(typeof(AssetReferenceTypeConverter))]
-    public sealed class Texture : GraphicsResource
+    public class Texture : GraphicsResource
     {
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Texture()
+        IntPtr nativeRenderTargetView;
+        IntPtr nativeShaderResourceView;
+        IntPtr nativeUnorderedAccessView;
+        IntPtr nativeDepthStencilView;
+
+        public Texture(GraphicsDevice device, TextureDescription description) : base(device, CreateResource(device, description))
         {
+            InitializeFromDescription(description);
         }
 
-        internal Texture(GraphicsDevice device) : base(device)
+        protected Texture(GraphicsDevice device, ID3D12Resource resource, bool isSRgb = false) : base(device, resource)
         {
+            InitializeFromResource(isSRgb);
         }
 
         public TextureDescription Description { get; private set; }
@@ -26,7 +32,15 @@ namespace DirectX12GameEngine.Graphics
 
         public int Height => Description.Height;
 
-        internal CpuDescriptorHandle NativeDepthStencilView { get; private set; }
+        public override IntPtr NativeRenderTargetView => nativeRenderTargetView = nativeRenderTargetView != IntPtr.Zero ? nativeRenderTargetView : CreateRenderTargetView();
+
+        public override IntPtr NativeShaderResourceView => nativeShaderResourceView = nativeShaderResourceView != IntPtr.Zero ? nativeShaderResourceView : CreateShaderResourceView();
+
+        public override IntPtr NativeUnorderedAccessView => nativeUnorderedAccessView = nativeUnorderedAccessView != IntPtr.Zero ? nativeUnorderedAccessView : CreateUnorderedAccessView();
+
+        public override IntPtr NativeDepthStencilView => nativeDepthStencilView = nativeDepthStencilView != IntPtr.Zero ? nativeDepthStencilView : CreateDepthStencilView();
+
+        public override IntPtr NativeConstantBufferView => default;
 
         public static async Task<Texture> LoadAsync(GraphicsDevice device, string filePath, bool isSRgb = false)
         {
@@ -42,15 +56,15 @@ namespace DirectX12GameEngine.Graphics
 
         public static Texture New(GraphicsDevice device, TextureDescription description)
         {
-            return new Texture(device).InitializeFrom(description);
+            return new Texture(device, description);
         }
 
-        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.ShaderResource, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.None, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
             return New(device, TextureDescription.New2D(width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType));
         }
 
-        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.ShaderResource, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.None, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             Texture texture = New2D(device, width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType);
             texture.SetData(data);
@@ -58,94 +72,56 @@ namespace DirectX12GameEngine.Graphics
             return texture;
         }
 
+        internal static Texture CreateFromResource(GraphicsDevice device, ID3D12Resource resource, bool isSRgb = false)
+        {
+            return new Texture(device, resource, isSRgb);
+        }
+
         public unsafe void SetData<T>(Span<T> data) where T : unmanaged
         {
             if (NativeResource is null) throw new InvalidOperationException();
 
             ID3D12Resource uploadResource = GraphicsDevice.NativeDevice.CreateCommittedResource(new HeapProperties(CpuPageProperty.WriteBack, MemoryPool.L0), HeapFlags.None, NativeResource.Description, ResourceStates.CopyDestination);
-            using Texture textureUploadBuffer = new Texture(GraphicsDevice).InitializeFrom(uploadResource);
+            using Texture textureUploadBuffer = new Texture(GraphicsDevice, uploadResource);
 
             textureUploadBuffer.NativeResource.WriteToSubresource(0, data, Width * 4, Width * Height * 4);
 
             using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
 
             copyCommandList.CopyResource(textureUploadBuffer, this);
-            copyCommandList.Flush(true);
+            copyCommandList.Flush();
         }
 
-        public Texture InitializeFrom(TextureDescription description)
+        protected void InitializeFromResource(bool isSRgb)
         {
-            ResourceStates resourceStates = ResourceStates.Common;
+            NativeResource.GetHeapProperties(out HeapProperties heapProperties, out _);
 
-            if (description.HeapType == GraphicsHeapType.Upload)
-            {
-                resourceStates = ResourceStates.GenericRead;
-            }
-            else if (description.HeapType == GraphicsHeapType.Readback)
-            {
-                resourceStates = ResourceStates.CopyDestination;
-            }
-
-            ID3D12Resource resource = GraphicsDevice.NativeDevice.CreateCommittedResource(
-                new HeapProperties((HeapType)description.HeapType), HeapFlags.None,
-                ConvertToNativeDescription(description), resourceStates);
-
-            return InitializeFrom(resource, description);
-        }
-
-        internal Texture InitializeFrom(ID3D12Resource resource, bool isSRgb = false)
-        {
-            resource.GetHeapProperties(out HeapProperties heapProperties, out _);
-
-            TextureDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type);
+            TextureDescription description = ConvertFromNativeDescription(NativeResource.Description, (GraphicsHeapType)heapProperties.Type);
 
             if (isSRgb)
             {
                 description.Format = description.Format.ToSRgb();
             }
 
-            return InitializeFrom(resource, description);
+            InitializeFromDescription(description);
         }
 
-        internal Texture InitializeFrom(ID3D12Resource resource, TextureDescription description)
+        protected void InitializeFromDescription(TextureDescription description)
         {
-            NativeResource = resource;
             Description = description;
-
-            if (description.Flags.HasFlag(ResourceFlags.DepthStencil))
-            {
-                NativeDepthStencilView = CreateDepthStencilView();
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.RenderTarget))
-            {
-                NativeRenderTargetView = CreateRenderTargetView();
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.ShaderResource))
-            {
-                NativeShaderResourceView = CreateShaderResourceView();
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.UnorderedAccess))
-            {
-                NativeUnorderedAccessView = CreateUnorderedAccessView();
-            }
-
-            return this;
         }
 
-        internal CpuDescriptorHandle CreateDepthStencilView()
+        private IntPtr CreateDepthStencilView()
         {
-            CpuDescriptorHandle cpuHandle = GraphicsDevice.DepthStencilViewAllocator.Allocate(1);
-            GraphicsDevice.NativeDevice.CreateDepthStencilView(NativeResource, null, cpuHandle);
+            IntPtr cpuHandle = GraphicsDevice.DepthStencilViewAllocator.Allocate(1);
+            GraphicsDevice.NativeDevice.CreateDepthStencilView(NativeResource, null, cpuHandle.ToCpuDescriptorHandle());
 
             return cpuHandle;
         }
 
-        internal CpuDescriptorHandle CreateRenderTargetView()
+        private IntPtr CreateRenderTargetView()
         {
-            CpuDescriptorHandle cpuHandle = GraphicsDevice.RenderTargetViewAllocator.Allocate(1);
+            IntPtr cpuHandle = GraphicsDevice.RenderTargetViewAllocator.Allocate(1);
 
             RenderTargetViewDescription? rtvDescription = null;
 
@@ -165,51 +141,47 @@ namespace DirectX12GameEngine.Graphics
                 rtvDescription = rtvTexture2DDescription;
             }
 
-            GraphicsDevice.NativeDevice.CreateRenderTargetView(NativeResource, rtvDescription, cpuHandle);
+            GraphicsDevice.NativeDevice.CreateRenderTargetView(NativeResource, rtvDescription, cpuHandle.ToCpuDescriptorHandle());
 
             return cpuHandle;
         }
 
-        internal CpuDescriptorHandle CreateShaderResourceView()
+        private IntPtr CreateShaderResourceView()
         {
-            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
-            GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, null, cpuHandle);
+            IntPtr cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, null, cpuHandle.ToCpuDescriptorHandle());
 
             return cpuHandle;
         }
 
-        internal CpuDescriptorHandle CreateUnorderedAccessView()
+        private IntPtr CreateUnorderedAccessView()
         {
-            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
-            GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, null, cpuHandle);
+            IntPtr cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, null, cpuHandle.ToCpuDescriptorHandle());
 
             return cpuHandle;
         }
 
-        private static TextureDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType, bool isShaderResource = false)
+        private static ID3D12Resource CreateResource(GraphicsDevice device, TextureDescription description)
         {
-            ResourceFlags flags = ResourceFlags.None;
+            ResourceStates resourceStates = ResourceStates.Common;
 
-            if (description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.AllowRenderTarget))
+            if (description.HeapType == GraphicsHeapType.Upload)
             {
-                flags |= ResourceFlags.RenderTarget;
+                resourceStates = ResourceStates.GenericRead;
+            }
+            else if (description.HeapType == GraphicsHeapType.Readback)
+            {
+                resourceStates = ResourceStates.CopyDestination;
             }
 
-            if (description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.AllowUnorderedAccess))
-            {
-                flags |= ResourceFlags.UnorderedAccess;
-            }
+            return device.NativeDevice.CreateCommittedResource(
+                new HeapProperties((HeapType)description.HeapType), HeapFlags.None,
+                ConvertToNativeDescription(description), resourceStates);
+        }
 
-            if (description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.AllowDepthStencil))
-            {
-                flags |= ResourceFlags.DepthStencil;
-            }
-
-            if (!description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.DenyShaderResource) && isShaderResource)
-            {
-                flags |= ResourceFlags.ShaderResource;
-            }
-
+        private static TextureDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType)
+        {
             return new TextureDescription
             {
                 Dimension = (TextureDimension)description.Dimension,
@@ -218,7 +190,7 @@ namespace DirectX12GameEngine.Graphics
                 DepthOrArraySize = description.DepthOrArraySize,
                 MipLevels = description.MipLevels,
                 Format = (PixelFormat)description.Format,
-                Flags = flags,
+                Flags = (ResourceFlags)description.Flags,
                 SampleDescription = new SampleDescription(description.SampleDescription.Count, description.SampleDescription.Quality),
                 HeapType = heapType,
             };
@@ -226,28 +198,6 @@ namespace DirectX12GameEngine.Graphics
 
         private static ResourceDescription ConvertToNativeDescription(TextureDescription description)
         {
-            Vortice.Direct3D12.ResourceFlags flags = Vortice.Direct3D12.ResourceFlags.None;
-
-            if (description.Flags.HasFlag(ResourceFlags.RenderTarget))
-            {
-                flags |= Vortice.Direct3D12.ResourceFlags.AllowRenderTarget;
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.UnorderedAccess))
-            {
-                flags |= Vortice.Direct3D12.ResourceFlags.AllowUnorderedAccess;
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.DepthStencil))
-            {
-                flags |= Vortice.Direct3D12.ResourceFlags.AllowDepthStencil;
-
-                if (!description.Flags.HasFlag(ResourceFlags.ShaderResource))
-                {
-                    flags |= Vortice.Direct3D12.ResourceFlags.DenyShaderResource;
-                }
-            }
-
             return new ResourceDescription
             {
                 Dimension = (ResourceDimension)description.Dimension,
@@ -256,7 +206,7 @@ namespace DirectX12GameEngine.Graphics
                 DepthOrArraySize = description.DepthOrArraySize,
                 MipLevels = description.MipLevels,
                 Format = (Format)description.Format,
-                Flags = flags,
+                Flags = (Vortice.Direct3D12.ResourceFlags)description.Flags,
                 SampleDescription = new Vortice.DXGI.SampleDescription(description.SampleDescription.Count, description.SampleDescription.Quality)
             };
         }

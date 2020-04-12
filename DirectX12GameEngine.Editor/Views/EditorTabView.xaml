@@ -10,6 +10,8 @@
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     d:DesignHeight="300"
     d:DesignWidth="400"
+    SelectedItem="{x:Bind ViewModel.SelectedTab, Mode=TwoWay}"
+    TabItemsSource="{x:Bind ViewModel.Tabs}"
     mc:Ignorable="d">
 
     <winui:TabView.Resources>
@@ -19,9 +21,9 @@
             </winui:TabViewItem>
         </DataTemplate>
 
-        <DataTemplate x:Key="PropertiesTemplate" x:DataType="viewmodels:PropertiesViewModel">
+        <DataTemplate x:Key="PropertyManagerTemplate" x:DataType="viewmodels:PropertyManagerViewModel">
             <winui:TabViewItem Header="Properties">
-                <local:PropertiesView />
+                <local:PropertyManagerView />
             </winui:TabViewItem>
         </DataTemplate>
 
@@ -51,7 +53,7 @@
 
         <local:DataTypeTemplateSelector x:Key="EditorTemplateSelector">
             <local:TemplateDefinition DataTemplate="{StaticResource SolutionExplorerTemplate}" DataType="viewmodels:SolutionExplorerViewModel" />
-            <local:TemplateDefinition DataTemplate="{StaticResource PropertiesTemplate}" DataType="viewmodels:PropertiesViewModel" />
+            <local:TemplateDefinition DataTemplate="{StaticResource PropertyManagerTemplate}" DataType="viewmodels:PropertyManagerViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource SdkManagerTemplate}" DataType="viewmodels:SdkManagerViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource TerminalTemplate}" DataType="viewmodels:TerminalViewModel" />
             <local:TemplateDefinition DataTemplate="{StaticResource CodeEditorTemplate}" DataType="viewmodels:CodeEditorViewModel" />
@@ -69,7 +71,6 @@
             <Setter Property="TabWidthMode" Value="SizeToContent" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
-            <Setter Property="TabItemsSource" Value="{x:Bind ViewModel.Tabs, Mode=OneWay}" />
             <Setter Property="TabItemTemplateSelector" Value="{StaticResource EditorTemplateSelector}" />
         </Style>
     </winui:TabView.Style>

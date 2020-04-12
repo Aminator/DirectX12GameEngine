@@ -27,18 +27,23 @@ namespace DirectX12GameEngine.Graphics
 
         public int DescriptorCapacity { get; private set; }
 
-        internal DescriptorAllocator DescriptorAllocator { get; }
+        public DescriptorAllocator DescriptorAllocator { get; }
 
-        internal CpuDescriptorHandle StartCpuDescriptorHandle { get; }
+        public IntPtr StartCpuDescriptorHandle { get; }
+
+        public void AddConstantBufferViews(IEnumerable<GraphicsBuffer> buffers)
+        {
+            AddDescriptors(buffers.Select(r => r.NativeConstantBufferView).ToArray());
+        }
 
         public void AddConstantBufferViews(params GraphicsBuffer[] buffers)
         {
             AddConstantBufferViews(buffers.AsEnumerable());
         }
 
-        public void AddConstantBufferViews(IEnumerable<GraphicsBuffer> buffers)
+        public void AddShaderResourceViews(IEnumerable<GraphicsResource> resources)
         {
-            AddDescriptors(buffers.Select(r => r.NativeConstantBufferView).ToArray());
+            AddDescriptors(resources.Select(r => r.NativeShaderResourceView));
         }
 
         public void AddShaderResourceViews(params GraphicsResource[] resources)
@@ -46,9 +51,9 @@ namespace DirectX12GameEngine.Graphics
             AddShaderResourceViews(resources.AsEnumerable());
         }
 
-        public void AddShaderResourceViews(IEnumerable<GraphicsResource> resources)
+        public void AddUnorderedAccessViews(IEnumerable<GraphicsResource> resources)
         {
-            AddDescriptors(resources.Select(r => r.NativeShaderResourceView).ToArray());
+            AddDescriptors(resources.Select(r => r.NativeUnorderedAccessView));
         }
 
         public void AddUnorderedAccessViews(params GraphicsResource[] resources)
@@ -56,9 +61,9 @@ namespace DirectX12GameEngine.Graphics
             AddUnorderedAccessViews(resources.AsEnumerable());
         }
 
-        public void AddUnorderedAccessViews(IEnumerable<GraphicsResource> resources)
+        public void AddSamplers(IEnumerable<SamplerState> samplers)
         {
-            AddDescriptors(resources.Select(r => r.NativeUnorderedAccessView).ToArray());
+            AddDescriptors(samplers.Select(r => r.NativeCpuDescriptorHandle));
         }
 
         public void AddSamplers(params SamplerState[] samplers)
@@ -66,27 +71,24 @@ namespace DirectX12GameEngine.Graphics
             AddSamplers(samplers);
         }
 
-        public void AddSamplers(IEnumerable<SamplerState> samplers)
-        {
-            AddDescriptors(samplers.Select(r => r.NativeCpuDescriptorHandle).ToArray());
-        }
-
-        private void AddDescriptor(CpuDescriptorHandle descriptor)
+        private void AddDescriptor(IntPtr descriptor)
         {
             if (CurrentDescriptorCount + 1 > DescriptorCapacity) throw new InvalidOperationException();
 
-            CpuDescriptorHandle destinationDescriptor = StartCpuDescriptorHandle + CurrentDescriptorCount * DescriptorAllocator.DescriptorHandleIncrementSize;
+            IntPtr destinationDescriptor = StartCpuDescriptorHandle + CurrentDescriptorCount * DescriptorAllocator.DescriptorHandleIncrementSize;
 
-            GraphicsDevice.NativeDevice.CopyDescriptorsSimple(1, destinationDescriptor, descriptor, (Vortice.Direct3D12.DescriptorHeapType)DescriptorHeapType);
+            GraphicsDevice.NativeDevice.CopyDescriptorsSimple(1, destinationDescriptor.ToCpuDescriptorHandle(), descriptor.ToCpuDescriptorHandle(), (Vortice.Direct3D12.DescriptorHeapType)DescriptorHeapType);
 
             CurrentDescriptorCount++;
         }
 
-        private void AddDescriptors(CpuDescriptorHandle[] descriptors)
+        private void AddDescriptors(IEnumerable<IntPtr> descriptors)
         {
-            if (CurrentDescriptorCount + descriptors.Length > DescriptorCapacity) throw new InvalidOperationException();
+            CpuDescriptorHandle[] sourceDescriptors = descriptors.Select(p => p.ToCpuDescriptorHandle()).ToArray();
 
-            int[] sourceDescriptorRangeStarts = new int[descriptors.Length];
+            if (CurrentDescriptorCount + sourceDescriptors.Length > DescriptorCapacity) throw new InvalidOperationException();
+
+            int[] sourceDescriptorRangeStarts = new int[sourceDescriptors.Length];
 
             //Array.Fill(srcDescriptorRangeStarts, 1);
             for (int i = 0; i < sourceDescriptorRangeStarts.Length; i++)
@@ -94,14 +96,14 @@ namespace DirectX12GameEngine.Graphics
                 sourceDescriptorRangeStarts[i] = 1;
             }
 
-            CpuDescriptorHandle destinationDescriptor = StartCpuDescriptorHandle + CurrentDescriptorCount * DescriptorAllocator.DescriptorHandleIncrementSize;
+            IntPtr destinationDescriptor = StartCpuDescriptorHandle + CurrentDescriptorCount * DescriptorAllocator.DescriptorHandleIncrementSize;
 
             GraphicsDevice.NativeDevice.CopyDescriptors(
-                1, new[] { destinationDescriptor }, new[] { descriptors.Length },
-                descriptors.Length, descriptors, sourceDescriptorRangeStarts,
+                1, new[] { destinationDescriptor.ToCpuDescriptorHandle() }, new[] { sourceDescriptors.Length },
+                sourceDescriptors.Length, sourceDescriptors, sourceDescriptorRangeStarts,
                 (Vortice.Direct3D12.DescriptorHeapType)DescriptorHeapType);
 
-            CurrentDescriptorCount += descriptors.Length;
+            CurrentDescriptorCount += sourceDescriptors.Length;
         }
 
         private DescriptorAllocator GetDescriptorAllocator() => DescriptorHeapType switch

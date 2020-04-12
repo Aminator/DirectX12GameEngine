@@ -6,19 +6,17 @@ namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class ViewModelLocator
     {
-        public ViewModelLocator()
+        public virtual void ConfigureServices(IServiceCollection services)
         {
-            ServiceCollection serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<MainViewModel>();
-            serviceCollection.AddSingleton<SolutionLoaderViewModel>();
-            serviceCollection.AddSingleton<SolutionExplorerViewModel>();
-            serviceCollection.AddSingleton<PropertiesViewModel>();
-            serviceCollection.AddSingleton<SdkManagerViewModel>();
-            serviceCollection.AddSingleton<EditorViewFactory>();
-
-            Services = serviceCollection.BuildServiceProvider();
+            services.AddSingleton<MainViewModel>();
+            services.AddSingleton<SolutionLoaderViewModel>();
+            services.AddSingleton<SolutionExplorerViewModel>();
+            services.AddSingleton<PropertyManagerViewModel>();
+            services.AddSingleton<SdkManagerViewModel>();
+            services.AddSingleton<EditorViewFactory>();
+            services.AddSingleton<TabViewManagerViewModel>();
         }
 
-        public IServiceProvider Services { get; }
+        public IServiceProvider? Services { get; set; }
     }
 }

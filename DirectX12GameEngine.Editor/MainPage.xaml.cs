@@ -1,6 +1,5 @@
 ﻿using DirectX12GameEngine.Editor.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
-using Windows.UI.Xaml;
+using DirectX12GameEngine.Editor.Views;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
@@ -18,8 +17,6 @@ namespace DirectX12GameEngine.Editor
         public MainPage()
         {
             InitializeComponent();
-
-            DataContext = ((App)Application.Current).Locator.Services.GetRequiredService<MainViewModel>();
         }
 
         public MainViewModel ViewModel => (MainViewModel)DataContext;
@@ -28,9 +25,14 @@ namespace DirectX12GameEngine.Editor
         {
             base.OnNavigatedTo(e);
 
-            if (e.Parameter is string token && !string.IsNullOrEmpty(token))
+            if (e.Parameter is MainPageNavigationParameters parameters)
             {
-                await ViewModel.SolutionLoader.OpenRecentSolutionAsync(token);
+                DataContext = parameters.ViewModel;
+
+                if (!string.IsNullOrEmpty(parameters.Arguments))
+                {
+                    await ViewModel.SolutionLoader.OpenRecentSolutionAsync(parameters.Arguments);
+                }
             }
         }
     }

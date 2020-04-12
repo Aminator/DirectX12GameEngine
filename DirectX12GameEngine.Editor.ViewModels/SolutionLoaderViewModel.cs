@@ -7,12 +7,15 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
 using Microsoft.Build.Framework;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
+using Nito.AsyncEx;
+using Windows.ApplicationModel.Background;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -23,8 +26,10 @@ namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class SolutionLoaderViewModel : ViewModelBase
     {
-        private bool isRootFolderLoaded;
-        private bool isSolutionLoaded;
+        public const string StorageLibraryChangeTrackerTaskName = "StorageLibraryChangeTrackerTask";
+
+        private readonly SemaphoreSlim solutionLoadLock = new SemaphoreSlim(1, 1);
+
         private bool isSolutionLoading;
 
         static SolutionLoaderViewModel()
@@ -48,16 +53,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
             int* handleToReplace = (int*)methodToReplace.MethodHandle.Value.ToPointer();
             int* handleToInject = (int*)methodToInject.MethodHandle.Value.ToPointer();
 
-            if (IntPtr.Size == 4)
-            {
-                handleToReplace += 2;
-                handleToInject += 2;
-            }
-            else
-            {
-                handleToReplace += 1;
-                handleToInject += 1;
-            }
+            handleToReplace += 2;
+            handleToInject += 2;
 
             *handleToReplace = *handleToInject;
         }
@@ -66,8 +63,10 @@ namespace DirectX12GameEngine.Editor.ViewModels
         {
         }
 
-        public SolutionLoaderViewModel()
+        public SolutionLoaderViewModel(SdkManagerViewModel sdkManager)
         {
+            sdkManager.SetSdkEnvironmentVariables(sdkManager.ActiveSdk);
+
             Workspace = MSBuildWorkspace.Create(new Dictionary<string, string>
             {
                 { "RestorePackagesPath", Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "NuGet", "packages") },
@@ -87,25 +86,17 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public event EventHandler<RootFolderLoadedEventArgs>? RootFolderLoaded;
 
+        public event EventHandler<StorageLibraryChangedEventArgs>? StorageLibraryChanged;
+
         public event AnyEventHandler? BuildMessageRaised;
 
         public MSBuildWorkspace Workspace { get; }
 
-        public IStorageFolder? RootFolder { get; private set; }
+        public StorageFolder? RootFolder { get; private set; }
+
+        public StorageFolder? TemporarySolutionFolder { get; private set; }
 
         public ObservableCollection<AccessListEntry> RecentSolutions { get; } = new ObservableCollection<AccessListEntry>();
-
-        public bool IsRootFolderLoaded
-        {
-            get => isRootFolderLoaded;
-            private set => Set(ref isRootFolderLoaded, value);
-        }
-
-        public bool IsSolutionLoaded
-        {
-            get => isSolutionLoaded;
-            private set => Set(ref isSolutionLoaded, value);
-        }
 
         public bool IsSolutionLoading
         {
@@ -175,43 +166,193 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 await jumpList.SaveAsync();
             }
 
-            if (IsRootFolderLoaded)
+            if (RootFolder != null)
             {
                 await CoreApplication.RequestRestartAsync(accessListEntry.Token);
             }
             else
             {
-                RootFolder = folder;
+                RootFolder = (StorageFolder)folder;
 
-                IsRootFolderLoaded = true;
+                await RegisterBackgroundTaskAsync();
+
                 RootFolderLoaded?.Invoke(this, new RootFolderLoadedEventArgs(RootFolder));
 
                 await LoadSolutionAsync();
             }
         }
 
-        public async Task LoadSolutionAsync()
+        private async Task<bool> RegisterBackgroundTaskAsync()
+        {
+            StorageLibraryChangeTracker? tracker = RootFolder?.TryGetChangeTracker();
+
+            if (tracker != null)
+            {
+                tracker.Enable();
+
+                StorageLibraryChangeTrackerTrigger trigger = new StorageLibraryChangeTrackerTrigger(tracker);
+
+                await BackgroundExecutionManager.RequestAccessAsync();
+
+                BackgroundTaskBuilder builder = new BackgroundTaskBuilder
+                {
+                    Name = StorageLibraryChangeTrackerTaskName
+                };
+
+                builder.SetTrigger(trigger);
+                builder.Register();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task ApplyChangesAsync()
+        {
+            StorageLibraryChangeTracker? tracker = RootFolder?.TryGetChangeTracker();
+
+            if (tracker != null)
+            {
+                tracker.Enable();
+                StorageLibraryChangeReader changeReader = tracker.GetChangeReader();
+                var changes = await changeReader.ReadBatchAsync();
+                await changeReader.AcceptChangesAsync();
+
+                if (changes.Count > 0)
+                {
+                    Task applyChangesTask = ApplyChangesToTemporaryFolderAsync(changes);
+
+                    StorageLibraryChanged?.Invoke(this, new StorageLibraryChangedEventArgs(changes));
+
+                    await applyChangesTask;
+
+                    await LoadSolutionAsync();
+                }
+            }
+        }
+
+        private async Task ApplyChangesToTemporaryFolderAsync(IReadOnlyList<StorageLibraryChange> changes)
+        {
+            if (RootFolder is null || TemporarySolutionFolder is null) return;
+
+            foreach (StorageLibraryChange change in changes)
+            {
+                if (Path.GetFileName(change.Path).StartsWith(".")
+                    || Path.GetFileName(change.PreviousPath).StartsWith(".")) continue;
+
+                switch (change.ChangeType)
+                {
+                    case StorageLibraryChangeType.Created:
+                    case StorageLibraryChangeType.ContentsChanged:
+                    case StorageLibraryChangeType.MovedIntoLibrary:
+                    case StorageLibraryChangeType.ContentsReplaced:
+                        {
+                            string relativePath = StorageExtensions.GetRelativePath(RootFolder.Path, change.Path);
+                            string relativeDirectory = Path.GetDirectoryName(relativePath);
+
+                            IStorageItem? destinationItem = relativePath.Contains(Path.DirectorySeparatorChar) ? await TemporarySolutionFolder.TryGetItemAsync(relativeDirectory) : TemporarySolutionFolder;
+                            IStorageItem? item = await change.GetStorageItemAsync();
+
+                            if (destinationItem is IStorageFolder destinationFolder)
+                            {
+                                if (item is IStorageFile file)
+                                {
+                                    await file.CopyAsync(destinationFolder, file.Name, NameCollisionOption.ReplaceExisting);
+                                }
+                                else if (item is IStorageFolder folder)
+                                {
+                                    await folder.CopyAsync(destinationFolder, NameCollisionOption.ReplaceExisting);
+                                }
+                            }
+                        }
+                        break;
+                    case StorageLibraryChangeType.Deleted:
+                    case StorageLibraryChangeType.MovedOutOfLibrary:
+                        {
+                            string relativePath = StorageExtensions.GetRelativePath(RootFolder.Path, change.Path);
+                            IStorageItem? item = await TemporarySolutionFolder.TryGetItemAsync(relativePath);
+
+                            if (item != null)
+                            {
+                                await item.DeleteAsync();
+                            }
+                        }
+                        break;
+                    case StorageLibraryChangeType.MovedOrRenamed:
+                        {
+                            string relativePath = StorageExtensions.GetRelativePath(RootFolder.Path, change.Path);
+                            string relativeDirectory = Path.GetDirectoryName(relativePath);
+                            string previousRelativePath = StorageExtensions.GetRelativePath(RootFolder.Path, change.PreviousPath);
+
+                            IStorageItem? destinationItem = relativePath.Contains(Path.DirectorySeparatorChar) ? await TemporarySolutionFolder.TryGetItemAsync(relativeDirectory) : TemporarySolutionFolder;
+                            IStorageItem? item = await TemporarySolutionFolder.GetItemAsync(previousRelativePath);
+
+                            if (item != null)
+                            {
+                                if (Path.GetDirectoryName(change.Path).Equals(Path.GetDirectoryName(change.PreviousPath), StringComparison.OrdinalIgnoreCase))
+                                {
+                                    await item.RenameAsync(Path.GetFileName(change.Path));
+                                }
+                                else
+                                {
+                                    if (destinationItem is IStorageFolder destinationFolder)
+                                    {
+                                        if (item is IStorageFile file)
+                                        {
+                                            await file.MoveAsync(destinationFolder, file.Name, NameCollisionOption.ReplaceExisting);
+                                        }
+                                        else if (item is IStorageFolder folder)
+                                        {
+                                            await folder.MoveAsync(destinationFolder, NameCollisionOption.ReplaceExisting);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                }
+
+            }
+        }
+
+        private async Task LoadSolutionAsync()
         {
             if (RootFolder is null) return;
 
-            IsSolutionLoading = true;
-
-            StorageFile? originalSolutionFile = (await RootFolder.GetFilesAsync()).FirstOrDefault(s => s.FileType == ".sln");
-
-            if (originalSolutionFile != null)
+            if (TemporarySolutionFolder is null)
             {
-                StorageFolder solutionsFolder = await GetTemporarySolutionsFolderAsync();
+                var files = await RootFolder.GetFilesAsync();
 
-                if (!(await solutionsFolder.TryGetItemAsync(RootFolder.Name) is StorageFolder solutionFolder))
+                if (files.FirstOrDefault(s => s.FileType == ".sln" || s.FileType.Contains("proj")) is StorageFile originalSolutionFile)
                 {
-                    solutionFolder = await RootFolder.CopyAsync(solutionsFolder, NameCollisionOption.ReplaceExisting, ".vs", ".git", "bin", "obj");
+                    IsSolutionLoading = true;
+
+                    StorageFolder solutionsFolder = await GetTemporarySolutionsFolderAsync();
+                    TemporarySolutionFolder = await RootFolder.CopyAsync(solutionsFolder, NameCollisionOption.ReplaceExisting, "bin", "obj");
                 }
+            }
 
-                StorageFile? solutionFile = (await solutionFolder.GetFilesAsync()).FirstOrDefault(s => s.FileType == ".sln");
+            using (await solutionLoadLock.LockAsync())
+            {
+                Workspace.CloseSolution();
 
-                if (solutionFile != null)
+                if (TemporarySolutionFolder != null)
                 {
-                    await Task.Run(async () => await Workspace.OpenSolutionAsync(solutionFile.Path));
+                    var files = await TemporarySolutionFolder.GetFilesAsync();
+
+                    if (files.FirstOrDefault(s => s.FileType == ".sln") is StorageFile solutionFile)
+                    {
+                        IsSolutionLoading = true;
+
+                        await Task.Run(() => Workspace.OpenSolutionAsync(solutionFile.Path));
+                    }
+                    else if (files.FirstOrDefault(s => s.FileType.Contains("proj")) is StorageFile projectFile)
+                    {
+                        IsSolutionLoading = true;
+
+                        await Task.Run(() => Workspace.OpenProjectAsync(projectFile.Path));
+                    }
                 }
             }
 
@@ -226,23 +367,23 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
             bool success = false;
 
-            try
+            foreach (Project project in Workspace.CurrentSolution.Projects)
             {
-                foreach (Project project in Workspace.CurrentSolution.Projects)
+                try
                 {
                     if (await RestoreNuGetPackagesAsync(project.FilePath!, Workspace.Properties))
                     {
                         success = true;
                     }
                 }
-            }
-            catch
-            {
+                catch
+                {
+                }
             }
 
             if (success)
             {
-                await Task.Run(async () => await Workspace.OpenSolutionAsync(Workspace.CurrentSolution.FilePath));
+                await LoadSolutionAsync();
             }
 
             IsSolutionLoading = false;
@@ -280,5 +421,15 @@ namespace DirectX12GameEngine.Editor.ViewModels
             {
             }
         }
+    }
+
+    public class StorageLibraryChangedEventArgs : EventArgs
+    {
+        public StorageLibraryChangedEventArgs(IReadOnlyList<StorageLibraryChange> changes)
+        {
+            Changes = changes;
+        }
+
+        public IReadOnlyList<StorageLibraryChange> Changes { get; }
     }
 }

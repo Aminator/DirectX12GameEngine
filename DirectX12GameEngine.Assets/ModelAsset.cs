@@ -10,12 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Assets
 {
-    [AssetContentType(typeof(Model))]
-    public class ModelAsset : AssetWithSource<Model>
+    public class ModelAsset : AssetWithSource
     {
         public IList<Material> Materials { get; } = new List<Material>();
 
-        public async override Task CreateAssetAsync(Model model, IServiceProvider services)
+        public async override Task<object> CreateAssetAsync(IServiceProvider services)
         {
             IContentManager contentManager = services.GetRequiredService<IContentManager>();
             GraphicsDevice device = services.GetRequiredService<GraphicsDevice>();
@@ -26,8 +25,7 @@ namespace DirectX12GameEngine.Assets
 
             if (extension == ".glb")
             {
-                model.Materials.Clear();
-                model.Meshes.Clear();
+                Model model = new Model();
 
                 using Stream stream = await contentManager.FileProvider.OpenStreamAsync(Source, FileMode.Open, FileAccess.Read);
                 GltfModelLoader modelLoader = await GltfModelLoader.CreateAsync(device, stream);
@@ -54,6 +52,8 @@ namespace DirectX12GameEngine.Assets
                         model.Materials.Add(material);
                     }
                 }
+
+                return model;
             }
             else
             {

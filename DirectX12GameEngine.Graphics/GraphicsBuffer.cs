@@ -1,20 +1,25 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using DirectX12GameEngine.Core;
 using Vortice.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
-    public partial class GraphicsBuffer : GraphicsResource
+    public class GraphicsBuffer : GraphicsResource
     {
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public GraphicsBuffer()
+        IntPtr nativeRenderTargetView;
+        IntPtr nativeShaderResourceView;
+        IntPtr nativeUnorderedAccessView;
+        IntPtr nativeConstantBufferView;
+
+        public GraphicsBuffer(GraphicsDevice device, GraphicsBufferDescription description) : base(device, CreateResource(device, description))
         {
+            InitializeFromDescription(description);
         }
 
-        protected internal GraphicsBuffer(GraphicsDevice device) : base(device)
+        protected GraphicsBuffer(GraphicsDevice device, ID3D12Resource resource) : base(device, resource)
         {
+            InitializeFromResource();
         }
 
         public GraphicsBufferDescription Description { get; private set; }
@@ -31,11 +36,19 @@ namespace DirectX12GameEngine.Graphics
 
         public int ElementCount { get; protected set; }
 
-        internal CpuDescriptorHandle NativeConstantBufferView { get; private set; }
+        public override IntPtr NativeRenderTargetView => nativeRenderTargetView = nativeRenderTargetView != IntPtr.Zero ? nativeRenderTargetView : CreateRenderTargetView();
+
+        public override IntPtr NativeShaderResourceView => nativeShaderResourceView = nativeShaderResourceView != IntPtr.Zero ? nativeShaderResourceView : CreateShaderResourceView();
+
+        public override IntPtr NativeUnorderedAccessView => nativeUnorderedAccessView = nativeUnorderedAccessView != IntPtr.Zero ? nativeUnorderedAccessView : CreateUnorderedAccessView();
+
+        public override IntPtr NativeConstantBufferView => nativeConstantBufferView = nativeConstantBufferView != IntPtr.Zero ? nativeConstantBufferView : CreateConstantBufferView();
+
+        public override IntPtr NativeDepthStencilView => default;
 
         public static GraphicsBuffer New(GraphicsDevice device, GraphicsBufferDescription description)
         {
-            return new GraphicsBuffer(device).InitializeFrom(description);
+            return new GraphicsBuffer(device, description);
         }
 
         public static GraphicsBuffer New(GraphicsDevice device, int size, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
@@ -81,6 +94,11 @@ namespace DirectX12GameEngine.Graphics
             return buffer;
         }
 
+        internal static GraphicsBuffer CreateFromResource(GraphicsDevice device, ID3D12Resource resource)
+        {
+            return new GraphicsBuffer(device, resource);
+        }
+
         public T[] GetData<T>() where T : unmanaged
         {
             T[] data = new T[SizeInBytes / Unsafe.SizeOf<T>()];
@@ -107,7 +125,7 @@ namespace DirectX12GameEngine.Graphics
                 using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
 
                 copyCommandList.CopyBufferRegion(this, offsetInBytes, readbackBaffer, 0, data.Length * Unsafe.SizeOf<T>());
-                copyCommandList.Flush(true);
+                copyCommandList.Flush();
 
                 readbackBaffer.GetData(data);
             }
@@ -138,7 +156,7 @@ namespace DirectX12GameEngine.Graphics
                 using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
 
                 copyCommandList.CopyBufferRegion(uploadBuffer, 0, this, offsetInBytes, data.Length * Unsafe.SizeOf<T>());
-                copyCommandList.Flush(true);
+                copyCommandList.Flush();
             }
             else
             {
@@ -150,115 +168,34 @@ namespace DirectX12GameEngine.Graphics
 
         public GraphicsBuffer Slice(int start, int length)
         {
-            return new GraphicsBuffer(GraphicsDevice).InitializeFrom(NativeResource, Description, FirstElement + start, length);
+            GraphicsBuffer buffer = new GraphicsBuffer(GraphicsDevice, NativeResource);
+            buffer.InitializeFromDescription(Description, FirstElement + start, length);
+
+            return buffer;
         }
 
-        public GraphicsBuffer InitializeFrom(GraphicsBufferDescription description)
+        protected void InitializeFromResource()
         {
-            ResourceStates resourceStates = ResourceStates.Common;
+            NativeResource.GetHeapProperties(out HeapProperties heapProperties, out _);
 
-            if (description.HeapType == GraphicsHeapType.Upload)
-            {
-                resourceStates = ResourceStates.GenericRead;
-            }
-            else if (description.HeapType == GraphicsHeapType.Readback)
-            {
-                resourceStates = ResourceStates.CopyDestination;
-            }
-
-            ID3D12Resource resource = GraphicsDevice.NativeDevice.CreateCommittedResource(
-                new HeapProperties((HeapType)description.HeapType), HeapFlags.None,
-                ConvertToNativeDescription(description), resourceStates);
-
-            return InitializeFrom(resource, description);
+            GraphicsBufferDescription description = ConvertFromNativeDescription(NativeResource.Description, (GraphicsHeapType)heapProperties.Type);
+            InitializeFromDescription(description);
         }
 
-        protected internal GraphicsBuffer InitializeFrom(ID3D12Resource resource, bool isShaderResource = false)
+        protected void InitializeFromDescription(GraphicsBufferDescription description, int firstElement = 0, int elementCount = 0)
         {
-            resource.GetHeapProperties(out HeapProperties heapProperties, out _);
-
-            GraphicsBufferDescription description = ConvertFromNativeDescription(resource.Description, (GraphicsHeapType)heapProperties.Type, isShaderResource);
-
-            return InitializeFrom(resource, description);
-        }
-
-        protected internal GraphicsBuffer InitializeFrom(ID3D12Resource resource, GraphicsBufferDescription description, int firstElement = 0, int elementCount = 0)
-        {
-            NativeResource = resource;
             Description = description;
-
             FirstElement = firstElement;
 
             if (description.StructureByteStride != 0)
             {
                 ElementCount = elementCount == 0 ? description.SizeInBytes / description.StructureByteStride : elementCount;
             }
-
-            if (description.Flags.HasFlag(ResourceFlags.RenderTarget))
-            {
-                NativeRenderTargetView = CreateRenderTargetView();
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.ConstantBuffer))
-            {
-                NativeConstantBufferView = CreateConstantBufferView();
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.ShaderResource))
-            {
-                NativeShaderResourceView = CreateShaderResourceView();
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.UnorderedAccess))
-            {
-                NativeUnorderedAccessView = CreateUnorderedAccessView();
-            }
-
-            return this;
         }
 
-        private static GraphicsBufferDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType, bool isShaderResource = false)
+        private IntPtr CreateRenderTargetView()
         {
-            ResourceFlags flags = ResourceFlags.None;
-
-            if (description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.AllowUnorderedAccess))
-            {
-                flags |= ResourceFlags.UnorderedAccess;
-            }
-
-            if (!description.Flags.HasFlag(Vortice.Direct3D12.ResourceFlags.DenyShaderResource) && isShaderResource)
-            {
-                flags |= ResourceFlags.ShaderResource;
-            }
-
-            return new GraphicsBufferDescription
-            {
-                SizeInBytes = (int)description.Width,
-                HeapType = heapType,
-                Flags = flags
-            };
-        }
-
-        private static ResourceDescription ConvertToNativeDescription(GraphicsBufferDescription description)
-        {
-            Vortice.Direct3D12.ResourceFlags flags = Vortice.Direct3D12.ResourceFlags.None;
-
-            if (description.Flags.HasFlag(ResourceFlags.RenderTarget))
-            {
-                flags |= Vortice.Direct3D12.ResourceFlags.AllowRenderTarget;
-            }
-
-            if (description.Flags.HasFlag(ResourceFlags.UnorderedAccess))
-            {
-                flags |= Vortice.Direct3D12.ResourceFlags.AllowUnorderedAccess;
-            }
-
-            return ResourceDescription.Buffer(description.SizeInBytes, flags);
-        }
-
-        protected internal CpuDescriptorHandle CreateRenderTargetView()
-        {
-            CpuDescriptorHandle cpuHandle = GraphicsDevice.RenderTargetViewAllocator.Allocate(1);
+            IntPtr cpuHandle = GraphicsDevice.RenderTargetViewAllocator.Allocate(1);
 
             RenderTargetViewDescription description = new RenderTargetViewDescription
             {
@@ -270,14 +207,14 @@ namespace DirectX12GameEngine.Graphics
                 }
             };
 
-            GraphicsDevice.NativeDevice.CreateRenderTargetView(NativeResource, description, cpuHandle);
+            GraphicsDevice.NativeDevice.CreateRenderTargetView(NativeResource, description, cpuHandle.ToCpuDescriptorHandle());
 
             return cpuHandle;
         }
 
-        protected internal CpuDescriptorHandle CreateConstantBufferView()
+        private IntPtr CreateConstantBufferView()
         {
-            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            IntPtr cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
 
             int constantBufferSize = (SizeInBytes + 255) & ~255;
 
@@ -287,14 +224,14 @@ namespace DirectX12GameEngine.Graphics
                 SizeInBytes = constantBufferSize
             };
 
-            GraphicsDevice.NativeDevice.CreateConstantBufferView(cbvDescription, cpuHandle);
+            GraphicsDevice.NativeDevice.CreateConstantBufferView(cbvDescription, cpuHandle.ToCpuDescriptorHandle());
 
             return cpuHandle;
         }
 
-        protected internal CpuDescriptorHandle CreateShaderResourceView()
+        private IntPtr CreateShaderResourceView()
         {
-            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            IntPtr cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
 
             ShaderResourceViewDescription description = new ShaderResourceViewDescription
             {
@@ -308,14 +245,14 @@ namespace DirectX12GameEngine.Graphics
                 },
             };
 
-            GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, description, cpuHandle);
+            GraphicsDevice.NativeDevice.CreateShaderResourceView(NativeResource, description, cpuHandle.ToCpuDescriptorHandle());
 
             return cpuHandle;
         }
 
-        protected internal CpuDescriptorHandle CreateUnorderedAccessView()
+        private IntPtr CreateUnorderedAccessView()
         {
-            CpuDescriptorHandle cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
+            IntPtr cpuHandle = GraphicsDevice.ShaderResourceViewAllocator.Allocate(1);
 
             UnorderedAccessViewDescription description = new UnorderedAccessViewDescription
             {
@@ -328,27 +265,59 @@ namespace DirectX12GameEngine.Graphics
                 }
             };
 
-            GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, description, cpuHandle);
+            GraphicsDevice.NativeDevice.CreateUnorderedAccessView(NativeResource, null, description, cpuHandle.ToCpuDescriptorHandle());
 
             return cpuHandle;
+        }
+
+        private static ID3D12Resource CreateResource(GraphicsDevice device, GraphicsBufferDescription description)
+        {
+            ResourceStates resourceStates = ResourceStates.Common;
+
+            if (description.HeapType == GraphicsHeapType.Upload)
+            {
+                resourceStates = ResourceStates.GenericRead;
+            }
+            else if (description.HeapType == GraphicsHeapType.Readback)
+            {
+                resourceStates = ResourceStates.CopyDestination;
+            }
+
+            return device.NativeDevice.CreateCommittedResource(
+                new HeapProperties((HeapType)description.HeapType), HeapFlags.None,
+                ConvertToNativeDescription(description), resourceStates);
+        }
+
+        private static GraphicsBufferDescription ConvertFromNativeDescription(ResourceDescription description, GraphicsHeapType heapType)
+        {
+            return new GraphicsBufferDescription
+            {
+                SizeInBytes = (int)description.Width,
+                HeapType = heapType,
+                Flags = (ResourceFlags)description.Flags
+            };
+        }
+
+        private static ResourceDescription ConvertToNativeDescription(GraphicsBufferDescription description)
+        {
+            return ResourceDescription.Buffer(description.SizeInBytes, (Vortice.Direct3D12.ResourceFlags)description.Flags);
         }
     }
 
     public class GraphicsBuffer<T> : GraphicsBuffer where T : unmanaged
     {
-        protected internal GraphicsBuffer(GraphicsDevice device) : base(device)
+        public GraphicsBuffer(GraphicsDevice device, GraphicsBufferDescription description) : base(device, description)
         {
         }
 
-        public GraphicsBuffer(GraphicsDevice device, GraphicsBufferDescription description) : base(device)
+        protected GraphicsBuffer(GraphicsDevice device, ID3D12Resource resource) : base(device, resource)
         {
-            InitializeFrom(description);
         }
 
         public new GraphicsBuffer<T> Slice(int start, int length)
         {
-            GraphicsBuffer<T> buffer = new GraphicsBuffer<T>(GraphicsDevice);
-            buffer.InitializeFrom(NativeResource, Description, FirstElement + start, length);
+            GraphicsBuffer<T> buffer = new GraphicsBuffer<T>(GraphicsDevice, NativeResource);
+            buffer.InitializeFromDescription(Description, FirstElement + start, length);
 
             return buffer;
         }

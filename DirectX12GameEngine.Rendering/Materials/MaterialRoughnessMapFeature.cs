@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             RoughnessMap.Visit(context);
 
-            invertBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Invert, ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
+            invertBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Invert, ResourceFlags.None, GraphicsHeapType.Upload);
 
             context.ConstantBufferViews.Add(invertBuffer);
         }

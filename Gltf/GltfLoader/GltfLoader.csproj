@@ -14,11 +14,15 @@
     <GltfSchema>$(MSBuildThisFileDirectory)..\Gltf\specification\2.0\schema\glTF.schema.json</GltfSchema>
     <GltfGeneratorAssembly>$(MSBuildThisFileDirectory)..\GltfGenerator\bin\$(Configuration)\netstandard2.0\GltfGenerator.dll</GltfGeneratorAssembly>
   </PropertyGroup>
-
+  
   <Import Project="..\GltfGenerator\Build\GltfGenerator.targets" />
-
+  
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="4.7.0" />
+    <PackageReference Include="System.Text.Json" Version="4.7.1" />
   </ItemGroup>
+  
+  <Target Name="BuildGltfGeneratorAssemblies" BeforeTargets="_GenerateGltfTypes">
+    <MSBuild Projects="..\GltfGenerator\GltfGenerator.csproj" Targets="Build" />
+  </Target>
 
 </Project>

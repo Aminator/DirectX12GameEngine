@@ -42,7 +42,6 @@ namespace DirectX12GameEngine.Engine
         public EntityComponentCollection Components { get; }
 
         [IgnoreDataMember]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Entity? Parent
         {
             get => parent;

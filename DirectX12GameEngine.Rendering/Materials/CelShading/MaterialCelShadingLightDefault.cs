@@ -12,7 +12,7 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
 
         public void Visit(MaterialGeneratorContext context)
         {
-            isBlackAndWhiteBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, IsBlackAndWhite, ResourceFlags.ConstantBuffer, GraphicsHeapType.Upload).DisposeBy(context.GraphicsDevice);
+            isBlackAndWhiteBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, IsBlackAndWhite, ResourceFlags.None, GraphicsHeapType.Upload);
             context.ConstantBufferViews.Add(isBlackAndWhiteBuffer);
         }
 

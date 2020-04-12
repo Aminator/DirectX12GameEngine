@@ -16,7 +16,6 @@
   <ItemGroup>
     <Content Include="Assets\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
     <Content Include="Log\ShaderCache\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

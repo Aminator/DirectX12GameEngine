@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Serialization;
 using Microsoft.Extensions.DependencyInjection;

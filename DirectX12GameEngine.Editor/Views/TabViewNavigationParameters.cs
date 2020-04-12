@@ -1,16 +1,17 @@
-﻿using Windows.UI.WindowManagement;
+﻿using DirectX12GameEngine.Editor.ViewModels;
+using Windows.UI.WindowManagement;
 
 namespace DirectX12GameEngine.Editor.Views
 {
     public class TabViewNavigationParameters
     {
-        public TabViewNavigationParameters(object tab, AppWindow appWindow)
+        public TabViewNavigationParameters(TabViewViewModel tabView, AppWindow appWindow)
         {
-            Tab = tab;
+            TabView = tabView;
             AppWindow = appWindow;
         }
 
-        public object Tab { get; }
+        public TabViewViewModel TabView { get; }
 
         public AppWindow AppWindow { get; }
     }

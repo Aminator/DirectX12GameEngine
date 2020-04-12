@@ -37,9 +37,9 @@
         </Grid.RowDefinitions>
 
         <Grid
-            x:Name="TitleBarPanel"
             Background="{ThemeResource AcrylicTitleBarBackground}"
-            Shadow="{StaticResource TitleBarShadow}">
+            Shadow="{StaticResource TitleBarShadow}"
+            Translation="0,0,32">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
@@ -73,7 +73,7 @@
                 </Grid.RowDefinitions>
 
                 <Grid x:Name="ContentEditorPanel" Background="{ThemeResource AcrylicWindowBackground}">
-                    <local:EditorTabView x:Name="ContentEditorTabView" DataContext="{x:Bind ViewModel.SolutionExplorer.MainTabView}" />
+                    <local:EditorTabView x:Name="ContentEditorTabView" DataContext="{x:Bind ViewModel.TabViewManager.MainTabView}" />
 
                     <ProgressRing
                         Width="72"
@@ -82,11 +82,11 @@
                 </Grid>
 
                 <Grid
-                    x:Name="TerminalPanel"
                     Grid.Row="1"
                     Background="{ThemeResource AcrylicSolutionExplorerBackground}"
-                    Shadow="{StaticResource TerminalShadow}">
-                    <local:EditorTabView x:Name="TerminalTabView" DataContext="{x:Bind ViewModel.TerminalTabView}" />
+                    Shadow="{StaticResource TerminalShadow}"
+                    Translation="0,0,32">
+                    <local:EditorTabView x:Name="TerminalTabView" DataContext="{x:Bind ViewModel.TabViewManager.TerminalTabView}" />
                 </Grid>
 
                 <controls:GridSplitter
@@ -96,11 +96,11 @@
             </Grid>
 
             <Grid
-                x:Name="SolutionExplorerPanel"
                 Grid.Column="1"
                 Background="{ThemeResource AcrylicSolutionExplorerBackground}"
-                Shadow="{StaticResource SolutionExplorerShadow}">
-                <local:EditorTabView x:Name="SolutionExplorerTabView" DataContext="{x:Bind ViewModel.SolutionExplorerTabView}" />
+                Shadow="{StaticResource SolutionExplorerShadow}"
+                Translation="0,0,32">
+                <local:EditorTabView x:Name="SolutionExplorerTabView" DataContext="{x:Bind ViewModel.TabViewManager.SolutionExplorerTabView}" />
             </Grid>
 
             <controls:GridSplitter

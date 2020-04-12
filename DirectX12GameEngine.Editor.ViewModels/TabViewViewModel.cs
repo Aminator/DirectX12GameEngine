@@ -1,20 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Mvvm;
 using DirectX12GameEngine.Mvvm.Commanding;
+using Windows.Foundation;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class TabViewViewModel : ViewModelBase
     {
-        private int selectedIndex;
+        private object? selectedTab;
 
         public TabViewViewModel()
         {
-            CloseCommand = new RelayCommand(async () => await TryCloseAsync());
-            CloseTabCommand = new RelayCommand<object>(async tab => await TryCloseTabAsync(tab));
+            CloseCommand = new RelayCommand(() => _ = TryCloseAsync());
+            CloseTabCommand = new RelayCommand<object>(tab => _ = TryCloseTabAsync(tab));
         }
 
         public ObservableCollection<object> Tabs { get; } = new ObservableCollection<object>();
@@ -23,17 +25,31 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public RelayCommand<object> CloseTabCommand { get; }
 
-        public int SelectedIndex
+        public event EventHandler? GotFocus;
+
+        public event EventHandler<TabDroppedOutsideEventArgs>? TabDroppedOutside;
+
+        public object? SelectedTab
         {
-            get => selectedIndex;
-            set => Set(ref selectedIndex, value);
+            get => selectedTab;
+            set => Set(ref selectedTab, value);
+        }
+
+        public void Focus()
+        {
+            GotFocus?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void OnTabDroppedOutside(TabDroppedOutsideEventArgs e)
+        {
+            TabDroppedOutside?.Invoke(this, e);
         }
 
         public async IAsyncEnumerable<object> GetUnclosableTabsAsync()
         {
-            foreach (IClosable closable in Tabs.OfType<IClosable>())
+            foreach (IEditor closable in Tabs.OfType<IEditor>())
             {
-                if (!closable.CanClose && !await closable.TryCloseAsync())
+                if (!await closable.TryEditAsync(EditActions.Close))
                 {
                     yield return closable;
                 }
@@ -48,7 +64,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             {
                 object tab = Tabs[i];
 
-                if (!(tab is IClosable closable) || closable.CanClose)
+                if (!(tab is IEditor))
                 {
                     Tabs.Remove(tab);
                 }
@@ -81,7 +97,20 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public async Task<bool> CanCloseTabAsync(object tab)
         {
-            return !(tab is IClosable closable) || closable.CanClose || await closable.TryCloseAsync();
+            return !(tab is IEditor closable) || await closable.TryEditAsync(EditActions.Close);
         }
+    }
+
+    public class TabDroppedOutsideEventArgs : EventArgs
+    {
+        public TabDroppedOutsideEventArgs(object tab, Size windowSize)
+        {
+            Tab = tab;
+            WindowSize = windowSize;
+        }
+
+        public object Tab { get; }
+
+        public Size WindowSize { get; }
     }
 }
