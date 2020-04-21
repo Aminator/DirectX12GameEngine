@@ -9,8 +9,6 @@ namespace DirectX12GameEngine.Engine
 
         public CameraSystem(GraphicsDevice device) : base(typeof(TransformComponent))
         {
-            Order = -10;
-
             graphicsDevice = device;
         }
 

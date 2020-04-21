@@ -44,7 +44,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
         private readonly Stack<Document> documentStack = new Stack<Document>();
         private readonly IStorageFile file;
 
-        public RoslynCodeEditor(IStorageFile file, SolutionLoaderViewModel solutionLoader)
+        public RoslynCodeEditor(IStorageFile file, ISolutionLoader solutionLoader)
         {
             this.file = file;
 
@@ -52,7 +52,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             SolutionLoader.Workspace.WorkspaceChanged += OnWorkspaceChanged;
 
             Solution solution = SolutionLoader.Workspace.CurrentSolution;
-            Document? document = solution.GetDocument(solution.GetDocumentIdsWithFilePath(GetSolutionDocumentFilePath()).FirstOrDefault());
+            Document? document = solution.GetDocument(solution.GetDocumentIdsWithFilePath(GetSolutionDocumentFilePath(file.Path)).FirstOrDefault());
 
             if (document != null)
             {
@@ -62,7 +62,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public event EventHandler<DocumentChangedEventArgs>? DocumentChanged;
 
-        public SolutionLoaderViewModel SolutionLoader { get; }
+        public ISolutionLoader SolutionLoader { get; }
 
         private Document? CurrentDocument => documentStack.Count > 0 ? documentStack.Peek() : null;
 
@@ -90,7 +90,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
                         {
                             Solution solution = SolutionLoader.Workspace.CurrentSolution;
 
-                            DocumentId? id = solution.GetDocumentIdsWithFilePath(GetSolutionDocumentFilePath()).FirstOrDefault();
+                            DocumentId? id = solution.GetDocumentIdsWithFilePath(GetSolutionDocumentFilePath(file.Path)).FirstOrDefault();
                             documentStack.Push(solution.GetDocument(id)!);
 
                             DocumentChanged?.Invoke(SolutionLoader.Workspace, new DocumentChangedEventArgs(true, null, null));
@@ -104,7 +104,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
         {
             using (await changeLock.LockAsync())
             {
-                DocumentId? id = e.NewSolution.GetDocumentIdsWithFilePath(GetSolutionDocumentFilePath()).FirstOrDefault();
+                DocumentId? id = e.NewSolution.GetDocumentIdsWithFilePath(GetSolutionDocumentFilePath(file.Path)).FirstOrDefault();
                 Document? document = e.NewSolution.GetDocument(id);
 
                 if (document != null)
@@ -271,14 +271,12 @@ namespace DirectX12GameEngine.Editor.ViewModels
             }
         }
 
-        private string? GetSolutionDocumentFilePath()
+        private string? GetSolutionDocumentFilePath(string documentFilePath)
         {
             if (SolutionLoader.TemporarySolutionFolder is null) return null;
 
-            string relativeDocumentFilePath = StorageExtensions.GetRelativePath(SolutionLoader.RootFolder!.Path, file.Path);
-            string documentFilePath = Path.Combine(SolutionLoader.TemporarySolutionFolder.Path, relativeDocumentFilePath);
-
-            return documentFilePath;
+            string relativeDocumentFilePath = StorageExtensions.GetRelativePath(SolutionLoader.RootFolder!.Path, documentFilePath);
+            return Path.Combine(SolutionLoader.TemporarySolutionFolder.Path, relativeDocumentFilePath);
         }
     }
 }

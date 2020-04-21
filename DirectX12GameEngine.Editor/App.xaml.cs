@@ -7,8 +7,11 @@ using Microsoft.Gaming.XboxGameBar;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Background;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 using Windows.UI.WindowManagement;
 using Windows.UI.WindowManagement.Preview;
 using Windows.UI.Xaml;
@@ -52,9 +55,9 @@ namespace DirectX12GameEngine.Editor
 
             IBackgroundTaskInstance taskInstance = e.TaskInstance;
 
-            if (taskInstance.Task.Name == SolutionLoaderViewModel.StorageLibraryChangeTrackerTaskName)
+            if (taskInstance.Task.Name == SolutionLoader.StorageLibraryChangeTrackerTaskName)
             {
-                SolutionLoaderViewModel solutionLoader = Services.GetRequiredService<SolutionLoaderViewModel>();
+                ISolutionLoader solutionLoader = Services.GetRequiredService<ISolutionLoader>();
                 await solutionLoader.ApplyChangesAsync();
             }
         }
@@ -179,10 +182,6 @@ namespace DirectX12GameEngine.Editor
         {
             AppWindow appWindow = await AppWindow.TryCreateAsync();
 
-            appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
-            appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-            appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
             Frame frame = new Frame();
             frame.Navigate(typeof(AppWindowPage), new TabViewNavigationParameters(tabView, appWindow));
 
@@ -191,9 +190,46 @@ namespace DirectX12GameEngine.Editor
             WindowManagementPreview.SetPreferredMinSize(appWindow, new Size(MinWindowWidth, MinWindowHeight));
             appWindow.RequestSize(size);
 
+            appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
             appWindow.RequestMoveAdjacentToCurrentView();
 
             bool success = await appWindow.TryShowAsync();
+
+            return success;
+        }
+    }
+
+    public class ApplicationViewManager : IWindowManager
+    {
+        private const double MinWindowWidth = 440;
+        private const double MinWindowHeight = 48;
+
+        public async Task<bool> TryCreateNewWindowAsync(TabViewViewModel tabView, Size size)
+        {
+            CoreApplicationView newView = CoreApplication.CreateNewView();
+
+            int newViewId = 0;
+
+            await newView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                ApplicationView applicationView = ApplicationView.GetForCurrentView();
+                applicationView.SetPreferredMinSize(new Size(MinWindowWidth, MinWindowHeight));
+                applicationView.TryResizeView(size);
+
+                Frame frame = new Frame();
+                frame.Navigate(typeof(AppWindowPage), new TabViewNavigationParameters(tabView));
+
+                Window.Current.Content = frame;
+
+                Window.Current.Activate();
+
+                newViewId = ApplicationView.GetForCurrentView().Id;
+            });
+
+            bool success = await ApplicationViewSwitcher.TryShowAsStandaloneAsync(newViewId);
 
             return success;
         }

@@ -16,7 +16,6 @@ namespace DirectX12GameEngine.Rendering.Materials
         [ShaderMember] public static float LDotH;
         [ShaderMember] public static float VDotH;
 
-        [ShaderMember]
         [ShaderMethod]
         public static void PrepareMaterialPerDirectLight()
         {
@@ -26,7 +25,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             VDotH = LDotH;
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public static void Reset()
         {

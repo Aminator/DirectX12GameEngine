@@ -8,11 +8,10 @@ namespace DirectX12GameEngine.Rendering.Materials
     [StaticResource]
     public class MaterialDiffuseLambertModelFeature : IMaterialDiffuseModelFeature
     {
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector3 ComputeDirectLightContribution()
         {
@@ -22,7 +21,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             return diffuseColor / (float)Math.PI * LightStream.LightColorNDotL;
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector3 ComputeEnvironmentLightContribution()
         {

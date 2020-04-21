@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using DirectX12GameEngine.Editor.ViewModels;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.WindowManagement;
 using Windows.UI.Xaml;
@@ -47,8 +48,12 @@ namespace DirectX12GameEngine.Editor.Views
                 if (AppWindow != parameters.AppWindow)
                 {
                     AppWindow = parameters.AppWindow;
-                    AppWindow.CloseRequested += OnAppWindowCloseRequested;
-                    AppWindow.Frame.DragRegionVisuals.Add(CustomDragRegion);
+
+                    if (AppWindow != null)
+                    {
+                        AppWindow.CloseRequested += OnAppWindowCloseRequested;
+                        AppWindow.Frame.DragRegionVisuals.Add(CustomDragRegion);
+                    }
                 }
             }
         }
@@ -72,7 +77,10 @@ namespace DirectX12GameEngine.Editor.Views
 
         private async void OpenMainWindow()
         {
-            await ApplicationViewSwitcher.TryShowAsStandaloneAsync(ApplicationView.GetApplicationViewIdForWindow(CoreApplication.MainView.CoreWindow));
+            await CoreApplication.MainView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+            {
+                await ApplicationViewSwitcher.TryShowAsStandaloneAsync(ApplicationView.GetApplicationViewIdForWindow(CoreApplication.MainView.CoreWindow));
+            });
         }
 
         private void UpdateTitleBarLayout(CoreApplicationViewTitleBar titleBar)

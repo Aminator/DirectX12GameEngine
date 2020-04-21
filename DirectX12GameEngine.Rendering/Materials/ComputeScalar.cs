@@ -19,9 +19,9 @@ namespace DirectX12GameEngine.Rendering.Materials
             Value = value;
         }
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            valueBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Value, ResourceFlags.None, GraphicsHeapType.Upload);
+            valueBuffer ??= GraphicsBuffer.Create(context.GraphicsDevice, Value, ResourceFlags.None, GraphicsHeapType.Upload);
             context.ConstantBufferViews.Add(valueBuffer);
         }
 
@@ -35,7 +35,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             }
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public float Compute()
         {

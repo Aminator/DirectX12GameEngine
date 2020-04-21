@@ -27,7 +27,7 @@ namespace DirectX12GameEngine.Serialization
 
                     Type type = destinationTypeProvider.GetDestinationType();
 
-                    return Task.Run(() => xamlSchemaContext.ContentManager.DeserializeAsync(path, type, xamlSchemaContext.ParentReference)).Result;
+                    return xamlSchemaContext.ContentManager.DeserializeAsync(path, type, xamlSchemaContext.ParentReference).Result;
                 }
             }
 

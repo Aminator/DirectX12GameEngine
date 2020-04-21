@@ -1,8 +1,8 @@
-﻿using DirectX12GameEngine.Mvvm;
+﻿using Microsoft.Toolkit.Mvvm.ObjectModel;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class FindAndReplaceViewModel : ViewModelBase
+    public class FindAndReplaceViewModel : ObservableObject
     {
         private bool isVisible;
         private bool isReplaceVisible;

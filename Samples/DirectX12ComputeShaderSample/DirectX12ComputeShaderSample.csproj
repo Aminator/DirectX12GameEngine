@@ -15,12 +15,7 @@
   <Import Project="..\..\DirectX12GameEngine.Shaders.Tasks\Build\DirectX12GameEngine.Shaders.Tasks.targets" />
 
   <ItemGroup>
-    <PackageReference Include="Vortice.Direct3D12" Version="1.6.0" PrivateAssets="compile" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\DirectX12GameEngine.Graphics\DirectX12GameEngine.Graphics.csproj" />
-    <ProjectReference Include="..\..\DirectX12GameEngine.Shaders\DirectX12GameEngine.Shaders.csproj" />
+    <ProjectReference Include="..\..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj" />
     <ProjectReference Include="..\..\DirectX12GameEngine.Shaders.Tasks\DirectX12GameEngine.Shaders.Tasks.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 

@@ -8,9 +8,9 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public MaterialAttributes Attributes { get; set; } = new MaterialAttributes();
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            Attributes.Visit(context);
+            Attributes.Accept(context);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Factories
     {
         public Task<object?> CreateAsync(IStorageFile item, IServiceProvider services)
         {
-            return Task.FromResult<object?>(new CodeEditorViewModel(item, services.GetRequiredService<SolutionLoaderViewModel>()));
+            return Task.FromResult<object?>(new CodeEditorViewModel(item, services.GetRequiredService<ISolutionLoader>()));
         }
     }
 }

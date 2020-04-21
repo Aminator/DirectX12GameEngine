@@ -9,5 +9,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
         }
 
         public new IStorageFile Model => (IStorageFile)base.Model;
+
+        public bool IsProjectFile => Name.Contains("proj");
     }
 }

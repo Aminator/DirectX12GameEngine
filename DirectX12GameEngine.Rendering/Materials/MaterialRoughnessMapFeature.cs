@@ -19,11 +19,11 @@ namespace DirectX12GameEngine.Rendering.Materials
             RoughnessMap = roughnessMap;
         }
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            RoughnessMap.Visit(context);
+            RoughnessMap.Accept(context);
 
-            invertBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Invert, ResourceFlags.None, GraphicsHeapType.Upload);
+            invertBuffer ??= GraphicsBuffer.Create(context.GraphicsDevice, Invert, ResourceFlags.None, GraphicsHeapType.Upload);
 
             context.ConstantBufferViews.Add(invertBuffer);
         }
@@ -41,7 +41,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             }
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public void Compute()
         {

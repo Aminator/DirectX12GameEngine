@@ -7,34 +7,29 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Games
 {
-    public abstract class GameBase : IDisposable
+    public abstract class GameBase : IGame
     {
         private readonly object tickLock = new object();
 
         private bool isExiting;
         private readonly Stopwatch stopwatch = new Stopwatch();
 
-        public GameBase(GameContext context)
+        protected GameBase(GameContext context)
         {
-            context.ConfigureServices(ServiceDescriptors);
-            ConfigureServices(ServiceDescriptors);
+            ServiceCollection services = new ServiceCollection();
 
-            Services = ServiceDescriptors.BuildServiceProvider();
+            context.ConfigureServices(services);
+            ConfigureServices(services);
 
-            Window = Services.GetService<GameWindow>();
-
+            Services = services.BuildServiceProvider();
             Content = Services.GetRequiredService<IContentManager>();
         }
 
+        public IServiceProvider Services { get; }
+
         public IContentManager Content { get; }
 
-        public IList<GameSystemBase> GameSystems { get; } = new List<GameSystemBase>();
-
-        public GameWindow? Window { get; set; }
-
-        public IServiceCollection ServiceDescriptors { get; } = new ServiceCollection();
-
-        public IServiceProvider Services { get; private set; }
+        public IList<IGameSystem> GameSystems { get; } = new List<IGameSystem>();
 
         public GameTime Time { get; } = new GameTime();
 
@@ -42,9 +37,9 @@ namespace DirectX12GameEngine.Games
 
         public virtual void Dispose()
         {
-            foreach (GameSystemBase gameSystem in GameSystems)
+            foreach (IGameSystem system in GameSystems)
             {
-                gameSystem.Dispose();
+                system.Dispose();
             }
         }
 
@@ -64,8 +59,6 @@ namespace DirectX12GameEngine.Games
             Time.Update(stopwatch.Elapsed, TimeSpan.Zero);
 
             BeginRun();
-
-            Window?.Run();
         }
 
         public void Exit()
@@ -110,74 +103,58 @@ namespace DirectX12GameEngine.Games
             }
         }
 
-        protected virtual void Initialize()
-        {
-            if (Window != null)
-            {
-                Window.TickRequested += OnTickRequested;
-            }
-
-            foreach (GameSystemBase gameSystem in GameSystems)
-            {
-                gameSystem.Initialize();
-            }
-        }
-
-        protected virtual Task LoadContentAsync()
-        {
-            List<Task> loadingTasks = new List<Task>(GameSystems.Count);
-
-            foreach (GameSystemBase gameSystem in GameSystems)
-            {
-                loadingTasks.Add(gameSystem.LoadContentAsync());
-            }
-
-            return Task.WhenAll(loadingTasks);
-        }
-
-        protected virtual void BeginRun()
+        public virtual void Initialize()
         {
         }
 
-        protected virtual void Update(GameTime gameTime)
+        public virtual Task LoadContentAsync()
         {
-            foreach (GameSystemBase gameSystem in GameSystems)
+            return Task.CompletedTask;
+        }
+
+        public virtual void BeginRun()
+        {
+        }
+
+        public virtual void Update(GameTime gameTime)
+        {
+            foreach (IGameSystem system in GameSystems)
             {
-                gameSystem.Update(gameTime);
+                system.Update(gameTime);
             }
         }
 
-        protected virtual void BeginDraw()
+        public virtual void BeginDraw()
         {
-            foreach (GameSystemBase gameSystem in GameSystems)
+            foreach (IGameSystem system in GameSystems)
             {
-                gameSystem.BeginDraw();
+                system.BeginDraw();
             }
         }
 
-        protected virtual void Draw(GameTime gameTime)
+        public virtual void Draw(GameTime gameTime)
         {
-            foreach (GameSystemBase gameSystem in GameSystems)
+            foreach (IGameSystem system in GameSystems)
             {
-                gameSystem.Draw(gameTime);
+                system.Draw(gameTime);
             }
         }
 
-        protected virtual void EndDraw()
+        public virtual void EndDraw()
         {
-            foreach (GameSystemBase gameSystem in GameSystems)
+            foreach (IGameSystem system in GameSystems)
             {
-                gameSystem.EndDraw();
+                system.EndDraw();
             }
         }
 
-        protected virtual void EndRun()
+        public virtual void EndRun()
         {
         }
 
-        protected virtual void ConfigureServices(IServiceCollection services)
+        public virtual void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<GameBase>(this);
+            services.AddSingleton<IGame>(this);
             services.AddSingleton<IContentManager, ContentManager>();
         }
 
@@ -187,22 +164,11 @@ namespace DirectX12GameEngine.Games
             {
                 EndRun();
 
-                if (Window != null)
-                {
-                    Window.Exit();
-                    Window.TickRequested -= OnTickRequested;
-                }
-
                 stopwatch.Stop();
 
                 IsRunning = false;
                 isExiting = false;
             }
-        }
-
-        private void OnTickRequested(object? sender, EventArgs e)
-        {
-            Tick();
         }
     }
 }

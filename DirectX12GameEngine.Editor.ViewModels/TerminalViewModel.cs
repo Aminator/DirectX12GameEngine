@@ -1,16 +1,15 @@
-﻿using System;
-using DirectX12GameEngine.Mvvm;
+﻿using Microsoft.Toolkit.Mvvm.ObjectModel;
 using Microsoft.Build.Framework;
 using Windows.Storage;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class TerminalViewModel : ViewModelBase
+    public class TerminalViewModel : ObservableObject
     {
         private IStorageFolder currentFolder;
         private string? currentText;
 
-        public TerminalViewModel(IStorageFolder folder, SolutionLoaderViewModel solutionLoader)
+        public TerminalViewModel(IStorageFolder folder, ISolutionLoader solutionLoader)
         {
             currentFolder = folder;
             SolutionLoader = solutionLoader;
@@ -20,7 +19,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public event AnyEventHandler? BuildMessageRaised;
 
-        public SolutionLoaderViewModel SolutionLoader { get; }
+        public ISolutionLoader SolutionLoader { get; }
 
         public IStorageFolder CurrentFolder
         {
@@ -36,7 +35,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         private void OnBuildMessageRaised(object sender, BuildEventArgs e)
         {
-            CurrentText += e.Message + Environment.NewLine;
+            //CurrentText += e.Message + Environment.NewLine;
 
             BuildMessageRaised?.Invoke(sender, e);
         }

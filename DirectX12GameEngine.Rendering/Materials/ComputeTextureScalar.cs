@@ -1,5 +1,4 @@
-﻿using DirectX12GameEngine.Core;
-using DirectX12GameEngine.Graphics;
+﻿using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Shaders;
 using DirectX12GameEngine.Shaders.Numerics;
@@ -29,14 +28,14 @@ namespace DirectX12GameEngine.Rendering.Materials
         [IgnoreShaderMember]
         public Texture? Texture { get; set; }
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
             if (Texture != null)
             {
                 context.ShaderResourceViews.Add(Texture);
             }
 
-            colorChannelBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Channel, ResourceFlags.None, GraphicsHeapType.Upload);
+            colorChannelBuffer ??= GraphicsBuffer.Create(context.GraphicsDevice, Channel, ResourceFlags.None, GraphicsHeapType.Upload);
             context.ConstantBufferViews.Add(colorChannelBuffer);
         }
 
@@ -55,11 +54,10 @@ namespace DirectX12GameEngine.Rendering.Materials
             }
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public float Compute()
         {
-            Vector4 color = ScalarTexture.Sample(Texturing.Sampler, Texturing.TexCoord);
+            GraphicsVector4 color = ScalarTexture.Sample(Texturing.Sampler, Texturing.TexCoord);
             return color[(int)Channel];
         }
     }

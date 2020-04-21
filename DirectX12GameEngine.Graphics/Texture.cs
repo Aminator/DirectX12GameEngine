@@ -51,22 +51,22 @@ namespace DirectX12GameEngine.Graphics
         public static async Task<Texture> LoadAsync(GraphicsDevice device, Stream stream, bool isSRgb = false)
         {
             using Image image = await Image.LoadAsync(stream, isSRgb);
-            return New2D(device, image.Data.Span, image.Width, image.Height, image.Description.Format);
+            return Create2D(device, image.Data.Span, image.Width, image.Height, image.Description.Format);
         }
 
-        public static Texture New(GraphicsDevice device, TextureDescription description)
+        public static Texture Create(GraphicsDevice device, TextureDescription description)
         {
             return new Texture(device, description);
         }
 
-        public static Texture New2D(GraphicsDevice device, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.None, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static Texture Create2D(GraphicsDevice device, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.None, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
-            return New(device, TextureDescription.New2D(width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType));
+            return Create(device, TextureDescription.New2D(width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType));
         }
 
-        public static Texture New2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.None, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static Texture Create2D<T>(GraphicsDevice device, Span<T> data, int width, int height, PixelFormat format, ResourceFlags textureFlags = ResourceFlags.None, short mipLevels = 1, short arraySize = 1, int sampleCount = 1, int sampleQuality = 0, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            Texture texture = New2D(device, width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType);
+            Texture texture = Create2D(device, width, height, format, textureFlags, mipLevels, arraySize, sampleCount, sampleQuality, heapType);
             texture.SetData(data);
 
             return texture;

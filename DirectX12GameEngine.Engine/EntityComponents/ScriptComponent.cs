@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
 {
-    [DefaultEntitySystem(typeof(ScriptProcessor))]
+    [DefaultEntitySystem(typeof(EntityScriptSystem))]
     public abstract class ScriptComponent : EntityComponent
     {
         public GraphicsDevice? GraphicsDevice { get; private set; }
@@ -17,7 +17,7 @@ namespace DirectX12GameEngine.Engine
 
         public IContentManager Content { get; private set; }
 
-        public GameBase Game { get; private set; }
+        public IGame Game { get; private set; }
 
         public InputManager Input { get; private set; }
 
@@ -33,7 +33,7 @@ namespace DirectX12GameEngine.Engine
             GraphicsDevice = Services.GetService<GraphicsDevice>();
 
             Content = Services.GetRequiredService<IContentManager>();
-            Game = Services.GetRequiredService<GameBase>();
+            Game = Services.GetRequiredService<IGame>();
             Input = Services.GetRequiredService<InputManager>();
             SceneSystem = Services.GetRequiredService<SceneSystem>();
             Script = Services.GetRequiredService<ScriptSystem>();

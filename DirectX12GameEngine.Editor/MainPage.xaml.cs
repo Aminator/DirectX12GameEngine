@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Editor
 
         public MainViewModel ViewModel => (MainViewModel)DataContext;
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
@@ -31,7 +31,7 @@ namespace DirectX12GameEngine.Editor
 
                 if (!string.IsNullOrEmpty(parameters.Arguments))
                 {
-                    await ViewModel.SolutionLoader.OpenRecentSolutionAsync(parameters.Arguments);
+                    ViewModel.SolutionLoader.OpenRecentSolutionCommand.Execute(parameters.Arguments);
                 }
             }
         }

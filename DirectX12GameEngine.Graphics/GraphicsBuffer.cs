@@ -46,49 +46,49 @@ namespace DirectX12GameEngine.Graphics
 
         public override IntPtr NativeDepthStencilView => default;
 
-        public static GraphicsBuffer New(GraphicsDevice device, GraphicsBufferDescription description)
+        public static GraphicsBuffer Create(GraphicsDevice device, GraphicsBufferDescription description)
         {
             return new GraphicsBuffer(device, description);
         }
 
-        public static GraphicsBuffer New(GraphicsDevice device, int size, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static GraphicsBuffer Create(GraphicsDevice device, int size, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
-            return New(device, new GraphicsBufferDescription(size, bufferFlags, heapType));
+            return Create(device, new GraphicsBufferDescription(size, bufferFlags, heapType));
         }
 
-        public static GraphicsBuffer New(GraphicsDevice device, int size, int structureByteStride, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
+        public static GraphicsBuffer Create(GraphicsDevice device, int size, int structureByteStride, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default)
         {
-            return New(device, new GraphicsBufferDescription(size, bufferFlags, heapType, structureByteStride));
+            return Create(device, new GraphicsBufferDescription(size, bufferFlags, heapType, structureByteStride));
         }
 
-        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, int elementCount, int structureByteStride, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static GraphicsBuffer<T> Create<T>(GraphicsDevice device, int elementCount, int structureByteStride, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             int size = structureByteStride * elementCount;
 
             return new GraphicsBuffer<T>(device, new GraphicsBufferDescription(size, bufferFlags, heapType, structureByteStride));
         }
 
-        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, int elementCount, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static GraphicsBuffer<T> Create<T>(GraphicsDevice device, int elementCount, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            return New<T>(device, elementCount, Unsafe.SizeOf<T>(), bufferFlags, heapType);
+            return Create<T>(device, elementCount, Unsafe.SizeOf<T>(), bufferFlags, heapType);
         }
 
-        public static unsafe GraphicsBuffer<T> New<T>(GraphicsDevice device, in T data, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static unsafe GraphicsBuffer<T> Create<T>(GraphicsDevice device, in T data, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
             fixed (T* pointer = &data)
             {
-                return New(device, new Span<T>(pointer, 1), bufferFlags, heapType);
+                return Create(device, new Span<T>(pointer, 1), bufferFlags, heapType);
             }
         }
 
-        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, Span<T> data, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static GraphicsBuffer<T> Create<T>(GraphicsDevice device, Span<T> data, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            return New(device, data, Unsafe.SizeOf<T>(), bufferFlags, heapType);
+            return Create(device, data, Unsafe.SizeOf<T>(), bufferFlags, heapType);
         }
 
-        public static GraphicsBuffer<T> New<T>(GraphicsDevice device, Span<T> data, int structureByteStride, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
+        public static GraphicsBuffer<T> Create<T>(GraphicsDevice device, Span<T> data, int structureByteStride, ResourceFlags bufferFlags, GraphicsHeapType heapType = GraphicsHeapType.Default) where T : unmanaged
         {
-            GraphicsBuffer<T> buffer = New<T>(device, data.Length, structureByteStride, bufferFlags, heapType);
+            GraphicsBuffer<T> buffer = Create<T>(device, data.Length, structureByteStride, bufferFlags, heapType);
             buffer.SetData(data);
 
             return buffer;
@@ -121,7 +121,7 @@ namespace DirectX12GameEngine.Graphics
 
             if (HeapType == GraphicsHeapType.Default)
             {
-                using GraphicsBuffer<T> readbackBaffer = New<T>(GraphicsDevice, data.Length, ResourceFlags.None, GraphicsHeapType.Readback);
+                using GraphicsBuffer<T> readbackBaffer = Create<T>(GraphicsDevice, data.Length, ResourceFlags.None, GraphicsHeapType.Readback);
                 using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
 
                 copyCommandList.CopyBufferRegion(this, offsetInBytes, readbackBaffer, 0, data.Length * Unsafe.SizeOf<T>());
@@ -152,7 +152,7 @@ namespace DirectX12GameEngine.Graphics
 
             if (HeapType == GraphicsHeapType.Default)
             {
-                using GraphicsBuffer<T> uploadBuffer = New(GraphicsDevice, data, ResourceFlags.None, GraphicsHeapType.Upload);
+                using GraphicsBuffer<T> uploadBuffer = Create(GraphicsDevice, data, ResourceFlags.None, GraphicsHeapType.Upload);
                 using CommandList copyCommandList = new CommandList(GraphicsDevice, CommandListType.Copy);
 
                 copyCommandList.CopyBufferRegion(uploadBuffer, 0, this, offsetInBytes, data.Length * Unsafe.SizeOf<T>());
@@ -323,6 +323,8 @@ namespace DirectX12GameEngine.Graphics
         }
 
         public T[] GetData() => GetData<T>();
+
+        public T this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 
     internal class D3DXUtilities

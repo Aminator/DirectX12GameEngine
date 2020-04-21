@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DirectX12GameEngine.Engine\DirectX12GameEngine.Engine.csproj" />
+    <ProjectReference Include="..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj" />
     <ProjectReference Include="..\Gltf\GltfLoader\GltfLoader.csproj" />
   </ItemGroup>
 

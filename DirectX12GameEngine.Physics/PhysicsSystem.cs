@@ -8,7 +8,6 @@ namespace DirectX12GameEngine.Physics
     {
         public PhysicsSystem() : base(typeof(TransformComponent))
         {
-            Order = -10000;
         }
 
         public PhysicsSimulation Simulation { get; } = new PhysicsSimulation();

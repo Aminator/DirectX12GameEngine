@@ -335,11 +335,11 @@ namespace DirectX12GameEngine.Graphics
         {
             if (pipelineState.IsCompute)
             {
-                NativeCommandList.SetComputeRootSignature(pipelineState.RootSignature);
+                NativeCommandList.SetComputeRootSignature(pipelineState.RootSignature.NativeRootSignature);
             }
             else
             {
-                NativeCommandList.SetGraphicsRootSignature(pipelineState.RootSignature);
+                NativeCommandList.SetGraphicsRootSignature(pipelineState.RootSignature.NativeRootSignature);
             }
 
             NativeCommandList.SetPipelineState(pipelineState.NativePipelineState);

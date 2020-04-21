@@ -1,11 +1,12 @@
 ﻿using System.Numerics;
+using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering.Core;
 using DirectX12GameEngine.Rendering.Lights;
 using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    public class MaterialShader : RasterizationShaderBase
+    public class MaterialShader : RasterizationShaderBase, IComputeShader
     {
 #nullable disable
         [ConstantBufferView]
@@ -27,7 +28,16 @@ namespace DirectX12GameEngine.Rendering.Materials
         public readonly SamplerResource Sampler;
 #nullable enable
 
-        [ShaderMember]
+        public virtual void Accept(ShaderGeneratorContext context)
+        {
+            context.RootParameters.Add(new RootParameter(new RootConstants(context.ConstantBufferViewRegisterCount++, 0, 1), ShaderVisibility.All));
+            context.RootParameters.Add(new RootParameter(new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, context.ConstantBufferViewRegisterCount++)), ShaderVisibility.All));
+            context.RootParameters.Add(new RootParameter(new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, context.ConstantBufferViewRegisterCount++)), ShaderVisibility.All));
+            context.RootParameters.Add(new RootParameter(new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, context.ConstantBufferViewRegisterCount++)), ShaderVisibility.All));
+            context.RootParameters.Add(new RootParameter(new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.ConstantBufferView, 1, context.ConstantBufferViewRegisterCount++)), ShaderVisibility.All));
+            context.RootParameters.Add(new RootParameter(new RootDescriptorTable(new DescriptorRange(DescriptorRangeType.Sampler, 1, context.SamplerRegisterCount++)), ShaderVisibility.All));
+        }
+
         [ShaderMethod]
         [Shader("vertex")]
         public override VSOutput VSMain(VSInput input)
@@ -52,7 +62,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             return output;
         }
 
-        [ShaderMember]
         [ShaderMethod]
         [Shader("pixel")]
         public override PSOutput PSMain(PSInput input)

@@ -238,10 +238,16 @@
                 Spacing="8"
                 Visibility="{x:Bind ViewModel.FindAndReplace.IsReplaceVisible, Mode=OneWay}">
                 <Button>
-                    <FontIcon Glyph="&#xE8AC;" ToolTipService.ToolTip="Replace next" />
+                    <FontIcon
+                        FontFamily="{StaticResource Codicon}"
+                        Glyph="&#xEB3D;"
+                        ToolTipService.ToolTip="Replace next" />
                 </Button>
                 <Button>
-                    <FontIcon Glyph="&#xEF1F;" ToolTipService.ToolTip="Replace all" />
+                    <FontIcon
+                        FontFamily="{StaticResource Codicon}"
+                        Glyph="&#xEB3C;"
+                        ToolTipService.ToolTip="Replace all" />
                 </Button>
             </StackPanel>
 
@@ -257,7 +263,7 @@
                     IsChecked="{x:Bind ViewModel.FindAndReplace.MatchCase, Mode=TwoWay}"
                     ToolTipService.ToolTip="Match case"
                     Unchecked="{x:Bind HighlightSearchBoxMatches}">
-                    <FontIcon Glyph="&#xE8E9;" />
+                    <FontIcon FontFamily="{StaticResource Codicon}" Glyph="&#xEAB1;" />
                 </ToggleButton>
                 <ToggleButton
                     x:Name="MatchWordToggleButton"
@@ -265,7 +271,7 @@
                     IsChecked="{x:Bind ViewModel.FindAndReplace.MatchWord, Mode=TwoWay}"
                     ToolTipService.ToolTip="Match whole world"
                     Unchecked="{x:Bind HighlightSearchBoxMatches}">
-                    <FontIcon Glyph="&#xE8E9;" />
+                    <FontIcon FontFamily="{StaticResource Codicon}" Glyph="&#xEB7E;" />
                 </ToggleButton>
                 <ToggleButton
                     x:Name="UseRegexToggleButton"
@@ -273,7 +279,7 @@
                     IsChecked="{x:Bind ViewModel.FindAndReplace.UseRegex, Mode=TwoWay}"
                     ToolTipService.ToolTip="Use Regular Expressions"
                     Unchecked="{x:Bind HighlightSearchBoxMatches}">
-                    <FontIcon Glyph="&#xE8E9;" />
+                    <FontIcon FontFamily="{StaticResource Codicon}" Glyph="&#xEB38;" />
                 </ToggleButton>
             </StackPanel>
         </Grid>

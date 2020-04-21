@@ -6,11 +6,10 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
     [StaticResource]
     public class MaterialSpecularMicrofacetFresnelSchlick : IMaterialSpecularMicrofacetFresnelFunction
     {
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector3 Compute(Vector3 f0)
         {

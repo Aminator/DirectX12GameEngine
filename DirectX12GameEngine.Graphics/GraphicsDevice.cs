@@ -77,6 +77,8 @@ namespace DirectX12GameEngine.Graphics
 
         public DescriptorAllocator ShaderVisibleSamplerAllocator { get; }
 
+        public object Direct3D12Device => NativeDevice;
+
         public object Direct3D11Device => NativeDirect3D11Device;
 
         internal ID3D12Device NativeDevice { get; }
@@ -99,11 +101,6 @@ namespace DirectX12GameEngine.Graphics
 
                 return nativeDirect3D11Device;
             }
-        }
-
-        public ID3D12RootSignature CreateRootSignature(VersionedRootSignatureDescription rootSignatureDescription)
-        {
-            return NativeDevice.CreateRootSignature(rootSignatureDescription);
         }
 
         public void Dispose()

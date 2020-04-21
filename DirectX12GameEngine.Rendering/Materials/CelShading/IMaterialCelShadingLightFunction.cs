@@ -2,7 +2,7 @@
 
 namespace DirectX12GameEngine.Rendering.Materials.CelShading
 {
-    public interface IMaterialCelShadingLightFunction : IComputeNode
+    public interface IMaterialCelShadingLightFunction : IComputeShader
     {
         Vector3 Compute(float LightIn);
     }

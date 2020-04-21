@@ -3,25 +3,28 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Editor.ViewModels.Factories;
-using DirectX12GameEngine.Engine;
-using DirectX12GameEngine.Mvvm;
-using DirectX12GameEngine.Mvvm.Commanding;
+using DirectX12GameEngine.Editor.ViewModels.Properties;
+using Microsoft.Toolkit.Mvvm.Commands;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 using Windows.Storage;
-using Windows.Storage.Search;
 using Windows.System;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class SolutionExplorerViewModel : ViewModelBase
+    public class SolutionExplorerViewModel : ObservableObject
     {
-        private readonly SolutionLoaderViewModel solutionLoader;
-        private readonly EditorViewFactory editorViewFactory;
-        private readonly PropertyManagerViewModel propertyManager;
-        private readonly TabViewManagerViewModel tabViewManager;
+        private readonly ISolutionLoader solutionLoader;
+        private readonly IFileEditorViewFactory editorViewFactory;
+        private readonly IPropertyManager propertyManager;
+        private readonly ITabViewManager tabViewManager;
 
         private StorageFolderViewModel? rootFolder;
 
-        public SolutionExplorerViewModel(SolutionLoaderViewModel solutionLoader, EditorViewFactory editorViewFactory, PropertyManagerViewModel propertyManager, TabViewManagerViewModel tabViewManager)
+        public SolutionExplorerViewModel(
+            ISolutionLoader solutionLoader,
+            IFileEditorViewFactory editorViewFactory,
+            IPropertyManager propertyManager,
+            ITabViewManager tabViewManager)
         {
             this.solutionLoader = solutionLoader;
             this.editorViewFactory = editorViewFactory;
@@ -46,19 +49,9 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
             solutionLoader.StorageLibraryChanged += OnSolutionLoaderStorageLibraryChanged;
 
-            EngineAssetViewFactory engineAssetViewFactory = new EngineAssetViewFactory();
-            engineAssetViewFactory.Add(typeof(Entity), new SceneEditorViewFactory());
-
-            CodeEditorViewFactory codeEditorViewFactory = new CodeEditorViewFactory();
-
-            editorViewFactory.Add(".xaml", engineAssetViewFactory);
-            editorViewFactory.Add(".cs", codeEditorViewFactory);
-            editorViewFactory.Add(".vb", codeEditorViewFactory);
-            editorViewFactory.Add(".csproj", codeEditorViewFactory);
-            editorViewFactory.Add(".vbproj", codeEditorViewFactory);
-
             AddFileCommand = new RelayCommand<StorageFolderViewModel>(folder => _ = AddFileAsync(folder), folder => folder != null);
             AddFolderCommand = new RelayCommand<StorageFolderViewModel>(folder => _ = AddFolderAsync(folder), folder => folder != null);
+            BuildCommand = new RelayCommand<StorageFileViewModel>(file => _ = BuildAsync(file));
             OpenCommand = new RelayCommand<StorageItemViewModel>(item => _ = OpenAsync(item), item => item != null);
             ViewCodeCommand = new RelayCommand<StorageFileViewModel>(file => _ = ViewCodeAsync(file), file => file != null);
             DeleteCommand = new RelayCommand<StorageItemViewModel>(item => _ = DeleteAsync(item), item => item != null);
@@ -75,6 +68,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
         public RelayCommand<StorageFolderViewModel> AddFileCommand { get; }
 
         public RelayCommand<StorageFolderViewModel> AddFolderCommand { get; }
+
+        public RelayCommand<StorageFileViewModel> BuildCommand { get; }
 
         public RelayCommand<StorageItemViewModel> OpenCommand { get; }
 
@@ -94,6 +89,15 @@ namespace DirectX12GameEngine.Editor.ViewModels
         public async Task AddFolderAsync(StorageFolderViewModel folder)
         {
             await folder.Model.CreateFolderAsync("NewFolder", CreationCollisionOption.GenerateUniqueName);
+        }
+
+        public Task<bool> BuildAsync(StorageFileViewModel file)
+        {
+            string? projectFilePath = solutionLoader.GetSolutionProjectFilePath(file.Path);
+
+            if (projectFilePath is null) return Task.FromResult(false);
+
+            return solutionLoader.BuildAsync(projectFilePath);
         }
 
         public async Task OpenAsync(StorageItemViewModel item)

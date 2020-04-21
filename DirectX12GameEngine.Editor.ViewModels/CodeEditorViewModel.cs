@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Mvvm;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Completion;
@@ -16,26 +16,34 @@ using Windows.UI;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class CodeEditorViewModel : ViewModelBase, IFileEditor, ICodeEditor
+    public class CodeEditorViewModel : ObservableObject, IFileEditor, ICodeEditor
     {
         private string? currentText;
         private int tabSize = 4;
         private Encoding? encoding;
         private NewLineMode newLineMode = NewLineMode.Crlf;
 
-        public CodeEditorViewModel(IStorageFile file, SolutionLoaderViewModel solutionLoader)
+        public CodeEditorViewModel(IStorageFile file) : this(file, null)
+        {
+        }
+
+        public CodeEditorViewModel(IStorageFile file, ISolutionLoader? solutionLoader)
         {
             File = file;
             SolutionLoader = solutionLoader;
-            CodeEditor = new RoslynCodeEditor(file, solutionLoader);
-            CodeEditor.DocumentChanged += OnCodeEditorDocumentChanged;
+
+            if (SolutionLoader != null)
+            {
+                CodeEditor = new RoslynCodeEditor(file, SolutionLoader);
+                CodeEditor.DocumentChanged += OnCodeEditorDocumentChanged;
+            }
         }
 
         public event EventHandler<DocumentChangedEventArgs>? DocumentChanged;
 
         public ICodeEditor? CodeEditor { get; set; }
 
-        public SolutionLoaderViewModel SolutionLoader { get; }
+        public ISolutionLoader? SolutionLoader { get; }
 
         public IStorageFile File { get; }
 

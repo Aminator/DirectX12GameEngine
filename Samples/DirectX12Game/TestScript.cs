@@ -84,14 +84,14 @@ namespace DirectX12Game
                         new ModelComponent(await Services.GetRequiredService<IContentManager>().LoadAsync<Model>("Assets\\Models\\Cliffhouse_Model"))
                     };
 
-                    SceneSystem.SceneInstance?.RootEntity?.Children.Add(newCliffhouse);
+                    SceneSystem.RootEntity?.Children.Add(newCliffhouse);
                     break;
                 case VirtualKey.P:
                     Entity? child1 = Entity?.EntityManager?.FirstOrDefault(m => m.Name == "Child1");
                     if (child1 != null && child1.Parent != null)
                     {
                         child1.Transform.Parent = null;
-                        SceneSystem.SceneInstance?.RootEntity?.Children.Add(child1);
+                        SceneSystem.RootEntity?.Children.Add(child1);
                     }
                     break;
                 case VirtualKey.Q:
@@ -103,16 +103,15 @@ namespace DirectX12Game
                     }
                     break;
                 case VirtualKey.S:
-                    SceneInstance? sceneInstance = SceneSystem.SceneInstance;
-                    Entity? previousRootScene = sceneInstance?.RootEntity;
+                    Entity? previousRootScene = SceneSystem.RootEntity;
 
-                    if (sceneInstance != null && previousRootScene != null && cameraEntity != null)
+                    if (previousRootScene != null && cameraEntity != null)
                     {
                         cameraEntity.Parent = null;
 
-                        sceneInstance.RootEntity = new Entity { new TransformComponent { Position = new Vector3(500.0f, 0.0f, 0.0f) } };
-                        sceneInstance.RootEntity.Children.Add(cameraEntity);
-                        sceneInstance.RootEntity.Children.Add(previousRootScene);
+                        SceneSystem.RootEntity = new Entity { new TransformComponent { Position = new Vector3(500.0f, 0.0f, 0.0f) } };
+                        SceneSystem.RootEntity.Children.Add(cameraEntity);
+                        SceneSystem.RootEntity.Children.Add(previousRootScene);
                     }
                     break;
                 case VirtualKey.O:

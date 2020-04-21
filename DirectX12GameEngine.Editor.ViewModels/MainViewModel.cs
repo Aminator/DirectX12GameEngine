@@ -1,17 +1,18 @@
-﻿using DirectX12GameEngine.Mvvm;
-using DirectX12GameEngine.Mvvm.Commanding;
+﻿using Microsoft.Toolkit.Mvvm.Commands;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 using Windows.ApplicationModel.Core;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class MainViewModel : ViewModelBase
+    public class MainViewModel : ObservableObject
     {
         public MainViewModel(
             SolutionLoaderViewModel solutionLoader,
             SolutionExplorerViewModel solutionExplorer,
             PropertyManagerViewModel propertyManager,
             SdkManagerViewModel sdkManager,
-            TabViewManagerViewModel tabViewManager)
+            TabViewManagerViewModel tabViewManager,
+            ISolutionLoader solutionLoaderService)
         {
             SolutionLoader = solutionLoader;
             SolutionExplorer = solutionExplorer;
@@ -19,10 +20,10 @@ namespace DirectX12GameEngine.Editor.ViewModels
             SdkManager = sdkManager;
             TabViewManager = tabViewManager;
 
-            SolutionLoader.RootFolderLoaded += (s, e) =>
+            solutionLoaderService.RootFolderLoaded += (s, e) =>
             {
-                TabViewManager.OpenTab(SolutionExplorer);
-                TabViewManager.TerminalTabView.Tabs.Add(new TerminalViewModel(e.RootFolder, SolutionLoader));
+                TabViewManager.TabViewManager.OpenTab(SolutionExplorer);
+                TabViewManager.TabViewManager.TerminalTabView.Tabs.Add(new TerminalViewModel(e.RootFolder, solutionLoaderService));
             };
 
             CloseApplicationCommand = new RelayCommand(CloseApplication);

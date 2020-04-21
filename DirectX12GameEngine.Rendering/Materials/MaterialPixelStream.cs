@@ -25,7 +25,6 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         [ShaderMember] public static float AlphaRoughness;
 
-        [ShaderMember]
         [ShaderMethod]
         public static void PrepareMaterialForLightingAndShading()
         {
@@ -37,7 +36,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             AlphaRoughness = Math.Max(MaterialRoughness * MaterialRoughness, 0.001f);
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public static void Reset()
         {

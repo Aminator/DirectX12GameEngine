@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
 
@@ -15,25 +14,19 @@ namespace DirectX12GameEngine.Rendering.Materials
             {
                 MaterialPass materialPass = context.PushPass();
 
-                descriptor.Visit(context);
+                context.Visit(descriptor.Attributes);
 
-                materialPass.PipelineState = await context.CreateGraphicsPipelineStateAsync();
-
-                var shaderResources = context.ConstantBufferViews.Concat(context.ShaderResourceViews).Concat(context.UnorderedAccessViews);
-
-                if (shaderResources.Count() > 0)
+                InputElementDescription[] inputElements = new[]
                 {
-                    materialPass.ShaderResourceViewDescriptorSet = new DescriptorSet(context.GraphicsDevice, shaderResources.Count());
-                    materialPass.ShaderResourceViewDescriptorSet.AddConstantBufferViews(context.ConstantBufferViews);
-                    materialPass.ShaderResourceViewDescriptorSet.AddShaderResourceViews(context.ShaderResourceViews);
-                    materialPass.ShaderResourceViewDescriptorSet.AddUnorderedAccessViews(context.UnorderedAccessViews);
-                }
+                    new InputElementDescription("Position", 0, PixelFormat.R32G32B32_Float, 0),
+                    new InputElementDescription("Normal", 0, PixelFormat.R32G32B32_Float, 1),
+                    new InputElementDescription("Tangent", 0, PixelFormat.R32G32B32A32_Float, 2),
+                    new InputElementDescription("TexCoord", 0, PixelFormat.R32G32_Float, 3)
+                };
 
-                if (context.Samplers.Count > 0)
-                {
-                    materialPass.SamplerDescriptorSet = new DescriptorSet(context.GraphicsDevice, context.Samplers.Count, DescriptorHeapType.Sampler);
-                    materialPass.SamplerDescriptorSet.AddSamplers(context.Samplers);
-                }
+                materialPass.PipelineState = await context.CreateGraphicsPipelineStateAsync(inputElements);
+                materialPass.ShaderResourceViewDescriptorSet = context.CreateShaderResourceViewDescriptorSet();
+                materialPass.SamplerDescriptorSet = context.CreateSamplerDescriptorSet();
 
                 context.PopPass();
             }

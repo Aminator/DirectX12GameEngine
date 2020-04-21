@@ -1,19 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DirectX12GameEngine.Engine;
 using Windows.Storage;
 
 #nullable enable
 
 namespace DirectX12GameEngine.Editor.ViewModels.Factories
 {
-    public class EditorViewFactory : IEditorViewFactory
+    public class FileEditorViewFactory : IFileEditorViewFactory
     {
         private readonly Dictionary<string, IEditorViewFactory> factories = new Dictionary<string, IEditorViewFactory>();
 
-        public EditorViewFactory(IServiceProvider services)
+        public FileEditorViewFactory(IServiceProvider services)
         {
             Services = services;
+
+            EngineAssetViewFactory engineAssetViewFactory = new EngineAssetViewFactory();
+            engineAssetViewFactory.Add(typeof(Entity), new SceneEditorViewFactory());
+
+            CodeEditorViewFactory codeEditorViewFactory = new CodeEditorViewFactory();
+
+            Add(".xaml", engineAssetViewFactory);
+            Add(".cs", codeEditorViewFactory);
+            Add(".vb", codeEditorViewFactory);
+            Add(".csproj", codeEditorViewFactory);
+            Add(".vbproj", codeEditorViewFactory);
         }
 
         public IServiceProvider Services { get; }

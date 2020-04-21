@@ -1,15 +1,18 @@
-﻿using DirectX12GameEngine.Mvvm;
+﻿using Microsoft.Toolkit.Mvvm.ObjectModel;
 using Windows.Storage;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public abstract class StorageItemViewModel : ViewModelBase<IStorageItem>
+    public abstract class StorageItemViewModel : ObservableObject
     {
         private StorageFolderViewModel? parent;
 
-        protected StorageItemViewModel(IStorageItem model) : base(model)
+        protected StorageItemViewModel(IStorageItem model)
         {
+            Model = model;
         }
+
+        public IStorageItem Model { get; }
 
         public StorageFolderViewModel? Parent
         {

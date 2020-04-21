@@ -352,6 +352,10 @@
       <Name>GltfLoader</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\Fonts\codicon.ttf" />
+    <Content Include="..\Libs\Microsoft.Build.Tasks.CodeAnalysis.dll" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

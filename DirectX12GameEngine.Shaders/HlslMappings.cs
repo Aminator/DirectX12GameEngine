@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using DirectX12GameEngine.Shaders.Numerics;
 
 namespace DirectX12GameEngine.Shaders
 {
@@ -86,12 +87,15 @@ namespace DirectX12GameEngine.Shaders
             { typeof(Vector2).FullName, "float2" },
             { typeof(Vector3).FullName, "float3" },
             { typeof(Vector4).FullName, "float4" },
-            { typeof(Numerics.Vector2).FullName, "float2" },
-            { typeof(Numerics.Vector3).FullName, "float3" },
-            { typeof(Numerics.Vector4).FullName, "float4" },
-            { typeof(Numerics.UInt2).FullName, "uint2" },
-            { typeof(Numerics.UInt3).FullName, "uint3" },
-            { typeof(Numerics.UInt4).FullName, "uint4" },
+            { typeof(GraphicsVector2).FullName, "float2" },
+            { typeof(GraphicsVector3).FullName, "float3" },
+            { typeof(GraphicsVector4).FullName, "float4" },
+            { typeof(Int2).FullName, "int2" },
+            { typeof(Int3).FullName, "int3" },
+            { typeof(Int4).FullName, "int4" },
+            { typeof(UInt2).FullName, "uint2" },
+            { typeof(UInt3).FullName, "uint3" },
+            { typeof(UInt4).FullName, "uint4" },
             { typeof(Matrix4x4).FullName, "float4x4" },
 
             { typeof(SamplerResource).FullName, "SamplerState" },
@@ -141,6 +145,8 @@ namespace DirectX12GameEngine.Shaders
         {
             { "System.Math.Cos", "cos" },
             { "System.MathF.Cos", "cos" },
+            { "System.Math.Exp", "exp" },
+            { "System.MathF.Exp", "exp" },
             { "System.Math.Max", "max" },
             { "System.Math.Pow", "pow" },
             { "System.MathF.Pow", "pow" },
@@ -149,9 +155,21 @@ namespace DirectX12GameEngine.Shaders
             { "System.Math.PI", "3.1415926535897931" },
             { "System.MathF.PI", "3.14159274f" },
 
-            { "DirectX12GameEngine.Shaders.Numerics.Vector2.Length", "length" },
-            { "DirectX12GameEngine.Shaders.Numerics.Vector3.Length", "length" },
-            { "DirectX12GameEngine.Shaders.Numerics.Vector4.Length", "length" },
+            { "DirectX12GameEngine.Shaders.Numerics.GraphicsVector2.Length", "length" },
+            { "DirectX12GameEngine.Shaders.Numerics.GraphicsVector3.Length", "length" },
+            { "DirectX12GameEngine.Shaders.Numerics.GraphicsVector4.Length", "length" },
+
+            { "DirectX12GameEngine.Shaders.Numerics.Int2.X", ".x" },
+            { "DirectX12GameEngine.Shaders.Numerics.Int2.Y", ".y" },
+
+            { "DirectX12GameEngine.Shaders.Numerics.Int3.X", ".x" },
+            { "DirectX12GameEngine.Shaders.Numerics.Int3.Y", ".y" },
+            { "DirectX12GameEngine.Shaders.Numerics.Int3.Z", ".z" },
+
+            { "DirectX12GameEngine.Shaders.Numerics.Int4.X", ".x" },
+            { "DirectX12GameEngine.Shaders.Numerics.Int4.Y", ".y" },
+            { "DirectX12GameEngine.Shaders.Numerics.Int4.Z", ".z" },
+            { "DirectX12GameEngine.Shaders.Numerics.Int4.W", ".w" },
 
             { "DirectX12GameEngine.Shaders.Numerics.UInt2.X", ".x" },
             { "DirectX12GameEngine.Shaders.Numerics.UInt2.Y", ".y" },

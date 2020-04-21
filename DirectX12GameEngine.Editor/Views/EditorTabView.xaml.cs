@@ -1,8 +1,12 @@
-﻿using DirectX12GameEngine.Editor.ViewModels;
+﻿using System;
+using System.Linq;
+using DirectX12GameEngine.Editor.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
+using Windows.Storage.AccessCache;
 using Windows.UI.Xaml;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -43,15 +47,30 @@ namespace DirectX12GameEngine.Editor.Views
             e.AcceptedOperation = DataPackageOperation.Move;
         }
 
-        protected override void OnDrop(DragEventArgs e)
+        protected override async void OnDrop(DragEventArgs e)
         {
             base.OnDrop(e);
 
-            if (e.Data.Properties.TryGetValue(TabKey, out object tab)
-                && e.Data.Properties.TryGetValue(TabViewKey, out object tabView) && tabView is TabViewViewModel originalTabView)
+            if (e.DataView != null)
             {
-                originalTabView.Tabs.Remove(tab);
-                ViewModel.Tabs.Add(tab);
+                if (e.DataView.Properties.TryGetValue(TabKey, out object tab)
+                    && e.DataView.Properties.TryGetValue(TabViewKey, out object tabView) && tabView is TabViewViewModel originalTabView)
+                {
+                    originalTabView.Tabs.Remove(tab);
+                    ViewModel.Tabs.Add(tab);
+                }
+                else if (e.DataView.Contains(StandardDataFormats.StorageItems))
+                {
+                    var items = await e.DataView.GetStorageItemsAsync();
+
+                    foreach (IStorageFile file in items.OfType<IStorageFile>())
+                    {
+                        StorageApplicationPermissions.FutureAccessList.Add(file, file.Path);
+
+                        CodeEditorViewModel codeEditor = new CodeEditorViewModel(file);
+                        ViewModel.Tabs.Add(codeEditor);
+                    }
+                }
             }
         }
 

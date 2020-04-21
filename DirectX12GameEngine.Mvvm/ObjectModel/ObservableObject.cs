@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
-namespace DirectX12GameEngine.Mvvm
+namespace Microsoft.Toolkit.Mvvm.ObjectModel
 {
-    public abstract class ViewModelBase : INotifyPropertyChanged
+    public abstract class ObservableObject : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        protected virtual void OnPropertyChanged<T>(Expression<Func<T>> raiser)
-        {
-            var propertyName = ((MemberExpression)raiser.Body).Member.Name;
-            OnPropertyChanged(propertyName);
         }
 
         protected bool Set<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
@@ -44,15 +37,5 @@ namespace DirectX12GameEngine.Mvvm
 
             return false;
         }
-    }
-
-    public abstract class ViewModelBase<TModel> : ViewModelBase where TModel : class
-    {
-        public ViewModelBase(TModel model)
-        {
-            Model = model;
-        }
-
-        public TModel Model { get; }
     }
 }

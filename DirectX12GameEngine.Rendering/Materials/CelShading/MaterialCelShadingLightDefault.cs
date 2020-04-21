@@ -10,16 +10,15 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
     {
         private GraphicsBuffer<bool>? isBlackAndWhiteBuffer;
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            isBlackAndWhiteBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, IsBlackAndWhite, ResourceFlags.None, GraphicsHeapType.Upload);
+            isBlackAndWhiteBuffer ??= GraphicsBuffer.Create(context.GraphicsDevice, IsBlackAndWhite, ResourceFlags.None, GraphicsHeapType.Upload);
             context.ConstantBufferViews.Add(isBlackAndWhiteBuffer);
         }
 
         [ConstantBufferView]
         public bool IsBlackAndWhite { get; set; }
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector3 Compute(float LightIn)
         {

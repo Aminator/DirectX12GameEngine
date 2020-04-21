@@ -2,7 +2,7 @@
     x:Class="DirectX12GameEngine.Editor.Views.SolutionExplorerView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:commanding="using:DirectX12GameEngine.Mvvm.Commanding"
+    xmlns:commanding="using:Microsoft.Toolkit.Mvvm.Commands"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
@@ -30,6 +30,15 @@
             Command="{x:Bind ViewModel.AddFolderCommand}"
             Kind="Open"
             Label="Add Folder" />
+
+        <XamlUICommand
+            x:Key="BuildCommand"
+            Command="{x:Bind ViewModel.BuildCommand}"
+            Label="Build">
+            <XamlUICommand.IconSource>
+                <SymbolIconSource Symbol="Download" />
+            </XamlUICommand.IconSource>
+        </XamlUICommand>
 
         <StandardUICommand
             x:Key="OpenCommand"
@@ -84,6 +93,10 @@
                 </interactivity:Interaction.Behaviors>
                 <winui:TreeViewItem.ContextFlyout>
                     <MenuFlyout>
+                        <MenuFlyoutItem
+                            Command="{StaticResource BuildCommand}"
+                            CommandParameter="{x:Bind}"
+                            Visibility="{x:Bind IsProjectFile}" />
                         <MenuFlyoutItem Command="{StaticResource OpenCommand}" CommandParameter="{x:Bind}" />
                         <MenuFlyoutItem Command="{StaticResource ViewCodeCommand}" CommandParameter="{x:Bind}" />
                         <MenuFlyoutItem Command="{StaticResource DeleteCommand}" CommandParameter="{x:Bind}" />

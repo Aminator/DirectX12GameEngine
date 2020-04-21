@@ -8,14 +8,13 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
     [StaticResource]
     public class MaterialDiffuseCelShadingModelFeature : IMaterialDiffuseModelFeature
     {
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            RampFunction.Visit(context);
+            RampFunction.Accept(context);
         }
 
         public IMaterialCelShadingLightFunction RampFunction { get; set; } = new MaterialCelShadingLightDefault();
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector3 ComputeDirectLightContribution()
         {
@@ -27,7 +26,6 @@ namespace DirectX12GameEngine.Rendering.Materials.CelShading
             return diffuseColor / (float)Math.PI * lightColorNDotL;
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector3 ComputeEnvironmentLightContribution()
         {

@@ -110,7 +110,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
         private Texture CreateRenderTarget()
         {
-            return Texture.New2D(
+            return Texture.Create2D(
                 GraphicsDevice,
                 PresentationParameters.BackBufferWidth,
                 PresentationParameters.BackBufferHeight,

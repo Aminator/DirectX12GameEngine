@@ -8,11 +8,11 @@ namespace DirectX12GameEngine.Rendering.Materials
     [StaticResource]
     public class MaterialSpecularMicrofacetModelFeature : IMaterialSpecularModelFeature
     {
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            Fresnel.Visit(context);
-            Visibility.Visit(context);
-            NormalDistribution.Visit(context);
+            Fresnel.Accept(context);
+            Visibility.Accept(context);
+            NormalDistribution.Accept(context);
         }
 
         public IMaterialSpecularMicrofacetFresnelFunction Fresnel { get; set; } = new MaterialSpecularMicrofacetFresnelSchlick();
@@ -21,7 +21,6 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public IMaterialSpecularMicrofacetNormalDistributionFunction NormalDistribution { get; set; } = new MaterialSpecularMicrofacetNormalDistributionGgx();
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector3 ComputeDirectLightContribution()
         {
@@ -36,7 +35,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             return reflected * LightStream.LightSpecularColorNDotL;
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector3 ComputeEnvironmentLightContribution()
         {

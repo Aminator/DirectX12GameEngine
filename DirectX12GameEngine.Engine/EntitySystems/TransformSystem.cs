@@ -1,33 +1,31 @@
 ﻿using System.Collections.Generic;
-using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
     public sealed class TransformSystem : EntitySystem<TransformComponent>
     {
-        internal HashSet<TransformComponent> TransformationRoots { get; } = new HashSet<TransformComponent>();
+        private readonly HashSet<TransformComponent> transformationRoots = new HashSet<TransformComponent>();
 
         public TransformSystem()
         {
-            Order = -200;
         }
 
-        public override void Draw(GameTime gameTime)
+        public override void BeginDraw()
         {
-            UpdateTransformations(TransformationRoots);
+            UpdateTransformations(transformationRoots);
         }
 
         protected override void OnEntityComponentAdded(TransformComponent component)
         {
             if (component.Parent is null)
             {
-                TransformationRoots.Add(component);
+                transformationRoots.Add(component);
             }
         }
 
         protected override void OnEntityComponentRemoved(TransformComponent component)
         {
-            TransformationRoots.Remove(component);
+            transformationRoots.Remove(component);
         }
 
         private void UpdateTransformations(IEnumerable<TransformComponent> transformationRoots)

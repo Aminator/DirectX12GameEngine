@@ -1,41 +1,35 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using DirectX12GameEngine.Mvvm;
-using DirectX12GameEngine.Mvvm.Commanding;
+using Microsoft.Toolkit.Mvvm.Commands;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class TabViewManagerViewModel : ViewModelBase
+    public class TabViewManagerViewModel : ObservableObject
     {
         private readonly IWindowManager windowManager;
 
         private object? selectedTab;
 
-        public TabViewManagerViewModel(IWindowManager windowManager)
+        public TabViewManagerViewModel(ITabViewManager tabViewManager, IWindowManager windowManager)
         {
+            TabViewManager = tabViewManager;
             this.windowManager = windowManager;
 
-            TabViews.CollectionChanged += OnTabViewsCollectionChanged;
+            OnTabViewAdded(TabViewManager.MainTabView);
+            OnTabViewAdded(TabViewManager.SolutionExplorerTabView);
+            OnTabViewAdded(TabViewManager.TerminalTabView);
 
-            TabViews.Add(MainTabView);
-            TabViews.Add(SolutionExplorerTabView);
-            TabViews.Add(TerminalTabView);
+            TabViewManager.TabViews.CollectionChanged += OnTabViewsCollectionChanged;
 
             SaveCommand = new RelayCommand(() => _ = (SelectedTab as IEditor)?.TryEditAsync(EditActions.Save), () => (SelectedTab as IEditor)?.SupportsAction(EditActions.Save) ?? false);
-            OpenTabCommand = new RelayCommand<object>(OpenTab);
-            CloseTabCommand = new RelayCommand<object>(CloseTab);
+            OpenTabCommand = new RelayCommand<object>(tabViewManager.OpenTab);
+            CloseTabCommand = new RelayCommand<object>(tabViewManager.CloseTab);
         }
 
-        public ObservableCollection<TabViewViewModel> TabViews { get; } = new ObservableCollection<TabViewViewModel>();
-
-        public TabViewViewModel MainTabView { get; } = new TabViewViewModel();
-
-        public TabViewViewModel SolutionExplorerTabView { get; } = new TabViewViewModel();
-
-        public TabViewViewModel TerminalTabView { get; } = new TabViewViewModel();
+        public ITabViewManager TabViewManager { get; }
 
         public RelayCommand SaveCommand { get; }
 
@@ -55,35 +49,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
             }
         }
 
-        public void OpenTab(object tab)
-        {
-            OpenTab(tab, SolutionExplorerTabView);
-        }
-
-        public void OpenTab(object tab, TabViewViewModel tabView)
-        {
-            TabViewViewModel existingTabView = TabViews.FirstOrDefault(t => t.Tabs.Any(t => t == tab));
-
-            if (existingTabView is null)
-            {
-                tabView.Tabs.Add(tab);
-            }
-            else
-            {
-                tabView = existingTabView;
-            }
-
-            tabView.SelectedTab = tab;
-        }
-
-        public void CloseTab(object tab)
-        {
-            foreach (TabViewViewModel tabView in TabViews)
-            {
-                tabView.Tabs.Remove(tab);
-            }
-        }
-
         private void OnTabViewsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
@@ -91,27 +56,38 @@ namespace DirectX12GameEngine.Editor.ViewModels
                 case NotifyCollectionChangedAction.Add:
                     foreach (TabViewViewModel tabView in e.NewItems.Cast<TabViewViewModel>())
                     {
-                        tabView.TabDroppedOutside += OnTabViewTabDroppedOutside;
-                        tabView.GotFocus += OnTabViewGotFocus;
-                        tabView.PropertyChanged += OnTabViewPropertyChanged;
+                        OnTabViewAdded(tabView);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach (TabViewViewModel tabView in e.NewItems.Cast<TabViewViewModel>())
                     {
-                        tabView.TabDroppedOutside -= OnTabViewTabDroppedOutside;
-                        tabView.GotFocus -= OnTabViewGotFocus;
-                        tabView.PropertyChanged -= OnTabViewPropertyChanged;
+                        OnTabViewRemoved(tabView);
                     }
                     break;
             }
+        }
+
+        private void OnTabViewAdded(TabViewViewModel tabView)
+        {
+            tabView.TabDroppedOutside += OnTabViewTabDroppedOutside;
+            tabView.GotFocus += OnTabViewGotFocus;
+            tabView.PropertyChanged += OnTabViewPropertyChanged;
+        }
+
+        private void OnTabViewRemoved(TabViewViewModel tabView)
+        {
+            tabView.TabDroppedOutside -= OnTabViewTabDroppedOutside;
+            tabView.GotFocus -= OnTabViewGotFocus;
+            tabView.PropertyChanged -= OnTabViewPropertyChanged;
         }
 
         private async void OnTabViewTabDroppedOutside(object sender, TabDroppedOutsideEventArgs e)
         {
             TabViewViewModel tabView = new TabViewViewModel();
             tabView.Tabs.Add(e.Tab);
-            TabViews.Add(tabView);
+            tabView.SelectedTab = e.Tab;
+            TabViewManager.TabViews.Add(tabView);
 
             await windowManager.TryCreateNewWindowAsync(tabView, e.WindowSize);
         }

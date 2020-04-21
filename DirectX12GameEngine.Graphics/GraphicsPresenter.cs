@@ -45,7 +45,7 @@ namespace DirectX12GameEngine.Graphics
 
         protected virtual Texture CreateDepthStencilBuffer()
         {
-            return Texture.New2D(GraphicsDevice,
+            return Texture.Create2D(GraphicsDevice,
                 PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight, PresentationParameters.DepthStencilFormat,
                 ResourceFlags.AllowDepthStencil | ResourceFlags.DenyShaderResource, 1, PresentationParameters.Stereo ? (short)2 : (short)1);
         }

@@ -1,12 +1,15 @@
 ﻿using DirectX12GameEngine.Engine;
-using DirectX12GameEngine.Mvvm;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class EntityComponentViewModel : ViewModelBase<EntityComponent>
+    public class EntityComponentViewModel : ObservableObject
     {
-        public EntityComponentViewModel(EntityComponent model) : base(model)
+        public EntityComponentViewModel(EntityComponent model)
         {
+            Model = model;
         }
+
+        public EntityComponent Model { get; }
     }
 }

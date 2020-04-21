@@ -2,18 +2,20 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using DirectX12GameEngine.Engine;
-using DirectX12GameEngine.Mvvm;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 using DirectX12GameEngine.Mvvm.Collections;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class EntityViewModel : ViewModelBase<Entity>
+    public class EntityViewModel : ObservableObject
     {
         private EntityViewModel? parent;
         private bool isSelected;
 
-        public EntityViewModel(Entity model) : base(model)
+        public EntityViewModel(Entity model)
         {
+            Model = model;
+
             Children = new ObservableViewModelCollection<EntityViewModel, Entity>(Model.Children, vm => vm.Model, (m, i) => new EntityViewModel(m));
             Components = new ObservableViewModelCollection<EntityComponentViewModel, EntityComponent>(Model.Components, vm => vm.Model,(m, i) => new EntityComponentViewModel(m));
 
@@ -25,6 +27,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
             Children.CollectionChanged += OnChildrenCollectionChanged;
             Model.PropertyChanged += OnModelPropertyChanged;
         }
+
+        public Entity Model { get; }
 
         public EntityViewModel? Parent
         {

@@ -5,7 +5,6 @@ namespace DirectX12GameEngine.Rendering.Core
 {
     public static class NormalUpdate
     {
-        [ShaderMember]
         [ShaderMethod]
         public static void UpdateNormalFromTangentSpace(Vector3 normalInTangetSpace)
         {

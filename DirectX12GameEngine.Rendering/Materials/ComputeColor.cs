@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
 
@@ -20,9 +19,9 @@ namespace DirectX12GameEngine.Rendering.Materials
             Color = color;
         }
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            colorBuffer ??= GraphicsBuffer.New(context.GraphicsDevice, Color, ResourceFlags.None, GraphicsHeapType.Upload);
+            colorBuffer ??= GraphicsBuffer.Create(context.GraphicsDevice, Color, ResourceFlags.None, GraphicsHeapType.Upload);
             context.ConstantBufferViews.Add(colorBuffer);
         }
 
@@ -36,7 +35,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             }
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector4 Compute()
         {

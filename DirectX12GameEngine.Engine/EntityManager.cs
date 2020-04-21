@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
 {
-    public abstract class EntityManager : IEnumerable<Entity>, IDisposable
+    public abstract class EntityManager : IGameSystem, IEnumerable<Entity>
     {
         private readonly HashSet<Entity> entities = new HashSet<Entity>();
         private readonly Dictionary<Type, List<EntitySystem>> systemsPerComponentType = new Dictionary<Type, List<EntitySystem>>();
@@ -35,11 +35,27 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
+        public void BeginDraw()
+        {
+            foreach (EntitySystem system in Systems)
+            {
+                system.BeginDraw();
+            }
+        }
+
         public virtual void Draw(GameTime gameTime)
         {
             foreach (EntitySystem system in Systems)
             {
                 system.Draw(gameTime);
+            }
+        }
+
+        public void EndDraw()
+        {
+            foreach (EntitySystem system in Systems)
+            {
+                system.EndDraw();
             }
         }
 
@@ -145,7 +161,7 @@ namespace DirectX12GameEngine.Engine
 
                 foreach (EntitySystem system in Systems)
                 {
-                    if (system.Accept(componentType))
+                    if (system.Accepts(componentType))
                     {
                         systemsForComponent.Add(system);
                     }
@@ -166,7 +182,7 @@ namespace DirectX12GameEngine.Engine
 
             foreach (DefaultEntitySystemAttribute entitySystemAttribute in entitySystemAttributes)
             {
-                bool addNewSystem = !Systems.Exists(s => s.GetType() == entitySystemAttribute.Type);
+                bool addNewSystem = !Systems.Any(s => s.GetType() == entitySystemAttribute.Type);
 
                 if (addNewSystem)
                 {
@@ -174,7 +190,6 @@ namespace DirectX12GameEngine.Engine
                     system.EntityManager = this;
 
                     Systems.Add(system);
-                    Systems.Sort(EntitySystemCollection.EntitySystemComparer.Default);
                 }
             }
         }

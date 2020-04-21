@@ -73,7 +73,7 @@
                 </Grid.RowDefinitions>
 
                 <Grid x:Name="ContentEditorPanel" Background="{ThemeResource AcrylicWindowBackground}">
-                    <local:EditorTabView x:Name="ContentEditorTabView" DataContext="{x:Bind ViewModel.TabViewManager.MainTabView}" />
+                    <local:EditorTabView x:Name="ContentEditorTabView" DataContext="{x:Bind ViewModel.TabViewManager.TabViewManager.MainTabView}" />
 
                     <ProgressRing
                         Width="72"
@@ -86,7 +86,7 @@
                     Background="{ThemeResource AcrylicSolutionExplorerBackground}"
                     Shadow="{StaticResource TerminalShadow}"
                     Translation="0,0,32">
-                    <local:EditorTabView x:Name="TerminalTabView" DataContext="{x:Bind ViewModel.TabViewManager.TerminalTabView}" />
+                    <local:EditorTabView x:Name="TerminalTabView" DataContext="{x:Bind ViewModel.TabViewManager.TabViewManager.TerminalTabView}" />
                 </Grid>
 
                 <controls:GridSplitter
@@ -100,7 +100,7 @@
                 Background="{ThemeResource AcrylicSolutionExplorerBackground}"
                 Shadow="{StaticResource SolutionExplorerShadow}"
                 Translation="0,0,32">
-                <local:EditorTabView x:Name="SolutionExplorerTabView" DataContext="{x:Bind ViewModel.TabViewManager.SolutionExplorerTabView}" />
+                <local:EditorTabView x:Name="SolutionExplorerTabView" DataContext="{x:Bind ViewModel.TabViewManager.TabViewManager.SolutionExplorerTabView}" />
             </Grid>
 
             <controls:GridSplitter

@@ -83,60 +83,9 @@ namespace DirectX12GameEngine.Shaders
         {
             if (result != null) return result;
 
-            var allMemberInfos = shaderType.GetMembersInTypeHierarchyInOrder(GetBindingFlagsForType(shaderType));
-            var memberInfos = allMemberInfos.Where(m => !(m is MethodInfo));
-
-            // Collecting stage
-
-            foreach (MemberInfo memberInfo in memberInfos)
-            {
-                Type? memberType = memberInfo.GetMemberType(shader);
-
-                if (memberType != null)
-                {
-                    CollectStructure(memberType, memberInfo.GetMemberValue(shader));
-                }
-            }
-
             CollectStructure(shaderType, shader);
 
-            // Writing stage
-
-            foreach (ShaderTypeDefinition type in collectedTypes)
-            {
-                WriteStructure(type.Type, type.Instance);
-            }
-
-            foreach (MemberInfo memberInfo in memberInfos)
-            {
-                Type? memberType = memberInfo.GetMemberType(shader);
-                ShaderMemberAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
-
-                if (memberType != null && resourceType != null)
-                {
-                    WriteResource(memberInfo.Name, memberType, resourceType);
-                }
-            }
-
-            foreach (Type type in shaderType.GetBaseTypes().Reverse())
-            {
-                WriteStructure(type, shader);
-            }
-
-            foreach (MethodInfo methodInfo in shaderType.GetMethods(GetBindingFlagsForType(shaderType))
-                .Where(m => m.IsDefined(typeof(ShaderMemberAttribute)))
-                .OrderBy(m => m.GetCustomAttribute<ShaderMemberAttribute>()?.Order))
-            {
-                WriteMethod(methodInfo, null, null, true);
-            }
-
-            if (action != null && !action.Method.IsDefined(typeof(ShaderMemberAttribute)))
-            {
-                WriteMethod(action.Method, EntryPointAttributes, AnonymousMethodEntryPointName, true);
-            }
-
-            stringWriter.GetStringBuilder().TrimEnd();
-            writer.WriteLine();
+            WriteTopLevelStructure();
 
             result = new ShaderGeneratorResult(stringWriter.ToString());
 
@@ -192,19 +141,25 @@ namespace DirectX12GameEngine.Shaders
             foreach (MemberInfo memberInfo in memberInfos)
             {
                 Type? memberType = memberInfo.GetMemberType(obj);
-                ShaderMemberAttribute? resourceType = memberInfo.GetResourceAttribute(memberType);
+                object? memberValue = memberInfo.GetMemberValue(obj);
+
+                ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetShaderMemberAttribute(memberType);
 
                 if (memberInfo is MethodInfo methodInfo && CanWriteMethod(methodInfo))
                 {
                     CollectMethod(methodInfo);
                 }
+                else if (memberValue is Delegate memberDelegate)
+                {
+                    CollectMethod(memberDelegate.Method);
+                }
                 else if (memberType != null && memberType != type)
                 {
-                    CollectStructure(memberType, memberInfo.GetMemberValue(obj));
+                    CollectStructure(memberType, memberValue);
 
-                    if (resourceType != null)
+                    if (shaderMemberAttribute != null)
                     {
-                        shaderTypeDefinition.ResourceDefinitions.Add(new ResourceDefinition(memberType, resourceType));
+                        shaderTypeDefinition.ResourceDefinitions.Add(new ResourceDefinition(memberType, shaderMemberAttribute));
                     }
                 }
             }
@@ -213,6 +168,55 @@ namespace DirectX12GameEngine.Shaders
             {
                 collectedTypes.Add(shaderTypeDefinition);
             }
+        }
+
+        private void WriteTopLevelStructure()
+        {
+            var allMemberInfos = shaderType.GetMembersInTypeHierarchyInOrder(GetBindingFlagsForType(shaderType));
+            var memberInfos = allMemberInfos.Where(m => !(m is MethodInfo));
+
+            foreach (ShaderTypeDefinition type in collectedTypes)
+            {
+                WriteStructure(type.Type, type.Instance);
+            }
+
+            foreach (MemberInfo memberInfo in memberInfos)
+            {
+                Type? memberType = memberInfo.GetMemberType(shader);
+                ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetShaderMemberAttribute(memberType);
+
+                if (memberType != null && shaderMemberAttribute != null)
+                {
+                    WriteResource(memberInfo.Name, memberType, shaderMemberAttribute);
+                }
+            }
+
+            foreach (Type type in shaderType.GetBaseTypes().Reverse())
+            {
+                WriteStructure(type, shader);
+            }
+
+            foreach (MemberInfo memberInfo in shaderType.GetMembersInOrder(GetBindingFlagsForType(shaderType)))
+            {
+                Type? memberType = memberInfo.GetMemberType(shader);
+                object? memberValue = memberInfo.GetMemberValue(shader);
+
+                if (memberInfo is MethodInfo methodInfo && CanWriteMethod(methodInfo))
+                {
+                    WriteMethod(methodInfo, true);
+                }
+                else if (memberValue is Delegate memberDelegate)
+                {
+                    WriteMethod(memberDelegate.Method, true, memberInfo.Name);
+                }
+            }
+
+            if (action != null && !action.Method.IsDefined(typeof(ShaderMemberAttribute)))
+            {
+                WriteMethod(action.Method, true, AnonymousMethodEntryPointName, EntryPointAttributes);
+            }
+
+            stringWriter.GetStringBuilder().TrimEnd().AppendLine();
         }
 
         private void WriteStructure(Type type, object? obj, string? explicitTypeName = null)
@@ -296,10 +300,15 @@ namespace DirectX12GameEngine.Shaders
             foreach (MemberInfo memberInfo in memberInfos)
             {
                 Type? memberType = memberInfo.GetMemberType(obj);
+                object? memberValue = memberInfo.GetMemberValue(obj);
 
                 if (memberInfo is MethodInfo methodInfo && CanWriteMethod(methodInfo))
                 {
                     WriteMethod(methodInfo);
+                }
+                else if (memberValue is Delegate memberDelegate)
+                {
+                    WriteMethod(memberDelegate.Method, false, memberInfo.Name);
                 }
                 else if (memberType != null)
                 {
@@ -370,9 +379,9 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine();
         }
 
-        private void WriteResource(string memberName, Type memberType, ShaderMemberAttribute resourceType)
+        private void WriteResource(string memberName, Type memberType, ShaderMemberAttribute shaderMemberAttribute)
         {
-            switch (resourceType)
+            switch (shaderMemberAttribute)
             {
                 case ConstantBufferViewAttribute _:
                     WriteConstantBufferView(memberName, memberType, bindingTracker.ConstantBuffer++);
@@ -443,7 +452,7 @@ namespace DirectX12GameEngine.Shaders
                     string generatedMemberName = $"__Generated__{bindingTracker.StaticResource++}__";
                     generatedMemberNames.Add(generatedMemberName);
 
-                    WriteResource(generatedMemberName, resourceDefinition.MemberType, resourceDefinition.ResourceType);
+                    WriteResource(generatedMemberName, resourceDefinition.MemberType, resourceDefinition.ShaderMemberAttribute);
                 }
 
                 resourceNames = generatedMemberNames;
@@ -509,7 +518,7 @@ namespace DirectX12GameEngine.Shaders
             }
         }
 
-        private void WriteMethod(MethodInfo methodInfo, IEnumerable<Attribute>? attributes = null, string? explicitMethodName = null, bool isTopLevel = false)
+        private void WriteMethod(MethodInfo methodInfo, bool isTopLevel = false, string ? explicitMethodName = null, IEnumerable<Attribute>? attributes = null)
         {
             bool isStatic = methodInfo.IsStatic;
 
@@ -741,15 +750,15 @@ namespace DirectX12GameEngine.Shaders
 
         private class ResourceDefinition
         {
-            public ResourceDefinition(Type memberType, ShaderMemberAttribute resourceType)
+            public ResourceDefinition(Type memberType, ShaderMemberAttribute shaderMemberAttribute)
             {
                 MemberType = memberType;
-                ResourceType = resourceType;
+                ShaderMemberAttribute = shaderMemberAttribute;
             }
 
             public Type MemberType { get; }
 
-            public ShaderMemberAttribute ResourceType { get; }
+            public ShaderMemberAttribute ShaderMemberAttribute { get; }
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using DirectX12GameEngine.Editor.ViewModels;
 using Microsoft.Build.Framework;
-using Windows.UI.Core;
+using Windows.System;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -12,11 +12,16 @@ namespace DirectX12GameEngine.Editor.Views
 {
     public sealed partial class TerminalView : UserControl
     {
+        private readonly DispatcherQueue dispatcherQueue;
+
         public TerminalView()
         {
             InitializeComponent();
 
+            dispatcherQueue = Window.Current.CoreWindow.DispatcherQueue;
+
             Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -34,16 +39,21 @@ namespace DirectX12GameEngine.Editor.Views
             }
         }
 
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.BuildMessageRaised -= OnBuildMessageRaised;
+        }
+
         public TerminalViewModel ViewModel => (TerminalViewModel)DataContext;
 
         private void OnBuildMessageRaised(object sender, BuildEventArgs e)
         {
-            //await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            //dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
             //{
             //    if (!string.IsNullOrEmpty(e.Message))
             //    {
-            //        Terminal.Document.Selection.TypeText(e.Message);
-            //        Terminal.Document.Selection.TypeText(Environment.NewLine);
+            //        Terminal.Document.Selection.TypeText(e.Message + '\r');
+            //        Terminal.Document.Selection.ScrollIntoView(PointOptions.NoHorizontalScroll);
             //    }
             //});
         }

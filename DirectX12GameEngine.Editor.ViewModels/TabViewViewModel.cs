@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using DirectX12GameEngine.Mvvm;
-using DirectX12GameEngine.Mvvm.Commanding;
+using Microsoft.Toolkit.Mvvm.Commands;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 using Windows.Foundation;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class TabViewViewModel : ViewModelBase
+    public class TabViewViewModel : ObservableObject
     {
         private object? selectedTab;
 

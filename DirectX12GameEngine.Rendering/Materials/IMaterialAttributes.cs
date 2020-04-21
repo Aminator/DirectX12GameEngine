@@ -1,6 +1,6 @@
 ﻿namespace DirectX12GameEngine.Rendering.Materials
 {
-    public interface IMaterialAttributes : IComputeNode
+    public interface IMaterialAttributes : IComputeShader
     {
     }
 }

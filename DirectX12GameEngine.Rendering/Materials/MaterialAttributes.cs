@@ -8,14 +8,16 @@ namespace DirectX12GameEngine.Rendering.Materials
 {
     public class MaterialAttributes : MaterialShader, IMaterialAttributes
     {
-        public virtual void Visit(MaterialGeneratorContext context)
+        public override void Accept(ShaderGeneratorContext context)
         {
-            Surface.Visit(context);
-            MicroSurface.Visit(context);
-            Diffuse.Visit(context);
-            DiffuseModel.Visit(context);
-            Specular.Visit(context);
-            SpecularModel.Visit(context);
+            base.Accept(context);
+
+            Surface.Accept(context);
+            MicroSurface.Accept(context);
+            Diffuse.Accept(context);
+            DiffuseModel.Accept(context);
+            Specular.Accept(context);
+            SpecularModel.Accept(context);
         }
 
         public IMaterialSurfaceFeature Surface { get; set; } = new MaterialNormalMapFeature();
@@ -30,7 +32,6 @@ namespace DirectX12GameEngine.Rendering.Materials
 
         public IMaterialSpecularModelFeature SpecularModel { get; set; } = new MaterialSpecularMicrofacetModelFeature();
 
-        [ShaderMember]
         [ShaderMethod]
         public void ComputeSurfaceLightingAndShading()
         {
@@ -60,7 +61,6 @@ namespace DirectX12GameEngine.Rendering.Materials
             MaterialPixelShadingStream.ShadingColorAlpha = MaterialPixelStream.MaterialDiffuse.W;
         }
 
-        [ShaderMember]
         [ShaderMethod]
         [Shader("pixel")]
         public override PSOutput PSMain(PSInput input)

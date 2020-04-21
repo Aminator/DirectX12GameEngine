@@ -6,7 +6,7 @@ namespace DirectX12GameEngine.Physics
     {
         public static PhysicsSimulation? GetSimulation(this ScriptComponent component)
         {
-            return component.SceneSystem.SceneInstance.Systems.Get<PhysicsSystem>()?.Simulation;
+            return component.SceneSystem.Systems.Get<PhysicsSystem>()?.Simulation;
         }
     }
 }

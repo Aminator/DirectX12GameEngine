@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DirectX12GameEngine.Assets\DirectX12GameEngine.Assets.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Input\DirectX12GameEngine.Input.csproj" />
     <ProjectReference Include="..\DirectX12GameEngine.Rendering\DirectX12GameEngine.Rendering.csproj" />
   </ItemGroup>

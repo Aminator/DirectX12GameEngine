@@ -15,14 +15,13 @@ namespace DirectX12GameEngine.Rendering.Materials
             MetalnessMap = metalnessMap;
         }
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            MetalnessMap.Visit(context);
+            MetalnessMap.Accept(context);
         }
 
         public IComputeScalar MetalnessMap { get; set; } = new ComputeScalar();
 
-        [ShaderMember]
         [ShaderMethod]
         public void Compute()
         {

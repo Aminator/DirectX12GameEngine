@@ -30,9 +30,9 @@ namespace DirectX12GameEngine.Engine
             graphicsDevice = device;
             this.sceneSystem = sceneSystem;
 
-            DirectionalLightGroupBuffer = GraphicsBuffer.New(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, ResourceFlags.None, GraphicsHeapType.Upload);
-            GlobalBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), ResourceFlags.None, GraphicsHeapType.Upload);
-            ViewProjectionTransformBuffer = GraphicsBuffer.New(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>(), ResourceFlags.None, GraphicsHeapType.Upload);
+            DirectionalLightGroupBuffer = GraphicsBuffer.Create(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, ResourceFlags.None, GraphicsHeapType.Upload);
+            GlobalBuffer = GraphicsBuffer.Create(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), ResourceFlags.None, GraphicsHeapType.Upload);
+            ViewProjectionTransformBuffer = GraphicsBuffer.Create(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>(), ResourceFlags.None, GraphicsHeapType.Upload);
             DefaultSampler = new SamplerState(graphicsDevice);
         }
 
@@ -104,7 +104,7 @@ namespace DirectX12GameEngine.Engine
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.New(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>(), ResourceFlags.None, GraphicsHeapType.Upload);
+                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.Create(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>(), ResourceFlags.None, GraphicsHeapType.Upload);
                         }
 
                         CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];

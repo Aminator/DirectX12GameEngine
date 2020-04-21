@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Materials;
 using DirectX12GameEngine.Shaders;
 
@@ -8,16 +9,15 @@ namespace DirectX12Game
     [StaticResource]
     public class WobbleMaterialAttributes : MaterialAttributes
     {
-        public override void Visit(MaterialGeneratorContext context)
+        public override void Accept(ShaderGeneratorContext context)
         {
-            base.Visit(context);
+            base.Accept(context);
 
-            WobbleStrength.Visit(context);
+            WobbleStrength.Accept(context);
         }
 
         public IComputeScalar WobbleStrength { get; set; } = new ComputeScalar(2.0f);
 
-        [ShaderMember]
         [ShaderMethod]
         [Shader("vertex")]
         public override VSOutput VSMain(VSInput input)

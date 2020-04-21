@@ -40,8 +40,8 @@ namespace DirectX12GameEngine.Editor.Views
         {
             Deferral deferral = e.GetDeferral();
 
-            e.Handled = await ViewModel.TabViewManager.MainTabView.GetUnclosableTabsAsync().CountAsync() > 0
-                || await ViewModel.TabViewManager.SolutionExplorerTabView.GetUnclosableTabsAsync().CountAsync() > 0;
+            e.Handled = await ViewModel.TabViewManager.TabViewManager.MainTabView.GetUnclosableTabsAsync().CountAsync() > 0
+                || await ViewModel.TabViewManager.TabViewManager.SolutionExplorerTabView.GetUnclosableTabsAsync().CountAsync() > 0;
 
             deferral.Complete();
         }

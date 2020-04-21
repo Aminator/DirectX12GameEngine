@@ -1,10 +1,10 @@
 ﻿using System.Numerics;
+using DirectX12GameEngine.Shaders.Numerics;
 
 namespace DirectX12GameEngine.Shaders
 {
     public abstract class RasterizationShaderBase
     {
-        [ShaderMember]
         [ShaderMethod("return (VSOutput)0;", typeof(VSInput), typeof(VSOutput))]
         [Shader("vertex")]
         public virtual VSOutput VSMain(VSInput input)
@@ -12,7 +12,6 @@ namespace DirectX12GameEngine.Shaders
             return default;
         }
 
-        [ShaderMember]
         [ShaderMethod("return (PSOutput)0;", typeof(PSInput), typeof(PSOutput))]
         [Shader("pixel")]
         public virtual PSOutput PSMain(PSInput input)
@@ -23,7 +22,6 @@ namespace DirectX12GameEngine.Shaders
 
     public abstract class ComputeShaderBase
     {
-        [ShaderMember]
         [ShaderMethod("", typeof(CSInput))]
         [Shader("compute")]
         public virtual void CSMain(CSInput input)
@@ -34,7 +32,7 @@ namespace DirectX12GameEngine.Shaders
     public struct CSInput
     {
         [SystemDispatchThreadIdSemantic]
-        public Numerics.UInt3 DispatchThreadId;
+        public Int3 DispatchThreadId;
     }
 
     public struct VSInput

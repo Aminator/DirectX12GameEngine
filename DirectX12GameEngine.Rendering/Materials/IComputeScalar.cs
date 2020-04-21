@@ -1,6 +1,6 @@
 ﻿namespace DirectX12GameEngine.Rendering.Materials
 {
-    public interface IComputeScalar : IComputeNode
+    public interface IComputeScalar : IComputeShader
     {
         float Compute();
     }

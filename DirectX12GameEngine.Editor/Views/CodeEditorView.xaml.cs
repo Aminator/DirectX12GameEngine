@@ -84,12 +84,15 @@ namespace DirectX12GameEngine.Editor.Views
 
         private async void OnViewModelDocumentChanged(object sender, DocumentChangedEventArgs e)
         {
+            bool hasTextChanged = false;
+
             if (e.NewText != null)
             {
                 CodeEditor.TextDocument.GetText(TextGetOptionsFromNewLineMode(ViewModel.NewLineMode), out string text);
 
                 if (text != e.NewText)
                 {
+                    hasTextChanged = true;
                     ViewModel.CurrentText = e.NewText;
                     CodeEditor.TextDocument.SetText(TextSetOptions.None, e.NewText);
                 }
@@ -97,7 +100,7 @@ namespace DirectX12GameEngine.Editor.Views
 
             if (e.IsClassificationChanged)
             {
-                if (e.NewText != null)
+                if (hasTextChanged)
                 {
                     await ReapplySyntaxHighlightingAsync();
                 }

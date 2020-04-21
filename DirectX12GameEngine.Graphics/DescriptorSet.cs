@@ -33,7 +33,7 @@ namespace DirectX12GameEngine.Graphics
 
         public void AddConstantBufferViews(IEnumerable<GraphicsBuffer> buffers)
         {
-            AddDescriptors(buffers.Select(r => r.NativeConstantBufferView).ToArray());
+            AddDescriptors(buffers.Select(r => r.NativeConstantBufferView));
         }
 
         public void AddConstantBufferViews(params GraphicsBuffer[] buffers)
@@ -84,6 +84,8 @@ namespace DirectX12GameEngine.Graphics
 
         private void AddDescriptors(IEnumerable<IntPtr> descriptors)
         {
+            if (descriptors.Count() == 0) return;
+
             CpuDescriptorHandle[] sourceDescriptors = descriptors.Select(p => p.ToCpuDescriptorHandle()).ToArray();
 
             if (CurrentDescriptorCount + sourceDescriptors.Length > DescriptorCapacity) throw new InvalidOperationException();

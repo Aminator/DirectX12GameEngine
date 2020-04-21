@@ -15,14 +15,13 @@ namespace DirectX12GameEngine.Rendering.Materials
             SpecularMap = specularMap;
         }
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            SpecularMap.Visit(context);
+            SpecularMap.Accept(context);
         }
 
         public IComputeColor SpecularMap { get; set; } = new ComputeColor();
 
-        [ShaderMember]
         [ShaderMethod]
         public void Compute()
         {

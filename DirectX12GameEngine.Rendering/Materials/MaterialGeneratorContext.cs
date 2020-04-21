@@ -5,35 +5,22 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Serialization;
 using DirectX12GameEngine.Shaders;
-using Vortice.Direct3D12;
-using Vortice.DXGI;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    public class MaterialGeneratorContext
+    public class MaterialGeneratorContext : ShaderGeneratorContext
     {
         private readonly Stack<IMaterialDescriptor> materialDescriptorStack = new Stack<IMaterialDescriptor>();
 
-        public MaterialGeneratorContext(GraphicsDevice device, Material material, IContentManager contentManager)
+        public MaterialGeneratorContext(GraphicsDevice device, Material material, IContentManager contentManager) : base(device)
         {
-            GraphicsDevice = device;
             Material = material;
             Content = contentManager;
         }
 
-        public GraphicsDevice GraphicsDevice { get; }
-
         public Material Material { get; }
 
         public IContentManager Content { get; }
-
-        public IList<GraphicsBuffer> ConstantBufferViews { get; } = new List<GraphicsBuffer>();
-
-        public IList<GraphicsResource> ShaderResourceViews { get; } = new List<GraphicsResource>();
-
-        public IList<GraphicsResource> UnorderedAccessViews { get; } = new List<GraphicsResource>();
-
-        public IList<SamplerState> Samplers { get; } = new List<SamplerState>();
 
         public IMaterialDescriptor? MaterialDescriptor => materialDescriptorStack.Count > 0 ? materialDescriptorStack.Peek() : null;
 
@@ -70,34 +57,24 @@ namespace DirectX12GameEngine.Rendering.Materials
             MaterialPass? materialPass = MaterialPass;
             MaterialPass = null;
 
-            ConstantBufferViews.Clear();
-            ShaderResourceViews.Clear();
-            UnorderedAccessViews.Clear();
+            Clear();
 
             return materialPass;
         }
 
-        public async Task<PipelineState> CreateGraphicsPipelineStateAsync()
+        public override async Task<CompiledShader> CreateShaderAsync()
         {
             if (MaterialDescriptor is null) throw new InvalidOperationException("The current material descriptor cannot be null when creating a pipeline state.");
-
-            InputElementDescription[] inputElements = new[]
-            {
-                new InputElementDescription("Position", 0, (Format)PixelFormat.R32G32B32_Float, 0),
-                new InputElementDescription("Normal", 0, (Format)PixelFormat.R32G32B32_Float, 1),
-                new InputElementDescription("Tangent", 0, (Format)PixelFormat.R32G32B32A32_Float, 2),
-                new InputElementDescription("TexCoord", 0, (Format)PixelFormat.R32G32_Float, 3)
-            };
+            if (Shader is null) throw new InvalidOperationException();
 
             CompiledShader compiledShader = new CompiledShader();
 
             string shaderCachePath = Path.Combine("Log", "ShaderCache");
-
             string filePath = Path.Combine(shaderCachePath, $"Shader_{MaterialDescriptor.Id}");
 
             if (!await Content.ExistsAsync(filePath))
             {
-                ShaderGenerator shaderGenerator = new ShaderGenerator(MaterialDescriptor.Attributes);
+                ShaderGenerator shaderGenerator = new ShaderGenerator(Shader, Settings);
                 ShaderGeneratorResult result = shaderGenerator.GenerateShader();
 
                 CompiledShaderAsset shaderAsset = new CompiledShaderAsset();
@@ -118,72 +95,7 @@ namespace DirectX12GameEngine.Rendering.Materials
                 compiledShader = await Content.LoadAsync<CompiledShader>(filePath);
             }
 
-            ID3D12RootSignature rootSignature = CreateRootSignature();
-
-            return new PipelineState(GraphicsDevice, inputElements, rootSignature,
-                compiledShader.Shaders["vertex"],
-                compiledShader.Shaders["pixel"],
-                compiledShader.Shaders.ContainsKey("geometry") ? compiledShader.Shaders["geometry"] : null,
-                compiledShader.Shaders.ContainsKey("hull") ? compiledShader.Shaders["hull"] : null,
-                compiledShader.Shaders.ContainsKey("domain") ? compiledShader.Shaders["domain"] : null);
-        }
-
-        private ShaderStage GetShaderStage(string shader) => shader switch
-        {
-            "vertex" => ShaderStage.VertexShader,
-            "pixel" => ShaderStage.PixelShader,
-            "geometry" => ShaderStage.GeometryShader,
-            "hull" => ShaderStage.HullShader,
-            "domain" => ShaderStage.DomainShader,
-            "compute" => ShaderStage.ComputeShader,
-            _ => ShaderStage.Library
-        };
-
-        public ID3D12RootSignature CreateRootSignature()
-        {
-            int cbvShaderRegister = 0;
-
-            List<RootParameter1> rootParameters = new List<RootParameter1>
-            {
-                new RootParameter1(new RootConstants(cbvShaderRegister++, 0, 1), ShaderVisibility.All),
-                new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)), ShaderVisibility.All),
-                new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)), ShaderVisibility.All),
-                new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)), ShaderVisibility.All),
-                new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, 1, cbvShaderRegister++)), ShaderVisibility.All),
-                new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.Sampler, 1, 0)), ShaderVisibility.All)
-            };
-
-            List<DescriptorRange1> shaderResourceRootDescriptorRanges = new List<DescriptorRange1>();
-
-            if (ConstantBufferViews.Count > 0)
-            {
-                shaderResourceRootDescriptorRanges.Add(new DescriptorRange1(DescriptorRangeType.ConstantBufferView, ConstantBufferViews.Count, cbvShaderRegister));
-            }
-
-            if (ShaderResourceViews.Count > 0)
-            {
-                shaderResourceRootDescriptorRanges.Add(new DescriptorRange1(DescriptorRangeType.ShaderResourceView, ShaderResourceViews.Count, 0));
-            }
-
-            if (UnorderedAccessViews.Count > 0)
-            {
-                shaderResourceRootDescriptorRanges.Add(new DescriptorRange1(DescriptorRangeType.UnorderedAccessView, UnorderedAccessViews.Count, 0));
-            }
-
-            if (shaderResourceRootDescriptorRanges.Count > 0)
-            {
-                rootParameters.Add(new RootParameter1(new RootDescriptorTable1(shaderResourceRootDescriptorRanges.ToArray()), ShaderVisibility.All));
-            }
-
-            if (Samplers.Count > 0)
-            {
-                rootParameters.Add(new RootParameter1(new RootDescriptorTable1(new DescriptorRange1(DescriptorRangeType.Sampler, Samplers.Count, 1)), ShaderVisibility.All));
-            }
-
-            RootSignatureDescription1 rootSignatureDescription = new RootSignatureDescription1(
-                RootSignatureFlags.AllowInputAssemblerInputLayout, rootParameters.ToArray());
-
-            return GraphicsDevice.CreateRootSignature(new VersionedRootSignatureDescription(rootSignatureDescription));
+            return compiledShader;
         }
     }
 }

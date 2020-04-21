@@ -20,7 +20,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         [IgnoreShaderMember]
         public Texture? Texture { get; set; }
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
             if (Texture != null)
             {
@@ -32,7 +32,6 @@ namespace DirectX12GameEngine.Rendering.Materials
         public Texture2DResource ColorTexture;
 #nullable restore
 
-        [ShaderMember]
         [ShaderMethod]
         public Vector4 Compute()
         {

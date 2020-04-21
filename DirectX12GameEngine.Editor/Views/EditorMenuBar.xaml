@@ -62,16 +62,6 @@
         </XamlUICommand>
 
         <XamlUICommand
-            x:Key="DownloadNewestSdkCommand"
-            Command="{x:Bind ViewModel.SdkManager.DownloadNewestSdkCommand}"
-            Description="Download newest .NET SDK from Microsoft"
-            Label="Download Newest SDK">
-            <XamlUICommand.IconSource>
-                <SymbolIconSource Symbol="Download" />
-            </XamlUICommand.IconSource>
-        </XamlUICommand>
-
-        <XamlUICommand
             x:Key="OpenSdkCommand"
             Command="{x:Bind ViewModel.SdkManager.OpenSdkWithPickerCommand}"
             Description="Download newest .NET SDK from Microsoft"
@@ -136,7 +126,6 @@
         <MenuFlyoutItem Command="{StaticResource ReloadSolutionCommand}" />
         <MenuFlyoutItem Command="{StaticResource RestoreNuGetPackagesCommand}" />
         <MenuFlyoutSeparator />
-        <MenuFlyoutItem Command="{StaticResource DownloadNewestSdkCommand}" />
         <MenuFlyoutItem Command="{StaticResource OpenSdkCommand}" />
     </winui:MenuBarItem>
 

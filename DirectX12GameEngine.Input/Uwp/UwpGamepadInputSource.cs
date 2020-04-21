@@ -17,10 +17,10 @@ namespace DirectX12GameEngine.Input
 
         public override void Dispose()
         {
-            base.Dispose();
-
             Gamepad.GamepadAdded -= OnGamepadAdded;
             Gamepad.GamepadRemoved -= OnGamepadRemoved;
+
+            base.Dispose();
         }
 
         public override void Scan()

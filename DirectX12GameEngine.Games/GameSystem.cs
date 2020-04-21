@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Threading.Tasks;
+
 namespace DirectX12GameEngine.Games
 {
-    public class GameSystemBase
+    public abstract class GameSystem : IGameSystem
     {
-        public virtual void Dispose()
+        public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        public virtual void Initialize()
+        protected virtual void Dispose(bool diposing)
         {
-        }
-
-        public virtual Task LoadContentAsync()
-        {
-            return Task.CompletedTask;
         }
 
         public virtual void Update(GameTime gameTime)

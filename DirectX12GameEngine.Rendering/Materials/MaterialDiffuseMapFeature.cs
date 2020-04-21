@@ -15,14 +15,13 @@ namespace DirectX12GameEngine.Rendering.Materials
             DiffuseMap = diffuseMap;
         }
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            DiffuseMap.Visit(context);
+            DiffuseMap.Accept(context);
         }
 
         public IComputeColor DiffuseMap { get; set; } = new ComputeColor();
 
-        [ShaderMember]
         [ShaderMethod]
         public void Compute()
         {

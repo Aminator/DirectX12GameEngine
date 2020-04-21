@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace DirectX12GameEngine.Shaders
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class ShaderMethodAttribute : Attribute
+    public class ShaderMethodAttribute : ShaderMemberAttribute
     {
-        public ShaderMethodAttribute()
+        public ShaderMethodAttribute([CallerLineNumber] int order = 0) : base(order)
         {
         }
 

@@ -4,23 +4,42 @@ using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
-    public abstract class EntitySystem : IDisposable
+    public abstract class EntitySystem : IGameSystem
     {
-        public EntitySystem(Type mainType, params Type[] requiredAdditionalTypes)
+        protected EntitySystem()
         {
-            MainType = mainType;
-            RequiredTypes = requiredAdditionalTypes;
         }
+
+        protected EntitySystem(Type? mainComponentType)
+        {
+            MainComponentType = mainComponentType;
+        }
+
+        protected EntitySystem(Type? mainComponentType, params Type[] requiredComponentTypes)
+        {
+            MainComponentType = mainComponentType;
+
+            foreach (Type type in requiredComponentTypes)
+            {
+                RequiredComponentTypes.Add(type);
+            }
+        }
+
+        public Type? MainComponentType { get; }
+
+        public IList<Type> RequiredComponentTypes { get; } = new List<Type>();
 
         public EntityManager? EntityManager { get; internal set; }
 
-        public Type MainType { get; }
-
-        public Type[] RequiredTypes { get; }
-
-        public int Order { get; protected set; }
+        public virtual void Dispose()
+        {
+        }
 
         public virtual void Update(GameTime gameTime)
+        {
+        }
+
+        public virtual void BeginDraw()
         {
         }
 
@@ -28,28 +47,28 @@ namespace DirectX12GameEngine.Engine
         {
         }
 
-        public virtual void Dispose()
+        public virtual void EndDraw()
         {
         }
 
-        protected internal abstract void ProcessEntityComponent(EntityComponent component, Entity entity, bool forceRemove);
+        public abstract void ProcessEntityComponent(EntityComponent component, Entity entity, bool forceRemove);
 
-        internal bool Accept(Type type)
-        {
-            return MainType.IsAssignableFrom(type);
-        }
+        public virtual bool Accepts(Type type) => MainComponentType?.IsAssignableFrom(type) ?? false;
     }
 
     public abstract class EntitySystem<TComponent> : EntitySystem where TComponent : EntityComponent
     {
-        public EntitySystem(params Type[] requiredAdditionalTypes)
-            : base(typeof(TComponent), requiredAdditionalTypes)
+        protected EntitySystem() : base(typeof(TComponent))
+        {
+        }
+
+        protected EntitySystem(params Type[] requiredComponentTypes) : base(typeof(TComponent), requiredComponentTypes)
         {
         }
 
         protected HashSet<TComponent> Components { get; } = new HashSet<TComponent>();
 
-        protected internal override void ProcessEntityComponent(EntityComponent component, Entity entity, bool forceRemove)
+        public override void ProcessEntityComponent(EntityComponent component, Entity entity, bool forceRemove)
         {
             if (!(component is TComponent entityComponent)) throw new ArgumentException("The entity component must be assignable to TComponent", nameof(component));
 
@@ -78,9 +97,9 @@ namespace DirectX12GameEngine.Engine
 
         private bool EntityMatch(Entity entity)
         {
-            if (RequiredTypes.Length == 0) return true;
+            if (RequiredComponentTypes.Count == 0) return true;
 
-            List<Type> remainingRequiredTypes = new List<Type>(RequiredTypes);
+            List<Type> remainingRequiredTypes = new List<Type>(RequiredComponentTypes);
 
             foreach (EntityComponent component in entity.Components)
             {

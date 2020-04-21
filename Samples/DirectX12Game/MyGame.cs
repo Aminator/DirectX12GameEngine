@@ -12,10 +12,9 @@ namespace DirectX12Game
     {
         public MyGame(GameContext context) : base(context)
         {
-            SceneSystem.InitialScenePath = @"Assets\Scenes\Scene1";
         }
 
-        protected override void Initialize()
+        public override void Initialize()
         {
             base.Initialize();
 
@@ -25,7 +24,18 @@ namespace DirectX12Game
             }
         }
 
-        protected override void BeginDraw()
+        public override async Task LoadContentAsync()
+        {
+            // TODO: DirectX12GameEngine.Assets.dll does not get copied to the output directory if it is never used.
+            MaterialAsset materialAsset = new MaterialAsset();
+            materialAsset.ToString();
+
+            SceneSystem.RootEntity = await Content.LoadAsync<Entity>(@"Assets\Scenes\Scene1");
+
+            await base.LoadContentAsync();
+        }
+
+        public override void BeginDraw()
         {
             base.BeginDraw();
 
@@ -36,18 +46,9 @@ namespace DirectX12Game
             }
         }
 
-        protected override void EndDraw()
+        public override void EndDraw()
         {
             base.EndDraw();
-        }
-
-        protected override async Task LoadContentAsync()
-        {
-            // TODO: DirectX12GameEngine.Assets.dll does not get copied to the output directory if it is never used.
-            MaterialAsset materialAsset = new MaterialAsset();
-            materialAsset.ToString();
-
-            await base.LoadContentAsync();
         }
     }
 }

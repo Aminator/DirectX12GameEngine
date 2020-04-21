@@ -15,16 +15,15 @@ namespace DirectX12GameEngine.Rendering.Materials
             NormalMap = normalMap;
         }
 
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
-            NormalMap.Visit(context);
+            NormalMap.Accept(context);
         }
 
         public static Vector4 DefaultNormalColor { get; } = new Vector4(0.5f, 0.5f, 1.0f, 1.0f);
 
         public IComputeColor NormalMap { get; set; } = new ComputeColor(DefaultNormalColor);
 
-        [ShaderMember]
         [ShaderMethod]
         public void Compute()
         {

@@ -1,48 +1,36 @@
 ﻿using System;
-using System.Threading.Tasks;
-using DirectX12GameEngine.Serialization;
-using DirectX12GameEngine.Games;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DirectX12GameEngine.Engine
 {
-    public sealed class SceneSystem : GameSystemBase
+    public sealed class SceneSystem : EntityManager
     {
-        private readonly IContentManager contentManager;
+        private Entity? rootEntity;
 
-        public SceneSystem(IServiceProvider services)
+        public SceneSystem(IServiceProvider services) : base(services)
         {
-            SceneInstance = new SceneInstance(services);
-            contentManager = services.GetRequiredService<IContentManager>();
         }
 
         public CameraComponent? CurrentCamera { get; set; }
 
-        public string? InitialScenePath { get; set; }
-
-        public SceneInstance SceneInstance { get; set; }
-
-        public override async Task LoadContentAsync()
+        public Entity? RootEntity
         {
-            if (InitialScenePath != null)
+            get => rootEntity;
+            set
             {
-                SceneInstance.RootEntity = await contentManager.LoadAsync<Entity>(InitialScenePath);
+                if (rootEntity == value) return;
+
+                if (rootEntity != null)
+                {
+                    RemoveRoot(rootEntity);
+                }
+
+                if (value != null)
+                {
+                    AddRoot(value);
+                }
+
+                rootEntity = value;
             }
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            SceneInstance.Update(gameTime);
-        }
-
-        public override void Draw(GameTime gameTime)
-        {
-            SceneInstance.Draw(gameTime);
-        }
-
-        public override void Dispose()
-        {
-            SceneInstance.Dispose();
         }
     }
 }

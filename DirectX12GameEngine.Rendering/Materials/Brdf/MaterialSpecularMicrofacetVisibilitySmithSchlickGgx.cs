@@ -6,11 +6,10 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
     [StaticResource]
     public class MaterialSpecularMicrofacetVisibilitySmithSchlickGgx : IMaterialSpecularMicrofacetVisibilityFunction
     {
-        public void Visit(MaterialGeneratorContext context)
+        public void Accept(ShaderGeneratorContext context)
         {
         }
 
-        [ShaderMember]
         [ShaderMethod]
         public float Compute()
         {

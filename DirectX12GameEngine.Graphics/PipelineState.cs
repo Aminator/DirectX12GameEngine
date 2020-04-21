@@ -1,60 +1,69 @@
-﻿using Vortice.Direct3D12;
+﻿using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Vortice.Direct3D12;
 using Vortice.DXGI;
 
 namespace DirectX12GameEngine.Graphics
 {
-    public sealed class PipelineState
+    public sealed class PipelineState : IDisposable
     {
-        public PipelineState(GraphicsDevice device, ComputePipelineStateDescription pipelineStateDescription)
+        public PipelineState(GraphicsDevice device, RootSignature rootSignature, byte[] computeShader)
+            : this(device, rootSignature, CreateComputePipelineStateDescription(rootSignature, computeShader))
+        {
+        }
+
+        internal PipelineState(GraphicsDevice device, RootSignature rootSignature, ComputePipelineStateDescription pipelineStateDescription)
         {
             IsCompute = true;
-            RootSignature = pipelineStateDescription.RootSignature;
+            RootSignature = rootSignature;
             NativePipelineState = device.NativeDevice.CreateComputePipelineState(pipelineStateDescription);
         }
 
-        public PipelineState(GraphicsDevice device, ID3D12RootSignature rootSignature, byte[] computeShader)
-            : this(device, CreateComputePipelineStateDescription(rootSignature, computeShader))
+        public PipelineState(GraphicsDevice device, RootSignature rootSignature, InputElementDescription[] inputElements, byte[] vertexShader, byte[] pixelShader, byte[]? geometryShader = default, byte[]? hullShader = default, byte[]? domainShader = default)
+            : this(device, rootSignature, CreateGraphicsPipelineStateDescription(device, rootSignature, inputElements, vertexShader, pixelShader, geometryShader, hullShader, domainShader))
         {
         }
 
-        public PipelineState(GraphicsDevice device, GraphicsPipelineStateDescription pipelineStateDescription)
+        internal PipelineState(GraphicsDevice device, RootSignature rootSignature, GraphicsPipelineStateDescription pipelineStateDescription)
         {
             IsCompute = false;
-            RootSignature = pipelineStateDescription.RootSignature;
+            RootSignature = rootSignature;
             NativePipelineState = device.NativeDevice.CreateGraphicsPipelineState(pipelineStateDescription);
         }
 
-        public PipelineState(GraphicsDevice device, InputElementDescription[] inputElements, ID3D12RootSignature rootSignature, byte[] vertexShader, byte[] pixelShader, byte[]? geometryShader = default, byte[]? hullShader = default, byte[]? domainShader = default)
-            : this(device, CreateGraphicsPipelineStateDescription(device, inputElements, rootSignature, vertexShader, pixelShader, geometryShader, hullShader, domainShader))
-        {
-        }
+        public RootSignature RootSignature { get; }
 
-        public ID3D12RootSignature RootSignature { get; }
-
-        internal bool IsCompute { get; }
+        public bool IsCompute { get; }
 
         internal ID3D12PipelineState NativePipelineState { get; }
 
-        private static ComputePipelineStateDescription CreateComputePipelineStateDescription(ID3D12RootSignature rootSignature, ShaderBytecode computeShader)
+        public void Dispose()
+        {
+            NativePipelineState.Dispose();
+        }
+
+        private static ComputePipelineStateDescription CreateComputePipelineStateDescription(RootSignature rootSignature, byte[] computeShader)
         {
             return new ComputePipelineStateDescription
             {
-                RootSignature = rootSignature,
+                RootSignature = rootSignature.NativeRootSignature,
                 ComputeShader = computeShader
             };
         }
 
-        private static GraphicsPipelineStateDescription CreateGraphicsPipelineStateDescription(GraphicsDevice device, InputElementDescription[] inputElements, ID3D12RootSignature rootSignature, ShaderBytecode vertexShader, ShaderBytecode pixelShader, ShaderBytecode geometryShader, ShaderBytecode hullShader, ShaderBytecode domainShader)
+        private static GraphicsPipelineStateDescription CreateGraphicsPipelineStateDescription(GraphicsDevice device, RootSignature rootSignature, InputElementDescription[] inputElements, byte[] vertexShader, byte[] pixelShader, byte[]? geometryShader, byte[]? hullShader, byte[]? domainShader)
         {
             RasterizerDescription rasterizerDescription = RasterizerDescription.CullNone;
             rasterizerDescription.FrontCounterClockwise = true;
 
             BlendDescription blendDescription = BlendDescription.AlphaBlend;
+            InputLayoutDescription inputLayoutDescription = new InputLayoutDescription(inputElements.Select(i => Unsafe.As<InputElementDescription, Vortice.Direct3D12.InputElementDescription>(ref i)).ToArray());
 
             GraphicsPipelineStateDescription pipelineStateDescription = new GraphicsPipelineStateDescription
             {
-                InputLayout = new InputLayoutDescription(inputElements),
-                RootSignature = rootSignature,
+                InputLayout = inputLayoutDescription,
+                RootSignature = rootSignature.NativeRootSignature,
                 VertexShader = vertexShader,
                 PixelShader = pixelShader,
                 GeometryShader = geometryShader,

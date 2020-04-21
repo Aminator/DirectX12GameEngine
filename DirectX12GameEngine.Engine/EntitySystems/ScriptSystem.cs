@@ -5,7 +5,7 @@ using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Engine
 {
-    public class ScriptSystem : GameSystemBase
+    public class ScriptSystem : GameSystem
     {
         private readonly IServiceProvider services;
 

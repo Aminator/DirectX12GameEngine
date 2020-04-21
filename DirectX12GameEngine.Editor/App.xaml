@@ -11,6 +11,8 @@
                 <winui:XamlControlsResources />
             </ResourceDictionary.MergedDictionaries>
 
+            <FontFamily x:Key="Codicon">/Assets/Fonts/codicon.ttf#codicon</FontFamily>
+
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <AcrylicBrush

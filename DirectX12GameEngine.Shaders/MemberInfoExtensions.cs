@@ -74,27 +74,37 @@ namespace DirectX12GameEngine.Shaders
             return members;
         }
 
-        public static object? GetMemberValue(this MemberInfo memberInfo, object? obj) => memberInfo switch
+        public static object? GetMemberValue(this MemberInfo memberInfo, object? obj)
         {
-            FieldInfo fieldInfo => obj is null ? null : fieldInfo.GetValue(obj),
-            PropertyInfo propertyInfo => obj is null ? null : propertyInfo.GetValue(obj),
-            _ => null
-        };
+            ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetCustomAttribute<ShaderMemberAttribute>();
 
-        public static Type? GetMemberType(this MemberInfo memberInfo, object? obj = null) => memberInfo switch
+            return shaderMemberAttribute?.ResourceType ?? memberInfo switch
+            {
+                FieldInfo fieldInfo => obj is null ? null : fieldInfo.GetValue(obj),
+                PropertyInfo propertyInfo => obj is null ? null : propertyInfo.GetValue(obj),
+                _ => null
+            };
+        }
+
+        public static Type? GetMemberType(this MemberInfo memberInfo, object? obj = null)
         {
-            FieldInfo fieldInfo => obj is null ? fieldInfo.FieldType : fieldInfo.GetValue(obj)?.GetType() ?? fieldInfo.FieldType,
-            PropertyInfo propertyInfo => obj is null ? propertyInfo.PropertyType : propertyInfo.GetValue(obj)?.GetType() ?? propertyInfo.PropertyType,
-            _ => null
-        };
+            ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetCustomAttribute<ShaderMemberAttribute>();
 
-        public static ShaderMemberAttribute? GetResourceAttribute(this MemberInfo memberInfo, Type? memberType)
+            return shaderMemberAttribute?.ResourceType ?? memberInfo switch
+            {
+                FieldInfo fieldInfo => obj is null ? fieldInfo.FieldType : fieldInfo.GetValue(obj)?.GetType() ?? fieldInfo.FieldType,
+                PropertyInfo propertyInfo => obj is null ? propertyInfo.PropertyType : propertyInfo.GetValue(obj)?.GetType() ?? propertyInfo.PropertyType,
+                _ => null
+            };
+        }
+
+        public static ShaderMemberAttribute? GetShaderMemberAttribute(this MemberInfo memberInfo, Type? memberType)
         {
-            ShaderMemberAttribute? resourceType = memberInfo.GetCustomAttribute<ShaderMemberAttribute>();
+            ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetCustomAttribute<ShaderMemberAttribute>();
 
-            return resourceType != null && resourceType.Override
-                ? resourceType
-                : memberType?.GetCustomAttribute<ShaderMemberAttribute>() ?? resourceType;
+            return shaderMemberAttribute != null && shaderMemberAttribute.Override
+                ? shaderMemberAttribute
+                : memberType?.GetCustomAttribute<ShaderMemberAttribute>() ?? shaderMemberAttribute;
         }
 
         public static bool IsStatic(this MemberInfo memberInfo) => memberInfo switch

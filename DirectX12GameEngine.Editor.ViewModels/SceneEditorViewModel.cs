@@ -2,14 +2,14 @@
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Editor.ViewModels.Games;
 using DirectX12GameEngine.Engine;
-using DirectX12GameEngine.Mvvm;
-using DirectX12GameEngine.Mvvm.Commanding;
 using DirectX12GameEngine.Serialization;
+using Microsoft.Toolkit.Mvvm.Commands;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 using Windows.Storage;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class SceneEditorViewModel : ViewModelBase
+    public class SceneEditorViewModel : ObservableObject
     {
         private bool isLoading;
         private EntityViewModel? rootEntity;
@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
             DeleteCommand = new RelayCommand<EntityViewModel>(Delete);
 
             Game = new EditorGame(new GameContextWithGraphics { FileProvider = new FileSystemProvider(RootFolder) });
-            Game.SceneSystem.SceneInstance.RootEntity = SceneRootEntity.Model;
+            Game.SceneSystem.RootEntity = SceneRootEntity.Model;
         }
 
         public EditorGame Game { get; }

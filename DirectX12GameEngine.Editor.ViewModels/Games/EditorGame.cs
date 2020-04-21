@@ -13,7 +13,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Games
         {
         }
 
-        protected override void Initialize()
+        public override void Initialize()
         {
             base.Initialize();
 
@@ -23,7 +23,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Games
             }
         }
 
-        protected override void BeginDraw()
+        public override void BeginDraw()
         {
             base.BeginDraw();
 

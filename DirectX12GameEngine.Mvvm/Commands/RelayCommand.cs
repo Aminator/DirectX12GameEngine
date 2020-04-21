@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace DirectX12GameEngine.Mvvm.Commanding
+namespace Microsoft.Toolkit.Mvvm.Commands
 {
     public class RelayCommand : ICommand
     {

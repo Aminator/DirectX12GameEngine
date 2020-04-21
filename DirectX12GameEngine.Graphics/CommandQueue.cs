@@ -1,5 +1,7 @@
 ﻿using Nito.AsyncEx.Interop;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Vortice.Direct3D12;
@@ -8,9 +10,6 @@ namespace DirectX12GameEngine.Graphics
 {
     public sealed class CommandQueue : IDisposable
     {
-        private readonly AutoResetEvent fenceEvent = new AutoResetEvent(false);
-        private readonly object fenceLock = new object();
-
         public CommandQueue(GraphicsDevice device, CommandListType commandListType)
         {
             GraphicsDevice = device;
@@ -34,6 +33,13 @@ namespace DirectX12GameEngine.Graphics
 
         public void ExecuteCommandLists(params CompiledCommandList[] commandLists)
         {
+            ExecuteCommandLists(commandLists.AsEnumerable());
+        }
+
+        public void ExecuteCommandLists(IEnumerable<CompiledCommandList> commandLists)
+        {
+            if (commandLists.Count() == 0) return;
+
             long fenceValue = ExecuteCommandListsInternal(commandLists);
 
             WaitForFence(Fence, fenceValue);
@@ -41,20 +47,22 @@ namespace DirectX12GameEngine.Graphics
 
         public Task ExecuteCommandListsAsync(params CompiledCommandList[] commandLists)
         {
+            return ExecuteCommandListsAsync(commandLists.AsEnumerable());
+        }
+
+        public Task ExecuteCommandListsAsync(IEnumerable<CompiledCommandList> commandLists)
+        {
+            if (commandLists.Count() == 0) return Task.CompletedTask;
+
             long fenceValue = ExecuteCommandListsInternal(commandLists);
 
             return WaitForFenceAsync(Fence, fenceValue);
         }
 
-        private long ExecuteCommandListsInternal(CompiledCommandList[] commandLists)
+        private long ExecuteCommandListsInternal(IEnumerable<CompiledCommandList> commandLists)
         {
             long fenceValue = NextFenceValue++;
-            ID3D12CommandList[] nativeCommandLists = new ID3D12CommandList[commandLists.Length];
-
-            for (int i = 0; i < commandLists.Length; i++)
-            {
-                nativeCommandLists[i] = commandLists[i].NativeCommandList;
-            }
+            ID3D12CommandList[] nativeCommandLists = commandLists.Select(c => c.NativeCommandList).ToArray();
 
             NativeCommandQueue.ExecuteCommandLists(nativeCommandLists);
             NativeCommandQueue.Signal(Fence, fenceValue);
@@ -71,24 +79,20 @@ namespace DirectX12GameEngine.Graphics
         {
             if (IsFenceComplete(fence, fenceValue)) return;
 
-            lock (fenceLock)
-            {
-                fence.SetEventOnCompletion(fenceValue, fenceEvent);
+            ManualResetEvent fenceEvent = new ManualResetEvent(false);
+            fence.SetEventOnCompletion(fenceValue, fenceEvent);
 
-                fenceEvent.WaitOne();
-            }
+            fenceEvent.WaitOne();
         }
 
         internal Task WaitForFenceAsync(ID3D12Fence fence, long fenceValue)
         {
             if (IsFenceComplete(fence, fenceValue)) return Task.CompletedTask;
 
-            lock (fenceLock)
-            {
-                fence.SetEventOnCompletion(fenceValue, fenceEvent);
+            ManualResetEvent fenceEvent = new ManualResetEvent(false);
+            fence.SetEventOnCompletion(fenceValue, fenceEvent);
 
-                return WaitHandleAsyncFactory.FromWaitHandle(fenceEvent);
-            }
+            return WaitHandleAsyncFactory.FromWaitHandle(fenceEvent);
         }
     }
 }

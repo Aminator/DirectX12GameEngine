@@ -36,7 +36,7 @@ namespace DirectX12GameEngine.Shaders
         public static ISet<ITypeSymbol> GetDependentTypes(MethodInfo methodInfo)
         {
             Compilation compilation = GetCompilation(methodInfo.DeclaringType);
-            SyntaxNode methodBody = GetMethodBody(methodInfo, compilation.SyntaxTrees.Single());
+            SyntaxNode methodBody = GetMethodBodyNode(methodInfo, compilation.SyntaxTrees.Single());
 
             return GetDependentTypes(compilation, methodBody);
         }
@@ -52,7 +52,7 @@ namespace DirectX12GameEngine.Shaders
         public static string GetMethodBody(MethodInfo methodInfo)
         {
             Compilation compilation = GetCompilation(methodInfo.DeclaringType);
-            SyntaxNode methodBody = GetMethodBody(methodInfo, compilation.SyntaxTrees.Single());
+            SyntaxNode methodBody = GetMethodBodyNode(methodInfo, compilation.SyntaxTrees.Single());
 
             return GetMethodBody(compilation, methodBody);
         }
@@ -67,9 +67,11 @@ namespace DirectX12GameEngine.Shaders
             return FormatShaderString(shaderSource);
         }
 
-        public static SyntaxNode GetMethodBody(MethodInfo methodInfo, SyntaxTree syntaxTree)
+        public static SyntaxNode GetMethodBodyNode(MethodInfo methodInfo, SyntaxTree syntaxTree)
         {
             SyntaxNode root = syntaxTree.GetRoot();
+
+            var foo = root.DescendantNodes().OfType<MethodDeclarationSyntax>().ToArray();
 
             MethodDeclarationSyntax methodNode = root.DescendantNodes().OfType<MethodDeclarationSyntax>()
                 .First(n => (n.Identifier.ValueText == methodInfo.Name || n.Identifier.ValueText == ShaderGenerator.AnonymousMethodEntryPointName)

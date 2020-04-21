@@ -4,12 +4,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
 using DirectX12GameEngine.Serialization;
-using DirectX12GameEngine.Mvvm;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 using DirectX12GameEngine.Mvvm.Collections;
 
 namespace DirectX12GameEngine.Editor.ViewModels.Properties
 {
-    public abstract class PropertyViewModel : ViewModelBase<object>
+    public abstract class PropertyViewModel : ObservableObject
     {
         private readonly PropertyInfo? propertyInfo;
 
@@ -17,8 +17,9 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
         private bool canWrite;
         private object? index;
 
-        public PropertyViewModel(object model, PropertyInfo? propertyInfo) : base(model)
+        protected PropertyViewModel(object model, PropertyInfo? propertyInfo)
         {
+            Model = model;
             this.propertyInfo = propertyInfo;
 
             if (propertyInfo is null)
@@ -43,6 +44,8 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
                 }
             }
         }
+
+        public object Model { get; }
 
         public bool IsReadOnly => !CanWrite;
 
@@ -132,7 +135,7 @@ namespace DirectX12GameEngine.Editor.ViewModels.Properties
 
     public abstract class PropertyViewModel<T> : PropertyViewModel
     {
-        public PropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)
+        protected PropertyViewModel(object model, PropertyInfo propertyInfo) : base(model, propertyInfo)
         {
         }
 

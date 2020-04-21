@@ -2,7 +2,7 @@
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    public interface IComputeColor : IComputeNode
+    public interface IComputeColor : IComputeShader
     {
         Vector4 Compute();
     }

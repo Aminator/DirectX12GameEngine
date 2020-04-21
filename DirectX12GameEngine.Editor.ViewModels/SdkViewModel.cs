@@ -1,9 +1,9 @@
 ﻿using System;
-using DirectX12GameEngine.Mvvm;
+using Microsoft.Toolkit.Mvvm.ObjectModel;
 
 namespace DirectX12GameEngine.Editor.ViewModels
 {
-    public class SdkViewModel : ViewModelBase, IEquatable<SdkViewModel?>
+    public class SdkViewModel : ObservableObject, IEquatable<SdkViewModel?>
     {
         private double downloadProgess;
         private double installProgess;

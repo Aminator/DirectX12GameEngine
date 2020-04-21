@@ -1,10 +1,10 @@
 ﻿namespace DirectX12GameEngine.Engine
 {
-    public class ScriptProcessor : EntitySystem<ScriptComponent>
+    public class EntityScriptSystem : EntitySystem<ScriptComponent>
     {
         private readonly ScriptSystem scriptSystem;
 
-        public ScriptProcessor(ScriptSystem scriptSystem)
+        public EntityScriptSystem(ScriptSystem scriptSystem)
         {
             this.scriptSystem = scriptSystem;
         }
