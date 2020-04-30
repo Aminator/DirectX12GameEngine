@@ -318,30 +318,34 @@ namespace GltfGenerator
             return codegenType.CodeType;
         }
 
-        public void CSharpCodeGen(string outputDirectory)
+        public IDictionary<string, string> CSharpCodeGen()
         {
-            // make sure the output directory exists
-            Directory.CreateDirectory(outputDirectory);
-
             GeneratedClasses = new Dictionary<string, CodeTypeDeclaration>();
+            Dictionary<string, string> generatedFiles = new Dictionary<string, string>();
+
             foreach (var schema in FileSchemas)
             {
                 if (schema.Value.Type != null && schema.Value.Type[0].Name == "object")
                 {
-                    CodeGenClass(schema.Key, outputDirectory);
+                    string sourceCode = CodeGenClass(schema.Key, out string sourceCodeFileName);
+                    generatedFiles.Add(sourceCodeFileName, sourceCode);
                 }
             }
+
+            return generatedFiles;
         }
 
-        private void CodeGenClass(string fileName, string outputDirectory)
+        private string CodeGenClass(string fileName, out string sourceCodeFileName)
         {
             var schemaFile = RawClass(fileName, out string className);
             using CSharpCodeProvider csharpcodeprovider = new CSharpCodeProvider();
-            var sourceFile = Path.Combine(outputDirectory, className + "." + csharpcodeprovider.FileExtension);
+            sourceCodeFileName = className + "." + csharpcodeprovider.FileExtension;
 
-            IndentedTextWriter tw1 = new IndentedTextWriter(new StreamWriter(sourceFile, false), "    ");
-            csharpcodeprovider.GenerateCodeFromCompileUnit(schemaFile, tw1, new CodeGeneratorOptions { BracingStyle = "C", IndentString = "    " });
-            tw1.Close();
+            StringWriter stringWriter = new StringWriter();
+            IndentedTextWriter textWriter = new IndentedTextWriter(stringWriter, "    ");
+            csharpcodeprovider.GenerateCodeFromCompileUnit(schemaFile, textWriter, new CodeGeneratorOptions { BracingStyle = "C", IndentString = "    " });
+
+            return stringWriter.ToString();
         }
     }
 }

@@ -12,7 +12,10 @@ namespace DirectX12ComputeShaderSample
     public class Test2
     {
         [ShaderMethod]
-        public static float Sigmoid(float x) => 1 / (1 + (float)Math.Exp(-x));
+        public static float Sigmoid(float x)
+        {
+            return 1 / (1 + (float)Math.Exp(-x));
+        }
 
         public static async Task RunAsync(GraphicsDevice device)
         {

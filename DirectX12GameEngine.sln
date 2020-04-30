@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Physics
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GltfGenerator", "Gltf\GltfGenerator\GltfGenerator.csproj", "{3DA35ABA-3947-47DE-BA8F-3D169A0BFD3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectX12GameEngine.Shaders.Tasks", "DirectX12GameEngine.Shaders.Tasks\DirectX12GameEngine.Shaders.Tasks.csproj", "{CC419045-D18A-4651-9578-8590EEA5B0DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectX12GameEngine.Shaders.Tasks", "DirectX12GameEngine.Shaders.Tasks\DirectX12GameEngine.Shaders.Tasks.csproj", "{CC419045-D18A-4651-9578-8590EEA5B0DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

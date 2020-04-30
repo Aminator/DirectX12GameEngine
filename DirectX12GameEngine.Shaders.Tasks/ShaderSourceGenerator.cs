@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,28 +11,15 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace DirectX12GameEngine.Shaders.Tasks
 {
-    public class GenerateShaders : Task
+    [Generator]
+    public class ShaderSourceGenerator : ISourceGenerator
     {
-        [Required]
-        public ITaskItem[]? Inputs { get; set; }
-
-        [Required]
-        public ITaskItem[]? ReferencedAssemblies { get; set; }
-
-        [Output]
-        public ITaskItem? Output { get; set; }
-
-        public override bool Execute()
+        public void Execute(SourceGeneratorContext context)
         {
-            Log.LogMessage("Generating shaders...");
-
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var syntaxTrees = GetSyntaxTrees();
-            var metadataReferences = GetMetadataReferences();
-
-            Compilation compilation = CSharpCompilation.Create("ShaderAssembly", syntaxTrees, metadataReferences);
+            Compilation compilation = context.Compilation;
 
             INamedTypeSymbol? shaderMethodAttributeType = compilation.GetTypeByMetadataName(typeof(ShaderMethodAttribute).FullName);
             INamedTypeSymbol? anonymousShaderMethodAttributeType = compilation.GetTypeByMetadataName(typeof(AnonymousShaderMethodAttribute).FullName);
@@ -77,41 +62,10 @@ namespace DirectX12GameEngine.Shaders.Tasks
 
             compilationUnit = compilationUnit.NormalizeWhitespace();
 
-            Log.LogMessage($"{stopwatch.Elapsed}: Writing to file...");
-
-            using (StreamWriter writer = new StreamWriter(Output!.ItemSpec))
-            {
-                compilationUnit.WriteTo(writer);
-            }
+            SourceText sourceText = compilationUnit.GetText(Encoding.UTF8);
+            context.AddSource("GenerateShaders.cs", sourceText);
 
             stopwatch.Stop();
-
-            Log.LogMessage($"{stopwatch.Elapsed}: Shader generation complete.");
-
-            return true;
-        }
-
-        private IEnumerable<SyntaxTree> GetSyntaxTrees()
-        {
-            if (Inputs is null) throw new InvalidOperationException();
-
-            foreach (ITaskItem item in Inputs)
-            {
-                using FileStream stream = new FileStream(item.ItemSpec, FileMode.Open);
-                SourceText sourceText = SourceText.From(stream);
-
-                yield return CSharpSyntaxTree.ParseText(sourceText);
-            }
-        }
-
-        private IEnumerable<MetadataReference> GetMetadataReferences()
-        {
-            if (ReferencedAssemblies is null) throw new InvalidOperationException();
-
-            foreach (ITaskItem item in ReferencedAssemblies)
-            {
-                yield return MetadataReference.CreateFromFile(item.ItemSpec);
-            }
         }
 
         private static IEnumerable<AttributeSyntax> GetAttributes(Compilation compilation)
@@ -161,6 +115,10 @@ namespace DirectX12GameEngine.Shaders.Tasks
             return compilationUnit.AddAttributeLists(SyntaxFactory.AttributeList()
                 .WithTarget(SyntaxFactory.AttributeTargetSpecifier(SyntaxFactory.Token(SyntaxKind.AssemblyKeyword)))
                 .AddAttributes(shaderMethodAttribute));
+        }
+
+        public void Initialize(InitializationContext context)
+        {
         }
     }
 }
