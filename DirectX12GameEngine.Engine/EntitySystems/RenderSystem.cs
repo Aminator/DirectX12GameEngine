@@ -12,7 +12,7 @@ using DirectX12GameEngine.Rendering.Lights;
 
 namespace DirectX12GameEngine.Engine
 {
-    public sealed class RenderSystem : EntitySystem<ModelComponent>
+    public sealed class RenderSystem : EntitySystem<ModelComponent>, IDisposable
     {
         private const int MaxLights = 512;
 
@@ -21,7 +21,7 @@ namespace DirectX12GameEngine.Engine
 
         private readonly List<CommandList> commandLists = new List<CommandList>();
 
-        private readonly Dictionary<Model, (CompiledCommandList[] Bundles, GraphicsBuffer[] WorldMatrixBuffers)> models = new Dictionary<Model, (CompiledCommandList[], GraphicsBuffer[])>();
+        private readonly Dictionary<Model, (CompiledCommandList[] Bundles, GraphicsResource[] WorldMatrixBuffers)> models = new Dictionary<Model, (CompiledCommandList[], GraphicsResource[])>();
 
         public RenderSystem(GraphicsDevice device, SceneSystem sceneSystem) : base(typeof(TransformComponent))
         {
@@ -30,19 +30,19 @@ namespace DirectX12GameEngine.Engine
             graphicsDevice = device;
             this.sceneSystem = sceneSystem;
 
-            DirectionalLightGroupBuffer = GraphicsBuffer.Create(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, ResourceFlags.None, GraphicsHeapType.Upload);
-            GlobalBuffer = GraphicsBuffer.Create(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), ResourceFlags.None, GraphicsHeapType.Upload);
-            ViewProjectionTransformBuffer = GraphicsBuffer.Create(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>(), ResourceFlags.None, GraphicsHeapType.Upload);
-            DefaultSampler = new SamplerState(graphicsDevice);
+            DirectionalLightGroupBuffer = GraphicsResource.CreateBuffer(graphicsDevice, sizeof(int) + Unsafe.SizeOf<DirectionalLightData>() * MaxLights, ResourceFlags.None, HeapType.Upload);
+            GlobalBuffer = GraphicsResource.CreateBuffer(graphicsDevice, Unsafe.SizeOf<GlobalBuffer>(), ResourceFlags.None, HeapType.Upload);
+            ViewProjectionTransformBuffer = GraphicsResource.CreateBuffer(graphicsDevice, Unsafe.SizeOf<StereoViewProjectionTransform>(), ResourceFlags.None, HeapType.Upload);
+            DefaultSampler = new Sampler(graphicsDevice);
         }
 
-        public GraphicsBuffer DirectionalLightGroupBuffer { get; }
+        public GraphicsResource DirectionalLightGroupBuffer { get; }
 
-        public GraphicsBuffer GlobalBuffer { get; }
+        public GraphicsResource GlobalBuffer { get; }
 
-        public GraphicsBuffer ViewProjectionTransformBuffer { get; }
+        public GraphicsResource ViewProjectionTransformBuffer { get; }
 
-        public SamplerState DefaultSampler { get; }
+        public Sampler DefaultSampler { get; }
 
         public override void Draw(GameTime gameTime)
         {
@@ -54,8 +54,8 @@ namespace DirectX12GameEngine.Engine
 
             if (componentsWithSameModel.Length < 1) return;
 
-            Texture? depthStencilBuffer = graphicsDevice.CommandList.DepthStencilBuffer;
-            GraphicsResource[] renderTargets = graphicsDevice.CommandList.RenderTargets;
+            DepthStencilView? depthStencilBuffer = graphicsDevice.CommandList.DepthStencilBuffer;
+            RenderTargetView[] renderTargets = graphicsDevice.CommandList.RenderTargets;
 
             if (renderTargets.Length < 1) return;
 
@@ -100,11 +100,11 @@ namespace DirectX12GameEngine.Engine
 
                     if (!models.ContainsKey(model))
                     {
-                        GraphicsBuffer[] newWorldMatrixBuffers = new GraphicsBuffer[meshCount];
+                        GraphicsResource[] newWorldMatrixBuffers = new GraphicsResource[meshCount];
 
                         for (int meshIndex = 0; meshIndex < meshCount; meshIndex++)
                         {
-                            newWorldMatrixBuffers[meshIndex] = GraphicsBuffer.Create(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>(), ResourceFlags.None, GraphicsHeapType.Upload);
+                            newWorldMatrixBuffers[meshIndex] = GraphicsResource.CreateBuffer(graphicsDevice, modelComponents.Count() * Unsafe.SizeOf<Matrix4x4>(), ResourceFlags.None, HeapType.Upload);
                         }
 
                         CompiledCommandList[] newBundles = new CompiledCommandList[highestPassCount];
@@ -128,7 +128,7 @@ namespace DirectX12GameEngine.Engine
                         models.Add(model, (newBundles, newWorldMatrixBuffers));
                     }
 
-                    (CompiledCommandList[] bundles, GraphicsBuffer[] worldMatrixBuffers) = models[model];
+                    (CompiledCommandList[] bundles, GraphicsResource[] worldMatrixBuffers) = models[model];
 
                     int modelComponentIndex = 0;
 
@@ -174,7 +174,7 @@ namespace DirectX12GameEngine.Engine
             graphicsDevice.CommandList.SetScissorRectangles(scissorRectangles);
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             ViewProjectionTransformBuffer.Dispose();
 
@@ -185,7 +185,7 @@ namespace DirectX12GameEngine.Engine
 
             foreach (var item in models)
             {
-                (CompiledCommandList[]? bundles, GraphicsBuffer[]? worldMatrixBuffers) = item.Value;
+                (CompiledCommandList[]? bundles, GraphicsResource[]? worldMatrixBuffers) = item.Value;
 
                 DisposeModel(bundles, worldMatrixBuffers);
             }
@@ -209,11 +209,11 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private static void DisposeModel(CompiledCommandList[] bundles, GraphicsBuffer[] worldMatrixBuffers)
+        private static void DisposeModel(CompiledCommandList[] bundles, GraphicsResource[] worldMatrixBuffers)
         {
             if (worldMatrixBuffers != null)
             {
-                foreach (GraphicsBuffer constantBuffer in worldMatrixBuffers)
+                foreach (GraphicsResource constantBuffer in worldMatrixBuffers)
                 {
                     constantBuffer.Dispose();
                 }
@@ -228,7 +228,7 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        private void RecordCommandList(Model model, CommandList commandList, GraphicsBuffer[] worldMatrixBuffers, int instanceCount, int passIndex)
+        private void RecordCommandList(Model model, CommandList commandList, GraphicsResource[] worldMatrixBuffers, int instanceCount, int passIndex)
         {
             int renderTargetCount = graphicsDevice?.Presenter is null ? 1 : graphicsDevice.Presenter.PresentationParameters.Stereo ? 2 : 1;
             instanceCount *= renderTargetCount;
@@ -253,11 +253,11 @@ namespace DirectX12GameEngine.Engine
                 int rootParameterIndex = 0;
 
                 commandList.SetGraphicsRoot32BitConstant(rootParameterIndex++, renderTargetCount, 0);
-                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, GlobalBuffer);
-                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, ViewProjectionTransformBuffer);
-                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, worldMatrixBuffers[i]);
+                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, GlobalBuffer.DefaultConstantBufferView);
+                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, ViewProjectionTransformBuffer.DefaultConstantBufferView);
+                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, worldMatrixBuffers[i].DefaultConstantBufferView);
 
-                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, DirectionalLightGroupBuffer);
+                commandList.SetGraphicsRootConstantBufferView(rootParameterIndex++, DirectionalLightGroupBuffer.DefaultConstantBufferView);
                 commandList.SetGraphicsRootSampler(rootParameterIndex++, DefaultSampler);
 
                 if (materialPass.ShaderResourceViewDescriptorSet != null)
@@ -272,11 +272,11 @@ namespace DirectX12GameEngine.Engine
 
                 if (mesh.MeshDraw.IndexBufferView != null)
                 {
-                    commandList.DrawIndexedInstanced(mesh.MeshDraw.IndexBufferView.SizeInBytes / mesh.MeshDraw.IndexBufferView.StructureByteStride, instanceCount);
+                    commandList.DrawIndexedInstanced(mesh.MeshDraw.IndexBufferView.Value.SizeInBytes / mesh.MeshDraw.IndexBufferView.Value.Format.SizeOfInBytes(), instanceCount);
                 }
                 else
                 {
-                    commandList.DrawInstanced(mesh.MeshDraw.VertexBufferViews[0].SizeInBytes / mesh.MeshDraw.VertexBufferViews[0].StructureByteStride, instanceCount);
+                    commandList.DrawInstanced(mesh.MeshDraw.VertexBufferViews[0].SizeInBytes / mesh.MeshDraw.VertexBufferViews[0].StrideInBytes, instanceCount);
                 }
             }
         }

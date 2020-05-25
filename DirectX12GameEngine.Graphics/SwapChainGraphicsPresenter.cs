@@ -8,7 +8,7 @@ namespace DirectX12GameEngine.Graphics
     {
         protected const int BufferCount = 2;
 
-        private readonly Texture[] renderTargets = new Texture[BufferCount];
+        private readonly RenderTargetView[] renderTargets = new RenderTargetView[BufferCount];
 
         public SwapChainGraphicsPresenter(GraphicsDevice device, PresentationParameters presentationParameters, IDXGISwapChain3 swapChain)
             : base(device, presentationParameters)
@@ -24,7 +24,7 @@ namespace DirectX12GameEngine.Graphics
             CreateRenderTargets();
         }
 
-        public override Texture BackBuffer => renderTargets[SwapChain.GetCurrentBackBufferIndex()];
+        public override RenderTargetView BackBuffer => renderTargets[SwapChain.GetCurrentBackBufferIndex()];
 
         public Matrix3x2 MatrixTransform { get => SwapChain.MatrixTransform; set => SwapChain.MatrixTransform = value; }
 
@@ -32,16 +32,19 @@ namespace DirectX12GameEngine.Graphics
 
         protected IDXGISwapChain3 SwapChain { get; }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            SwapChain.Dispose();
-
-            foreach (Texture renderTarget in renderTargets)
+            if (disposing)
             {
-                renderTarget.Dispose();
+                SwapChain.Dispose();
+
+                foreach (RenderTargetView renderTarget in renderTargets)
+                {
+                    renderTarget.Resource.Dispose();
+                }
             }
 
-            base.Dispose();
+            base.Dispose(disposing);
         }
 
         public override void Present()
@@ -53,7 +56,7 @@ namespace DirectX12GameEngine.Graphics
         {
             for (int i = 0; i < BufferCount; i++)
             {
-                renderTargets[i].Dispose();
+                renderTargets[i].Resource.Dispose();
             }
 
             SwapChain.ResizeBuffers(BufferCount, width, height, Format.Unknown, SwapChainFlags.None);
@@ -63,7 +66,7 @@ namespace DirectX12GameEngine.Graphics
 
         protected override void ResizeDepthStencilBuffer(int width, int height)
         {
-            DepthStencilBuffer.Dispose();
+            DepthStencilBuffer.Resource.Dispose();
             DepthStencilBuffer = CreateDepthStencilBuffer();
         }
 
@@ -71,7 +74,8 @@ namespace DirectX12GameEngine.Graphics
         {
             for (int i = 0; i < BufferCount; i++)
             {
-                renderTargets[i] = Texture.CreateFromResource(GraphicsDevice, SwapChain.GetBuffer<ID3D12Resource>(i), PresentationParameters.BackBufferFormat.IsSRgb());
+                Texture renderTargetTexture = new Texture(GraphicsDevice, SwapChain.GetBuffer<ID3D12Resource>(i));
+                renderTargets[i] = RenderTargetView.FromTexture2D(renderTargetTexture, PresentationParameters.BackBufferFormat);
             }
         }
     }

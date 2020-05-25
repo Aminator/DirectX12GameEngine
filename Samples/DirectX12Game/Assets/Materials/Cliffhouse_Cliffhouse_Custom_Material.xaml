@@ -8,13 +8,13 @@
                     <MaterialDiffuseMapFeature.DiffuseMap>
                         <local:DissolveShader>
                             <local:DissolveShader.DissolveStrength>
-                                <ComputeScalar Value="0.5" />
+                                <ScalarShader Value="0.5" />
                             </local:DissolveShader.DissolveStrength>
                             <local:DissolveShader.MainTexture>
-                                <ComputeTextureColor Texture="Assets\Textures\Cliffhouse_img4" />
+                                <TextureColorShader Texture="Assets\Textures\Cliffhouse_img4" ConvertToLinear="True" />
                             </local:DissolveShader.MainTexture>
                             <local:DissolveShader.DissolveTexture>
-                                <ComputeTextureScalar Texture="Assets\Textures\Tiling_Perlin_Noise" Channel="R" />
+                                <TextureScalarShader Texture="Assets\Textures\Tiling_Perlin_Noise" Channel="R" />
                             </local:DissolveShader.DissolveTexture>
                         </local:DissolveShader>
                     </MaterialDiffuseMapFeature.DiffuseMap>
@@ -40,7 +40,7 @@
             <local:WobbleMaterialAttributes.MicroSurface>
                 <MaterialRoughnessMapFeature>
                     <MaterialRoughnessMapFeature.RoughnessMap>
-                        <ComputeTextureScalar Texture="Assets\Textures\Cliffhouse_img3" Channel="G" />
+                        <TextureScalarShader Texture="Assets\Textures\Cliffhouse_img3" Channel="G" />
                     </MaterialRoughnessMapFeature.RoughnessMap>
                 </MaterialRoughnessMapFeature>
             </local:WobbleMaterialAttributes.MicroSurface>
@@ -48,7 +48,7 @@
             <local:WobbleMaterialAttributes.Specular>
                 <MaterialMetalnessMapFeature>
                     <MaterialMetalnessMapFeature.MetalnessMap>
-                        <ComputeScalar Value="0.0" />
+                        <ScalarShader Value="0.0" />
                     </MaterialMetalnessMapFeature.MetalnessMap>
                 </MaterialMetalnessMapFeature>
             </local:WobbleMaterialAttributes.Specular>

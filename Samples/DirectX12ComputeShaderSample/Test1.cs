@@ -2,16 +2,18 @@
 using System.Linq;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Shaders;
+using DirectX12GameEngine.Shaders.Numerics;
 
 namespace DirectX12ComputeShaderSample
 {
     public class MyComputeShader : ComputeShaderBase
     {
 #nullable disable
-        public RWStructuredBufferResource<float> Destination;
+        public WriteableStructuredBuffer<float> Destination;
 
-        public StructuredBufferResource<float> Source;
+        public StructuredBuffer<float> Source;
 #nullable restore
 
         [ShaderMethod]
@@ -23,25 +25,10 @@ namespace DirectX12ComputeShaderSample
         }
     }
 
-    public static class GraphicsBufferExtensions
-    {
-        public static StructuredBufferResource<T> GetStructuredBuffer<T>(this GraphicsBuffer<T> buffer) where T : unmanaged
-        {
-            return new StructuredBufferResource<T>();
-        }
-
-        public static RWStructuredBufferResource<T> GetRWStructuredBuffer<T>(this GraphicsBuffer<T> buffer) where T : unmanaged
-        {
-            return new RWStructuredBufferResource<T>();
-        }
-    }
-
     public class Test1
     {
         public static async Task RunAsync(GraphicsDevice device)
         {
-            bool generateWithDelegate = false;
-
             // Create graphics buffer
 
             int width = 10;
@@ -54,21 +41,66 @@ namespace DirectX12ComputeShaderSample
                 array[i] = i;
             }
 
-            float[] outputArray = new float[width * height];
+            Console.WriteLine("CPU Test:");
+            CreateBuffers(device, array, out StructuredBuffer<float> cpuSourceBufferView, out WriteableStructuredBuffer<float> cpuDestinationBufferView);
+            await ExecuteOnCpu(device, cpuSourceBufferView, cpuDestinationBufferView);
+            Print(cpuDestinationBufferView);
 
-            using GraphicsBuffer<float> sourceBuffer = GraphicsBuffer.Create<float>(device, array, ResourceFlags.None);
-            using GraphicsBuffer<float> destinationBuffer = GraphicsBuffer.Create<float>(device, array.Length * 2, ResourceFlags.AllowUnorderedAccess);
+            Console.WriteLine("GPU Test:");
+            CreateBuffers(device, array, out StructuredBuffer<float> gpuSourceBufferView, out WriteableStructuredBuffer<float> gpuDestinationBufferView);
+            await ExecuteOnGpu(device, gpuSourceBufferView, gpuDestinationBufferView);
+            Print(gpuDestinationBufferView);
 
-            GraphicsBuffer<float> slicedDestinationBuffer = destinationBuffer.Slice(20, 60);
-            slicedDestinationBuffer = slicedDestinationBuffer.Slice(10, 50);
+            void Print(WriteableStructuredBuffer<float> destination)
+            {
+                float[] outputArray = new float[width * height];
+
+                Console.WriteLine("Before:");
+                PrintMatrix(array, width, height);
+
+                destination.Resource.GetData(outputArray.AsSpan());
+
+                Console.WriteLine();
+                Console.WriteLine("After:");
+                PrintMatrix(outputArray, width, height);
+            }
+        }
+
+        private static Task ExecuteOnCpu(GraphicsDevice device, StructuredBuffer<float> sourceBufferView, WriteableStructuredBuffer<float> destinationBufferView)
+        {
+            MyComputeShader myComputeShader = new MyComputeShader
+            {
+                Source = sourceBufferView,
+                Destination = destinationBufferView
+            };
+
+            for (int x = 0; x < 100; x++)
+            {
+                myComputeShader.CSMain(new CSInput { DispatchThreadId = new Int3 { X = x } });
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private static void CreateBuffers(GraphicsDevice device, float[] array, out StructuredBuffer<float> sourceBufferView, out WriteableStructuredBuffer<float> destinationBufferView)
+        {
+            GraphicsResource sourceBuffer = GraphicsResource.CreateBuffer<float>(device, array, ResourceFlags.None);
+            GraphicsResource destinationBuffer = GraphicsResource.CreateBuffer<float>(device, array.Length * 2, ResourceFlags.AllowUnorderedAccess);
+            sourceBufferView = new StructuredBuffer<float>(ShaderResourceView.FromBuffer<float>(sourceBuffer));
+            destinationBufferView = new WriteableStructuredBuffer<float>(UnorderedAccessView.FromBuffer<float>(destinationBuffer));
+        }
+
+        private static async Task ExecuteOnGpu(GraphicsDevice device, StructuredBuffer<float> sourceBufferView, WriteableStructuredBuffer<float> destinationBufferView)
+        {
+            bool generateWithDelegate = false;
 
             DescriptorSet descriptorSet = new DescriptorSet(device, 2);
-            descriptorSet.AddUnorderedAccessViews(slicedDestinationBuffer);
-            descriptorSet.AddShaderResourceViews(sourceBuffer);
+            descriptorSet.AddResourceViews(destinationBufferView);
+            descriptorSet.AddResourceViews(sourceBufferView);
 
             // Generate computer shader
             ShaderGenerator shaderGenerator = generateWithDelegate
-                ? CreateShaderGeneratorWithDelegate(sourceBuffer, destinationBuffer)
+                ? CreateShaderGeneratorWithDelegate(sourceBufferView, destinationBufferView)
                 : CreateShaderGeneratorWithClass();
 
             ShaderGeneratorResult result = shaderGenerator.GenerateShader();
@@ -99,17 +131,6 @@ namespace DirectX12ComputeShaderSample
                 commandList.Dispatch(1, 1, 1);
                 await commandList.FlushAsync();
             }
-
-            // Print matrix
-
-            Console.WriteLine("Before:");
-            PrintMatrix(array, width, height);
-
-            destinationBuffer.GetData(outputArray.AsSpan());
-
-            Console.WriteLine();
-            Console.WriteLine("After:");
-            PrintMatrix(outputArray, width, height);
         }
 
         private static ShaderGenerator CreateShaderGeneratorWithClass()
@@ -120,14 +141,11 @@ namespace DirectX12ComputeShaderSample
         }
 
         [AnonymousShaderMethod(0)]
-        private static ShaderGenerator CreateShaderGeneratorWithDelegate(GraphicsBuffer<float> sourceBuffer, GraphicsBuffer<float> destinationBuffer)
+        private static ShaderGenerator CreateShaderGeneratorWithDelegate(StructuredBuffer<float> sourceBuffer, WriteableStructuredBuffer<float> destinationBuffer)
         {
-            StructuredBufferResource<float> source = sourceBuffer.GetStructuredBuffer();
-            RWStructuredBufferResource<float> destination = destinationBuffer.GetRWStructuredBuffer();
-
             Action<CSInput> action = input =>
             {
-                destination[input.DispatchThreadId.X] = Math.Max(source[input.DispatchThreadId.X], 45);
+                destinationBuffer[input.DispatchThreadId.X] = Math.Max(sourceBuffer[input.DispatchThreadId.X], 45);
             };
 
             return new ShaderGenerator(action, new ShaderAttribute("compute"), new NumThreadsAttribute(100, 1, 1));

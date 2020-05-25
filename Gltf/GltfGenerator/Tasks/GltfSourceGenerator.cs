@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -14,23 +13,17 @@ namespace GltfGenerator.Tasks
 
         public void Execute(SourceGeneratorContext context)
         {
-            try
-            {
-                CodeGenerator generator = new CodeGenerator(GltfSchema);
-                generator.ParseSchemas();
-                generator.ExpandSchemaReferences();
-                generator.EvaluateInheritance();
-                generator.PostProcessSchema();
-                var generatedFiles = generator.CSharpCodeGen();
+            CodeGenerator generator = new CodeGenerator(GltfSchema);
+            generator.ParseSchemas();
+            generator.ExpandSchemaReferences();
+            generator.EvaluateInheritance();
+            generator.PostProcessSchema();
 
-                foreach (var file in generatedFiles)
-                {
-                    context.AddSource(file.Key, SourceText.From(file.Value, Encoding.UTF8));
-                }
-            }
-            catch (Exception e)
+            var generatedFiles = generator.CSharpCodeGen();
+
+            foreach (var file in generatedFiles)
             {
-                context.ReportDiagnostic(Diagnostic.Create("GLTF1", "Compiler", e.Message, DiagnosticSeverity.Warning, DiagnosticSeverity.Warning, true, 1));
+                context.AddSource(file.Key, SourceText.From(file.Value, Encoding.UTF8));
             }
         }
 

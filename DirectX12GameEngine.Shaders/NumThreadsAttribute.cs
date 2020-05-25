@@ -3,6 +3,7 @@
 namespace DirectX12GameEngine.Shaders
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    [ShaderType("NumThreads")]
     public class NumThreadsAttribute : Attribute
     {
         public NumThreadsAttribute(int x, int y, int z)

@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
         }
 
-        public MaterialDiffuseMapFeature(IComputeColor diffuseMap)
+        public MaterialDiffuseMapFeature(IColorShader diffuseMap)
         {
             DiffuseMap = diffuseMap;
         }
@@ -20,15 +20,12 @@ namespace DirectX12GameEngine.Rendering.Materials
             DiffuseMap.Accept(context);
         }
 
-        public IComputeColor DiffuseMap { get; set; } = new ComputeColor();
+        public IColorShader DiffuseMap { get; set; } = new ColorShader();
 
         [ShaderMethod]
-        public void Compute()
+        public Vector4 ComputeDiffuseColor(in SamplingContext context)
         {
-            Vector4 colorBase = DiffuseMap.Compute();
-
-            MaterialPixelStream.MaterialColorBase = colorBase;
-            MaterialPixelStream.MaterialDiffuse = colorBase;
+            return DiffuseMap.ComputeColor(context);
         }
     }
 }

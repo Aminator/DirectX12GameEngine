@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Shaders;
+using DirectX12GameEngine.Shaders.Numerics;
 
 namespace DirectX12ComputeShaderSample
 {
@@ -32,33 +33,11 @@ namespace DirectX12ComputeShaderSample
 
                 tasks.Add(Task.Run(async () =>
                 {
-                    GraphicsBuffer<float> buffer = GraphicsBuffer.Create<float>(device, sumCount, ResourceFlags.AllowUnorderedAccess);
-                    TestShader shader = new TestShader(buffer, Sigmoid);
+                    TestShader cpuShader = CreateTestShader(device, sumCount);
+                    await ExecuteOnCpu(device, index, cpuShader);
 
-                    ShaderGeneratorContext context = new ShaderGeneratorContext(device);
-                    context.Visit(shader);
-
-                    ShaderGeneratorResult result = new ShaderGenerator(shader).GenerateShader();
-
-                    PipelineState pipelineState = await context.CreateComputePipelineStateAsync();
-                    DescriptorSet? descriptorSet = context.CreateShaderResourceViewDescriptorSet();
-
-                    using (CommandList commandList = new CommandList(device, CommandListType.Compute))
-                    {
-                        commandList.SetPipelineState(pipelineState);
-
-                        if (descriptorSet != null)
-                        {
-                            commandList.SetComputeRootDescriptorTable(0, descriptorSet);
-                        }
-
-                        commandList.Dispatch(1, 1, 1);
-                        await commandList.FlushAsync();
-                    }
-
-                    float sum = buffer.GetData().Sum();
-
-                    Console.WriteLine($"Thread: {index}, sum: {sum}.");
+                    TestShader gpuShader = CreateTestShader(device, sumCount);
+                    await ExecuteOnGpu(device, index, gpuShader);
                 }));
             }
 
@@ -69,17 +48,65 @@ namespace DirectX12ComputeShaderSample
 
             Console.WriteLine("DONE!");
         }
+
+        private static TestShader CreateTestShader(GraphicsDevice device, int sumCount)
+        {
+            GraphicsResource buffer = GraphicsResource.CreateBuffer<float>(device, sumCount, ResourceFlags.AllowUnorderedAccess);
+            WriteableStructuredBuffer<float> bufferView = new WriteableStructuredBuffer<float>(UnorderedAccessView.FromBuffer<float>(buffer));
+
+            TestShader shader = new TestShader(bufferView, Sigmoid);
+            return shader;
+        }
+
+        private static Task ExecuteOnCpu(GraphicsDevice device, int index, TestShader shader)
+        {
+            for (int x = 0; x < 10; x++)
+            {
+                shader.Execute(new CSInput { DispatchThreadId = new Int3 { X = x } });
+            }
+
+            float sum = shader.DestinationBuffer.Resource.GetArray<float>().Sum();
+
+            Console.WriteLine($"Origin: CPU, Thread: {index}, sum: {sum}.");
+
+            return Task.CompletedTask;
+        }
+
+        private static async Task ExecuteOnGpu(GraphicsDevice device, int index, TestShader shader)
+        {
+            ShaderGeneratorContext context = new ShaderGeneratorContext(device);
+            context.Visit(shader);
+
+            PipelineState pipelineState = await context.CreateComputePipelineStateAsync();
+            DescriptorSet? descriptorSet = context.CreateShaderResourceViewDescriptorSet();
+
+            using (CommandList commandList = new CommandList(device, CommandListType.Compute))
+            {
+                commandList.SetPipelineState(pipelineState);
+
+                if (descriptorSet != null)
+                {
+                    commandList.SetComputeRootDescriptorTable(0, descriptorSet);
+                }
+
+                commandList.Dispatch(1, 1, 1);
+                await commandList.FlushAsync();
+            }
+
+            float sum = shader.DestinationBuffer.Resource.GetArray<float>().Sum();
+
+            Console.WriteLine($"Origin: GPU, Thread: {index}, sum: {sum}.");
+        }
     }
 
-    public readonly struct TestShader : IComputeShader
+    public readonly struct TestShader : IShader
     {
-        [UnorderedAccessView(typeof(RWStructuredBufferResource<float>))]
-        public readonly GraphicsBuffer<float> DestinationBuffer;
+        public readonly WriteableStructuredBuffer<float> DestinationBuffer;
 
         public readonly Func<float, float> f;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public TestShader(GraphicsBuffer<float> buffer, Func<float, float> f)
+        public TestShader(WriteableStructuredBuffer<float> buffer, Func<float, float> f)
         {
             DestinationBuffer = buffer;
             this.f = f;

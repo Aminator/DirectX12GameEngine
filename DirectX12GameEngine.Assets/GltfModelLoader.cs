@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DirectX12GameEngine.Core;
 using DirectX12GameEngine.Graphics;
+using DirectX12GameEngine.Rendering;
 using DirectX12GameEngine.Rendering.Materials;
 using GltfLoader;
 using GltfLoader.Schema;
@@ -14,6 +16,7 @@ using GltfLoader.Schema;
 using Mesh = DirectX12GameEngine.Rendering.Mesh;
 using MeshDraw = DirectX12GameEngine.Rendering.MeshDraw;
 using Texture = DirectX12GameEngine.Graphics.Texture;
+using Material = GltfLoader.Schema.Material;
 
 namespace DirectX12GameEngine.Assets
 {
@@ -91,47 +94,47 @@ namespace DirectX12GameEngine.Assets
 
             if (diffuseTextureIndex.HasValue)
             {
-                Texture diffuseTexture = await GetTextureAsync(diffuseTextureIndex.Value, true);
-                materialAttributes.Diffuse = new MaterialDiffuseMapFeature(new ComputeTextureColor(diffuseTexture));
+                Texture diffuseTexture = await GetTextureAsync(diffuseTextureIndex.Value);
+                materialAttributes.Diffuse = new MaterialDiffuseMapFeature(new TextureColorShader(diffuseTexture, true));
             }
             else
             {
                 float[] baseColor = material.PbrMetallicRoughness.BaseColorFactor;
                 Vector4 color = new Vector4(baseColor[0], baseColor[1], baseColor[2], baseColor[3]);
-                materialAttributes.Diffuse = new MaterialDiffuseMapFeature(new ComputeColor(color));
+                materialAttributes.Diffuse = new MaterialDiffuseMapFeature(new ColorShader(color));
             }
 
             if (metallicRoughnessTextureIndex.HasValue)
             {
                 Texture metallicRoughnessTexture = await GetTextureAsync(metallicRoughnessTextureIndex.Value);
-                materialAttributes.MicroSurface = new MaterialRoughnessMapFeature(new ComputeTextureScalar(metallicRoughnessTexture, ColorChannel.G));
-                materialAttributes.Specular = new MaterialMetalnessMapFeature(new ComputeTextureScalar(metallicRoughnessTexture, ColorChannel.B));
+                materialAttributes.MicroSurface = new MaterialRoughnessMapFeature(new TextureScalarShader(metallicRoughnessTexture, ColorChannel.G));
+                materialAttributes.Specular = new MaterialMetalnessMapFeature(new TextureScalarShader(metallicRoughnessTexture, ColorChannel.B));
             }
             else if (specularGlossinessTextureIndex.HasValue)
             {
                 Texture specularGlossinessTexture = await GetTextureAsync(specularGlossinessTextureIndex.Value);
-                materialAttributes.MicroSurface = new MaterialRoughnessMapFeature(new ComputeTextureScalar(specularGlossinessTexture, ColorChannel.A)) { Invert = true };
-                materialAttributes.Specular = new MaterialSpecularMapFeature(new ComputeTextureColor(specularGlossinessTexture));
+                materialAttributes.MicroSurface = new MaterialRoughnessMapFeature(new TextureScalarShader(specularGlossinessTexture, ColorChannel.A)) { Invert = true };
+                materialAttributes.Specular = new MaterialSpecularMapFeature(new TextureColorShader(specularGlossinessTexture));
             }
             else
             {
                 float roughness = material.PbrMetallicRoughness.RoughnessFactor;
                 float metalness = material.PbrMetallicRoughness.MetallicFactor;
 
-                materialAttributes.MicroSurface = new MaterialRoughnessMapFeature(new ComputeScalar(roughness));
-                materialAttributes.Specular = new MaterialMetalnessMapFeature(new ComputeScalar(metalness));
+                materialAttributes.MicroSurface = new MaterialRoughnessMapFeature(new ScalarShader(roughness));
+                materialAttributes.Specular = new MaterialMetalnessMapFeature(new ScalarShader(metalness));
             }
 
             if (normalTextureIndex.HasValue)
             {
                 Texture normalTexture = await GetTextureAsync(normalTextureIndex.Value);
-                materialAttributes.Surface = new MaterialNormalMapFeature(new ComputeTextureColor(normalTexture));
+                materialAttributes.Surface = new MaterialNormalMapFeature(new TextureColorShader(normalTexture));
             }
 
             return materialAttributes;
         }
 
-        public async Task<Texture> GetTextureAsync(int textureIndex, bool isSRgb = false)
+        public async Task<Texture> GetTextureAsync(int textureIndex)
         {
             int imageIndex = gltf.Textures[textureIndex].Source ?? throw new Exception();
             GltfLoader.Schema.Image image = gltf.Images[imageIndex];
@@ -142,7 +145,7 @@ namespace DirectX12GameEngine.Assets
             byte[] currentBuffer = buffers[bufferView.Buffer];
 
             MemoryStream stream = new MemoryStream(currentBuffer, bufferView.ByteOffset, bufferView.ByteLength);
-            Texture texture = await Texture.LoadAsync(GraphicsDevice, stream, isSRgb);
+            Texture texture = await Texture.LoadAsync(GraphicsDevice, stream);
             return texture;
         }
 
@@ -164,17 +167,17 @@ namespace DirectX12GameEngine.Assets
             GltfLoader.Schema.Mesh mesh = gltf.Meshes[meshIndex];
 
             Span<byte> indexBuffer = Span<byte>.Empty;
-            GraphicsBuffer<byte>? indexBufferView = null;
-            bool is32bitIndex = false;
+            IndexBufferView? indexBufferView = null;
+            bool is32BitIndex = false;
 
             if (mesh.Primitives[0].Indices.HasValue)
             {
                 indexBuffer = GetIndexBuffer(mesh, out int stride);
-                is32bitIndex = stride == sizeof(int);
-                indexBufferView = GraphicsBuffer.Create(GraphicsDevice, indexBuffer, stride, ResourceFlags.None);
+                is32BitIndex = stride == sizeof(int);
+                indexBufferView = new IndexBufferView(GraphicsResource.CreateBuffer(GraphicsDevice, indexBuffer, ResourceFlags.None), is32BitIndex);
             }
 
-            GraphicsBuffer[] vertexBufferViews = GetVertexBufferViews(mesh, indexBuffer, is32bitIndex);
+            VertexBufferView[] vertexBufferViews = GetVertexBufferViews(mesh, indexBuffer, is32BitIndex);
 
             int materialIndex = 0;
 
@@ -213,9 +216,9 @@ namespace DirectX12GameEngine.Assets
             return Task.FromResult(new Mesh(meshDraw) { MaterialIndex = materialIndex, WorldMatrix = worldMatrix });
         }
 
-        private GraphicsBuffer[] GetVertexBufferViews(GltfLoader.Schema.Mesh mesh, Span<byte> indexBuffer = default, bool is32bitIndex = false)
+        private VertexBufferView[] GetVertexBufferViews(GltfLoader.Schema.Mesh mesh, Span<byte> indexBuffer = default, bool is32BitIndex = false)
         {
-            GraphicsBuffer[] vertexBufferViews = new GraphicsBuffer[4];
+            VertexBufferView[] vertexBufferViews = new VertexBufferView[4];
 
             Dictionary<string, int> attributes = mesh.Primitives[0].Attributes;
 
@@ -227,29 +230,29 @@ namespace DirectX12GameEngine.Assets
             if (hasPosition)
             {
                 Span<byte> positionBuffer = GetVertexBuffer(positionIndex, out int positionStride);
-                vertexBufferViews[0] = GraphicsBuffer.Create(GraphicsDevice, positionBuffer, positionStride, ResourceFlags.None);
+                vertexBufferViews[0] = new VertexBufferView(GraphicsResource.CreateBuffer(GraphicsDevice, positionBuffer, ResourceFlags.None), positionStride);
 
                 if (hasNormal)
                 {
                     Span<byte> normalBuffer = GetVertexBuffer(normalIndex, out int normalStride);
-                    vertexBufferViews[1] = GraphicsBuffer.Create(GraphicsDevice, normalBuffer, normalStride, ResourceFlags.None);
+                    vertexBufferViews[1] = new VertexBufferView(GraphicsResource.CreateBuffer(GraphicsDevice, normalBuffer, ResourceFlags.None), normalStride);
                 }
 
                 if (hasTangent)
                 {
                     Span<byte> tangentBuffer = GetVertexBuffer(tangentIndex, out int tangentStride);
-                    vertexBufferViews[2] = GraphicsBuffer.Create(GraphicsDevice, tangentBuffer, tangentStride, ResourceFlags.None);
+                    vertexBufferViews[2] = new VertexBufferView(GraphicsResource.CreateBuffer(GraphicsDevice, tangentBuffer, ResourceFlags.None), tangentStride);
                 }
 
                 if (hasTexCoord0)
                 {
                     Span<byte> texCoord0Buffer = GetVertexBuffer(texCoord0Index, out int texCoord0Stride);
-                    vertexBufferViews[3] = GraphicsBuffer.Create(GraphicsDevice, texCoord0Buffer, texCoord0Stride, ResourceFlags.None);
+                    vertexBufferViews[3] = new VertexBufferView(GraphicsResource.CreateBuffer(GraphicsDevice, texCoord0Buffer, ResourceFlags.None), texCoord0Stride);
 
                     if (!hasTangent)
                     {
-                        Span<Vector4> tangentBuffer = VertexHelper.GenerateTangents(positionBuffer, texCoord0Buffer, indexBuffer, is32bitIndex);
-                        vertexBufferViews[2] = GraphicsBuffer.Create(GraphicsDevice, tangentBuffer, ResourceFlags.None);
+                        Span<Vector4> tangentBuffer = VertexHelper.GenerateTangents(positionBuffer, texCoord0Buffer, indexBuffer, is32BitIndex);
+                        vertexBufferViews[2] = new VertexBufferView(GraphicsResource.CreateBuffer(GraphicsDevice, tangentBuffer, ResourceFlags.None), Unsafe.SizeOf<Vector4>());
                     }
                 }
             }

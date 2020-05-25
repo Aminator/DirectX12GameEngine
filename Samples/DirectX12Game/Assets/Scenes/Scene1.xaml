@@ -108,11 +108,7 @@
                     Scale="1,1,1" />
                 <LightComponent Intensity="0.5">
                     <LightComponent.Light>
-                        <DirectionalLight Color="1,1,1">
-                            <DirectionalLight.Shadow>
-                                <DirectionalLightShadowMap Enabled="False" />
-                            </DirectionalLight.Shadow>
-                        </DirectionalLight>
+                        <DirectionalLight Color="1,1,1" />
                     </LightComponent.Light>
                 </LightComponent>
             </Entity.Components>
@@ -125,11 +121,7 @@
                     Scale="1,1,1" />
                 <LightComponent Intensity="0.5">
                     <LightComponent.Light>
-                        <DirectionalLight Color="1,1,1">
-                            <DirectionalLight.Shadow>
-                                <DirectionalLightShadowMap Enabled="False" />
-                            </DirectionalLight.Shadow>
-                        </DirectionalLight>
+                        <DirectionalLight Color="1,1,1" />
                     </LightComponent.Light>
                 </LightComponent>
                 <d:RotatorScript />

@@ -3,25 +3,31 @@ using Vortice.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
-    public class SamplerState
+    public class Sampler
     {
-        IntPtr nativeCpuDescriptorHandle;
-
-        public SamplerState(GraphicsDevice device) : this(device, SamplerDescription.Default)
+        public Sampler(GraphicsDevice device) : this(device, SamplerDescription.Default)
         {
         }
 
-        public SamplerState(GraphicsDevice device, SamplerDescription description)
+        public Sampler(Sampler sampler)
+        {
+            GraphicsDevice = sampler.GraphicsDevice;
+            Description = sampler.Description;
+            CpuDescriptorHandle = sampler.CpuDescriptorHandle;
+        }
+
+        public Sampler(GraphicsDevice device, SamplerDescription description)
         {
             GraphicsDevice = device;
             Description = description;
+            CpuDescriptorHandle = CreateSampler();
         }
 
         public GraphicsDevice GraphicsDevice { get; }
 
         public SamplerDescription Description { get; }
 
-        public IntPtr NativeCpuDescriptorHandle => nativeCpuDescriptorHandle = nativeCpuDescriptorHandle != IntPtr.Zero ? nativeCpuDescriptorHandle : CreateSampler();
+        public IntPtr CpuDescriptorHandle { get; }
 
         private IntPtr CreateSampler()
         {

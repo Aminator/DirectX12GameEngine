@@ -5,7 +5,7 @@ using Windows.Graphics.Imaging;
 
 namespace DirectX12GameEngine.Graphics
 {
-    public sealed class Image : IDisposable
+    public sealed class Image
     {
         public Memory<byte> Data { get; }
 
@@ -25,36 +25,32 @@ namespace DirectX12GameEngine.Graphics
             Data = data;
         }
 
-        public static async Task<Image> LoadAsync(string filePath, bool isSRgb = false)
+        public static async Task<Image> LoadAsync(string filePath)
         {
             using FileStream stream = File.OpenRead(filePath);
-            return await LoadAsync(stream, isSRgb);
+            return await LoadAsync(stream);
         }
 
-        public static async Task<Image> LoadAsync(Stream stream, bool isSRgb = false)
+        public static async Task<Image> LoadAsync(Stream stream)
         {
             BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream.AsRandomAccessStream());
 
             PixelDataProvider pixelDataProvider = await decoder.GetPixelDataAsync(
                 decoder.BitmapPixelFormat, decoder.BitmapAlphaMode, new BitmapTransform(),
-                ExifOrientationMode.RespectExifOrientation, isSRgb ? ColorManagementMode.DoNotColorManage : ColorManagementMode.DoNotColorManage);
+                ExifOrientationMode.RespectExifOrientation, ColorManagementMode.DoNotColorManage);
 
             byte[] imageBuffer = pixelDataProvider.DetachPixelData();
 
             PixelFormat pixelFormat = decoder.BitmapPixelFormat switch
             {
-                BitmapPixelFormat.Rgba8 => isSRgb ? PixelFormat.R8G8B8A8_UNorm_SRgb : PixelFormat.R8G8B8A8_UNorm,
-                BitmapPixelFormat.Bgra8 => isSRgb ? PixelFormat.B8G8R8A8_UNorm_SRgb : PixelFormat.B8G8R8A8_UNorm,
+                BitmapPixelFormat.Rgba8 => PixelFormat.R8G8B8A8UIntNormalized,
+                BitmapPixelFormat.Bgra8 => PixelFormat.B8G8R8A8UIntNormalized,
                 _ => throw new NotSupportedException("This format is not supported.")
             };
 
             ImageDescription description = ImageDescription.New2D((int)decoder.OrientedPixelWidth, (int)decoder.OrientedPixelHeight, pixelFormat);
 
             return new Image(description, imageBuffer);
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

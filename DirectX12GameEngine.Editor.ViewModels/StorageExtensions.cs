@@ -73,13 +73,13 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
                     bool needToCopyFile = true;
 
-                    if (await newDestinationFolder.TryGetItemAsync(file.Name) is StorageFile existingFile)
-                    {
-                        byte[] existingFileHash = await ComputeHashOfFileAsync(existingFile);
-                        byte[] newFileHash = await ComputeHashOfFileAsync(file);
+                    //if (await newDestinationFolder.TryGetItemAsync(file.Name) is StorageFile existingFile)
+                    //{
+                    //    byte[] existingFileHash = await ComputeHashOfFileAsync(existingFile);
+                    //    byte[] newFileHash = await ComputeHashOfFileAsync(file);
 
-                        needToCopyFile = !existingFileHash.SequenceEqual(newFileHash);
-                    }
+                    //    needToCopyFile = !existingFileHash.SequenceEqual(newFileHash);
+                    //}
 
                     if (needToCopyFile)
                     {

@@ -11,9 +11,9 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
         }
 
         [ShaderMethod]
-        public Vector3 Compute(Vector3 f0)
+        public Vector3 Compute(in MaterialShadingContext context)
         {
-            return BrdfMicrofacet.FresnelSchlick(f0, MaterialPixelShadingStream.LDotH);
+            return BrdfMicrofacet.FresnelSchlick(context.SpecularColor, context.LDotH);
         }
     }
 }

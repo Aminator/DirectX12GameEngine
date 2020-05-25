@@ -5,14 +5,14 @@ namespace DirectX12GameEngine.Shaders
 {
     public abstract class RasterizationShaderBase
     {
-        [ShaderMethod("return (VSOutput)0;", typeof(VSInput), typeof(VSOutput))]
+        [ShaderMethod("return (DirectX12GameEngine::Shaders::VSOutput)0;", typeof(VSInput), typeof(VSOutput))]
         [Shader("vertex")]
         public virtual VSOutput VSMain(VSInput input)
         {
             return default;
         }
 
-        [ShaderMethod("return (PSOutput)0;", typeof(PSInput), typeof(PSOutput))]
+        [ShaderMethod("return (DirectX12GameEngine::Shaders::PSOutput)0;", typeof(PSInput), typeof(PSOutput))]
         [Shader("pixel")]
         public virtual PSOutput PSMain(PSInput input)
         {
@@ -47,7 +47,7 @@ namespace DirectX12GameEngine.Shaders
         public Vector4 Tangent;
 
         [TextureCoordinateSemantic]
-        public Vector2 TexCoord;
+        public Vector2 TextureCoordinate;
 
         [SystemInstanceIdSemantic]
         public uint InstanceId;
@@ -68,7 +68,7 @@ namespace DirectX12GameEngine.Shaders
         public Vector4 Tangent;
 
         [TextureCoordinateSemantic]
-        public Vector2 TexCoord;
+        public Vector2 TextureCoordinate;
 
         [SystemPositionSemantic]
         public Vector4 ShadingPosition;
@@ -95,7 +95,7 @@ namespace DirectX12GameEngine.Shaders
         public Vector4 Tangent;
 
         [TextureCoordinateSemantic]
-        public Vector2 TexCoord;
+        public Vector2 TextureCoordinate;
 
         [SystemPositionSemantic]
         public Vector4 ShadingPosition;

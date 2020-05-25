@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace DirectX12GameEngine.Input
+﻿namespace DirectX12GameEngine.Input
 {
-    public interface IInputSource : IDisposable
+    public interface IInputSource
     {
         void Scan();
 

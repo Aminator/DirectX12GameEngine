@@ -6,11 +6,6 @@ namespace DirectX12GameEngine.Input
     {
         public ObservableCollection<IGamepadDevice> Gamepads { get; } = new ObservableCollection<IGamepadDevice>();
 
-        public virtual void Dispose()
-        {
-            Gamepads.Clear();
-        }
-
         public virtual void Scan()
         {
         }

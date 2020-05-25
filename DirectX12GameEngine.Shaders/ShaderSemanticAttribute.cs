@@ -17,6 +17,7 @@ namespace DirectX12GameEngine.Shaders
         public int Index { get; }
     }
 
+    [ShaderType("Position")]
     public class PositionSemanticAttribute : ShaderSemanticWithIndexAttribute
     {
         public PositionSemanticAttribute(int index = 0) : base(index)
@@ -24,6 +25,7 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
+    [ShaderType("Normal")]
     public class NormalSemanticAttribute : ShaderSemanticWithIndexAttribute
     {
         public NormalSemanticAttribute(int index = 0) : base(index)
@@ -31,6 +33,7 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
+    [ShaderType("TexCoord")]
     public class TextureCoordinateSemanticAttribute : ShaderSemanticWithIndexAttribute
     {
         public TextureCoordinateSemanticAttribute(int index = 0) : base(index)
@@ -38,6 +41,7 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
+    [ShaderType("Color")]
     public class ColorSemanticAttribute : ShaderSemanticWithIndexAttribute
     {
         public ColorSemanticAttribute(int index = 0) : base(index)
@@ -45,6 +49,7 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
+    [ShaderType("Tangent")]
     public class TangentSemanticAttribute : ShaderSemanticWithIndexAttribute
     {
         public TangentSemanticAttribute(int index = 0) : base(index)
@@ -52,6 +57,7 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
+    [ShaderType("SV_Target")]
     public class SystemTargetSemanticAttribute : ShaderSemanticWithIndexAttribute
     {
         public SystemTargetSemanticAttribute(int index = 0) : base(index)
@@ -59,22 +65,27 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
+    [ShaderType("SV_DispatchThreadId")]
     public class SystemDispatchThreadIdSemanticAttribute : ShaderSemanticAttribute
     {
     }
 
+    [ShaderType("SV_InstanceId")]
     public class SystemInstanceIdSemanticAttribute : ShaderSemanticAttribute
     {
     }
 
+    [ShaderType("SV_IsFrontFace")]
     public class SystemIsFrontFaceSemanticAttribute : ShaderSemanticAttribute
     {
     }
 
+    [ShaderType("SV_Position")]
     public class SystemPositionSemanticAttribute : ShaderSemanticAttribute
     {
     }
 
+    [ShaderType("SV_RenderTargetArrayIndex")]
     public class SystemRenderTargetArrayIndexSemanticAttribute : ShaderSemanticAttribute
     {
     }

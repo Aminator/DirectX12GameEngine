@@ -47,10 +47,6 @@ namespace DirectX12GameEngine.Input
 
         public abstract Vector2 PointerPosition { get; set; }
 
-        public virtual void Dispose()
-        {
-        }
-
         public abstract void ReleasePointerCapture();
 
         public abstract void SetPointerCapture();

@@ -15,6 +15,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
     {
         public const string ActiveSdkVersionKey = "ActiveSdkVersion";
 
+        private SdkViewModel? activeSdk;
+
         public SdkManager()
         {
             string sdksPath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "Sdks");
@@ -60,7 +62,15 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public event EventHandler? ActiveSdkChanged;
 
-        public SdkViewModel? ActiveSdk { get; set; }
+        public SdkViewModel? ActiveSdk
+        {
+            get => activeSdk;
+            set
+            {
+                activeSdk = value;
+                ApplyActiveSdk(activeSdk);
+            }
+        }
 
         public ObservableCollection<SdkViewModel> RecentSdks { get; } = new ObservableCollection<SdkViewModel>();
 
@@ -132,7 +142,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
                 ActiveSdk = sdk;
                 ActiveSdkChanged?.Invoke(this, EventArgs.Empty);
-                ApplyActiveSdk();
             }
         }
 
@@ -159,7 +168,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
                     ActiveSdk = sdk;
                     ActiveSdkChanged?.Invoke(this, EventArgs.Empty);
-                    ApplyActiveSdk();
                 }
             }
         }
@@ -183,18 +191,18 @@ namespace DirectX12GameEngine.Editor.ViewModels
             Environment.SetEnvironmentVariable("MSBuildSdksPath", sdk is null ? null : Path.Combine(sdk.Path, "Sdks"));
         }
 
-        private void ApplyActiveSdk()
+        private void ApplyActiveSdk(SdkViewModel? sdk)
         {
-            if (ActiveSdk != null)
+            if (sdk != null)
             {
-                ApplicationData.Current.LocalSettings.Values[ActiveSdkVersionKey] = ActiveSdk.Version;
+                ApplicationData.Current.LocalSettings.Values[ActiveSdkVersionKey] = sdk.Version;
             }
             else
             {
                 ApplicationData.Current.LocalSettings.Values.Remove(ActiveSdkVersionKey);
             }
 
-            SetSdkEnvironmentVariables(ActiveSdk);
+            SetSdkEnvironmentVariables(sdk);
         }
     }
 }

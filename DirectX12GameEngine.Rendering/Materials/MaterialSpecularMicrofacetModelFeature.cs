@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using DirectX12GameEngine.Rendering.Lights;
 using DirectX12GameEngine.Rendering.Materials.Brdf;
 using DirectX12GameEngine.Shaders;
 
@@ -22,21 +21,21 @@ namespace DirectX12GameEngine.Rendering.Materials
         public IMaterialSpecularMicrofacetNormalDistributionFunction NormalDistribution { get; set; } = new MaterialSpecularMicrofacetNormalDistributionGgx();
 
         [ShaderMethod]
-        public Vector3 ComputeDirectLightContribution()
+        public Vector3 ComputeDirectLightContribution(in MaterialShadingContext context)
         {
-            Vector3 specularColor = MaterialPixelStream.MaterialSpecularVisible;
+            Vector3 lightColorNDotL = context.LightColor * context.NDotL;
 
-            Vector3 fresnel = Fresnel.Compute(specularColor);
-            float visibility = Visibility.Compute();
-            float normalDistribution = NormalDistribution.Compute();
+            Vector3 fresnel = Fresnel.Compute(context);
+            float visibility = Visibility.Compute(context);
+            float normalDistribution = NormalDistribution.Compute(context);
 
             Vector3 reflected = fresnel * visibility * normalDistribution / 4.0f;
 
-            return reflected * LightStream.LightSpecularColorNDotL;
+            return reflected * lightColorNDotL;
         }
 
         [ShaderMethod]
-        public Vector3 ComputeEnvironmentLightContribution()
+        public Vector3 ComputeEnvironmentLightContribution(in MaterialShadingContext context)
         {
             return default;
         }

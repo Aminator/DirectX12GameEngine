@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace DirectX12GameEngine.Games
 {
-    public abstract class GameWindow : IDisposable
+    public abstract class GameWindow
     {
         public event EventHandler? SizeChanged;
 
@@ -13,14 +13,9 @@ namespace DirectX12GameEngine.Games
 
         public abstract RectangleF ClientBounds { get; }
 
-        public virtual void Dispose()
-        {
-        }
-
         public void Exit()
         {
             IsExiting = true;
-            Dispose();
         }
 
         public abstract void Run();

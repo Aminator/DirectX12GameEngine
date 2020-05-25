@@ -2,7 +2,7 @@
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    public interface IMaterialDescriptor : IComputeShader
+    public interface IMaterialDescriptor : IShader
     {
         Guid Id { get; set; }
 

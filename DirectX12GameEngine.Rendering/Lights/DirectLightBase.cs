@@ -2,6 +2,5 @@
 {
     public class DirectLightBase : ColorLightBase, IDirectLight
     {
-        public LightShadowMap? Shadow { get; set; }
     }
 }

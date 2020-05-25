@@ -2,78 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using DirectX12GameEngine.Shaders.Numerics;
+using Microsoft.CodeAnalysis;
 
 namespace DirectX12GameEngine.Shaders
 {
-    internal static class HlslKnownAttributes
-    {
-        private static readonly Dictionary<string, string> knownAttributes = new Dictionary<string, string>()
-        {
-            { typeof(NumThreadsAttribute).FullName, "NumThreads" },
-            { typeof(ShaderAttribute).FullName, "Shader" }
-        };
-
-        public static bool ContainsKey(Type type)
-        {
-            return ContainsKey(type.GetElementOrDeclaredType().FullName);
-        }
-
-        public static bool ContainsKey(string name)
-        {
-            return knownAttributes.ContainsKey(name);
-        }
-
-        public static string GetMappedName(Type type)
-        {
-            return GetMappedName(type.GetElementOrDeclaredType().FullName);
-        }
-
-        public static string GetMappedName(string name)
-        {
-            return knownAttributes[name];
-        }
-    }
-
-    internal static class HlslKnownSemantics
-    {
-        private static readonly Dictionary<string, string> knownSemantics = new Dictionary<string, string>()
-        {
-            { typeof(PositionSemanticAttribute).FullName, "Position" },
-            { typeof(NormalSemanticAttribute).FullName, "Normal" },
-            { typeof(TextureCoordinateSemanticAttribute).FullName, "TexCoord" },
-            { typeof(ColorSemanticAttribute).FullName, "Color" },
-            { typeof(TangentSemanticAttribute).FullName, "Tangent" },
-
-            { typeof(SystemTargetSemanticAttribute).FullName, "SV_Target" },
-            { typeof(SystemDispatchThreadIdSemanticAttribute).FullName, "SV_DispatchThreadId" },
-            { typeof(SystemIsFrontFaceSemanticAttribute).FullName, "SV_IsFrontFace" },
-            { typeof(SystemInstanceIdSemanticAttribute).FullName, "SV_InstanceId" },
-            { typeof(SystemPositionSemanticAttribute).FullName, "SV_Position" },
-            { typeof(SystemRenderTargetArrayIndexSemanticAttribute).FullName, "SV_RenderTargetArrayIndex" }
-        };
-
-        public static bool ContainsKey(Type type)
-        {
-            return ContainsKey(type.GetElementOrDeclaredType().FullName);
-        }
-
-        public static bool ContainsKey(string name)
-        {
-            return knownSemantics.ContainsKey(name);
-        }
-
-        public static string GetMappedName(Type type)
-        {
-            return GetMappedName(type.GetElementOrDeclaredType().FullName);
-        }
-
-        public static string GetMappedName(string name)
-        {
-            return knownSemantics[name];
-        }
-    }
-
     internal static class HlslKnownTypes
     {
         private static readonly Dictionary<string, string> knownTypes = new Dictionary<string, string>()
@@ -96,46 +30,56 @@ namespace DirectX12GameEngine.Shaders
             { typeof(UInt2).FullName, "uint2" },
             { typeof(UInt3).FullName, "uint3" },
             { typeof(UInt4).FullName, "uint4" },
-            { typeof(Matrix4x4).FullName, "float4x4" },
-
-            { typeof(SamplerResource).FullName, "SamplerState" },
-            { typeof(SamplerComparisonResource).FullName, "SamplerComparisonState" },
-            { typeof(Texture2DResource).FullName, "Texture2D" },
-            { typeof(Texture2DArrayResource).FullName, "Texture2DArray" },
-            { typeof(TextureCubeResource).FullName, "TextureCube" },
-            { typeof(BufferResource<>).FullName, "Buffer" },
-            { typeof(RWBufferResource<>).FullName, "RWBuffer" },
-            { typeof(StructuredBufferResource<>).FullName, "StructuredBuffer" },
-            { typeof(RWStructuredBufferResource<>).FullName, "RWStructuredBuffer" },
-            { typeof(RWTexture2DResource<>).FullName, "RWTexture2D" }
+            { typeof(Matrix4x4).FullName, "float4x4" }
         };
+
+        public static bool IsPrimitiveType(Type type)
+        {
+            type = type.GetElementType() ?? type;
+
+            return type.IsEnum || knownTypes.ContainsKey(type.FullName);
+        }
 
         public static bool ContainsKey(Type type)
         {
-            type = type.GetElementOrDeclaredType();
-            string typeFullName = type.Namespace + Type.Delimiter + type.Name;
+            type = type.GetElementType() ?? type;
 
-            return knownTypes.ContainsKey(typeFullName);
+            return !string.IsNullOrEmpty(GetTypeNameFromAttribute(type)) || knownTypes.ContainsKey(type.FullName);
         }
 
-        public static bool ContainsKey(string name)
+        public static bool ContainsKey(ITypeSymbol typeSymbol)
         {
-            return knownTypes.ContainsKey(name);
+            return !string.IsNullOrEmpty(GetTypeNameFromAttribute(typeSymbol)) || knownTypes.ContainsKey(typeSymbol.ToString());
         }
 
         public static string GetMappedName(Type type)
         {
-            type = type.GetElementOrDeclaredType();
-            string fullTypeName = type.Namespace + Type.Delimiter + type.Name;
+            type = type.GetElementType() ?? type;
+
+            string? typeNameFromAttribute = GetTypeNameFromAttribute(type);
+            string fullTypeName = typeNameFromAttribute ?? type.FullName;
 
             string mappedName = knownTypes.TryGetValue(fullTypeName, out string mapped) ? mapped : fullTypeName.Replace(".", "::");
 
             return type.IsGenericType ? mappedName + $"<{string.Join(", ", type.GetGenericArguments().Select(t => GetMappedName(t)))}>" : mappedName;
         }
 
-        public static string GetMappedName(string name)
+        public static string GetMappedName(ITypeSymbol typeSymbol)
         {
-            return knownTypes.TryGetValue(name, out string mapped) ? mapped : name.Replace(".", "::");
+            string fullTypeName = typeSymbol.ToString();
+
+            return GetTypeNameFromAttribute(typeSymbol) ?? (knownTypes.TryGetValue(fullTypeName, out string mapped) ? mapped : fullTypeName.Replace(".", "::"));
+        }
+
+        private static string? GetTypeNameFromAttribute(ITypeSymbol typeSymbol)
+        {
+            AttributeData? attributeData = typeSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass.ToString() == typeof(ShaderTypeAttribute).FullName);
+            return (string?)attributeData?.ConstructorArguments.First().Value;
+        }
+
+        private static string? GetTypeNameFromAttribute(Type type)
+        {
+            return type.GetCustomAttribute<ShaderTypeAttribute>()?.TypeName;
         }
     }
 

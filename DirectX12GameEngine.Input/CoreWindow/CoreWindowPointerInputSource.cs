@@ -37,19 +37,6 @@ namespace DirectX12GameEngine.Input
 
         public override void SetPointerCapture() => control.SetPointerCapture();
 
-        public override void Dispose()
-        {
-            control.PointerCaptureLost -= OnControlPointerCaptureLost;
-            control.PointerEntered -= OnControlPointerEntered;
-            control.PointerExited -= OnControlPointerExited;
-            control.PointerMoved -= OnControlPointerMoved;
-            control.PointerPressed -= OnControlPointerPressed;
-            control.PointerReleased -= OnControlPointerReleased;
-            control.PointerWheelChanged -= OnControlPointerWheelChanged;
-
-            base.Dispose();
-        }
-
         private void OnControlPointerCaptureLost(CoreWindow sender, Windows.UI.Core.PointerEventArgs e)
         {
             OnPointerCaptureLost(new UwpPointerEventArgs(e));

@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using DirectX12GameEngine.Engine;
+﻿using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Games;
 
 namespace DirectX12GameEngine.Physics
@@ -37,19 +36,6 @@ namespace DirectX12GameEngine.Physics
         {
             component.Detach();
             component.Simulation = null;
-        }
-    }
-
-    public static class QuaternionExtensions
-    {
-        public static Quaternion ToQuaternion(this in BepuUtilities.Quaternion q)
-        {
-            return new Quaternion(q.X, q.Y, q.Z, q.W);
-        }
-
-        public static BepuUtilities.Quaternion ToQuaternion(this in Quaternion q)
-        {
-            return new BepuUtilities.Quaternion(q.X, q.Y, q.Z, q.W);
         }
     }
 }

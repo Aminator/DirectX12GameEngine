@@ -14,12 +14,6 @@ namespace DirectX12GameEngine.Input
             control.KeyUp += OnControlKeyUp;
         }
 
-        public override void Dispose()
-        {
-            control.KeyDown -= OnControlKeyDown;
-            control.KeyUp -= OnControlKeyUp;
-        }
-
         private void OnControlKeyDown(CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
             OnKeyDown(new CoreWindowKeyEventArgs(e));

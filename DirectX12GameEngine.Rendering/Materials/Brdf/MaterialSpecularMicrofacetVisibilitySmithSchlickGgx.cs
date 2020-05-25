@@ -1,5 +1,4 @@
-﻿using DirectX12GameEngine.Rendering.Lights;
-using DirectX12GameEngine.Shaders;
+﻿using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials.Brdf
 {
@@ -11,9 +10,9 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
         }
 
         [ShaderMethod]
-        public float Compute()
+        public float Compute(in MaterialShadingContext context)
         {
-            return BrdfMicrofacet.VisibilitySmithSchlickGgx(MaterialPixelStream.AlphaRoughness, LightStream.NDotL, MaterialPixelStream.NDotV);
+            return BrdfMicrofacet.VisibilitySmithSchlickGgx(context.AlphaRoughness, context.NDotL, context.NDotV);
         }
     }
 }

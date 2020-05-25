@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Vortice.Direct3D12;
 
@@ -11,11 +10,17 @@ namespace DirectX12GameEngine.Graphics
         {
             GraphicsDevice = device;
 
-            RootSignatureDescription1 nativeDescription = new RootSignatureDescription1((Vortice.Direct3D12.RootSignatureFlags)description.Flags)
+            RootSignatureDescription1 nativeDescription = new RootSignatureDescription1((Vortice.Direct3D12.RootSignatureFlags)description.Flags);
+
+            if (description.Parameters != null)
             {
-                Parameters = description.Parameters?.Select(p => Unsafe.As<RootParameter, RootParameter1>(ref p)).ToArray(),
-                StaticSamplers = description.StaticSamplers?.Select(s => Unsafe.As<StaticSamplerDescription, Vortice.Direct3D12.StaticSamplerDescription>(ref s)).ToArray()
-            };
+                nativeDescription.Parameters = Unsafe.As<RootParameter1[]>(description.Parameters);
+            }
+
+            if (description.StaticSamplers != null)
+            {
+                nativeDescription.StaticSamplers = Unsafe.As<Vortice.Direct3D12.StaticSamplerDescription[]>(description.StaticSamplers);
+            }
 
             NativeRootSignature = GraphicsDevice.NativeDevice.CreateRootSignature(new VersionedRootSignatureDescription(nativeDescription));
         }

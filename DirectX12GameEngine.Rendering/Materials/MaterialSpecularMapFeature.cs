@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
         }
 
-        public MaterialSpecularMapFeature(IComputeColor specularMap)
+        public MaterialSpecularMapFeature(IColorShader specularMap)
         {
             SpecularMap = specularMap;
         }
@@ -20,13 +20,13 @@ namespace DirectX12GameEngine.Rendering.Materials
             SpecularMap.Accept(context);
         }
 
-        public IComputeColor SpecularMap { get; set; } = new ComputeColor();
+        public IColorShader SpecularMap { get; set; } = new ColorShader();
 
         [ShaderMethod]
-        public void Compute()
+        public Vector3 ComputeSpecularColor(in SamplingContext context, ref Vector3 diffuseColor)
         {
-            Vector4 specular = SpecularMap.Compute();
-            MaterialPixelStream.MaterialSpecular = new Vector3(specular.X, specular.Y, specular.Z);
+            Vector4 specular = SpecularMap.ComputeColor(context);
+            return new Vector3(specular.X, specular.Y, specular.Z);
         }
     }
 }

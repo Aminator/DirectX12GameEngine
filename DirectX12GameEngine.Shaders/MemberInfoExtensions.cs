@@ -5,10 +5,8 @@ using System.Reflection;
 
 namespace DirectX12GameEngine.Shaders
 {
-    public static class MemberInfoExtensions
+    internal static class MemberInfoExtensions
     {
-        public static Type GetElementOrDeclaredType(this Type type) => type.IsArray ? type.GetElementType() : type;
-
         public static IEnumerable<Type> GetBaseTypes(this Type type)
         {
             Type baseType = type.BaseType;
@@ -76,9 +74,9 @@ namespace DirectX12GameEngine.Shaders
 
         public static object? GetMemberValue(this MemberInfo memberInfo, object? obj)
         {
-            ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetCustomAttribute<ShaderMemberAttribute>();
+            ShaderResourceAttribute? shaderResourceAttribute = memberInfo.GetCustomAttribute<ShaderResourceAttribute>();
 
-            return shaderMemberAttribute?.ResourceType ?? memberInfo switch
+            return shaderResourceAttribute?.ResourceType ?? memberInfo switch
             {
                 FieldInfo fieldInfo => obj is null ? null : fieldInfo.GetValue(obj),
                 PropertyInfo propertyInfo => obj is null ? null : propertyInfo.GetValue(obj),
@@ -88,9 +86,9 @@ namespace DirectX12GameEngine.Shaders
 
         public static Type? GetMemberType(this MemberInfo memberInfo, object? obj = null)
         {
-            ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetCustomAttribute<ShaderMemberAttribute>();
+            ShaderResourceAttribute? shaderResourceAttribute = memberInfo.GetCustomAttribute<ShaderResourceAttribute>();
 
-            return shaderMemberAttribute?.ResourceType ?? memberInfo switch
+            return shaderResourceAttribute?.ResourceType ?? memberInfo switch
             {
                 FieldInfo fieldInfo => obj is null ? fieldInfo.FieldType : fieldInfo.GetValue(obj)?.GetType() ?? fieldInfo.FieldType,
                 PropertyInfo propertyInfo => obj is null ? propertyInfo.PropertyType : propertyInfo.GetValue(obj)?.GetType() ?? propertyInfo.PropertyType,
@@ -98,13 +96,13 @@ namespace DirectX12GameEngine.Shaders
             };
         }
 
-        public static ShaderMemberAttribute? GetShaderMemberAttribute(this MemberInfo memberInfo, Type? memberType)
+        public static ShaderResourceAttribute? GetShaderResourceAttribute(this MemberInfo memberInfo, Type? memberType)
         {
-            ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetCustomAttribute<ShaderMemberAttribute>();
+            ShaderResourceAttribute? shaderResourceAttribute = memberInfo.GetCustomAttribute<ShaderResourceAttribute>();
 
-            return shaderMemberAttribute != null && shaderMemberAttribute.Override
-                ? shaderMemberAttribute
-                : memberType?.GetCustomAttribute<ShaderMemberAttribute>() ?? shaderMemberAttribute;
+            return shaderResourceAttribute != null && shaderResourceAttribute.Override
+                ? shaderResourceAttribute
+                : memberType?.GetCustomAttribute<ShaderResourceAttribute>() ?? shaderResourceAttribute;
         }
 
         public static bool IsStatic(this MemberInfo memberInfo) => memberInfo switch

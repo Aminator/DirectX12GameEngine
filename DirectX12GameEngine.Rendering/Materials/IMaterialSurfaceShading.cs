@@ -2,10 +2,10 @@
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
-    public interface IMaterialSurfaceShading : IComputeShader
+    public interface IMaterialSurfaceShading : IShader
     {
-        Vector3 ComputeDirectLightContribution();
+        Vector3 ComputeDirectLightContribution(in MaterialShadingContext context);
 
-        Vector3 ComputeEnvironmentLightContribution();
+        Vector3 ComputeEnvironmentLightContribution(in MaterialShadingContext context);
     }
 }

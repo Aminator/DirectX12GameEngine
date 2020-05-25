@@ -2,9 +2,5 @@
 {
     public class DirectionalLight : DirectLightBase
     {
-        public DirectionalLight()
-        {
-            Shadow = new DirectionalLightShadowMap();
-        }
     }
 }

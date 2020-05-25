@@ -15,6 +15,12 @@ namespace DirectX12GameEngine.Shaders
 
         private SemanticModel GetSemanticModel(SyntaxNode node) => compilation.GetSemanticModel(node.SyntaxTree);
 
+        public override SyntaxNode? VisitArgument(ArgumentSyntax node)
+        {
+            ArgumentSyntax newNode = (ArgumentSyntax)base.VisitArgument(node)!;
+            return newNode.WithRefKindKeyword(default);
+        }
+
         public override SyntaxNode? VisitCastExpression(CastExpressionSyntax node)
         {
             CastExpressionSyntax newNode = (CastExpressionSyntax)base.VisitCastExpression(node)!;

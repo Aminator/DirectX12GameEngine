@@ -4,8 +4,8 @@ namespace DirectX12GameEngine.Rendering
 {
     public sealed class MeshDraw
     {
-        public GraphicsBuffer? IndexBufferView { get; set; }
+        public IndexBufferView? IndexBufferView { get; set; }
 
-        public GraphicsBuffer[]? VertexBufferViews { get; set; }
+        public VertexBufferView[]? VertexBufferViews { get; set; }
     }
 }

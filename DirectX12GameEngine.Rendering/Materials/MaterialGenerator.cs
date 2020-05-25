@@ -18,10 +18,10 @@ namespace DirectX12GameEngine.Rendering.Materials
 
                 InputElementDescription[] inputElements = new[]
                 {
-                    new InputElementDescription("Position", 0, PixelFormat.R32G32B32_Float, 0),
-                    new InputElementDescription("Normal", 0, PixelFormat.R32G32B32_Float, 1),
-                    new InputElementDescription("Tangent", 0, PixelFormat.R32G32B32A32_Float, 2),
-                    new InputElementDescription("TexCoord", 0, PixelFormat.R32G32_Float, 3)
+                    new InputElementDescription("Position", 0, PixelFormat.R32G32B32Float, 0),
+                    new InputElementDescription("Normal", 0, PixelFormat.R32G32B32Float, 1),
+                    new InputElementDescription("Tangent", 0, PixelFormat.R32G32B32A32Float, 2),
+                    new InputElementDescription("TexCoord", 0, PixelFormat.R32G32Float, 3)
                 };
 
                 materialPass.PipelineState = await context.CreateGraphicsPipelineStateAsync(inputElements);

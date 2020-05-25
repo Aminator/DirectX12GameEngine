@@ -92,11 +92,6 @@ namespace DirectX12GameEngine.Serialization
 
         private void ReleaseReference(Reference reference)
         {
-            //if (reference.Object is IDisposable disposable)
-            //{
-            //    disposable.Dispose();
-            //}
-
             Reference? previous = reference.Previous;
             Reference? next = reference.Next;
 

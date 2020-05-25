@@ -42,7 +42,7 @@
             Background="{ThemeResource AcrylicSolutionExplorerBackground}"
             Shadow="{StaticResource SharedShadow}"
             Translation="0,0,32">
-            <winui:TreeView ItemsSource="{x:Bind ViewModel.RootEntity.Children}">
+            <winui:TreeView ItemsSource="{x:Bind ViewModel.RootEntity.Children, Mode=OneWay}">
                 <winui:TreeView.ItemTemplate>
                     <DataTemplate x:DataType="viewmodels:EntityViewModel">
                         <winui:TreeViewItem

@@ -31,8 +31,6 @@ namespace DirectX12GameEngine.Physics
 
         public abstract Matrix4x4 PhysicsWorldTransform { get; set; }
 
-        internal int Handle { get; private protected set; }
-
         public void UpdateTransformComponent()
         {
             Matrix4x4.Decompose(Entity!.Transform.WorldMatrix, out Vector3 scale, out _, out _);

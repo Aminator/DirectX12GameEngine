@@ -31,10 +31,6 @@ namespace DirectX12GameEngine.Engine
 
         public EntityManager? EntityManager { get; internal set; }
 
-        public virtual void Dispose()
-        {
-        }
-
         public virtual void Update(GameTime gameTime)
         {
         }

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using DirectX12GameEngine.Games;
 using DirectX12GameEngine.Editor.ViewModels.Games;
+using DirectX12GameEngine.Editor.ViewModels.Properties;
 using DirectX12GameEngine.Engine;
 using DirectX12GameEngine.Serialization;
 using Microsoft.Toolkit.Mvvm.Commands;
@@ -11,13 +12,17 @@ namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class SceneEditorViewModel : ObservableObject
     {
+        private readonly IPropertyManager propertyManager;
+
         private bool isLoading;
         private EntityViewModel? rootEntity;
 
-        public SceneEditorViewModel(IStorageFolder rootFolder, string scenePath)
+        public SceneEditorViewModel(IStorageFolder rootFolder, string scenePath, IPropertyManager propertyManager)
         {
             RootFolder = rootFolder;
             ScenePath = scenePath;
+
+            this.propertyManager = propertyManager;
 
             OpenCommand = new RelayCommand<EntityViewModel>(Open);
             DeleteCommand = new RelayCommand<EntityViewModel>(Delete);
@@ -68,6 +73,7 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         private void Open(EntityViewModel entity)
         {
+            propertyManager.ShowProperties(entity.Model);
         }
 
         private void Delete(EntityViewModel entity)

@@ -1,12 +1,11 @@
 ﻿using System.Numerics;
 using DirectX12GameEngine.Rendering;
-using DirectX12GameEngine.Rendering.Materials;
 using DirectX12GameEngine.Shaders;
 
 namespace DirectX12Game
 {
     [StaticResource]
-    public class DissolveShader : IComputeColor
+    public class DissolveShader : IColorShader
     {
         public void Accept(ShaderGeneratorContext context)
         {
@@ -15,18 +14,18 @@ namespace DirectX12Game
             DissolveStrength.Accept(context);
         }
 
-        public IComputeColor MainTexture { get; set; } = new ComputeColor(Vector4.One);
+        public IColorShader MainTexture { get; set; } = new ColorShader(Vector4.One);
 
-        public IComputeScalar DissolveTexture { get; set; } = new ComputeScalar(1.0f);
+        public IScalarShader DissolveTexture { get; set; } = new ScalarShader(1.0f);
 
-        public IComputeScalar DissolveStrength { get; set; } = new ComputeScalar(0.5f);
+        public IScalarShader DissolveStrength { get; set; } = new ScalarShader(0.5f);
 
         [ShaderMethod]
-        public Vector4 Compute()
+        public Vector4 ComputeColor(in SamplingContext context)
         {
-            Vector4 colorBase = MainTexture.Compute();
+            Vector4 colorBase = MainTexture.ComputeColor(context);
 
-            if (DissolveTexture.Compute() <= DissolveStrength.Compute())
+            if (DissolveTexture.ComputeScalar(context) <= DissolveStrength.ComputeScalar(context))
             {
                 colorBase.W = 0;
             }

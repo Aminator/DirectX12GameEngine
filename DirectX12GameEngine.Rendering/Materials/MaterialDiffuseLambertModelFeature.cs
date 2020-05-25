@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using DirectX12GameEngine.Rendering.Lights;
 using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
@@ -13,16 +12,18 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMethod]
-        public Vector3 ComputeDirectLightContribution()
+        public Vector3 ComputeDirectLightContribution(in MaterialShadingContext context)
         {
-            Vector3 diffuseColor = MaterialPixelStream.MaterialDiffuseVisible;
-            diffuseColor *= Vector3.One - MaterialPixelStream.MaterialSpecularVisible;
+            Vector3 lightColorNDotL = context.LightColor * context.NDotL;
 
-            return diffuseColor / (float)Math.PI * LightStream.LightColorNDotL;
+            Vector3 diffuseColor = context.DiffuseColor;
+            diffuseColor *= Vector3.One - context.SpecularColor;
+
+            return diffuseColor / (float)Math.PI * lightColorNDotL;
         }
 
         [ShaderMethod]
-        public Vector3 ComputeEnvironmentLightContribution()
+        public Vector3 ComputeEnvironmentLightContribution(in MaterialShadingContext context)
         {
             return default;
         }

@@ -5,11 +5,14 @@ namespace DirectX12GameEngine.Editor.ViewModels
 {
     public class PropertyManagerViewModel : ObservableObject
     {
+        private readonly ITabViewManager tabViewManager;
+
         private ClassPropertyViewModel? rootObject;
 
-        public PropertyManagerViewModel(IPropertyManager propertyManager)
+        public PropertyManagerViewModel(IPropertyManager propertyManager, ITabViewManager tabViewManager)
         {
             propertyManager.PropertyViewRequested += (s, e) => ShowProperties(e.Value);
+            this.tabViewManager = tabViewManager;
         }
 
         public ClassPropertyViewModel? RootObject
@@ -24,6 +27,8 @@ namespace DirectX12GameEngine.Editor.ViewModels
             {
                 IsExpanded = true
             };
+
+            tabViewManager.OpenTab(this, tabViewManager.SolutionExplorerTabView);
         }
     }
 }

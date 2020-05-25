@@ -1,4 +1,5 @@
-﻿using DirectX12GameEngine.Shaders;
+﻿using System.Numerics;
+using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Lights
 {
@@ -11,14 +12,16 @@ namespace DirectX12GameEngine.Rendering.Lights
         public DirectionalLightData[] Lights;
 #nullable restore
 
-        /// <summary>
-        /// Compute the light color/direction for the specified index within this group.
-        /// </summary>
         [ShaderMethod]
-        protected override void PrepareDirectLightCore(int lightIndex)
+        public override Vector3 ComputeLightColor(int lightIndex)
         {
-            LightStream.LightColor = Lights[lightIndex].Color;
-            LightStream.LightDirectionWS = -Lights[lightIndex].Direction;
+            return Lights[lightIndex].Color;
+        }
+
+        [ShaderMethod]
+        public override Vector3 ComputeLightDirection(int lightIndex)
+        {
+            return -Lights[lightIndex].Direction;
         }
     }
 }

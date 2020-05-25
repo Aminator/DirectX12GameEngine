@@ -8,12 +8,12 @@ namespace DirectX12GameEngine.Graphics
         {
             GraphicsDevice = device;
             PresentationParameters = presentationParameters.Clone();
-            PresentationParameters.BackBufferFormat = PresentationParameters.BackBufferFormat.ToSRgb();
+            PresentationParameters.BackBufferFormat = PresentationParameters.BackBufferFormat.ToSrgb();
 
             DepthStencilBuffer = CreateDepthStencilBuffer();
         }
 
-        public abstract Texture BackBuffer { get; }
+        public abstract RenderTargetView BackBuffer { get; }
 
         public GraphicsDevice GraphicsDevice { get; }
 
@@ -21,15 +21,24 @@ namespace DirectX12GameEngine.Graphics
 
         public PresentationParameters PresentationParameters { get; }
 
-        public Texture DepthStencilBuffer { get; protected set; }
+        public DepthStencilView DepthStencilBuffer { get; protected set; }
 
         public virtual void BeginDraw(CommandList commandList)
         {
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
-            DepthStencilBuffer.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DepthStencilBuffer.Resource.Dispose();
+            }
         }
 
         public abstract void Present();
@@ -43,11 +52,13 @@ namespace DirectX12GameEngine.Graphics
             ResizeDepthStencilBuffer(width, height);
         }
 
-        protected virtual Texture CreateDepthStencilBuffer()
+        protected virtual DepthStencilView CreateDepthStencilBuffer()
         {
-            return Texture.Create2D(GraphicsDevice,
+            Texture depthStencilTexture = Texture.Create2D(GraphicsDevice,
                 PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight, PresentationParameters.DepthStencilFormat,
                 ResourceFlags.AllowDepthStencil | ResourceFlags.DenyShaderResource, 1, PresentationParameters.Stereo ? (short)2 : (short)1);
+
+            return new DepthStencilView(depthStencilTexture);
         }
 
         protected abstract void ResizeBackBuffer(int width, int height);

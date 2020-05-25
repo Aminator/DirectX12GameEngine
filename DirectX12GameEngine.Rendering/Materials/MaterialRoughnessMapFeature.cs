@@ -1,20 +1,19 @@
-﻿using DirectX12GameEngine.Core;
-using DirectX12GameEngine.Graphics;
+﻿using DirectX12GameEngine.Graphics;
 using DirectX12GameEngine.Shaders;
 
 namespace DirectX12GameEngine.Rendering.Materials
 {
     [StaticResource]
-    public class MaterialRoughnessMapFeature : IMaterialMicroSurfaceFeature
+    public class MaterialRoughnessMapFeature : IMaterialRoughnessFeature
     {
         private bool invert;
-        private GraphicsBuffer<bool>? invertBuffer;
+        private GraphicsResource? invertBuffer;
 
         public MaterialRoughnessMapFeature()
         {
         }
 
-        public MaterialRoughnessMapFeature(IComputeScalar roughnessMap)
+        public MaterialRoughnessMapFeature(IScalarShader roughnessMap)
         {
             RoughnessMap = roughnessMap;
         }
@@ -23,12 +22,12 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
             RoughnessMap.Accept(context);
 
-            invertBuffer ??= GraphicsBuffer.Create(context.GraphicsDevice, Invert, ResourceFlags.None, GraphicsHeapType.Upload);
+            invertBuffer ??= GraphicsResource.CreateBuffer(context.GraphicsDevice, Invert, ResourceFlags.None, HeapType.Upload);
 
-            context.ConstantBufferViews.Add(invertBuffer);
+            context.ConstantBufferViews.Add(invertBuffer.DefaultConstantBufferView);
         }
 
-        public IComputeScalar RoughnessMap { get; set; } = new ComputeScalar();
+        public IScalarShader RoughnessMap { get; set; } = new ScalarShader();
 
         [ConstantBufferView]
         public bool Invert
@@ -42,12 +41,10 @@ namespace DirectX12GameEngine.Rendering.Materials
         }
 
         [ShaderMethod]
-        public void Compute()
+        public float ComputeRoughness(in SamplingContext context)
         {
-            float roughness = RoughnessMap.Compute();
-            roughness = Invert ? 1.0f - roughness : roughness;
-
-            MaterialPixelStream.MaterialRoughness = roughness;
+            float roughness = RoughnessMap.ComputeScalar(context);
+            return Invert ? 1.0f - roughness : roughness;
         }
     }
 }

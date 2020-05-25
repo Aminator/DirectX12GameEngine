@@ -98,8 +98,8 @@ namespace DirectX12GameEngine.Physics
                 hit.Succeeded = true;
 
                 hit.Collider = collidable.Mobility == CollidableMobility.Static
-                    ? (PhysicsComponent)Simulation.StaticColliders.GetOrAddValueRef(collidable.Handle)
-                    : Simulation.RigidBodies.GetOrAddValueRef(collidable.Handle);
+                    ? (PhysicsComponent)Simulation.StaticColliders.GetOrAddValueRef(collidable.RawHandleValue)
+                    : Simulation.RigidBodies.GetOrAddValueRef(collidable.RawHandleValue);
             }
         }
 

@@ -79,7 +79,7 @@ namespace DirectX12GameEngine.Graphics
         {
             if (IsFenceComplete(fence, fenceValue)) return;
 
-            ManualResetEvent fenceEvent = new ManualResetEvent(false);
+            using ManualResetEvent fenceEvent = new ManualResetEvent(false);
             fence.SetEventOnCompletion(fenceValue, fenceEvent);
 
             fenceEvent.WaitOne();

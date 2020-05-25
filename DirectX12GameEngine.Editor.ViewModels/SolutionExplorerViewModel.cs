@@ -158,7 +158,6 @@ namespace DirectX12GameEngine.Editor.ViewModels
 
         public void ShowProperties(StorageItemViewModel item)
         {
-            tabViewManager.OpenTab(propertyManager, tabViewManager.SolutionExplorerTabView);
             propertyManager.ShowProperties(item.Model);
         }
 

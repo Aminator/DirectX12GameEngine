@@ -9,6 +9,7 @@ namespace DirectX12GameEngine.Games
 {
     public abstract class GameBase : IGame
     {
+        private readonly ServiceProvider serviceProvider;
         private readonly object tickLock = new object();
 
         private bool isExiting;
@@ -21,11 +22,11 @@ namespace DirectX12GameEngine.Games
             context.ConfigureServices(services);
             ConfigureServices(services);
 
-            Services = services.BuildServiceProvider();
+            serviceProvider = services.BuildServiceProvider();
             Content = Services.GetRequiredService<IContentManager>();
         }
 
-        public IServiceProvider Services { get; }
+        public IServiceProvider Services => serviceProvider;
 
         public IContentManager Content { get; }
 
@@ -34,14 +35,6 @@ namespace DirectX12GameEngine.Games
         public GameTime Time { get; } = new GameTime();
 
         public bool IsRunning { get; private set; }
-
-        public virtual void Dispose()
-        {
-            foreach (IGameSystem system in GameSystems)
-            {
-                system.Dispose();
-            }
-        }
 
         public void Run()
         {

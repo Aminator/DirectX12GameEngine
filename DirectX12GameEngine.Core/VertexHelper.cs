@@ -7,10 +7,10 @@ namespace DirectX12GameEngine.Core
 {
     public static class VertexHelper
     {
-        public static Span<Vector4> GenerateTangents(Span<byte> positionBuffer, Span<byte> texCoordBuffer, Span<byte> indexBuffer = default, bool is32bitIndex = false)
+        public static Span<Vector4> GenerateTangents(Span<byte> positionBuffer, Span<byte> texCoordBuffer, Span<byte> indexBuffer = default, bool is32BitIndex = false)
         {
-            Span<ushort> indexBuffer16 = !indexBuffer.IsEmpty && !is32bitIndex ? MemoryMarshal.Cast<byte, ushort>(indexBuffer) : default;
-            Span<int> indexBuffer32 = !indexBuffer.IsEmpty && is32bitIndex ? MemoryMarshal.Cast<byte, int>(indexBuffer) : default;
+            Span<ushort> indexBuffer16 = !indexBuffer.IsEmpty && !is32BitIndex ? MemoryMarshal.Cast<byte, ushort>(indexBuffer) : default;
+            Span<int> indexBuffer32 = !indexBuffer.IsEmpty && is32BitIndex ? MemoryMarshal.Cast<byte, int>(indexBuffer) : default;
 
             Span<Vector3> posBuffer = MemoryMarshal.Cast<byte, Vector3>(positionBuffer);
             Span<Vector2> uvBuffer = MemoryMarshal.Cast<byte, Vector2>(texCoordBuffer);

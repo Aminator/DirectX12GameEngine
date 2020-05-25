@@ -15,12 +15,6 @@ namespace DirectX12GameEngine.Input
             control.KeyUp += OnControlKeyUp;
         }
 
-        public override void Dispose()
-        {
-            control.KeyDown -= OnControlKeyDown;
-            control.KeyUp -= OnControlKeyUp;
-        }
-
         private void OnControlKeyDown(object sender, KeyRoutedEventArgs e)
         {
             OnKeyDown(new XamlKeyEventArgs(e));

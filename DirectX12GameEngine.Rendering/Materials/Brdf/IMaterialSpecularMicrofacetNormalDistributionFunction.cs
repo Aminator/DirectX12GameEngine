@@ -2,6 +2,6 @@
 {
     public interface IMaterialSpecularMicrofacetNormalDistributionFunction : IMaterialSpecularMicrofacetFunction
     {
-        float Compute();
+        float Compute(in MaterialShadingContext context);
     }
 }

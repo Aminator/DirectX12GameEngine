@@ -114,7 +114,7 @@ namespace DirectX12GameEngine.Shaders
 
         private void CollectStructure(Type type, object? obj)
         {
-            type = type.GetElementOrDeclaredType();
+            type = type.GetElementType() ?? type;
 
             if (HlslKnownTypes.ContainsKey(type) || !registeredTypes.Add(type)) return;
 
@@ -143,7 +143,7 @@ namespace DirectX12GameEngine.Shaders
                 Type? memberType = memberInfo.GetMemberType(obj);
                 object? memberValue = memberInfo.GetMemberValue(obj);
 
-                ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetShaderMemberAttribute(memberType);
+                ShaderResourceAttribute? shaderResourceAttribute = memberInfo.GetShaderResourceAttribute(memberType);
 
                 if (memberInfo is MethodInfo methodInfo && CanWriteMethod(methodInfo))
                 {
@@ -157,9 +157,9 @@ namespace DirectX12GameEngine.Shaders
                 {
                     CollectStructure(memberType, memberValue);
 
-                    if (shaderMemberAttribute != null)
+                    if (shaderResourceAttribute != null)
                     {
-                        shaderTypeDefinition.ResourceDefinitions.Add(new ResourceDefinition(memberType, shaderMemberAttribute));
+                        shaderTypeDefinition.ResourceDefinitions.Add(new ResourceDefinition(memberType, shaderResourceAttribute));
                     }
                 }
             }
@@ -183,11 +183,11 @@ namespace DirectX12GameEngine.Shaders
             foreach (MemberInfo memberInfo in memberInfos)
             {
                 Type? memberType = memberInfo.GetMemberType(shader);
-                ShaderMemberAttribute? shaderMemberAttribute = memberInfo.GetShaderMemberAttribute(memberType);
+                ShaderResourceAttribute? shaderResourceAttribute = memberInfo.GetShaderResourceAttribute(memberType);
 
-                if (memberType != null && shaderMemberAttribute != null)
+                if (memberType != null && shaderResourceAttribute != null)
                 {
-                    WriteResource(memberInfo.Name, memberType, shaderMemberAttribute);
+                    WriteResource(memberInfo.Name, memberType, shaderResourceAttribute);
                 }
             }
 
@@ -379,12 +379,12 @@ namespace DirectX12GameEngine.Shaders
             writer.WriteLine();
         }
 
-        private void WriteResource(string memberName, Type memberType, ShaderMemberAttribute shaderMemberAttribute)
+        private void WriteResource(string memberName, Type memberType, ShaderResourceAttribute shaderResourceAttribute)
         {
-            switch (shaderMemberAttribute)
+            switch (shaderResourceAttribute)
             {
                 case ConstantBufferViewAttribute _:
-                    WriteConstantBufferView(memberName, memberType, bindingTracker.ConstantBuffer++);
+                    WriteConstantBufferView(memberName, memberType, bindingTracker.ConstantBufferView++);
                     break;
                 case ShaderResourceViewAttribute _:
                     WriteShaderResourceView(memberName, memberType, bindingTracker.ShaderResourceView++);
@@ -405,39 +405,46 @@ namespace DirectX12GameEngine.Shaders
 
         private void WriteConstantBufferView(string memberName, Type memberType, int binding)
         {
-            writer.Write($"cbuffer {memberName}Buffer");
-            writer.WriteLine($" : register(b{binding})");
-            writer.WriteLine("{");
-            writer.Indent++;
-            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberName}");
-            if (memberType.IsArray) writer.Write("[2]");
-            writer.WriteLine(";");
-            writer.Indent--;
-            writer.WriteLine("}");
+            string mappedTypeName = HlslKnownTypes.GetMappedName(memberType);
+
+            string cbvString;
+
+            if (mappedTypeName.StartsWith("ConstantBuffer<"))
+            {
+                cbvString = $"{mappedTypeName} {memberName} : register(b{binding});";
+            }
+            else if (HlslKnownTypes.IsPrimitiveType(memberType) || memberType.IsArray)
+            {
+                cbvString =
+@$"cbuffer {memberName}Buffer : register(b{binding})
+{{
+    {mappedTypeName} {memberName}{(memberType.IsArray ? "[2]" : "")};
+}}";
+            }
+            else
+            {
+                cbvString = $"ConstantBuffer<{mappedTypeName}> {memberName} : register(b{binding});";
+            }
+
+            writer.WriteLine(cbvString);
             writer.WriteLine();
         }
 
         private void WriteShaderResourceView(string memberName, Type memberType, int binding)
         {
-            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberName}");
-            writer.Write($" : register(t{binding})");
-            writer.WriteLine(";");
+            writer.WriteLine($"{HlslKnownTypes.GetMappedName(memberType)} {memberName} : register(t{binding});");
             writer.WriteLine();
         }
 
         private void WriteUnorderedAccessView(string memberName, Type memberType, int binding)
         {
-            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberName}");
-            writer.Write($" : register(u{binding})");
-            writer.WriteLine(";");
+            writer.WriteLine($"{HlslKnownTypes.GetMappedName(memberType)} {memberName} : register(u{binding});");
             writer.WriteLine();
         }
 
         private void WriteSampler(string memberName, Type memberType, int binding)
         {
-            writer.Write($"{HlslKnownTypes.GetMappedName(memberType)} {memberName}");
-            writer.Write($" : register(s{binding})");
-            writer.WriteLine(";");
+            writer.WriteLine($"{HlslKnownTypes.GetMappedName(memberType)} {memberName} : register(s{binding});");
             writer.WriteLine();
         }
 
@@ -452,7 +459,7 @@ namespace DirectX12GameEngine.Shaders
                     string generatedMemberName = $"__Generated__{bindingTracker.StaticResource++}__";
                     generatedMemberNames.Add(generatedMemberName);
 
-                    WriteResource(generatedMemberName, resourceDefinition.MemberType, resourceDefinition.ShaderMemberAttribute);
+                    WriteResource(generatedMemberName, resourceDefinition.MemberType, resourceDefinition.ShaderResourceAttribute);
                 }
 
                 resourceNames = generatedMemberNames;
@@ -485,9 +492,9 @@ namespace DirectX12GameEngine.Shaders
 
             Type semanticType = semanticAttribute.GetType();
 
-            if (HlslKnownSemantics.ContainsKey(semanticType))
+            if (HlslKnownTypes.ContainsKey(semanticType))
             {
-                string semanticName = HlslKnownSemantics.GetMappedName(semanticType);
+                string semanticName = HlslKnownTypes.GetMappedName(semanticType);
 
                 return semanticAttribute is ShaderSemanticWithIndexAttribute semanticAttributeWithIndex
                     ? " : " + semanticName + semanticAttributeWithIndex.Index
@@ -547,7 +554,7 @@ namespace DirectX12GameEngine.Shaders
 
             WriteParameters(methodInfo);
 
-            if (methodInfo.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(ShaderSemanticAttribute), false).FirstOrDefault(a => HlslKnownSemantics.ContainsKey(a.GetType())) is ShaderSemanticAttribute returnTypeAttribute)
+            if (methodInfo.ReturnTypeCustomAttributes.GetCustomAttributes(typeof(ShaderSemanticAttribute), false).FirstOrDefault(a => HlslKnownTypes.ContainsKey(a.GetType())) is ShaderSemanticAttribute returnTypeAttribute)
             {
                 writer.Write(GetHlslSemantic(returnTypeAttribute));
             }
@@ -610,13 +617,15 @@ namespace DirectX12GameEngine.Shaders
                         }
                         else
                         {
+                            ParameterInfo[] parameters = containingMethodInfo.GetParameters();
                             var globalAttributes = containingMethodInfo.DeclaringType.Assembly.GetCustomAttributes<GlobalAnonymousShaderMethodAttribute>();
 
                             foreach (GlobalAnonymousShaderMethodAttribute globalAttribute in globalAttributes)
                             {
                                 if (globalAttribute.AnonymousMethodIndex == shaderMethodAttribute.AnonymousMethodIndex
                                     && globalAttribute.DeclaringType == containingMethodInfo.DeclaringType
-                                    && containingMethodInfo.ReflectedType.GetMethod(globalAttribute.MethodName, DefaultBindingFlagsWithContract, null, globalAttribute.ParameterTypes, null) == containingMethodInfo)
+                                    && globalAttribute.ParameterTypes.Length == parameters.Length
+                                    && containingMethodInfo.ReflectedType.GetMethod(globalAttribute.MethodName, DefaultBindingFlagsWithContract, null, globalAttribute.ParameterTypes.Select((t, i) => parameters[i].ParameterType.IsByRef ? t.MakeByRefType() : t).ToArray(), null) == containingMethodInfo)
                                 {
                                     return globalAttribute;
                                 }
@@ -637,12 +646,14 @@ namespace DirectX12GameEngine.Shaders
                     }
                     else
                     {
+                        ParameterInfo[] parameters = methodInfo.GetParameters();
                         var globalAttributes = methodInfo.DeclaringType.Assembly.GetCustomAttributes<GlobalShaderMethodAttribute>();
 
                         foreach (GlobalShaderMethodAttribute globalAttribute in globalAttributes)
                         {
                             if (globalAttribute.DeclaringType == methodInfo.DeclaringType
-                                && methodInfo.ReflectedType.GetMethod(globalAttribute.MethodName, DefaultBindingFlagsWithContract, null, globalAttribute.ParameterTypes, null) == methodInfo)
+                                && globalAttribute.ParameterTypes.Length == parameters.Length
+                                && methodInfo.ReflectedType.GetMethod(globalAttribute.MethodName, DefaultBindingFlagsWithContract, null, globalAttribute.ParameterTypes.Select((t, i) => parameters[i].ParameterType.IsByRef ? t.MakeByRefType() : t).ToArray(), null) == methodInfo)
                             {
                                 return globalAttribute;
                             }
@@ -658,10 +669,10 @@ namespace DirectX12GameEngine.Shaders
         {
             Type attributeType = attribute.GetType();
 
-            if (HlslKnownAttributes.ContainsKey(attributeType))
+            if (HlslKnownTypes.ContainsKey(attributeType))
             {
                 writer.Write("[");
-                writer.Write(HlslKnownAttributes.GetMappedName(attributeType));
+                writer.Write(HlslKnownTypes.GetMappedName(attributeType));
 
                 var fieldAndPropertyInfos = attributeType.GetMembersInOrder(GetBindingFlagsForType(attributeType) | BindingFlags.DeclaredOnly).Where(m => m is FieldInfo || m is PropertyInfo);
                 IEnumerable<object> attributeMemberValues = fieldAndPropertyInfos.Where(m => m.GetMemberValue(attribute) != null).Select(m => m.GetMemberValue(attribute))!;
@@ -706,7 +717,7 @@ namespace DirectX12GameEngine.Shaders
 
                     writer.Write($"{HlslKnownTypes.GetMappedName(parameterInfo.ParameterType)} {parameterInfo.Name}");
 
-                    if (parameterInfo.GetCustomAttributes<ShaderSemanticAttribute>().FirstOrDefault(a => HlslKnownSemantics.ContainsKey(a.GetType())) is ShaderSemanticAttribute parameterAttribute)
+                    if (parameterInfo.GetCustomAttributes<ShaderSemanticAttribute>().FirstOrDefault(a => HlslKnownTypes.ContainsKey(a.GetType())) is ShaderSemanticAttribute parameterAttribute)
                     {
                         writer.Write(GetHlslSemantic(parameterAttribute));
                     }
@@ -722,13 +733,13 @@ namespace DirectX12GameEngine.Shaders
 
         private class HlslBindingTracker
         {
-            public int ConstantBuffer { get; set; }
-
-            public int Sampler { get; set; }
+            public int ConstantBufferView { get; set; }
 
             public int ShaderResourceView { get; set; }
 
             public int UnorderedAccessView { get; set; }
+
+            public int Sampler { get; set; }
 
             public int StaticResource { get; set; }
         }
@@ -750,15 +761,15 @@ namespace DirectX12GameEngine.Shaders
 
         private class ResourceDefinition
         {
-            public ResourceDefinition(Type memberType, ShaderMemberAttribute shaderMemberAttribute)
+            public ResourceDefinition(Type memberType, ShaderResourceAttribute shaderResourceAttribute)
             {
                 MemberType = memberType;
-                ShaderMemberAttribute = shaderMemberAttribute;
+                ShaderResourceAttribute = shaderResourceAttribute;
             }
 
             public Type MemberType { get; }
 
-            public ShaderMemberAttribute ShaderMemberAttribute { get; }
+            public ShaderResourceAttribute ShaderResourceAttribute { get; }
         }
     }
 }

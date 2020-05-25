@@ -10,9 +10,9 @@ namespace DirectX12GameEngine.Rendering.Materials.Brdf
         }
 
         [ShaderMethod]
-        public float Compute()
+        public float Compute(in MaterialShadingContext context)
         {
-            return BrdfMicrofacet.NormalDistributionGgx(MaterialPixelStream.AlphaRoughness, MaterialPixelShadingStream.NDotH);
+            return BrdfMicrofacet.NormalDistributionGgx(context.AlphaRoughness, context.NDotH);
         }
     }
 }

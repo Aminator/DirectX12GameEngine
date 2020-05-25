@@ -38,14 +38,6 @@ namespace DirectX12GameEngine.Engine
 
         public SceneSystem SceneSystem { get; }
 
-        public override void Dispose()
-        {
-            GraphicsDevice?.Presenter?.Dispose();
-            GraphicsDevice?.Dispose();
-
-            base.Dispose();
-        }
-
         public override void Initialize()
         {
             if (Window != null)
@@ -74,7 +66,7 @@ namespace DirectX12GameEngine.Engine
                     int windowWidth = (int)Window.ClientBounds.Width;
                     int windowHeight = (int)Window.ClientBounds.Height;
 
-                    if (windowWidth != GraphicsDevice.Presenter.BackBuffer.Width || windowHeight != GraphicsDevice.Presenter.BackBuffer.Height)
+                    if (windowWidth != GraphicsDevice.Presenter.BackBuffer.Resource.Width || windowHeight != GraphicsDevice.Presenter.BackBuffer.Resource.Height)
                     {
                         GraphicsDevice.Presenter.Resize(windowWidth, windowHeight);
                     }

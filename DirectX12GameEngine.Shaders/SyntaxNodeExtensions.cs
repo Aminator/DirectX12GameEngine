@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DirectX12GameEngine.Shaders
 {
-    public static class SyntaxNodeExtensions
+    internal static class SyntaxNodeExtensions
     {
         public static TRoot ReplaceType<TRoot>(this TRoot node, TypeSyntax type, TypeInfo typeInfo) where TRoot : SyntaxNode
         {
@@ -26,8 +26,7 @@ namespace DirectX12GameEngine.Shaders
         {
             if (typeInfo.Type is null) throw new InvalidOperationException();
 
-            string fullTypeName = typeInfo.Type.ToString();
-            string value = HlslKnownTypes.GetMappedName(fullTypeName);
+            string value = HlslKnownTypes.GetMappedName(typeInfo.Type);
 
             return SyntaxFactory.ParseTypeName(value);
         }

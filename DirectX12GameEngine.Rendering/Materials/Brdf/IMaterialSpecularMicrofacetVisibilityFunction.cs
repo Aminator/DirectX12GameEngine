@@ -2,6 +2,6 @@
 {
     public interface IMaterialSpecularMicrofacetVisibilityFunction : IMaterialSpecularMicrofacetFunction
     {
-        float Compute();
+        float Compute(in MaterialShadingContext context);
     }
 }

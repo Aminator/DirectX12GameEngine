@@ -5,8 +5,18 @@ using Vortice.Direct3D12;
 
 namespace DirectX12GameEngine.Graphics
 {
-    public class DescriptorSet
+    public sealed class DescriptorSet
     {
+        public DescriptorSet(GraphicsDevice device, IEnumerable<ResourceView> resources) : this(device, resources.Count(), DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView)
+        {
+            AddResourceViews(resources);
+        }
+
+        public DescriptorSet(GraphicsDevice device, IEnumerable<Sampler> samplers) : this(device, samplers.Count(), DescriptorHeapType.Sampler)
+        {
+            AddSamplers(samplers);
+        }
+
         public DescriptorSet(GraphicsDevice device, int descriptorCount, DescriptorHeapType descriptorHeapType = DescriptorHeapType.ConstantBufferViewShaderResourceViewUnorderedAccessView)
         {
             if (descriptorCount < 1) throw new ArgumentOutOfRangeException(nameof(descriptorCount));
@@ -31,42 +41,22 @@ namespace DirectX12GameEngine.Graphics
 
         public IntPtr StartCpuDescriptorHandle { get; }
 
-        public void AddConstantBufferViews(IEnumerable<GraphicsBuffer> buffers)
+        public void AddResourceViews(IEnumerable<ResourceView> resources)
         {
-            AddDescriptors(buffers.Select(r => r.NativeConstantBufferView));
+            AddDescriptors(resources.Select(r => r.CpuDescriptorHandle));
         }
 
-        public void AddConstantBufferViews(params GraphicsBuffer[] buffers)
+        public void AddResourceViews(params ResourceView[] resources)
         {
-            AddConstantBufferViews(buffers.AsEnumerable());
+            AddResourceViews(resources.AsEnumerable());
         }
 
-        public void AddShaderResourceViews(IEnumerable<GraphicsResource> resources)
+        public void AddSamplers(IEnumerable<Sampler> samplers)
         {
-            AddDescriptors(resources.Select(r => r.NativeShaderResourceView));
+            AddDescriptors(samplers.Select(r => r.CpuDescriptorHandle));
         }
 
-        public void AddShaderResourceViews(params GraphicsResource[] resources)
-        {
-            AddShaderResourceViews(resources.AsEnumerable());
-        }
-
-        public void AddUnorderedAccessViews(IEnumerable<GraphicsResource> resources)
-        {
-            AddDescriptors(resources.Select(r => r.NativeUnorderedAccessView));
-        }
-
-        public void AddUnorderedAccessViews(params GraphicsResource[] resources)
-        {
-            AddUnorderedAccessViews(resources.AsEnumerable());
-        }
-
-        public void AddSamplers(IEnumerable<SamplerState> samplers)
-        {
-            AddDescriptors(samplers.Select(r => r.NativeCpuDescriptorHandle));
-        }
-
-        public void AddSamplers(params SamplerState[] samplers)
+        public void AddSamplers(params Sampler[] samplers)
         {
             AddSamplers(samplers);
         }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using DirectX12GameEngine.Core;
@@ -11,6 +10,8 @@ namespace DirectX12GameEngine.Physics
     {
         private bool isKinematic;
         private float mass = 1.0f;
+
+        internal BodyHandle Handle { get; private protected set; }
 
         public override ColliderShape? ColliderShape
         {
@@ -78,7 +79,7 @@ namespace DirectX12GameEngine.Physics
 
                 ref RigidPose pose = ref Simulation.InternalSimulation.Bodies.GetBodyReference(Handle).Pose;
 
-                return Matrix4x4.CreateFromQuaternion(pose.Orientation.ToQuaternion()) * Matrix4x4.CreateTranslation(pose.Position);
+                return Matrix4x4.CreateFromQuaternion(pose.Orientation) * Matrix4x4.CreateTranslation(pose.Position);
             }
             set
             {
@@ -86,7 +87,7 @@ namespace DirectX12GameEngine.Physics
                 {
                     ref RigidPose pose = ref Simulation.InternalSimulation.Bodies.GetBodyReference(Handle).Pose;
 
-                    (_, Unsafe.As<BepuUtilities.Quaternion, Quaternion>(ref pose.Orientation), pose.Position) = value;
+                    (_, pose.Orientation, pose.Position) = value;
                 }
             }
         }
@@ -96,7 +97,7 @@ namespace DirectX12GameEngine.Physics
             base.OnAttach();
 
             Matrix4x4.Decompose(Entity!.Transform.WorldMatrix, out _, out Quaternion rotation, out Vector3 translation);
-            RigidPose pose = new RigidPose(translation, rotation.ToQuaternion());
+            RigidPose pose = new RigidPose(translation, rotation);
 
             CollidableDescription collidable = new CollidableDescription(ColliderShape?.ShapeIndex ?? default, 0.1f);
             BodyActivityDescription activity = new BodyActivityDescription(0.01f);
@@ -106,7 +107,7 @@ namespace DirectX12GameEngine.Physics
                 : BodyDescription.CreateDynamic(pose, ColliderShape?.ComputeIntertia(mass) ?? default, collidable, activity);
 
             Handle = Simulation!.InternalSimulation.Bodies.Add(description);
-            Simulation.RigidBodies.GetOrAddValueRef(Handle) = this;
+            Simulation.RigidBodies.GetOrAddValueRef(Handle.Value) = this;
         }
 
         protected override void OnDetach()
@@ -114,7 +115,7 @@ namespace DirectX12GameEngine.Physics
             base.OnDetach();
 
             Simulation!.InternalSimulation.Bodies.Remove(Handle);
-            Simulation.RigidBodies.Remove(Handle);
+            Simulation.RigidBodies.Remove(Handle.Value);
         }
     }
 }

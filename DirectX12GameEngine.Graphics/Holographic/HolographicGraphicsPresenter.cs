@@ -11,7 +11,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
     {
         private const int BufferCount = 1;
 
-        private Texture renderTarget;
+        private RenderTargetView renderTarget;
         private ID3D11Resource direct3D11RenderTarget;
 
         public HolographicGraphicsPresenter(GraphicsDevice device, PresentationParameters presentationParameters, HolographicSpace holographicSpace)
@@ -41,11 +41,11 @@ namespace DirectX12GameEngine.Graphics.Holographic
             renderTarget = CreateRenderTarget();
             direct3D11RenderTarget = CreateDirect3D11RenderTarget();
 
-            DepthStencilBuffer.Dispose();
+            DepthStencilBuffer.Resource.Dispose();
             DepthStencilBuffer = CreateDepthStencilBuffer();
         }
 
-        public override Texture BackBuffer => renderTarget;
+        public override RenderTargetView BackBuffer => renderTarget;
 
         public override object NativePresenter => HolographicSpace;
 
@@ -67,11 +67,6 @@ namespace DirectX12GameEngine.Graphics.Holographic
         {
             HolographicFrame = HolographicSpace.CreateNextFrame();
             HolographicBackBuffer = GetHolographicBackBuffer();
-        }
-
-        public override void Dispose()
-        {
-            renderTarget.Dispose();
         }
 
         public override void Present()
@@ -102,15 +97,15 @@ namespace DirectX12GameEngine.Graphics.Holographic
             using ID3D11On12Device device11On12 = GraphicsDevice.NativeDirect3D11Device.QueryInterface<ID3D11On12Device>();
 
             return device11On12.CreateWrappedResource(
-                BackBuffer.NativeResource,
+                BackBuffer.Resource.NativeResource,
                 new Vortice.Direct3D11.ResourceFlags { BindFlags = (int)Direct3DBindings.RenderTarget },
                 (int)ResourceStates.RenderTarget,
                 (int)ResourceStates.Present);
         }
 
-        private Texture CreateRenderTarget()
+        private RenderTargetView CreateRenderTarget()
         {
-            return Texture.Create2D(
+            Texture renderTargeTexture = Texture.Create2D(
                 GraphicsDevice,
                 PresentationParameters.BackBufferWidth,
                 PresentationParameters.BackBufferHeight,
@@ -118,6 +113,8 @@ namespace DirectX12GameEngine.Graphics.Holographic
                 ResourceFlags.AllowRenderTarget,
                 1,
                 (short)HolographicBufferCount);
+
+            return new RenderTargetView(renderTargeTexture);
         }
 
         private ID3D11Texture2D GetHolographicBackBuffer()
@@ -127,7 +124,7 @@ namespace DirectX12GameEngine.Graphics.Holographic
 
             ID3D11Texture2D direct3DBackBuffer = new ID3D11Texture2D(surface.NativePointer);
 
-            PresentationParameters.BackBufferFormat = ((PixelFormat)direct3DBackBuffer.Description.Format).ToSRgb();
+            PresentationParameters.BackBufferFormat = ((PixelFormat)direct3DBackBuffer.Description.Format).ToSrgb();
             PresentationParameters.BackBufferWidth = direct3DBackBuffer.Description.Width;
             PresentationParameters.BackBufferHeight = direct3DBackBuffer.Description.Height;
 

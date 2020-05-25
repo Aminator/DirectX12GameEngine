@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Vortice;
 using Vortice.Direct3D12;
@@ -29,11 +30,11 @@ namespace DirectX12GameEngine.Graphics
 
         public CommandListType CommandListType { get; }
 
-        public Texture? DepthStencilBuffer { get; private set; }
+        public DepthStencilView? DepthStencilBuffer { get; private set; }
 
         public GraphicsDevice GraphicsDevice { get; }
 
-        public GraphicsResource[] RenderTargets { get; private set; } = Array.Empty<GraphicsResource>();
+        public RenderTargetView[] RenderTargets { get; private set; } = Array.Empty<RenderTargetView>();
 
         public Rectangle[] ScissorRectangles { get; private set; } = Array.Empty<Rectangle>();
 
@@ -48,7 +49,7 @@ namespace DirectX12GameEngine.Graphics
             BeginRenderPass(DepthStencilBuffer, RenderTargets);
         }
 
-        public void BeginRenderPass(Texture? depthStencilView, params GraphicsResource[] renderTargetViews)
+        public void BeginRenderPass(DepthStencilView? depthStencilView, params RenderTargetView[] renderTargetViews)
         {
             RenderPassRenderTargetDescription[] renderPassRenderTargetDescriptions = new RenderPassRenderTargetDescription[renderTargetViews.Length];
 
@@ -61,7 +62,7 @@ namespace DirectX12GameEngine.Graphics
                 {
                     BeginningAccess = renderPassBeginningAccessPreserve,
                     EndingAccess = renderPassEndingAccessPreserve,
-                    CpuDescriptor = renderTargetViews[i].NativeRenderTargetView.ToCpuDescriptorHandle()
+                    CpuDescriptor = renderTargetViews[i].CpuDescriptorHandle.ToCpuDescriptorHandle()
                 };
 
                 renderPassRenderTargetDescriptions[i] = renderPassRenderTargetDescription;
@@ -80,7 +81,7 @@ namespace DirectX12GameEngine.Graphics
                     DepthEndingAccess = renderPassEndingAccessNoAccess,
                     StencilBeginningAccess = renderPassBeginningAccessNoAccess,
                     StencilEndingAccess = renderPassEndingAccessNoAccess,
-                    CpuDescriptor = depthStencilView.NativeDepthStencilView.ToCpuDescriptorHandle()
+                    CpuDescriptor = depthStencilView.CpuDescriptorHandle.ToCpuDescriptorHandle()
                 };
             }
 
@@ -107,14 +108,14 @@ namespace DirectX12GameEngine.Graphics
             }
         }
 
-        public void ClearDepthStencilView(Texture depthStencilBuffer, ClearFlags clearFlags, float depth = 1, byte stencil = 0, params Rectangle[] rectangles)
+        public void ClearDepthStencilView(DepthStencilView depthStencilView, ClearFlags clearFlags, float depth = 1, byte stencil = 0, params Rectangle[] rectangles)
         {
-            NativeCommandList.ClearDepthStencilView(depthStencilBuffer.NativeDepthStencilView.ToCpuDescriptorHandle(), (Vortice.Direct3D12.ClearFlags)clearFlags, depth, stencil, rectangles.Select(r => new RawRect(r.Left, r.Top, r.Right, r.Bottom)).ToArray());
+            NativeCommandList.ClearDepthStencilView(depthStencilView.CpuDescriptorHandle.ToCpuDescriptorHandle(), (Vortice.Direct3D12.ClearFlags)clearFlags, depth, stencil, rectangles.Select(r => new RawRect(r.Left, r.Top, r.Right, r.Bottom)).ToArray());
         }
 
-        public unsafe void ClearRenderTargetView(GraphicsResource renderTarget, in Vector4 color, params Rectangle[] rectangles)
+        public void ClearRenderTargetView(RenderTargetView renderTargetView, in Vector4 color, params Rectangle[] rectangles)
         {
-            NativeCommandList.ClearRenderTargetView(renderTarget.NativeRenderTargetView.ToCpuDescriptorHandle(), new Vortice.Mathematics.Color4(color), rectangles.Select(r => new RawRect(r.Left, r.Top, r.Right, r.Bottom)).ToArray());
+            NativeCommandList.ClearRenderTargetView(renderTargetView.CpuDescriptorHandle.ToCpuDescriptorHandle(), new Vortice.Mathematics.Color4(color), rectangles.Select(r => new RawRect(r.Left, r.Top, r.Right, r.Bottom)).ToArray());
         }
 
         public void ClearState()
@@ -122,24 +123,20 @@ namespace DirectX12GameEngine.Graphics
             Array.Clear(Viewports, 0, Viewports.Length);
             Array.Clear(ScissorRectangles, 0, ScissorRectangles.Length);
 
-            Texture? depthStencilBuffer = GraphicsDevice.Presenter?.DepthStencilBuffer;
-            GraphicsResource? backBuffer = GraphicsDevice.Presenter?.BackBuffer;
+            DepthStencilView? depthStencilBuffer = GraphicsDevice.Presenter?.DepthStencilBuffer;
+            RenderTargetView? backBuffer = GraphicsDevice.Presenter?.BackBuffer;
 
             if (backBuffer != null)
             {
                 SetRenderTargets(depthStencilBuffer, backBuffer);
-
-                if (backBuffer is Texture texture)
-                {
-                    SetScissorRectangles(new Rectangle(0, 0, texture.Width, texture.Height));
-                    SetViewports(new Viewport(0, 0, texture.Width, texture.Height));
-                }
+                SetScissorRectangles(new Rectangle(0, 0, (int)backBuffer.Resource.Width, backBuffer.Resource.Height));
+                SetViewports(new Viewport(0, 0, backBuffer.Resource.Width, backBuffer.Resource.Height));
             }
             else if (depthStencilBuffer != null)
             {
                 SetRenderTargets(depthStencilBuffer);
-                SetScissorRectangles(new Rectangle(0, 0, depthStencilBuffer.Width, depthStencilBuffer.Height));
-                SetViewports(new Viewport(0, 0, depthStencilBuffer.Width, depthStencilBuffer.Height));
+                SetScissorRectangles(new Rectangle(0, 0, (int)depthStencilBuffer.Resource.Width, depthStencilBuffer.Resource.Height));
+                SetViewports(new Viewport(0, 0, depthStencilBuffer.Resource.Width, depthStencilBuffer.Resource.Height));
             }
             else
             {
@@ -239,18 +236,18 @@ namespace DirectX12GameEngine.Graphics
             NativeCommandList.SetComputeRoot32BitConstant(rootParameterIndex, srcData, destOffsetIn32BitValues);
         }
 
-        public void SetComputeRootConstantBufferView(int rootParameterIndex, GraphicsBuffer buffer)
+        public void SetComputeRootConstantBufferView(int rootParameterIndex, ConstantBufferView constantBufferView)
         {
             if (srvDescriptorHeap is null) throw new InvalidOperationException();
 
-            SetComputeRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, buffer.NativeConstantBufferView, 1);
+            SetComputeRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, constantBufferView.CpuDescriptorHandle, 1);
         }
 
-        public void SetComputeRootSampler(int rootParameterIndex, SamplerState sampler)
+        public void SetComputeRootSampler(int rootParameterIndex, Sampler sampler)
         {
             if (samplerDescriptorHeap is null) throw new InvalidOperationException();
 
-            SetComputeRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.NativeCpuDescriptorHandle, 1);
+            SetComputeRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.CpuDescriptorHandle, 1);
         }
 
         public void SetComputeRootDescriptorTable(int rootParameterIndex, DescriptorSet descriptorSet)
@@ -274,18 +271,18 @@ namespace DirectX12GameEngine.Graphics
             NativeCommandList.SetGraphicsRoot32BitConstant(rootParameterIndex, srcData, destOffsetIn32BitValues);
         }
 
-        public void SetGraphicsRootConstantBufferView(int rootParameterIndex, GraphicsBuffer buffer)
+        public void SetGraphicsRootConstantBufferView(int rootParameterIndex, ConstantBufferView constantBufferView)
         {
             if (srvDescriptorHeap is null) throw new InvalidOperationException();
 
-            SetGraphicsRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, buffer.NativeConstantBufferView, 1);
+            SetGraphicsRootDescriptorTable(rootParameterIndex, srvDescriptorHeap, constantBufferView.CpuDescriptorHandle, 1);
         }
 
-        public void SetGraphicsRootSampler(int rootParameterIndex, SamplerState sampler)
+        public void SetGraphicsRootSampler(int rootParameterIndex, Sampler sampler)
         {
             if (samplerDescriptorHeap is null) throw new InvalidOperationException();
 
-            SetGraphicsRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.NativeCpuDescriptorHandle, 1);
+            SetGraphicsRootDescriptorTable(rootParameterIndex, samplerDescriptorHeap, sampler.CpuDescriptorHandle, 1);
         }
 
         public void SetGraphicsRootDescriptorTable(int rootParameterIndex, DescriptorSet descriptorSet)
@@ -312,22 +309,15 @@ namespace DirectX12GameEngine.Graphics
             return descriptorAllocator.GetGpuDescriptorHandle(destinationDescriptor);
         }
 
-        public void SetIndexBuffer(GraphicsBuffer? indexBuffer)
+        public void SetIndexBuffer(IndexBufferView? indexBufferView)
         {
-            if (indexBuffer is null)
+            if (indexBufferView is null)
             {
                 NativeCommandList.IASetIndexBuffer(null);
             }
             else
             {
-                IndexBufferView indexBufferView = new IndexBufferView
-                {
-                    BufferLocation = indexBuffer.NativeResource.GPUVirtualAddress,
-                    SizeInBytes = indexBuffer.SizeInBytes,
-                    Format = indexBuffer.StructureByteStride == sizeof(int) ? Format.R32_UInt : Format.R16_UInt
-                };
-
-                NativeCommandList.IASetIndexBuffer(indexBufferView);
+                NativeCommandList.IASetIndexBuffer(Unsafe.As<IndexBufferView, Vortice.Direct3D12.IndexBufferView>(ref Unsafe.AsRef(indexBufferView.Value)));
             }
         }
 
@@ -350,7 +340,7 @@ namespace DirectX12GameEngine.Graphics
             NativeCommandList.IASetPrimitiveTopology((Vortice.Direct3D.PrimitiveTopology)primitiveTopology);
         }
 
-        public void SetRenderTargets(Texture? depthStencilView, params GraphicsResource[] renderTargetViews)
+        public void SetRenderTargets(DepthStencilView? depthStencilView, params RenderTargetView[] renderTargetViews)
         {
             DepthStencilBuffer = depthStencilView;
 
@@ -361,7 +351,7 @@ namespace DirectX12GameEngine.Graphics
 
             if (RenderTargets.Length != renderTargetViews.Length)
             {
-                RenderTargets = new GraphicsResource[renderTargetViews.Length];
+                RenderTargets = new RenderTargetView[renderTargetViews.Length];
             }
 
             renderTargetViews.CopyTo(RenderTargets, 0);
@@ -370,10 +360,10 @@ namespace DirectX12GameEngine.Graphics
 
             for (int i = 0; i < renderTargetViews.Length; i++)
             {
-                renderTargetDescriptors[i] = renderTargetViews[i].NativeRenderTargetView.ToCpuDescriptorHandle();
+                renderTargetDescriptors[i] = renderTargetViews[i].CpuDescriptorHandle.ToCpuDescriptorHandle();
             }
 
-            NativeCommandList.OMSetRenderTargets(renderTargetDescriptors, depthStencilView?.NativeDepthStencilView.ToCpuDescriptorHandle());
+            NativeCommandList.OMSetRenderTargets(renderTargetDescriptors, depthStencilView?.CpuDescriptorHandle.ToCpuDescriptorHandle());
         }
 
         public void SetScissorRectangles(params Rectangle[] scissorRectangles)
@@ -393,16 +383,9 @@ namespace DirectX12GameEngine.Graphics
             NativeCommandList.RSSetScissorRects(scissorRectangles.Select(r => new RawRect(r.Left, r.Top, r.Right, r.Bottom)).ToArray());
         }
 
-        public void SetVertexBuffers(int startSlot, params GraphicsBuffer[] vertexBuffers)
+        public void SetVertexBuffers(int startSlot, params VertexBufferView[] vertexBufferViews)
         {
-            VertexBufferView[] vertexBufferViews = vertexBuffers.Select(b => new VertexBufferView
-            {
-                BufferLocation = b.NativeResource.GPUVirtualAddress,
-                SizeInBytes = b.SizeInBytes,
-                StrideInBytes = b.StructureByteStride
-            }).ToArray();
-
-            NativeCommandList.IASetVertexBuffers(startSlot, vertexBufferViews);
+            NativeCommandList.IASetVertexBuffers(startSlot, Unsafe.As<Vortice.Direct3D12.VertexBufferView[]>(vertexBufferViews));
         }
 
         public void SetViewports(params Viewport[] viewports)

@@ -10,7 +10,7 @@ namespace DirectX12GameEngine.Rendering.Materials
         {
         }
 
-        public MaterialMetalnessMapFeature(IComputeScalar metalnessMap)
+        public MaterialMetalnessMapFeature(IScalarShader metalnessMap)
         {
             MetalnessMap = metalnessMap;
         }
@@ -20,18 +20,17 @@ namespace DirectX12GameEngine.Rendering.Materials
             MetalnessMap.Accept(context);
         }
 
-        public IComputeScalar MetalnessMap { get; set; } = new ComputeScalar();
+        public IScalarShader MetalnessMap { get; set; } = new ScalarShader();
 
         [ShaderMethod]
-        public void Compute()
+        public Vector3 ComputeSpecularColor(in SamplingContext context, ref Vector3 diffuseColor)
         {
-            float metalness = MetalnessMap.Compute();
+            float metalness = MetalnessMap.ComputeScalar(context);
 
-            Vector4 materialDiffuse = MaterialPixelStream.MaterialDiffuse;
-            Vector3 materialDiffuseRgb = new Vector3(materialDiffuse.X, materialDiffuse.Y, materialDiffuse.Z);
+            Vector3 previousDiffuseColor = diffuseColor;
+            diffuseColor = Vector3.Lerp(diffuseColor, Vector3.Zero, metalness);
 
-            MaterialPixelStream.MaterialSpecular = Vector3.Lerp(new Vector3(0.02f, 0.02f, 0.02f), materialDiffuseRgb, metalness);
-            MaterialPixelStream.MaterialDiffuse = new Vector4(Vector3.Lerp(materialDiffuseRgb, Vector3.Zero, metalness), materialDiffuse.W);
+            return Vector3.Lerp(new Vector3(0.02f, 0.02f, 0.02f), previousDiffuseColor, metalness);
         }
     }
 }

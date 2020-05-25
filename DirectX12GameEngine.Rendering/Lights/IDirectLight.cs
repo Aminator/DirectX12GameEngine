@@ -2,6 +2,5 @@
 {
     public interface IDirectLight : IColorLight
     {
-        LightShadowMap? Shadow { get; }
     }
 }

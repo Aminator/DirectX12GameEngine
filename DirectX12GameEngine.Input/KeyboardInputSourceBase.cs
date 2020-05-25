@@ -17,10 +17,6 @@ namespace DirectX12GameEngine.Input
 
         public ISet<VirtualKey> ReleasedKeys { get; } = new HashSet<VirtualKey>();
 
-        public virtual void Dispose()
-        {
-        }
-
         public virtual void Scan()
         {
         }

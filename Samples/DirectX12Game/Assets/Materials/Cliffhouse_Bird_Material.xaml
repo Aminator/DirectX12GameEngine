@@ -6,7 +6,7 @@
             <MaterialAttributes.Diffuse>
                 <MaterialDiffuseMapFeature>
                     <MaterialDiffuseMapFeature.DiffuseMap>
-                        <ComputeColor Color="1,1,1,1" />
+                        <ColorShader Color="1,1,1,1" />
                     </MaterialDiffuseMapFeature.DiffuseMap>
                 </MaterialDiffuseMapFeature>
             </MaterialAttributes.Diffuse>
@@ -14,7 +14,7 @@
             <MaterialAttributes.MicroSurface>
                 <MaterialRoughnessMapFeature>
                     <MaterialRoughnessMapFeature.RoughnessMap>
-                        <ComputeScalar Value="0.5" />
+                        <ScalarShader Value="0.5" />
                     </MaterialRoughnessMapFeature.RoughnessMap>
                 </MaterialRoughnessMapFeature>
             </MaterialAttributes.MicroSurface>
@@ -22,7 +22,7 @@
             <MaterialAttributes.Specular>
                 <MaterialMetalnessMapFeature>
                     <MaterialMetalnessMapFeature.MetalnessMap>
-                        <ComputeScalar Value="0.5" />
+                        <ScalarShader Value="0.5" />
                     </MaterialMetalnessMapFeature.MetalnessMap>
                 </MaterialMetalnessMapFeature>
             </MaterialAttributes.Specular>

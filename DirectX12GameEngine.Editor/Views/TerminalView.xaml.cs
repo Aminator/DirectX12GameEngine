@@ -48,14 +48,14 @@ namespace DirectX12GameEngine.Editor.Views
 
         private void OnBuildMessageRaised(object sender, BuildEventArgs e)
         {
-            //dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
-            //{
-            //    if (!string.IsNullOrEmpty(e.Message))
-            //    {
-            //        Terminal.Document.Selection.TypeText(e.Message + '\r');
-            //        Terminal.Document.Selection.ScrollIntoView(PointOptions.NoHorizontalScroll);
-            //    }
-            //});
+            dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+            {
+                if (!string.IsNullOrEmpty(e.Message))
+                {
+                    Terminal.Document.Selection.TypeText(e.Message + '\r');
+                    Terminal.Document.Selection.ScrollIntoView(PointOptions.NoHorizontalScroll);
+                }
+            });
         }
     }
 }

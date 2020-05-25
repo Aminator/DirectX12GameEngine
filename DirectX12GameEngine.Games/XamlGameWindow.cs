@@ -27,11 +27,6 @@ namespace DirectX12GameEngine.Games
             }
         }
 
-        public override void Dispose()
-        {
-            CompositionTarget.Rendering -= OnCompositionTargetRendering;
-        }
-
         public override void Run()
         {
             CompositionTarget.Rendering += OnCompositionTargetRendering;

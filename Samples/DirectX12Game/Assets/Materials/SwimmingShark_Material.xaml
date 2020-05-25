@@ -6,7 +6,7 @@
             <!--<MaterialAttributes.MicroSurface>
                 <MaterialRoughnessMapFeature>
                   <MaterialRoughnessMapFeature.RoughnessMap>
-                    <ComputeScalar Value="1.0" />
+                    <ScalarShader Value="1.0" />
                   </MaterialRoughnessMapFeature.RoughnessMap>
                 </MaterialRoughnessMapFeature>
               </MaterialAttributes.MicroSurface>-->
@@ -14,7 +14,7 @@
             <!--<MaterialAttributes.Surface>
                 <MaterialNormalMapFeature>
                   <MaterialNormalMapFeature.NormalMap>
-                    <ComputeTextureColor Texture="Assets\Resources\Models\Swimming_Shark_img2.png" />
+                    <TextureColorShader Texture="Assets\Resources\Models\Swimming_Shark_img2.png" />
                   </MaterialNormalMapFeature.NormalMap>
                 </MaterialNormalMapFeature>
               </MaterialAttributes.Surface>-->

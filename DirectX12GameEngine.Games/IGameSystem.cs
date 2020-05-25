@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace DirectX12GameEngine.Games
+﻿namespace DirectX12GameEngine.Games
 {
-    public interface IGameSystem : IDisposable
+    public interface IGameSystem
     {
         void Update(GameTime gameTime);
 

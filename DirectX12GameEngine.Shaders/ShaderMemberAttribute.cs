@@ -8,32 +8,40 @@ namespace DirectX12GameEngine.Shaders
     {
     }
 
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class IgnoreShaderMemberAttribute : Attribute
     {
     }
 
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class ShaderMemberAttribute : Attribute
     {
-        public ShaderMemberAttribute([CallerLineNumber] int order = 0) : this (null, order)
+        public ShaderMemberAttribute([CallerLineNumber] int order = 0)
+        {
+            Order = order;
+        }
+
+        public int Order { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+    public abstract class ShaderResourceAttribute : ShaderMemberAttribute
+    {
+        public ShaderResourceAttribute([CallerLineNumber] int order = 0) : this(null, order)
         {
         }
 
-        public ShaderMemberAttribute(Type? resourceType, [CallerLineNumber] int order = 0)
+        public ShaderResourceAttribute(Type? resourceType, [CallerLineNumber] int order = 0) : base(order)
         {
-            Order = order;
             ResourceType = resourceType;
         }
 
-        public int Order { get; }
-
-        public Type? ResourceType { get; }
+        public Type? ResourceType { get; set; }
 
         public bool Override { get; set; }
     }
 
-    public class ConstantBufferViewAttribute : ShaderMemberAttribute
+    public class ConstantBufferViewAttribute : ShaderResourceAttribute
     {
         public ConstantBufferViewAttribute([CallerLineNumber] int order = 0) : base(order)
         {
@@ -44,7 +52,7 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
-    public class ShaderResourceViewAttribute : ShaderMemberAttribute
+    public class ShaderResourceViewAttribute : ShaderResourceAttribute
     {
         public ShaderResourceViewAttribute([CallerLineNumber] int order = 0) : base(order)
         {
@@ -55,7 +63,7 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
-    public class UnorderedAccessViewAttribute : ShaderMemberAttribute
+    public class UnorderedAccessViewAttribute : ShaderResourceAttribute
     {
         public UnorderedAccessViewAttribute([CallerLineNumber] int order = 0) : base(order)
         {
@@ -66,7 +74,7 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
-    public class SamplerAttribute : ShaderMemberAttribute
+    public class SamplerAttribute : ShaderResourceAttribute
     {
         public SamplerAttribute([CallerLineNumber] int order = 0) : base(order)
         {
@@ -77,7 +85,7 @@ namespace DirectX12GameEngine.Shaders
         }
     }
 
-    public class StaticResourceAttribute : ShaderMemberAttribute
+    public class StaticResourceAttribute : ShaderResourceAttribute
     {
         public StaticResourceAttribute([CallerLineNumber] int order = 0) : base(order)
         {

@@ -75,18 +75,18 @@ namespace DirectX12GameEngine.Graphics
                 StreamOutput = new StreamOutputDescription()
             };
 
-            Texture? depthStencilBuffer = device.CommandList.DepthStencilBuffer;
+            DepthStencilView? depthStencilBuffer = device.CommandList.DepthStencilBuffer;
 
             if (depthStencilBuffer != null)
             {
-                pipelineStateDescription.DepthStencilFormat = (Format)depthStencilBuffer.Description.Format;
+                pipelineStateDescription.DepthStencilFormat = (Format)depthStencilBuffer.Resource.Description.Format;
             }
 
             Format[] renderTargetFormats = new Format[device.CommandList.RenderTargets.Length];
 
             for (int i = 0; i < renderTargetFormats.Length; i++)
             {
-                renderTargetFormats[i] = (Format)((Texture)device.CommandList.RenderTargets[i]).Description.Format;
+                renderTargetFormats[i] = (Format)device.CommandList.RenderTargets[i].Resource.Description.Format;
             }
 
             pipelineStateDescription.RenderTargetFormats = renderTargetFormats;

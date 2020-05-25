@@ -9,7 +9,7 @@ namespace DirectX12GameEngine.Graphics
         }
 
         public PresentationParameters(int backBufferWidth, int backBufferHeight)
-            : this(backBufferWidth, backBufferHeight, PixelFormat.B8G8R8A8_UNorm)
+            : this(backBufferWidth, backBufferHeight, PixelFormat.B8G8R8A8UIntNormalized)
         {
         }
 
@@ -24,9 +24,9 @@ namespace DirectX12GameEngine.Graphics
 
         public int BackBufferHeight { get; set; }
 
-        public PixelFormat BackBufferFormat { get; set; } = PixelFormat.B8G8R8A8_UNorm;
+        public PixelFormat BackBufferFormat { get; set; } = PixelFormat.B8G8R8A8UIntNormalized;
 
-        public PixelFormat DepthStencilFormat { get; set; } = PixelFormat.D32_Float;
+        public PixelFormat DepthStencilFormat { get; set; } = PixelFormat.D32Float;
 
         public PresentParameters PresentParameters { get; set; }
 

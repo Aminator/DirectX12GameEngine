@@ -59,14 +59,6 @@ namespace DirectX12GameEngine.Engine
             }
         }
 
-        public virtual void Dispose()
-        {
-            foreach (EntitySystem system in Systems)
-            {
-                system.Dispose();
-            }
-        }
-
         internal void AddRoot(Entity entity)
         {
             if (entity.Parent != null)

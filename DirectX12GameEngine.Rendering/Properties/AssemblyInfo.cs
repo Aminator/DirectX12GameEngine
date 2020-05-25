@@ -7,7 +7,7 @@ using Portable.Xaml.Markup;
 [assembly: ContractNamespace("http://schemas.directx12gameengine.com/xaml", ClrNamespace = "DirectX12GameEngine.Rendering.Materials")]
 [assembly: ContractNamespace("http://schemas.directx12gameengine.com/xaml", ClrNamespace = "DirectX12GameEngine.Rendering.Materials.Brdf")]
 [assembly: ContractNamespace("http://schemas.directx12gameengine.com/xaml", ClrNamespace = "DirectX12GameEngine.Rendering.Materials.CelShading")]
-[assembly: ContractNamespace("http://schemas.directx12gameengine.com/xaml", ClrNamespace = "DirectX12GameEngine.Rendering.Shadows")]
+[assembly: ContractNamespace("http://schemas.directx12gameengine.com/xaml", ClrNamespace = "DirectX12GameEngine.Rendering.Shaders")]
 
 [assembly: XmlnsDefinition("http://schemas.directx12gameengine.com/xaml", "DirectX12GameEngine.Rendering")]
 [assembly: XmlnsDefinition("http://schemas.directx12gameengine.com/xaml", "DirectX12GameEngine.Rendering.Core")]
@@ -15,4 +15,4 @@ using Portable.Xaml.Markup;
 [assembly: XmlnsDefinition("http://schemas.directx12gameengine.com/xaml", "DirectX12GameEngine.Rendering.Materials")]
 [assembly: XmlnsDefinition("http://schemas.directx12gameengine.com/xaml", "DirectX12GameEngine.Rendering.Materials.Brdf")]
 [assembly: XmlnsDefinition("http://schemas.directx12gameengine.com/xaml", "DirectX12GameEngine.Rendering.Materials.CelShading")]
-[assembly: XmlnsDefinition("http://schemas.directx12gameengine.com/xaml", "DirectX12GameEngine.Rendering.Shadows")]
+[assembly: XmlnsDefinition("http://schemas.directx12gameengine.com/xaml", "DirectX12GameEngine.Rendering.Shaders")]
