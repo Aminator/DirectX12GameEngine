@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Analyzer Include="..\GltfGenerator\bin\$(Configuration)\netstandard2.0\GltfGenerator.dll" />
+    <Analyzer Include="..\GltfGenerator\bin\$(Configuration)\netstandard2.0\GltfGenerator.dll;..\GltfGenerator\bin\$(Configuration)\netstandard2.0\System.Text.Json.dll" />
   </ItemGroup>
 
 </Project>
