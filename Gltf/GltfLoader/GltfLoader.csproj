@@ -2,24 +2,29 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <Description>C# reference loader for GLTF 2.0</Description>
     <PackageIconUrl>https://github.com/KhronosGroup/glTF/blob/master/specification/figures/gltf.png</PackageIconUrl>
     <PackageTags>GLTF loader C#</PackageTags>
     <Version>2.0.0</Version>
-    <GltfSchema>$(MSBuildThisFileDirectory)..\Gltf\specification\2.0\schema\glTF.schema.json</GltfSchema>
   </PropertyGroup>
     
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="4.7.1" />
+    <PackageReference Include="System.Text.Json" Version="5.0.2" />
   </ItemGroup>
 
+  <!-- Reference source generator -->
+  <!-- See https://github.com/dotnet/roslyn-sdk/tree/main/samples/CSharp/SourceGenerators -->
   <ItemGroup>
-    <ProjectReference Include="..\GltfGenerator\GltfGenerator.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\GltfGenerator\GltfGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Analyzer Include="..\GltfGenerator\bin\$(Configuration)\netstandard2.0\GltfGenerator.dll" />
-  </ItemGroup>
+  <!-- Manually reference the generator props (needed because we locally reference the generator) -->
+  <Import Project="..\GltfGenerator\GltfGenerator.props" />
+
+  <!-- Pass schema path to source generator. -->
+  <PropertyGroup>
+    <GltfGenerator_GltfSchemaPath>$(MSBuildThisFileDirectory)..\Gltf\specification\2.0\schema\glTF.schema.json</GltfGenerator_GltfSchemaPath>
+  </PropertyGroup>
 
 </Project>

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -9,11 +10,12 @@ namespace GltfGenerator.Tasks
     [Generator]
     public class GltfSourceGenerator : ISourceGenerator
     {
-        public string? GltfSchema { get; set; } = @"..\Gltf\specification\2.0\schema\glTF.schema.json";
-
-        public void Execute(SourceGeneratorContext context)
+        public void Execute(GeneratorExecutionContext context)
         {
-            CodeGenerator generator = new CodeGenerator(GltfSchema);
+            if (!context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.GltfGenerator_GltfSchemaPath", out var path))
+                throw new InvalidOperationException("Missing GltfGenerator_GltfSchemaPath property in MSBuild file.");
+            
+            CodeGenerator generator = new CodeGenerator(path);
             generator.ParseSchemas();
             generator.ExpandSchemaReferences();
             generator.EvaluateInheritance();
@@ -27,7 +29,7 @@ namespace GltfGenerator.Tasks
             }
         }
 
-        public void Initialize(InitializationContext context)
+        public void Initialize(GeneratorInitializationContext context)
         {
         }
     }
